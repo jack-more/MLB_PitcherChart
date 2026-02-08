@@ -3,426 +3,650 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>COSMOS METRICS // v6</title>
+    <title>PITCH.FX // CLUSTER</title>
     <style>
         :root {
-            --bg-deep: #050505;
-            --glass-panel: rgba(10, 10, 12, 0.88);
-            --glass-border: rgba(255, 0, 150, 0.3);
-            --text-main: #ffffff;
-            --text-dim: #888888;
-            --accent-cyan: #dfff00;
-            --accent-magenta: #ff007f;
-            --accent-gold: #00ff41;
-            --font-mono: 'Space Mono', 'Courier New', monospace;
-            --font-serif: 'Playfair Display', serif;
-        }
+            /* ── Chassis (hardware body) ── */
+            --chassis-bg: #c8cccf;
+            --chassis-texture: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjYzhjY2NmIi8+CjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNjMGM0YzciIG9wYWNpdHk9IjAuMyIvPgo8L3N2Zz4=');
 
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
+            /* ── Keys ── */
+            --key-dark: #1e2124;
+            --key-dark-shadow: #111315;
+            --key-light: #e8eaed;
+            --key-light-shadow: #b0b4b8;
+
+            /* ── Accent ── */
+            --accent-orange: #ff4400;
+            --accent-orange-shadow: #cc3600;
+
+            /* ── Screen ── */
+            --screen-bg: #0a0a0a;
+
+            /* ── Text ── */
+            --text-on-light: #55595d;
+            --text-on-dark: #e0e0e0;
+            --text-label: #888b8e;
+            --text-dim: #666;
+            --text-muted: #444;
+
+            /* ── Performance colors ── */
+            --perf-green: #2a9d8f;
+            --perf-yellow: #f4a261;
+            --perf-red: #e63946;
+            --perf-orange: #e76f51;
+            --perf-teal: #a8dadc;
+
+            /* ── Layout ── */
+            --sidebar-w: 340px;
+            --stat-panel-w: 320px;
+            --header-h: 56px;
+            --dock-h: 110px;
+
+            /* ── Fonts ── */
+            --font-tech: 'Courier New', Courier, monospace;
+            --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
 
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-font-smoothing: antialiased; }
 
-        body { background-color: var(--bg-deep); color: var(--text-main); font-family: var(--font-mono); overflow: hidden; width: 100vw; height: 100vh; }
-
-        #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
-
-        #ui-layer {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10;
-            pointer-events: none;
+        body {
+            width: 100vw; height: 100vh; overflow: hidden;
+            background-color: var(--chassis-bg);
+            background-image: var(--chassis-texture);
+            font-family: var(--font-ui);
+            color: var(--text-on-light);
             display: grid;
-            grid-template-columns: 300px minmax(0, 1fr) 320px;
-            grid-template-rows: auto 1fr auto;
-            padding: 16px;
-            gap: 10px;
+            grid-template-columns: var(--sidebar-w) 1fr;
+            grid-template-rows: var(--header-h) 1fr var(--dock-h);
+            grid-template-areas:
+                "header header"
+                "sidebar screen"
+                "dock dock";
+        }
+
+        /* ═══ LABEL SYSTEM ═══ */
+        .label {
+            font-family: var(--font-ui);
+            font-size: 9px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            color: var(--text-label); display: block; margin-bottom: 4px;
+        }
+        .label-line {
+            display: flex; align-items: center; gap: 6px; margin-bottom: 6px;
+        }
+        .label-line::before {
+            content: ''; height: 1px; width: 12px; background: var(--text-label);
+        }
+
+        /* ═══ KEY SYSTEM (physical buttons) ═══ */
+        .key {
+            border-radius: 4px;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-weight: 600; font-size: 11px; cursor: pointer;
+            transition: transform 0.05s, box-shadow 0.05s;
+            font-family: var(--font-ui);
+        }
+        .key-dark {
+            background: var(--key-dark); color: var(--text-on-dark);
+            box-shadow: 0 3px 0 var(--key-dark-shadow), 0 4px 4px rgba(0,0,0,0.2);
+        }
+        .key-dark:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--key-dark-shadow); }
+        .key-light {
+            background: var(--key-light); color: var(--text-on-light);
+            box-shadow: 0 3px 0 var(--key-light-shadow), 0 4px 4px rgba(0,0,0,0.1);
+        }
+        .key-light:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--key-light-shadow); }
+        .key-orange {
+            background: var(--accent-orange); color: #fff;
+            box-shadow: 0 3px 0 var(--accent-orange-shadow), 0 4px 4px rgba(0,0,0,0.2);
+        }
+        .key-orange:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--accent-orange-shadow); }
+
+        /* ═══ LED ═══ */
+        .led {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: #999; box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+        }
+        .led.active {
+            background: var(--accent-orange);
+            box-shadow: 0 0 6px var(--accent-orange);
+        }
+        .led.green { background: #33cc33; box-shadow: 0 0 4px #33cc33; }
+
+        /* ═══ HEADER ═══ */
+        header {
+            grid-area: header;
+            display: flex; align-items: center; padding: 0 16px; gap: 12px;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+        }
+        .brand {
+            font-weight: 800; letter-spacing: -0.5px; color: var(--key-dark);
+            font-size: 16px; display: flex; align-items: center; gap: 8px;
+            white-space: nowrap;
+        }
+        .brand-icon {
+            width: 18px; height: 18px; background: var(--accent-orange);
+            border-radius: 2px;
+        }
+
+        .search-box {
+            position: relative; flex: 0 0 280px;
+        }
+        .search-box input {
+            width: 100%; background: #111; border: 1px solid #333;
+            color: #fff; padding: 7px 10px; font-family: var(--font-tech);
+            font-size: 11px; outline: none; border-radius: 3px;
+        }
+        .search-box input:focus { border-color: var(--accent-orange); }
+        .search-box input::placeholder { color: #555; }
+
+        .search-dropdown {
+            position: absolute; top: 100%; left: 0; width: 100%; max-height: 260px;
+            overflow-y: auto; background: #141414; border: 1px solid #333;
+            border-top: none; z-index: 200; display: none; border-radius: 0 0 3px 3px;
+        }
+        .search-dropdown.visible { display: block; }
+        .search-result {
+            padding: 6px 10px; cursor: pointer; display: flex; justify-content: space-between;
+            border-bottom: 1px solid #1a1a1a; font-size: 11px; color: #ccc;
+            font-family: var(--font-tech);
+        }
+        .search-result:hover, .search-result.highlighted { background: #1e1e1e; color: #fff; }
+        .search-result .pa-label { color: #666; font-size: 10px; }
+
+        .batter-stack {
+            display: flex; gap: 4px; align-items: center; flex-wrap: wrap; flex: 1; overflow: hidden;
+        }
+        .batter-chip {
+            background: var(--key-dark); border: 1px solid #333;
+            color: var(--text-on-dark); padding: 3px 8px; font-size: 10px;
+            font-family: var(--font-tech); border-radius: 3px;
+            display: flex; align-items: center; gap: 4px; white-space: nowrap;
+        }
+        .batter-chip .remove {
+            cursor: pointer; opacity: 0.4; font-size: 11px; margin-left: 2px;
+        }
+        .batter-chip .remove:hover { opacity: 1; color: var(--accent-orange); }
+
+        .header-controls {
+            display: flex; align-items: center; gap: 8px; margin-left: auto;
+        }
+
+        /* ═══ SIDEBAR ═══ */
+        #sidebar {
+            grid-area: sidebar;
+            display: flex; flex-direction: column;
+            border-right: 1px solid rgba(0,0,0,0.08);
             overflow: hidden;
         }
 
-        .glass-panel {
-            background: var(--glass-panel);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
-            border-radius: 0px;
-            pointer-events: auto;
-            box-shadow: 0 0 20px rgba(255, 0, 150, 0.08);
+        .filter-bar {
+            padding: 10px 14px; border-bottom: 1px solid rgba(0,0,0,0.08);
+            display: flex; flex-direction: column; gap: 8px;
         }
 
-        /* ── HEADER ── */
-        header {
-            grid-column: 1 / -1;
-            display: flex; align-items: center; height: 56px;
-            border-bottom: 2px solid var(--accent-magenta) !important;
+        .key-row { display: flex; gap: 4px; flex-wrap: wrap; }
+        .key-row .key {
+            height: 26px; padding: 0 8px; font-size: 10px;
         }
 
-        .brand {
-            font-size: 18px; letter-spacing: 2px; font-weight: 700;
-            text-transform: uppercase; color: #fff;
-            display: flex; align-items: center; gap: 10px;
-        }
-        .brand::before { content: ''; width: 10px; height: 10px; background: var(--accent-magenta); box-shadow: 0 0 12px var(--accent-magenta); }
-
-        .search-container { position: relative; width: 280px; }
-
-        input[type="text"] {
-            width: 100%; background: rgba(0,0,0,0.8); border: 1px solid var(--accent-magenta);
-            color: var(--accent-cyan); padding: 10px 14px; font-family: var(--font-mono); font-size: 14px;
-            border-radius: 0px; outline: none; transition: border-color 0.3s, box-shadow 0.3s;
-        }
-        input[type="text"]:focus { border-color: var(--accent-cyan); box-shadow: 0 0 12px rgba(223,255,0,0.3); }
-
-        .search-dropdown {
-            position: absolute; top: 100%; left: 0; width: 100%; max-height: 280px;
-            overflow-y: auto; background: rgba(10,8,20,0.95); border: 1px solid var(--glass-border);
-            border-top: none; z-index: 100; display: none;
-        }
-        .search-dropdown.visible { display: block; }
-
-        .search-result {
-            padding: 10px 14px; cursor: pointer; display: flex; justify-content: space-between;
-            border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 14px;
-        }
-        .search-result:hover, .search-result.highlighted { background: rgba(223,255,0,0.08); }
-        .search-result .pa-label { color: var(--text-dim); font-size: 12px; }
-
-        .batter-chips { display: flex; gap: 6px; align-items: center; }
-        .batter-chip {
-            background: rgba(0,255,65,0.08); border: 1px solid rgba(0,255,65,0.3);
-            color: var(--accent-gold); padding: 5px 10px; font-size: 12px; font-family: var(--font-mono);
-            display: flex; align-items: center; gap: 5px; cursor: default;
-            text-transform: uppercase; letter-spacing: 1px;
-        }
-        .batter-chip .remove { cursor: pointer; opacity: 0.5; font-size: 14px; }
-        .batter-chip .remove:hover { opacity: 1; }
-
-        /* ── LEFT SIDEBAR — ARCHETYPE DIRECTORY ── */
-        .sidebar-left {
-            grid-column: 1; grid-row: 2 / 4;
-            display: flex; flex-direction: column; gap: 0;
-            align-self: start; max-height: calc(100vh - 140px);
-            overflow-y: auto; border-left: 3px solid var(--accent-cyan) !important;
+        .archetype-list {
+            flex: 1; overflow-y: auto; overflow-x: hidden;
         }
 
-        .controls-bar {
-            padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.08);
+        /* Multi-batter column header */
+        .arch-batter-cols {
+            display: flex; align-items: center; padding: 4px 10px;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            background: rgba(0,0,0,0.03); gap: 2px;
         }
+        .arch-batter-cols .col-label {
+            font-size: 8px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.5px; color: var(--text-label); text-align: center;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .arch-batter-cols .col-archetype { flex: 1; text-align: left; }
 
-        .label {
-            font-size: 12px; text-transform: uppercase; color: var(--accent-magenta);
-            margin-bottom: 6px; display: block; letter-spacing: 1px; font-weight: bold;
+        .arch-group-header {
+            font-size: 9px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1px; padding: 10px 10px 4px; color: var(--text-label);
+            border-top: 1px solid rgba(0,0,0,0.05);
         }
-
-        .toggle-row { display: flex; gap: 4px; flex-wrap: wrap; }
-
-        button.toggle {
-            background: transparent; border: 1px solid rgba(255,255,255,0.2);
-            color: var(--text-main); padding: 5px 10px; font-family: var(--font-mono);
-            font-size: 12px; cursor: pointer; transition: all 0.2s;
+        .arch-item {
+            display: flex; align-items: center; gap: 4px;
+            padding: 5px 10px; cursor: pointer; font-size: 11px;
+            transition: background 0.15s; border-left: 3px solid transparent;
         }
-        button.toggle.active {
-            background: var(--accent-magenta); border-color: var(--accent-magenta);
-            color: #000; font-weight: bold; box-shadow: 0 0 8px var(--accent-magenta);
+        .arch-item:hover { background: rgba(0,0,0,0.05); }
+        .arch-item.selected {
+            background: rgba(0,0,0,0.08);
+            border-left-color: var(--accent-orange);
         }
-        button.toggle:hover { background: rgba(223,255,0,0.15); border-color: var(--accent-cyan); }
-
-        /* Archetype list */
-        .archetype-section-header {
-            font-size: 12px; font-weight: 700; text-transform: uppercase;
-            letter-spacing: 2px; padding: 10px 12px 5px;
-            border-top: 1px solid rgba(255,255,255,0.06);
-        }
-        .archetype-section-header.rhp { color: #ff4081; }
-        .archetype-section-header.lhp { color: #40c4ff; }
-
-        .archetype-item {
-            display: flex; align-items: center; gap: 8px;
-            padding: 8px 12px; cursor: pointer; font-size: 13px;
-            transition: all 0.2s; border-left: 3px solid transparent;
-        }
-        .archetype-item:hover { background: rgba(255,255,255,0.04); }
-        .archetype-item.selected { background: rgba(255,255,255,0.08); }
-        .archetype-item.dimmed { opacity: 0.25; }
-
-        .arch-dot {
-            width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
-            box-shadow: 0 0 6px currentColor;
-        }
-        .arch-name { flex: 1; font-weight: 700; letter-spacing: 0.5px; }
-        .arch-count { color: var(--text-dim); font-size: 11px; }
+        .arch-item.dimmed { opacity: 0.2; }
+        .arch-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .arch-name { flex: 1; font-weight: 600; font-size: 10px; color: var(--key-dark); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .arch-role {
-            font-size: 9px; padding: 2px 5px; font-weight: 700; letter-spacing: 0.5px;
-            border: 1px solid; opacity: 0.7;
+            font-size: 7px; padding: 1px 3px; font-weight: 700; letter-spacing: 0.5px;
+            border: 1px solid; border-radius: 2px; opacity: 0.7; flex-shrink: 0;
+        }
+        .arch-stat {
+            font-size: 10px; font-weight: 700; font-family: var(--font-tech);
+            width: 44px; text-align: center; flex-shrink: 0;
+            padding: 2px 3px; border-radius: 3px;
+        }
+        .arch-stat.perf-great { background: rgba(42,157,143,0.15); color: var(--perf-green); }
+        .arch-stat.perf-good { background: rgba(168,218,220,0.12); color: var(--perf-teal); }
+        .arch-stat.perf-avg { color: var(--text-on-light); }
+        .arch-stat.perf-poor { background: rgba(231,111,81,0.12); color: var(--perf-orange); }
+        .arch-stat.perf-bad { background: rgba(230,57,70,0.15); color: var(--perf-red); }
+        .arch-stat.empty { color: var(--text-muted); font-weight: 400; }
+        .arch-count {
+            font-size: 9px; color: var(--text-label); font-family: var(--font-tech);
+            width: 24px; text-align: right; flex-shrink: 0;
         }
 
-        .sidebar-footer {
-            padding: 8px 12px; border-top: 1px solid rgba(255,255,255,0.08);
-            font-size: 11px; color: var(--accent-cyan);
+        .sidebar-status {
+            padding: 8px 14px; border-top: 1px solid rgba(0,0,0,0.08);
+            font-size: 9px; color: var(--text-label); font-family: var(--font-tech);
         }
 
         /* Range slider */
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none; height: 14px; width: 6px;
-            background: var(--accent-cyan); cursor: pointer; margin-top: -6px;
-            box-shadow: 0 0 8px var(--accent-cyan);
+            background: var(--key-dark); cursor: pointer; margin-top: -6px; border-radius: 2px;
         }
-        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 2px; background: var(--accent-magenta); }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 2px; background: #aaa; }
 
-        /* ── RIGHT SIDEBAR — STAT PANEL ── */
-        .sidebar-right {
-            grid-column: 3; grid-row: 2 / 4;
-            align-self: start; padding: 14px;
-            transform: translateX(16px); opacity: 0;
-            transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
-            max-height: calc(100vh - 120px); overflow-y: auto;
-            pointer-events: none;
-            border-right: 3px solid var(--accent-magenta) !important;
-            overflow-x: hidden; min-width: 0; max-width: 100%;
+        /* ═══ SCREEN (canvas area) ═══ */
+        #screen {
+            grid-area: screen;
+            position: relative;
+            background: var(--screen-bg);
+            margin: 14px 14px 14px 0;
+            border-radius: 6px;
+            box-shadow: inset 0 0 0 2px #333, 0 8px 20px rgba(0,0,0,0.3);
+            overflow: hidden;
+            cursor: grab;
         }
-        .sidebar-right.visible { transform: translateX(0); opacity: 1; pointer-events: auto; }
+        #screen:active { cursor: grabbing; }
 
-        .stat-card-header {
-            font-family: var(--font-serif); font-style: italic; font-size: 22px;
-            margin-bottom: 3px; color: var(--accent-cyan); text-shadow: 0 0 10px var(--accent-cyan);
-            word-wrap: break-word; overflow-wrap: break-word;
-        }
-        .stat-card-sub {
-            font-size: 13px; margin-bottom: 14px; text-transform: uppercase;
-            border-bottom: 1px solid; padding-bottom: 6px; display: inline-block; font-weight: bold;
-        }
+        canvas { display: block; width: 100%; height: 100%; }
 
-        .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 14px; }
-        .stat-box {
-            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
-            padding: 6px; text-align: center;
+        .batter-badge {
+            position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+            background: var(--key-dark); border: 1px solid #333;
+            color: var(--text-on-dark); padding: 6px 16px; border-radius: 20px;
+            font-family: var(--font-tech); font-size: 11px; z-index: 10;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            opacity: 0; transition: opacity 0.3s; pointer-events: none;
+            white-space: nowrap;
         }
-        .stat-box .stat-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
-        .stat-box .stat-val { font-size: 18px; font-weight: 700; color: #fff; }
+        .batter-badge.visible { opacity: 1; }
+        .batter-badge strong { color: #fff; margin-right: 6px; }
 
-        .section-header {
-            font-size: 11px; color: var(--text-dim); text-transform: uppercase;
-            letter-spacing: 1px; margin: 14px 0 6px; border-bottom: 1px solid rgba(255,255,255,0.08);
+        #tooltip {
+            position: absolute; background: rgba(20,20,20,0.95);
+            border: 1px solid #333; color: #ccc; padding: 6px 10px;
+            border-radius: 4px; font-size: 10px; font-family: var(--font-tech);
+            pointer-events: none; opacity: 0; transition: opacity 0.1s; z-index: 100;
+            white-space: nowrap;
+        }
+        #tooltip.visible { opacity: 1; }
+
+        /* ═══ STAT PANEL (slides in from right) ═══ */
+        #stat-panel {
+            position: absolute; top: 14px; right: 14px; width: 310px;
+            max-height: calc(100% - 28px); overflow-y: auto;
+            background: rgba(18,18,18,0.96); border: 1px solid #333;
+            border-radius: 6px; padding: 16px;
+            transform: translateX(330px); opacity: 0;
+            transition: all 0.35s cubic-bezier(0.19,1,0.22,1);
+            z-index: 20; box-shadow: -4px 0 20px rgba(0,0,0,0.5);
+        }
+        #stat-panel.visible { transform: translateX(0); opacity: 1; }
+        .stat-close {
+            position: absolute; top: 8px; right: 10px; background: none;
+            border: none; color: #666; font-size: 16px; cursor: pointer;
+        }
+        .stat-close:hover { color: #fff; }
+        .stat-header {
+            font-weight: 700; font-size: 16px; color: #fff; margin-bottom: 2px;
+        }
+        .stat-sub {
+            font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+            font-weight: 700; margin-bottom: 12px; padding-bottom: 6px;
+            border-bottom: 1px solid #333; display: inline-block;
+        }
+        .stat-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-bottom: 12px;
+        }
+        .stat-cell {
+            background: var(--key-dark); border-radius: 3px; padding: 6px; text-align: center;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.4);
+        }
+        .stat-cell .s-label { font-size: 8px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+        .stat-cell .s-val { font-size: 15px; font-weight: 700; color: #fff; font-family: var(--font-tech); }
+
+        .section-hdr {
+            font-size: 9px; color: #666; text-transform: uppercase;
+            letter-spacing: 1px; margin: 12px 0 6px; border-bottom: 1px solid #222;
             padding-bottom: 3px;
         }
+        .matchup-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 10px; font-family: var(--font-tech); color: #aaa; }
+        .matchup-bar .yr { width: 30px; color: #666; }
+        .matchup-bar .bar-track { flex: 1; height: 6px; background: #1a1a1a; overflow: hidden; border-radius: 1px; }
+        .matchup-bar .bar-fill { height: 100%; transition: width 0.4s; border-radius: 1px; }
+        .matchup-bar .woba-val { width: 38px; text-align: right; }
+        .matchup-bar .pa-val { width: 36px; text-align: right; color: #555; font-size: 9px; }
 
-        .matchup-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 12px; }
-        .matchup-bar .year-label { width: 34px; color: var(--text-dim); }
-        .matchup-bar .bar-track { flex: 1; height: 10px; background: rgba(255,255,255,0.05); overflow: hidden; }
-        .matchup-bar .bar-fill { height: 100%; transition: width 0.5s ease; }
-        .matchup-bar .woba-label { width: 42px; text-align: right; color: #aaa; }
-        .matchup-bar .pa-label { width: 42px; text-align: right; color: var(--text-dim); font-size: 11px; }
+        .profile-row { display: flex; justify-content: space-between; font-size: 11px; padding: 3px 0; color: #aaa; font-family: var(--font-tech); }
+        .profile-row .pval { font-weight: 700; color: #fff; }
 
-        .close-panel { position: absolute; top: 10px; right: 10px; background: none; border: none; color: var(--text-dim); font-size: 20px; cursor: pointer; }
-        .close-panel:hover { color: #fff; }
+        .king-row { display: flex; justify-content: space-between; align-items: center; padding: 2px 0; font-size: 10px; border-bottom: 1px solid #1a1a1a; color: #ccc; font-family: var(--font-tech); }
+        .king-row .k-name { flex: 1; }
+        .king-row .k-stat { width: 32px; text-align: right; font-weight: 700; }
 
-        .king-row {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 4px 0; font-size: 12px; border-bottom: 1px solid rgba(255,255,255,0.03);
+        /* ═══ DOCK ═══ */
+        #dock {
+            grid-area: dock;
+            display: flex; align-items: center; padding: 8px 20px; gap: 24px;
+            border-top: 1px solid rgba(0,0,0,0.08);
         }
-        .king-row .pitcher-name { flex: 1; }
-        .king-row .king-stat { width: 44px; text-align: right; font-weight: 700; }
 
-        /* Cluster profile in panel */
-        .cluster-profile { margin-bottom: 12px; }
-        .profile-stat { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; gap: 8px; }
-        .profile-stat .pval { font-weight: 700; color: var(--accent-cyan); text-align: right; word-break: break-word; }
-
-        /* ── BOTTOM DOCK ── */
-        .bottom-dock {
-            grid-column: 2; grid-row: 3;
-            display: flex; flex-direction: column; gap: 0;
-            max-height: 220px; transition: max-height 0.4s ease;
+        .dock-module {
+            flex: 1; min-width: 0;
         }
-        .bottom-dock.collapsed { max-height: 36px; }
-
-        .dock-header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 6px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); cursor: pointer;
+        .dock-title {
+            font-size: 8px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1px; color: var(--text-label); margin-bottom: 4px;
         }
-        .dock-header .dock-title { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-dim); }
-        .dock-header .dock-toggle { font-size: 14px; color: var(--text-dim); transition: transform 0.3s; }
-        .bottom-dock.collapsed .dock-toggle { transform: rotate(180deg); }
-
-        .dock-content { padding: 10px 14px; display: flex; gap: 14px; overflow-x: auto; overflow-y: hidden; }
-        .dock-module { flex: 1; min-width: 120px; max-width: 300px; }
-        .dock-module-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent-cyan); margin-bottom: 6px; font-weight: 700; }
-
         .dock-row {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 4px 0; font-size: 12px; border-bottom: 1px solid rgba(255,255,255,0.03);
+            padding: 2px 0; font-size: 10px; font-family: var(--font-tech);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
         }
-        .dock-row .pitcher-name { color: var(--text-main); flex: 1; }
-        .dock-row .dock-stat { width: 44px; text-align: right; font-weight: 700; }
-        .dock-row .dock-stat.good { color: var(--accent-cyan); }
-        .dock-row .dock-stat.bad { color: var(--accent-magenta); }
+        .dock-row .d-name { flex: 1; color: var(--key-dark); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .dock-row .d-stat { width: 40px; text-align: right; font-weight: 700; }
+        .dock-row .d-stat.good { color: var(--perf-green); }
+        .dock-row .d-stat.bad { color: var(--perf-red); }
 
-        .saved-batter {
-            padding: 4px 8px; font-size: 12px; color: var(--text-main); cursor: pointer;
-            border: 1px solid rgba(255,255,255,0.05); margin-bottom: 3px;
-            display: flex; justify-content: space-between; transition: all 0.2s;
+        .saved-item {
+            display: flex; justify-content: space-between;
+            padding: 2px 0; font-size: 10px; font-family: var(--font-tech);
+            cursor: pointer; border-bottom: 1px solid rgba(0,0,0,0.05);
+            color: var(--key-dark);
         }
-        .saved-batter:hover { background: rgba(223,255,0,0.08); border-color: var(--accent-cyan); }
+        .saved-item:hover { color: var(--accent-orange); }
+        .saved-item .s-pa { color: var(--text-label); }
 
-        /* ── LOADER ── */
+        .knob-group { display: flex; gap: 20px; }
+        .knob-container { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .knob {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: var(--key-dark);
+            box-shadow: 0 3px 5px rgba(0,0,0,0.3), 0 2px 0 #000;
+            position: relative;
+        }
+        .knob::after {
+            content: ''; position: absolute; top: 5px; left: 50%;
+            transform: translateX(-50%); width: 3px; height: 3px;
+            border-radius: 50%; background: #555;
+        }
+        .knob.orange {
+            background: var(--accent-orange);
+            box-shadow: 0 3px 5px rgba(0,0,0,0.2), 0 2px 0 var(--accent-orange-shadow);
+        }
+        .knob.orange::after { background: #fff; }
+
+        /* ═══ LOADER ═══ */
         #loader {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 100;
+            background: var(--chassis-bg); z-index: 500;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            transition: opacity 1s;
+            transition: opacity 0.8s;
         }
-        .loader-text { font-size: 12px; letter-spacing: 4px; color: var(--accent-cyan); animation: pulse 2s infinite; }
-        .loader-sub { font-size: 14px; color: var(--text-dim); margin-top: 12px; }
-        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; text-shadow: 0 0 20px var(--accent-cyan); } 100% { opacity: 0.5; } }
-
-        /* 3D labels */
-        .cluster-label-3d { position: absolute; pointer-events: none; text-align: left; z-index: 5; transition: opacity 0.3s; }
-        .cl-name {
-            font-family: var(--font-mono); font-size: 11px; font-weight: 700;
-            text-transform: uppercase; letter-spacing: 1px;
-            text-shadow: 0 0 10px #000, 0 0 20px #000, 0 0 30px #000;
-            padding: 3px 8px; background: rgba(0,0,0,0.75);
-            border-left: 2px solid currentColor; display: inline-block; white-space: nowrap;
+        .loader-brand {
+            font-size: 20px; font-weight: 800; color: var(--key-dark);
+            letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px;
         }
-        .cl-hand { font-size: 9px; font-weight: 700; padding: 1px 4px; display: inline-block; margin-left: 4px; opacity: 0.5; }
-        .cl-count { font-size: 9px; color: var(--text-dim); margin-top: 0px; padding-left: 9px; display: none; }
+        .loader-status {
+            font-size: 10px; color: var(--text-label); font-family: var(--font-tech);
+            margin-top: 12px; letter-spacing: 1px;
+        }
 
-        .batter-label-3d { position: absolute; color: #fff; pointer-events: none; text-align: left; opacity: 0; transition: opacity 0.5s; z-index: 5; }
-        .bl-name { font-family: var(--font-serif); font-style: italic; font-size: 2.2rem; text-shadow: 0 0 20px var(--accent-magenta); line-height: 1; }
-        .bl-stats { font-family: var(--font-mono); font-size: 0.75rem; margin-top: 4px; color: #000; background: var(--accent-cyan); padding: 3px 8px; display: inline-block; font-weight: bold; }
-
-        /* Scanning overlay */
-        #scan-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 50; pointer-events: none; opacity: 0; transition: opacity 0.3s; }
+        /* Scan overlay */
+        #scan-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 50; pointer-events: none; opacity: 0; transition: opacity 0.3s;
+        }
         #scan-overlay.active { opacity: 1; }
         .scan-line {
-            position: absolute; left: 0; width: 100%; height: 2px;
-            background: linear-gradient(to right, transparent, var(--accent-magenta), var(--accent-cyan), var(--accent-magenta), transparent);
-            box-shadow: 0 0 15px var(--accent-magenta), 0 0 30px var(--accent-cyan);
-            animation: scanDown 1.2s ease-in-out;
+            position: absolute; left: 0; width: 100%; height: 1px;
+            background: linear-gradient(to right, transparent, var(--accent-orange), transparent);
+            animation: scanDown 0.8s ease-in-out;
         }
         @keyframes scanDown { 0% { top: 0; opacity: 1; } 100% { top: 100%; opacity: 0; } }
-        .scan-flash { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, rgba(255,0,127,0.12) 0%, transparent 70%); animation: flashPulse 0.6s ease-out; }
-        @keyframes flashPulse { 0% { opacity: 1; transform: scale(0.8); } 100% { opacity: 0; transform: scale(1.2); } }
-        .scan-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: var(--font-mono); font-size: 14px; letter-spacing: 4px; color: var(--accent-cyan); text-transform: uppercase; animation: scanTextAnim 1.2s ease-out; }
-        @keyframes scanTextAnim { 0% { opacity: 0; letter-spacing: 20px; } 30% { opacity: 1; letter-spacing: 4px; } 80% { opacity: 1; } 100% { opacity: 0; } }
+        .scan-text {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+            font-family: var(--font-tech); font-size: 11px; letter-spacing: 4px;
+            color: var(--accent-orange); text-transform: uppercase;
+            animation: scanTextAnim 0.8s ease-out;
+        }
+        @keyframes scanTextAnim { 0% { opacity:0; letter-spacing:16px; } 30% { opacity:1; letter-spacing:4px; } 80% { opacity:1; } 100% { opacity:0; } }
 
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        /* ═══ PITCHER ROSTER ═══ */
+        .roster-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin: 12px 0 6px; padding-bottom: 4px; border-bottom: 1px solid #222;
+        }
+        .roster-header .section-hdr { margin: 0; border: 0; padding: 0; }
+        .roster-sort {
+            display: flex; gap: 2px;
+        }
+        .roster-sort .sort-btn {
+            background: #1a1a1a; border: 1px solid #2a2a2a; color: #666;
+            font-size: 8px; padding: 2px 5px; cursor: pointer; font-family: var(--font-tech);
+            text-transform: uppercase; border-radius: 2px; transition: all 0.15s;
+        }
+        .roster-sort .sort-btn.active { background: var(--accent-orange); color: #fff; border-color: var(--accent-orange); }
+        .roster-sort .sort-btn:hover:not(.active) { border-color: #444; color: #aaa; }
+
+        .roster-list { max-height: 280px; overflow-y: auto; margin-bottom: 8px; }
+        .roster-row {
+            display: grid; grid-template-columns: 1fr 32px 38px 28px 28px 38px;
+            align-items: center; padding: 4px 4px; font-size: 10px;
+            font-family: var(--font-tech); color: #aaa;
+            border-bottom: 1px solid #141414; transition: background 0.1s;
+            gap: 2px;
+        }
+        .roster-row:hover { background: rgba(255,255,255,0.03); }
+        .roster-row .r-name {
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            color: #ccc; font-weight: 600;
+        }
+        .roster-row .r-val { text-align: right; font-size: 9px; }
+        .roster-row .r-val.highlight { font-weight: 700; }
+        .roster-head {
+            display: grid; grid-template-columns: 1fr 32px 38px 28px 28px 38px;
+            padding: 2px 4px; font-size: 8px; color: #555; text-transform: uppercase;
+            letter-spacing: 0.5px; border-bottom: 1px solid #333; gap: 2px;
+        }
+        .roster-head span { text-align: right; }
+        .roster-head span:first-child { text-align: left; }
+        .roster-empty { font-size: 10px; color: #444; font-family: var(--font-tech); padding: 8px 0; text-align: center; }
+
+        /* ═══ SEARCH HISTORY PANEL ═══ */
+        .history-panel {
+            position: absolute; top: var(--header-h); right: 0; width: 260px;
+            max-height: 400px; overflow-y: auto;
+            background: rgba(18,18,18,0.97); border: 1px solid #333;
+            border-radius: 0 0 0 6px; z-index: 150;
+            box-shadow: -4px 4px 16px rgba(0,0,0,0.4);
+            transform: translateX(100%); opacity: 0;
+            transition: all 0.25s cubic-bezier(0.19,1,0.22,1);
+            padding: 10px;
+        }
+        .history-panel.visible { transform: translateX(0); opacity: 1; }
+        .history-title {
+            font-size: 9px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1px; color: var(--accent-orange); margin-bottom: 8px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .history-title .h-clear { font-size: 8px; color: #555; cursor: pointer; font-weight: 400; }
+        .history-title .h-clear:hover { color: var(--accent-orange); }
+        .history-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 6px 8px; cursor: pointer; font-size: 11px;
+            font-family: var(--font-tech); color: #ccc;
+            border-radius: 3px; margin-bottom: 2px; transition: all 0.15s;
+            border: 1px solid transparent;
+        }
+        .history-item:hover { background: #1e1e1e; border-color: #333; }
+        .history-item.active { background: rgba(255,68,0,0.08); border-color: var(--accent-orange); color: #fff; }
+        .history-item .h-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .history-item .h-pa { font-size: 9px; color: #555; margin-left: 8px; white-space: nowrap; }
+        .history-item .h-remove { opacity: 0; font-size: 10px; color: #555; margin-left: 6px; cursor: pointer; }
+        .history-item:hover .h-remove { opacity: 0.6; }
+        .history-item .h-remove:hover { color: var(--accent-orange); opacity: 1; }
+        .history-empty { font-size: 10px; color: #444; font-family: var(--font-tech); text-align: center; padding: 16px 0; }
+
+        ::-webkit-scrollbar { width: 3px; height: 3px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); }
+        ::-webkit-scrollbar-thumb { background: #aaa; border-radius: 2px; }
     </style>
 </head>
 <body>
 
     <div id="loader">
-        <div class="loader-text">OVERRIDING_SYSTEM_CORE... [NEON_ACTIVE]</div>
-        <div class="loader-sub" id="loader-status" style="color: var(--accent-cyan);">Loading cluster data...</div>
+        <div class="loader-brand">
+            <div style="width:24px;height:24px;background:var(--accent-orange);border-radius:3px;"></div>
+            PITCH.FX // CLUSTER
+        </div>
+        <div class="loader-status" id="loader-status">INITIALIZING...</div>
     </div>
 
-    <div id="canvas-container"></div>
-    <div id="labels-3d"></div>
     <div id="scan-overlay"></div>
 
-    <div id="batter-label-container" class="batter-label-3d">
-        <div class="bl-name" id="bl-name"></div>
-        <div class="bl-stats" id="bl-stats"></div>
+    <header>
+        <div class="brand">
+            <div class="brand-icon"></div>
+            PITCH.FX // CLUSTER
+        </div>
+
+        <div class="search-box">
+            <input type="text" id="batter-search" placeholder="SEARCH BATTER..." autocomplete="off">
+            <div class="search-dropdown" id="search-dropdown"></div>
+        </div>
+
+        <div class="batter-stack" id="batter-stack"></div>
+
+        <div class="header-controls">
+            <div class="key key-dark" id="history-toggle" style="height:28px;padding:0 10px;font-size:9px;letter-spacing:0.5px;">HISTORY</div>
+            <div class="led active" id="led-data"></div>
+            <div class="led" id="led-batter"></div>
+            <div class="led" id="led-scan"></div>
+        </div>
+    </header>
+
+    <div class="history-panel" id="history-panel">
+        <div class="history-title">
+            <span>Search History</span>
+            <span class="h-clear" id="history-clear">CLEAR ALL</span>
+        </div>
+        <div id="history-content"></div>
     </div>
 
-    <div id="ui-layer">
-        <header class="glass-panel">
-            <div style="padding: 0 16px; display: flex; width: 100%; justify-content: space-between; align-items: center;">
-                <div class="brand">COSMOS METRICS <span style="font-size: 9px; color: var(--accent-cyan); margin-left: 8px;">// v6</span></div>
-                <div class="search-container">
-                    <input type="text" id="batter-search" placeholder="SEARCH BATTER [e.g. Judge, Soto]..." autocomplete="off">
-                    <div class="search-dropdown" id="search-dropdown"></div>
+    <aside id="sidebar">
+        <div class="filter-bar">
+            <div>
+                <div class="label-line"><span class="label">Metric</span></div>
+                <div class="key-row" id="metric-keys">
+                    <div class="key key-orange" data-stat="wOBA">wOBA</div>
+                    <div class="key key-dark" data-stat="BA">BA</div>
+                    <div class="key key-dark" data-stat="SLG">SLG</div>
+                    <div class="key key-dark" data-stat="K_pct">K%</div>
+                    <div class="key key-dark" data-stat="BB_pct">BB%</div>
                 </div>
-                <div class="batter-chips" id="batter-chips"></div>
             </div>
-        </header>
-
-        <!-- LEFT: Archetype Directory -->
-        <aside class="sidebar-left glass-panel">
-            <div class="controls-bar">
-                <span class="label">Controls</span>
-                <div class="toggle-row" id="metric-toggles" style="margin-bottom: 6px;">
-                    <button class="toggle active" data-stat="wOBA">wOBA</button>
-                    <button class="toggle" data-stat="BA">BA</button>
-                    <button class="toggle" data-stat="SLG">SLG</button>
-                    <button class="toggle" data-stat="K_pct">K%</button>
-                    <button class="toggle" data-stat="BB_pct">BB%</button>
+            <div>
+                <div class="label-line"><span class="label">Filter</span></div>
+                <div class="key-row" id="filter-keys">
+                    <div class="key key-orange" data-filter="all">ALL</div>
+                    <div class="key key-dark" data-filter="RHP">RHP</div>
+                    <div class="key key-dark" data-filter="LHP">LHP</div>
                 </div>
-                <div class="toggle-row" id="filter-toggles" style="margin-bottom: 6px;">
-                    <button class="toggle active" data-filter="all">ALL</button>
-                    <button class="toggle" data-filter="RHP">RHP</button>
-                    <button class="toggle" data-filter="LHP">LHP</button>
-                </div>
-                <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-                    <span style="font-size: 11px; color: var(--text-dim); white-space: nowrap;">MIN PA: <span id="pa-val">10</span></span>
+            </div>
+            <div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <span class="label" style="margin:0;">MIN PA: <span id="pa-val">10</span></span>
                     <input type="range" min="1" max="200" value="10" id="pa-slider" style="flex:1;">
                 </div>
-                <div style="margin-top: 4px;">
-                    <select id="year-select" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 3px 6px; font-family: var(--font-mono); font-size: 9px; outline: none; width: 100%;">
-                        <option value="all">ALL YEARS</option>
-                    </select>
-                </div>
             </div>
-
-            <!-- Archetype directory -->
-            <div id="archetype-directory"></div>
-
-            <div class="sidebar-footer" id="system-status">● LOADING...</div>
-        </aside>
-
-        <!-- RIGHT: Stat Panel -->
-        <aside class="sidebar-right glass-panel" id="stat-panel" style="position: relative;">
-            <button class="close-panel" id="close-panel">✕</button>
-            <div id="panel-content"></div>
-        </aside>
-
-        <!-- Bottom Dock -->
-        <div class="bottom-dock glass-panel" id="bottom-dock">
-            <div class="dock-header" id="dock-header">
-                <span class="dock-title">MATCHUP INTELLIGENCE</span>
-                <span class="dock-toggle">▼</span>
-            </div>
-            <div class="dock-content" id="dock-content">
-                <div class="dock-module" id="dock-best">
-                    <div class="dock-module-title">Best Matchups</div>
-                    <div id="dock-best-content" style="font-size: 10px; color: var(--text-dim);">Search a batter</div>
-                </div>
-                <div class="dock-module" id="dock-worst">
-                    <div class="dock-module-title">Worst Matchups</div>
-                    <div id="dock-worst-content" style="font-size: 10px; color: var(--text-dim);">—</div>
-                </div>
-                <div class="dock-module" id="dock-pitchers">
-                    <div class="dock-module-title">Archetype Kings</div>
-                    <div id="dock-pitchers-content" style="font-size: 10px; color: var(--text-dim);">—</div>
-                </div>
-                <div class="dock-module" id="dock-saved">
-                    <div class="dock-module-title">Saved Searches</div>
-                    <div id="dock-saved-content" style="font-size: 10px; color: var(--text-dim);">No saved searches</div>
-                </div>
+            <div>
+                <select id="year-select" style="width:100%;background:#f0f0f0;border:1px solid #bbb;color:#333;padding:4px 6px;font-family:var(--font-tech);font-size:9px;outline:none;border-radius:3px;">
+                    <option value="all">ALL YEARS</option>
+                </select>
             </div>
         </div>
-    </div>
 
-    <!-- Three.js + TWEEN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
-    <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
-    <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
-    <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
-    <script src="https://unpkg.com/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
-    <script src="https://unpkg.com/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
+        <div class="archetype-list" id="archetype-list"></div>
+
+        <div class="sidebar-status" id="sidebar-status">LOADING...</div>
+    </aside>
+
+    <main id="screen">
+        <canvas id="plot"></canvas>
+        <div class="batter-badge" id="batter-badge">
+            <strong id="badge-name"></strong> <span id="badge-stat"></span>
+        </div>
+        <div id="tooltip"></div>
+        <div id="stat-panel">
+            <button class="stat-close" id="stat-close">&times;</button>
+            <div id="panel-content"></div>
+        </div>
+    </main>
+
+    <footer id="dock">
+        <div class="dock-module" id="dock-best">
+            <div class="dock-title">Best Matchups</div>
+            <div id="dock-best-content" style="font-size:9px;color:var(--text-label);">Search a batter</div>
+        </div>
+        <div class="dock-module" id="dock-worst">
+            <div class="dock-title">Worst Matchups</div>
+            <div id="dock-worst-content" style="font-size:9px;color:var(--text-label);">&mdash;</div>
+        </div>
+        <div class="dock-module" id="dock-kings">
+            <div class="dock-title">Archetype Kings</div>
+            <div id="dock-kings-content" style="font-size:9px;color:var(--text-label);">&mdash;</div>
+        </div>
+        <div class="dock-module" id="dock-saved">
+            <div class="dock-title">Saved Searches</div>
+            <div id="dock-saved-content" style="font-size:9px;color:var(--text-label);">No saved searches</div>
+        </div>
+
+        <div class="knob-group">
+            <div class="knob-container">
+                <div class="knob orange"></div>
+                <span class="label">ZOOM</span>
+            </div>
+            <div class="knob-container">
+                <div class="knob"></div>
+                <span class="label">PAN</span>
+            </div>
+        </div>
+    </footer>
+
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
-
     <script>
     (function() {
         'use strict';
 
-        // ═══════════════════════════════════════════════
-        // DATA STORE & STATE
-        // ═══════════════════════════════════════════════
-        const DATA = { clusters: {}, batters: [], pitcherSeasons: [], hitterVsCluster: [], archetypeKings: {} };
+        // ═══════════════════════════════════════
+        // DATA & STATE
+        // ═══════════════════════════════════════
+        const DATA = { clusters: {}, batters: [], pitcherSeasons: [], hitterVsCluster: [], hitterVsPitcher: [], archetypeKings: {} };
 
         const STATE = {
             activeBatters: [],
@@ -430,25 +654,24 @@
             selectedYear: 'all',
             minPA: 10,
             visibleClusters: new Set(),
-            highlightedCluster: null,    // clicked from directory
-            savedSearches: JSON.parse(localStorage.getItem('cosmos_saved') || '[]'),
+            highlightedCluster: null,
+            savedSearches: JSON.parse(localStorage.getItem('pfx_saved') || '[]'),
         };
 
-        // ═══════════════════════════════════════════════
+        // ═══════════════════════════════════════
         // DATA LOADING
-        // ═══════════════════════════════════════════════
+        // ═══════════════════════════════════════
         async function loadJSON(url, label, setStatus) {
-            setStatus(`Loading ${label}...`);
+            setStatus('Loading ' + label + '...');
             const resp = await fetch(url);
-            if (!resp.ok) throw new Error(`Failed to load ${label}: ${resp.status}`);
+            if (!resp.ok) throw new Error('Failed: ' + label);
             const text = await resp.text();
-            setStatus(`Parsing ${label} (${(text.length / 1e6).toFixed(1)}MB)...`);
+            setStatus('Parsing ' + label + ' (' + (text.length / 1e6).toFixed(1) + 'MB)...');
             return JSON.parse(text);
         }
 
         async function loadAllData() {
             const setStatus = (msg) => {
-                console.log(msg);
                 const el = document.getElementById('loader-status');
                 if (el) el.textContent = msg;
             };
@@ -456,683 +679,1032 @@
             DATA.batters = await loadJSON('batters.json', 'batter index', setStatus);
             DATA.pitcherSeasons = await loadJSON('pitcher_seasons.json', 'pitcher seasons', setStatus);
             DATA.hitterVsCluster = await loadJSON('hitter_vs_cluster.json', 'hitter matchups', setStatus);
+            try { DATA.hitterVsPitcher = await loadJSON('hitter_vs_pitcher.json', 'pitcher matchups', setStatus); }
+            catch(e) { DATA.hitterVsPitcher = []; }
             try { DATA.archetypeKings = await loadJSON('archetype_kings.json', 'archetype kings', setStatus); }
             catch(e) { DATA.archetypeKings = {}; }
-            STATE.visibleClusters = new Set(Object.keys(DATA.clusters));
-            const years = [...new Set(DATA.hitterVsCluster.map(r => r.game_year))].sort();
-            const yearSelect = document.getElementById('year-select');
-            years.forEach(y => { const opt = document.createElement('option'); opt.value = y; opt.textContent = y; yearSelect.appendChild(opt); });
-            setStatus('Initializing cosmos...');
-        }
 
-        // ═══════════════════════════════════════════════
-        // THREE.JS SCENE
-        // ═══════════════════════════════════════════════
-        const container = document.getElementById('canvas-container');
-        const scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0x050505, 0.007);
-        scene.background = new THREE.Color(0x050505);
-
-        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 8, 60);
-
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.toneMapping = THREE.ReinhardToneMapping;
-        container.appendChild(renderer.domElement);
-
-        const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
-        controls.maxDistance = 120;
-        controls.minDistance = 15;
-
-        const renderScene = new THREE.RenderPass(scene, camera);
-        const bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
-        bloomPass.threshold = 0;
-        bloomPass.strength = 2.0;
-        bloomPass.radius = 0.5;
-        const composer = new THREE.EffectComposer(renderer);
-        composer.addPass(renderScene);
-        composer.addPass(bloomPass);
-
-        // Coordinate scaling
-        const SCALE = { x: 3.5, y: 8.0, z: 5.0 };
-        const OFFSET = { x: 1.5, y: 2.0, z: 0.0 };
-        function pcaToWorld(px, py, pz) {
-            return new THREE.Vector3(px * SCALE.x + OFFSET.x, py * SCALE.y + OFFSET.y, pz * SCALE.z + OFFSET.z);
-        }
-
-        // Stars
-        function createStars() {
-            const geo = new THREE.BufferGeometry();
-            const positions = [], colors = [];
-            const palette = [new THREE.Color(0xff00ff), new THREE.Color(0x00f0ff), new THREE.Color(0xffffff), new THREE.Color(0xdfff00)];
-            for (let i = 0; i < 1200; i++) {
-                positions.push((Math.random()-0.5)*300, (Math.random()-0.5)*300, (Math.random()-0.5)*300);
-                const c = palette[Math.floor(Math.random() * palette.length)];
-                colors.push(c.r, c.g, c.b);
-            }
-            geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-            geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-            scene.add(new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.5, vertexColors: true, transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending })));
-        }
-
-        // ═══════════════════════════════════════════════
-        // PITCHER DOTS
-        // ═══════════════════════════════════════════════
-        let pitcherDots = null, pitcherDotData = [];
-
-        function createPitcherDots() {
-            const count = DATA.pitcherSeasons.length;
-            const geo = new THREE.SphereGeometry(0.12, 6, 6);
-            const mat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, blending: THREE.AdditiveBlending });
-            pitcherDots = new THREE.InstancedMesh(geo, mat, count);
-            pitcherDotData = [];
-            const dummy = new THREE.Object3D(), color = new THREE.Color();
-
-            DATA.pitcherSeasons.forEach((ps, i) => {
-                const cluster = DATA.clusters[ps.cluster];
-                if (!cluster) return;
-                const pos = pcaToWorld(ps.pca_x, ps.pca_y, ps.pca_z);
-                pos.x += (Math.random()-0.5)*0.3; pos.y += (Math.random()-0.5)*0.3; pos.z += (Math.random()-0.5)*0.3;
-                dummy.position.copy(pos);
-                const s = 0.8 + Math.random()*0.4;
-                dummy.scale.set(s,s,s); dummy.updateMatrix();
-                pitcherDots.setMatrixAt(i, dummy.matrix);
-                color.set(cluster.color);
-                pitcherDots.setColorAt(i, color);
-                pitcherDotData.push({ index: i, cluster: ps.cluster, name: ps.player_name, year: ps.game_year, worldPos: pos.clone() });
-            });
-            pitcherDots.instanceMatrix.needsUpdate = true;
-            if (pitcherDots.instanceColor) pitcherDots.instanceColor.needsUpdate = true;
-            scene.add(pitcherDots);
-        }
-
-        function updateDotVisibility() {
-            if (!pitcherDots) return;
-            const dummy = new THREE.Object3D();
-            const hiddenPos = new THREE.Vector3(9999,9999,9999);
-            const color = new THREE.Color();
-            const dimColor = new THREE.Color(0x222222);
-            const highlighted = STATE.highlightedCluster;
-
-            pitcherDotData.forEach((d, i) => {
-                const visible = STATE.visibleClusters.has(d.cluster);
-                pitcherDots.getMatrixAt(i, dummy.matrix);
-                dummy.matrix.decompose(dummy.position, dummy.quaternion, dummy.scale);
-
-                if (!visible) {
-                    dummy.position.copy(hiddenPos);
-                } else {
-                    dummy.position.copy(d.worldPos);
-                }
-
-                // Dim non-highlighted clusters when one is selected
-                if (highlighted && visible) {
-                    if (d.cluster === highlighted) {
-                        const s = 1.2;
-                        dummy.scale.set(s,s,s);
-                        color.set(DATA.clusters[d.cluster].color);
-                    } else {
-                        const s = 0.6;
-                        dummy.scale.set(s,s,s);
-                        color.copy(dimColor);
+            // Fix centroids with missing velo (avg_velo_FF = 0): compute from pitcher_seasons
+            Object.entries(DATA.clusters).forEach(([cid, cluster]) => {
+                const cent = cluster.centroid || {};
+                if (!cent.avg_velo_FF || cent.avg_velo_FF === 0) {
+                    const members = DATA.pitcherSeasons.filter(p => p.cluster === cid && p.avg_velo_FF > 0);
+                    if (members.length > 0) {
+                        cent.avg_velo_FF = members.reduce((s, p) => s + p.avg_velo_FF, 0) / members.length;
                     }
-                    pitcherDots.setColorAt(i, color);
-                } else if (visible) {
-                    color.set(DATA.clusters[d.cluster]?.color || '#fff');
-                    pitcherDots.setColorAt(i, color);
+                }
+                if (cent.pfx_x_avg == null) {
+                    const members = DATA.pitcherSeasons.filter(p => p.cluster === cid && p.pfx_x_avg != null);
+                    if (members.length > 0) {
+                        cent.pfx_x_avg = members.reduce((s, p) => s + p.pfx_x_avg, 0) / members.length;
+                    }
+                }
+            });
+
+            // Build batter→pitcher matchup index for fast lookups
+            DATA._hvpIndex = {};
+            DATA.hitterVsPitcher.forEach(r => {
+                if (!DATA._hvpIndex[r.b]) DATA._hvpIndex[r.b] = {};
+                if (!DATA._hvpIndex[r.b][r.c]) DATA._hvpIndex[r.b][r.c] = [];
+                DATA._hvpIndex[r.b][r.c].push(r);
+            });
+
+            STATE.visibleClusters = new Set(Object.keys(DATA.clusters));
+
+            const years = [...new Set(DATA.hitterVsCluster.map(r => r.game_year))].sort();
+            const sel = document.getElementById('year-select');
+            years.forEach(y => { const o = document.createElement('option'); o.value = y; o.textContent = y; sel.appendChild(o); });
+        }
+
+        // ═══════════════════════════════════════
+        // CANVAS SETUP
+        // ═══════════════════════════════════════
+        const canvas = document.getElementById('plot');
+        const ctx = canvas.getContext('2d');
+        const screenEl = document.getElementById('screen');
+
+        // Data is in FEET — convert to inches for display (×12)
+        // pfx_x_avg range: ~-1.5 to +1.5 feet → -18" to +18"
+        // We'll use inches for the axis but read feet from data
+        const MOVE_MIN = -18, MOVE_MAX = 18;    // inches
+        const VELO_MIN = 82, VELO_MAX = 103;     // mph
+
+        const MARGIN = { top: 40, right: 24, bottom: 40, left: 48 };
+
+        let viewOffset = { x: 0, y: 0 };
+        let viewZoom = 1.0;
+        let isDragging = false, dragStart = { x: 0, y: 0 }, dragOffset = { x: 0, y: 0 };
+
+        function cssW() { return canvas.getBoundingClientRect().width; }
+        function cssH() { return canvas.getBoundingClientRect().height; }
+
+        function plotArea() {
+            return {
+                x: MARGIN.left, y: MARGIN.top,
+                w: cssW() - MARGIN.left - MARGIN.right,
+                h: cssH() - MARGIN.top - MARGIN.bottom,
+            };
+        }
+
+        // Data → CSS-pixel coords on canvas
+        function d2c(moveInches, velo) {
+            const p = plotArea();
+            const nx = (moveInches - MOVE_MIN) / (MOVE_MAX - MOVE_MIN);
+            const ny = 1 - (velo - VELO_MIN) / (VELO_MAX - VELO_MIN);
+            const cx = p.x + nx * p.w;
+            const cy = p.y + ny * p.h;
+            const cw = cssW(), ch = cssH();
+            return {
+                x: (cx - cw / 2) * viewZoom + cw / 2 + viewOffset.x,
+                y: (cy - ch / 2) * viewZoom + ch / 2 + viewOffset.y,
+            };
+        }
+
+        function c2d(sx, sy) {
+            const cw = cssW(), ch = cssH();
+            const ux = (sx - viewOffset.x - cw / 2) / viewZoom + cw / 2;
+            const uy = (sy - viewOffset.y - ch / 2) / viewZoom + ch / 2;
+            const p = plotArea();
+            const nx = (ux - p.x) / p.w;
+            const ny = (uy - p.y) / p.h;
+            return { moveInches: MOVE_MIN + nx * (MOVE_MAX - MOVE_MIN), velo: VELO_MAX - ny * (VELO_MAX - VELO_MIN) };
+        }
+
+        function resizeCanvas() {
+            const dpr = Math.min(window.devicePixelRatio, 2);
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            render();
+        }
+
+        // ═══════════════════════════════════════
+        // RENDERING
+        // ═══════════════════════════════════════
+        function render() {
+            const w = cssW(), h = cssH();
+            ctx.clearRect(0, 0, w, h);
+            drawGrid(w, h);
+            drawDots();
+            drawCentroids();
+            drawBatterLines();
+        }
+
+        function drawGrid(w, h) {
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, w, h);
+
+            ctx.strokeStyle = '#161616';
+            ctx.lineWidth = 0.5;
+
+            // Vertical grid every 3 inches
+            for (let m = -18; m <= 18; m += 3) {
+                const a = d2c(m, VELO_MIN), b = d2c(m, VELO_MAX);
+                ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+            }
+            // Horizontal grid every 2 mph
+            for (let v = 84; v <= 102; v += 2) {
+                const a = d2c(MOVE_MIN, v), b = d2c(MOVE_MAX, v);
+                ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+            }
+
+            // Center divider (x=0)
+            const c0a = d2c(0, VELO_MIN), c0b = d2c(0, VELO_MAX);
+            ctx.strokeStyle = '#2a2a2a'; ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.moveTo(c0a.x, c0a.y); ctx.lineTo(c0b.x, c0b.y); ctx.stroke();
+
+            // Tick labels
+            ctx.font = '9px "Courier New", monospace';
+            ctx.fillStyle = '#555';
+            ctx.textAlign = 'center';
+            for (let m = -15; m <= 15; m += 6) {
+                const p = d2c(m, VELO_MIN);
+                ctx.fillText(m + '"', p.x, p.y + 14);
+            }
+            ctx.textAlign = 'right';
+            for (let v = 84; v <= 102; v += 2) {
+                const p = d2c(MOVE_MIN, v);
+                ctx.fillText(v + '', p.x - 6, p.y + 3);
+            }
+
+            // Axis titles
+            ctx.fillStyle = '#444';
+            ctx.font = '9px -apple-system, sans-serif';
+            ctx.textAlign = 'center';
+            const mb = d2c(0, VELO_MIN);
+            ctx.fillText('HORIZONTAL BREAK (IN)', mb.x, mb.y + 30);
+
+            ctx.save();
+            const ml = d2c(MOVE_MIN, (VELO_MIN + VELO_MAX) / 2);
+            ctx.translate(ml.x - 34, ml.y);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText('VELOCITY (MPH)', 0, 0);
+            ctx.restore();
+
+            // Zone labels
+            ctx.font = 'bold 10px -apple-system, sans-serif';
+            ctx.fillStyle = '#333';
+            ctx.textAlign = 'center';
+            const lp = d2c(-9, VELO_MAX);
+            const rp = d2c(9, VELO_MAX);
+            ctx.fillText('\u2190 RHP', lp.x, lp.y - 6);
+            ctx.fillText('LHP \u2192', rp.x, rp.y - 6);
+        }
+
+        function hexRgb(hex) {
+            hex = hex.replace('#', '');
+            return { r: parseInt(hex.substring(0,2),16), g: parseInt(hex.substring(2,4),16), b: parseInt(hex.substring(4,6),16) };
+        }
+
+        function drawDots() {
+            const hl = STATE.highlightedCluster;
+            const seasons = DATA.pitcherSeasons;
+            for (let i = 0; i < seasons.length; i++) {
+                const ps = seasons[i];
+                const cluster = DATA.clusters[ps.cluster];
+                if (!cluster) continue;
+                if (!STATE.visibleClusters.has(ps.cluster)) continue;
+                const moveIn = (ps.pfx_x_avg || 0) * 12; // feet → inches
+                const velo = ps.avg_velo_FF;
+                if (!velo || velo === 0) continue;
+
+                const pos = d2c(moveIn, velo);
+                const rgb = hexRgb(cluster.color);
+                let alpha = 0.35, radius = 2;
+
+                if (hl) {
+                    if (ps.cluster === hl) { alpha = 0.85; radius = 3; }
+                    else { alpha = 0.04; radius = 1.5; }
                 }
 
-                dummy.updateMatrix();
-                pitcherDots.setMatrixAt(i, dummy.matrix);
-            });
-            pitcherDots.instanceMatrix.needsUpdate = true;
-            if (pitcherDots.instanceColor) pitcherDots.instanceColor.needsUpdate = true;
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + alpha + ')';
+                ctx.fill();
+            }
         }
 
-        // ═══════════════════════════════════════════════
-        // CLUSTER LABELS
-        // ═══════════════════════════════════════════════
-        const clusterLabelEls = {};
-
-        function createClusterLabels() {
-            const labelsContainer = document.getElementById('labels-3d');
+        function drawCentroids() {
             Object.entries(DATA.clusters).forEach(([id, cluster]) => {
-                // Determine role from centroid
-                const role = cluster.centroid?.is_sp > 0.5 ? 'SP' : 'RP';
-                const el = document.createElement('div');
-                el.className = 'cluster-label-3d';
-                el.innerHTML = `
-                    <div class="cl-name" style="color: ${cluster.color};">${cluster.short_name}<span class="cl-hand">${cluster.hand} ${role}</span></div>
-                    <div class="cl-count">${cluster.pitcher_count}</div>
-                `;
-                labelsContainer.appendChild(el);
-                clusterLabelEls[id] = { el, worldPos: pcaToWorld(cluster.pca_x, cluster.pca_y, cluster.pca_z) };
+                if (!STATE.visibleClusters.has(id)) return;
+                const cent = cluster.centroid || {};
+                const moveIn = (cent.pfx_x_avg || 0) * 12;
+                const velo = cent.avg_velo_FF;
+                if (!velo || velo === 0) return;
+
+                const pos = d2c(moveIn, velo);
+                const hl = STATE.highlightedCluster;
+                const isHl = hl === id;
+                const dim = hl && !isHl;
+                const rgb = hexRgb(cluster.color);
+                const alpha = dim ? 0.10 : 1;
+
+                const outerR = isHl ? 24 : 18;
+                const innerR = isHl ? 6 : 5;
+
+                // Glow behind centroid
+                if (!dim) {
+                    ctx.beginPath();
+                    ctx.arc(pos.x, pos.y, outerR + 6, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',0.06)';
+                    ctx.fill();
+                }
+
+                // Outer ring
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, outerR, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + alpha + ')';
+                ctx.lineWidth = isHl ? 3 : 2;
+                ctx.stroke();
+
+                // Inner dot
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, innerR, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + alpha + ')';
+                ctx.fill();
+
+                if (!dim) {
+                    const role = cent.is_sp > 0.5 ? 'SP' : 'RP';
+
+                    // Text background pill for readability
+                    ctx.font = 'bold 12px -apple-system, sans-serif';
+                    const nameW = ctx.measureText(cluster.short_name).width;
+                    ctx.font = '9px "Courier New", monospace';
+                    const roleW = ctx.measureText(cluster.hand + ' ' + role).width;
+                    const pillW = Math.max(nameW, roleW) + 10;
+                    ctx.fillStyle = 'rgba(10,10,10,0.75)';
+                    ctx.beginPath();
+                    const pillX = pos.x - pillW/2;
+                    const pillY = pos.y + outerR + 3;
+                    const pillH = 26;
+                    const pillR = 4;
+                    ctx.moveTo(pillX + pillR, pillY);
+                    ctx.lineTo(pillX + pillW - pillR, pillY);
+                    ctx.quadraticCurveTo(pillX + pillW, pillY, pillX + pillW, pillY + pillR);
+                    ctx.lineTo(pillX + pillW, pillY + pillH - pillR);
+                    ctx.quadraticCurveTo(pillX + pillW, pillY + pillH, pillX + pillW - pillR, pillY + pillH);
+                    ctx.lineTo(pillX + pillR, pillY + pillH);
+                    ctx.quadraticCurveTo(pillX, pillY + pillH, pillX, pillY + pillH - pillR);
+                    ctx.lineTo(pillX, pillY + pillR);
+                    ctx.quadraticCurveTo(pillX, pillY, pillX + pillR, pillY);
+                    ctx.fill();
+
+                    ctx.font = 'bold 12px -apple-system, sans-serif';
+                    ctx.fillStyle = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + (alpha * 0.95) + ')';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(cluster.short_name, pos.x, pos.y + outerR + 16);
+
+                    ctx.font = '9px "Courier New", monospace';
+                    ctx.fillStyle = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',0.55)';
+                    ctx.fillText(cluster.hand + ' ' + role, pos.x, pos.y + outerR + 26);
+
+                    // Stat chip when batter active
+                    if (STATE.activeBatters.length > 0) {
+                        const batter = STATE.activeBatters[STATE.activeBatters.length - 1];
+                        const matchups = getMatchupData(batter);
+                        const m = matchups.find(x => String(x.cluster) === id);
+                        if (m && (m.PA || 0) >= STATE.minPA) {
+                            const val = m[STATE.selectedStat] || 0;
+                            const display = (STATE.selectedStat === 'K_pct' || STATE.selectedStat === 'BB_pct')
+                                ? (val * 100).toFixed(0) + '%' : val.toFixed(3);
+                            ctx.font = 'bold 12px "Courier New", monospace';
+                            ctx.fillStyle = wobaColor(m.wOBA || 0);
+                            ctx.textAlign = 'center';
+                            ctx.fillText(display, pos.x, pos.y - outerR - 6);
+                        }
+                    }
+                }
             });
         }
 
-        function updateClusterLabels() {
-            Object.entries(clusterLabelEls).forEach(([id, data]) => {
-                const visible = STATE.visibleClusters.has(id);
-                const highlighted = STATE.highlightedCluster;
-                if (!visible || (highlighted && id !== highlighted)) {
-                    data.el.style.opacity = highlighted && id !== highlighted ? '0.15' : '0';
-                    if (!visible) data.el.style.display = 'none';
-                    else data.el.style.display = 'block';
+        function wobaColor(w) {
+            if (w >= 0.370) return '#2a9d8f';
+            if (w >= 0.330) return '#a8dadc';
+            if (w >= 0.290) return '#f4a261';
+            if (w >= 0.250) return '#e76f51';
+            return '#e63946';
+        }
+
+        function drawBatterLines() {
+            if (STATE.activeBatters.length === 0) return;
+            const batter = STATE.activeBatters[STATE.activeBatters.length - 1];
+            const matchups = getMatchupData(batter);
+
+            const badge = document.getElementById('batter-badge');
+            const bRect = badge.getBoundingClientRect();
+            const cRect = screenEl.getBoundingClientRect();
+            const bx = bRect.left + bRect.width / 2 - cRect.left;
+            const by = bRect.bottom - cRect.top + 2;
+
+            Object.entries(DATA.clusters).forEach(([cid, cluster]) => {
+                if (!STATE.visibleClusters.has(cid)) return;
+                const cent = cluster.centroid || {};
+                const moveIn = (cent.pfx_x_avg || 0) * 12;
+                const velo = cent.avg_velo_FF;
+                if (!velo || velo === 0) return;
+
+                const hl = STATE.highlightedCluster;
+                if (hl && cid !== hl) return;
+
+                const pos = d2c(moveIn, velo);
+                const m = matchups.find(x => String(x.cluster) === cid);
+                const pa = m ? m.PA || 0 : 0;
+                const woba = m ? m.wOBA || 0 : 0;
+
+                if (pa < STATE.minPA) {
+                    ctx.beginPath(); ctx.setLineDash([4,6]);
+                    ctx.moveTo(bx, by); ctx.lineTo(pos.x, pos.y);
+                    ctx.strokeStyle = 'rgba(60,60,60,0.3)'; ctx.lineWidth = 0.5;
+                    ctx.stroke(); ctx.setLineDash([]);
                     return;
                 }
-                data.el.style.display = 'block';
-                data.el.style.opacity = '1';
-                const vec = data.worldPos.clone().project(camera);
-                const x = (vec.x * 0.5 + 0.5) * window.innerWidth;
-                const y = (-(vec.y * 0.5) + 0.5) * window.innerHeight;
-                data.el.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
+
+                const color = wobaColor(woba);
+                const thickness = Math.max(1, Math.min(4, pa / 120));
+
+                // Glow
+                ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(pos.x, pos.y);
+                ctx.strokeStyle = color; ctx.lineWidth = thickness + 3;
+                ctx.globalAlpha = 0.08; ctx.stroke(); ctx.globalAlpha = 1;
+
+                // Main line
+                ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(pos.x, pos.y);
+                ctx.strokeStyle = color; ctx.lineWidth = thickness;
+                ctx.globalAlpha = 0.7; ctx.stroke(); ctx.globalAlpha = 1;
             });
         }
 
-        // ═══════════════════════════════════════════════
-        // SUN SHADER
-        // ═══════════════════════════════════════════════
-        const sunVertexShader = `varying vec2 vUv; varying vec3 vPosition; void main() { vUv = uv; vPosition = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
-        const sunFragmentShader = `
-            varying vec2 vUv; varying vec3 vPosition; uniform float time; uniform vec3 color1; uniform vec3 color2;
-            vec3 mod289(vec3 x){return x-floor(x*(1./289.))*289.;}vec4 mod289(vec4 x){return x-floor(x*(1./289.))*289.;}
-            vec4 permute(vec4 x){return mod289(((x*34.)+1.)*x);}vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}
-            float snoise(vec3 v){const vec2 C=vec2(1./6.,1./3.);const vec4 D=vec4(0.,.5,1.,2.);vec3 i=floor(v+dot(v,C.yyy));vec3 x0=v-i+dot(i,C.xxx);vec3 g=step(x0.yzx,x0.xyz);vec3 l=1.-g;vec3 i1=min(g.xyz,l.zxy);vec3 i2=max(g.xyz,l.zxy);vec3 x1=x0-i1+C.xxx;vec3 x2=x0-i2+C.yyy;vec3 x3=x0-D.yyy;i=mod289(i);vec4 p=permute(permute(permute(i.z+vec4(0.,i1.z,i2.z,1.))+i.y+vec4(0.,i1.y,i2.y,1.))+i.x+vec4(0.,i1.x,i2.x,1.));float n_=.142857142857;vec3 ns=n_*D.wyz-D.xzx;vec4 j=p-49.*floor(p*ns.z*ns.z);vec4 x_=floor(j*ns.z);vec4 y_=floor(j-7.*x_);vec4 x=x_*ns.x+ns.yyyy;vec4 y=y_*ns.x+ns.yyyy;vec4 h=1.-abs(x)-abs(y);vec4 b0=vec4(x.xy,y.xy);vec4 b1=vec4(x.zw,y.zw);vec4 s0=floor(b0)*2.+1.;vec4 s1=floor(b1)*2.+1.;vec4 sh=-step(h,vec4(0.));vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy;vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;vec3 p0=vec3(a0.xy,h.x);vec3 p1=vec3(a0.zw,h.y);vec3 p2=vec3(a1.xy,h.z);vec3 p3=vec3(a1.zw,h.w);vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));p0*=norm.x;p1*=norm.y;p2*=norm.z;p3*=norm.w;vec4 m=max(.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.);m=m*m;return 42.*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));}
-            void main(){float n=snoise(vPosition*2.+time*.5);vec3 fc=mix(color1,color2,n*.5+.5);gl_FragColor=vec4(fc*(1.5+n),1.);}
-        `;
+        // ═══════════════════════════════════════
+        // CANVAS INTERACTION
+        // ═══════════════════════════════════════
+        const tooltipEl = document.getElementById('tooltip');
 
-        // ═══════════════════════════════════════════════
-        // BATTER SUN + BEAMS
-        // ═══════════════════════════════════════════════
-        let sunGroup = new THREE.Group();
-        let currentBeams = [];
-        scene.add(sunGroup);
-        const SUN_POS = new THREE.Vector3(2, -8, 35);
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            viewZoom = Math.max(0.5, Math.min(5, viewZoom * (e.deltaY > 0 ? 0.9 : 1.1)));
+            render();
+        }, { passive: false });
 
-        function getSunTier(woba) {
-            if (woba >= 0.380) return { name: 'SUPERNOVA', color1: 0xff007f, color2: 0xdfff00 };
-            if (woba >= 0.350) return { name: 'RED GIANT', color1: 0xff00ff, color2: 0xff007f };
-            if (woba >= 0.310) return { name: 'MAIN SEQUENCE', color1: 0xdfff00, color2: 0xffffff };
-            if (woba >= 0.270) return { name: 'DWARF STAR', color1: 0x00f0ff, color2: 0x00ff41 };
-            return { name: 'BROWN DWARF', color1: 0x666666, color2: 0x999999 };
-        }
+        canvas.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            dragStart = { x: e.clientX, y: e.clientY };
+            dragOffset = { x: viewOffset.x, y: viewOffset.y };
+            canvas.style.cursor = 'grabbing';
+        });
 
+        canvas.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                viewOffset.x = dragOffset.x + (e.clientX - dragStart.x);
+                viewOffset.y = dragOffset.y + (e.clientY - dragStart.y);
+                render();
+                return;
+            }
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+
+            // Hover: centroids
+            let found = null;
+            Object.entries(DATA.clusters).forEach(([id, cl]) => {
+                if (!STATE.visibleClusters.has(id)) return;
+                const c = cl.centroid || {};
+                if (!c.avg_velo_FF) return;
+                const pos = d2c((c.pfx_x_avg||0)*12, c.avg_velo_FF);
+                if (Math.sqrt((mx-pos.x)**2+(my-pos.y)**2) < 22) found = { id, cl, pos };
+            });
+
+            if (found) {
+                const c = found.cl.centroid;
+                const role = c.is_sp > 0.5 ? 'SP' : 'RP';
+                tooltipEl.innerHTML = '<b style="color:'+found.cl.color+'">'+found.cl.short_name+'</b><br>'+found.cl.hand+' '+role+' \u00b7 '+found.cl.pitcher_count+' pitchers<br>Velo: '+(c.avg_velo_FF||0).toFixed(1)+' \u00b7 Whiff: '+((c.whiff_rate||0)*100).toFixed(0)+'%';
+                tooltipEl.style.left = (e.clientX - screenEl.getBoundingClientRect().left + 12) + 'px';
+                tooltipEl.style.top = (e.clientY - screenEl.getBoundingClientRect().top - 10) + 'px';
+                tooltipEl.classList.add('visible');
+                canvas.style.cursor = 'pointer';
+                return;
+            }
+
+            // Hover: pitcher dots
+            let closestDot = null, closestDist = 8;
+            for (let i = 0; i < DATA.pitcherSeasons.length; i++) {
+                const ps = DATA.pitcherSeasons[i];
+                if (!STATE.visibleClusters.has(ps.cluster)) continue;
+                if (!ps.avg_velo_FF) continue;
+                const pos = d2c((ps.pfx_x_avg||0)*12, ps.avg_velo_FF);
+                const dist = Math.sqrt((mx-pos.x)**2+(my-pos.y)**2);
+                if (dist < closestDist) { closestDist = dist; closestDot = { ps, pos }; }
+            }
+
+            if (closestDot) {
+                const ps = closestDot.ps;
+                const cl = DATA.clusters[ps.cluster];
+                tooltipEl.innerHTML = '<b>'+fmtName(ps.player_name)+'</b> ('+ps.game_year+')<br><span style="color:'+(cl?.color||'#888')+'">'+( cl?.short_name||'')+'</span> \u00b7 '+(ps.avg_velo_FF||0).toFixed(1)+' mph';
+                tooltipEl.style.left = (e.clientX - screenEl.getBoundingClientRect().left + 12) + 'px';
+                tooltipEl.style.top = (e.clientY - screenEl.getBoundingClientRect().top - 10) + 'px';
+                tooltipEl.classList.add('visible');
+                canvas.style.cursor = 'crosshair';
+            } else {
+                tooltipEl.classList.remove('visible');
+                canvas.style.cursor = 'grab';
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => { isDragging = false; canvas.style.cursor = 'grab'; });
+        canvas.addEventListener('mouseleave', () => { isDragging = false; tooltipEl.classList.remove('visible'); });
+
+        canvas.addEventListener('click', (e) => {
+            if (isDragging) return;
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+            Object.entries(DATA.clusters).forEach(([id, cl]) => {
+                if (!STATE.visibleClusters.has(id)) return;
+                const c = cl.centroid || {};
+                if (!c.avg_velo_FF) return;
+                const pos = d2c((c.pfx_x_avg||0)*12, c.avg_velo_FF);
+                if (Math.sqrt((mx-pos.x)**2+(my-pos.y)**2) < 22) {
+                    const ab = STATE.activeBatters.length > 0 ? STATE.activeBatters[STATE.activeBatters.length-1] : null;
+                    showStatPanel(ab, id);
+                }
+            });
+        });
+
+        // ═══════════════════════════════════════
+        // BATTER SYSTEM
+        // ═══════════════════════════════════════
         function deriveStats(r) {
-            const pa = r.PA||0, ab = r.AB||0, h = r.H||0, hr = r.HR||0, bb = r.BB||0, k = r.K||0, hbp = r.HBP||0;
-            const s = r.singles||0, d = r.doubles||0, t = r.triples||0;
+            const pa=r.PA||0, ab=r.AB||0, h=r.H||0, hr=r.HR||0, bb=r.BB||0, k=r.K||0, hbp=r.HBP||0;
+            const s=r.singles||0, d=r.doubles||0, t=r.triples||0;
             r.BA = ab>0 ? h/ab : 0; r.OBP = pa>0 ? (h+bb+hbp)/pa : 0;
             r.SLG = ab>0 ? (s+2*d+3*t+4*hr)/ab : 0; r.K_pct = pa>0 ? k/pa : 0; r.BB_pct = pa>0 ? bb/pa : 0;
             return r;
         }
 
-        function getMatchupData(batterObj) {
-            let rows = DATA.hitterVsCluster.filter(r => r.batter === batterObj.batter);
+        function getMatchupData(batter) {
+            let rows = DATA.hitterVsCluster.filter(r => r.batter === batter.batter);
             if (STATE.selectedYear !== 'all') rows = rows.filter(r => r.game_year === parseInt(STATE.selectedYear));
             if (STATE.selectedYear === 'all' && rows.length > 0) {
                 const grouped = {};
                 rows.forEach(r => {
                     const k = r.cluster;
-                    if (!grouped[k]) grouped[k] = { cluster: k, PA:0, AB:0, H:0, HR:0, BB:0, K:0, HBP:0, singles:0, doubles:0, triples:0, woba_sum:0 };
+                    if (!grouped[k]) grouped[k] = { cluster:k, PA:0, AB:0, H:0, HR:0, BB:0, K:0, HBP:0, singles:0, doubles:0, triples:0, woba_sum:0 };
                     const g = grouped[k];
                     g.PA+=r.PA||0; g.AB+=r.AB||0; g.H+=r.H||0; g.HR+=r.HR||0; g.BB+=r.BB||0; g.K+=r.K||0;
                     g.HBP+=r.HBP||0; g.singles+=r.singles||0; g.doubles+=r.doubles||0; g.triples+=r.triples||0;
-                    g.woba_sum += (r.wOBA||0) * (r.PA||0);
+                    g.woba_sum+=(r.wOBA||0)*(r.PA||0);
                 });
                 return Object.values(grouped).map(g => { g.wOBA = g.PA>0 ? g.woba_sum/g.PA : 0; return deriveStats(g); });
             }
             return rows.map(r => deriveStats({...r}));
         }
 
-        function spawnBatter(batterObj) {
-            while (sunGroup.children.length > 0) sunGroup.remove(sunGroup.children[0]);
-            currentBeams.forEach(b => scene.remove(b)); currentBeams = [];
-            const matchups = getMatchupData(batterObj);
-            const totalPA = matchups.reduce((s,r) => s+(r.PA||0), 0);
-            const totalWoba = matchups.reduce((s,r) => s+(r.wOBA||0)*(r.PA||0), 0);
-            const overallWoba = totalPA > 0 ? totalWoba/totalPA : 0;
-            const tier = getSunTier(overallWoba);
+        function spawnBatter(batter) {
+            const matchups = getMatchupData(batter);
+            const totalPA = matchups.reduce((s,r)=>s+(r.PA||0),0);
+            const totalWoba = matchups.reduce((s,r)=>s+(r.wOBA||0)*(r.PA||0),0);
+            const ow = totalPA > 0 ? totalWoba/totalPA : 0;
 
-            const sunGeo = new THREE.SphereGeometry(2.5, 32, 32);
-            const sunMat = new THREE.ShaderMaterial({
-                uniforms: { time: {value:0}, color1: {value: new THREE.Color(tier.color1)}, color2: {value: new THREE.Color(tier.color2)} },
-                vertexShader: sunVertexShader, fragmentShader: sunFragmentShader,
-            });
-            sunGroup.add(new THREE.Mesh(sunGeo, sunMat));
+            document.getElementById('badge-name').textContent = fmtName(batter.batter_name);
+            document.getElementById('badge-stat').textContent = ow.toFixed(3) + ' wOBA \u00b7 ' + totalPA.toLocaleString() + ' PA';
+            document.getElementById('batter-badge').classList.add('visible');
+            document.getElementById('led-batter').classList.add('active');
 
-            const canvas = document.createElement('canvas'); canvas.width=128; canvas.height=128;
-            const ctx = canvas.getContext('2d');
-            const gradient = ctx.createRadialGradient(64,64,0,64,64,64);
-            gradient.addColorStop(0, 'rgba(255,0,127,0.8)'); gradient.addColorStop(0.4, 'rgba(223,255,0,0.3)'); gradient.addColorStop(1, 'rgba(255,0,255,0)');
-            ctx.fillStyle = gradient; ctx.fillRect(0,0,128,128);
-            const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas), color: tier.color1, transparent: true, blending: THREE.AdditiveBlending }));
-            sprite.scale.set(16,16,1); sunGroup.add(sprite);
-            sunGroup.position.copy(SUN_POS);
-            sunGroup.scale.set(0,0,0);
-            new TWEEN.Tween(sunGroup.scale).to({x:1,y:1,z:1}, 1200).easing(TWEEN.Easing.Elastic.Out).onComplete(() => spawnBeams(batterObj, matchups)).start();
-
-            document.getElementById('bl-name').textContent = formatName(batterObj.batter_name);
-            document.getElementById('bl-stats').textContent = `wOBA ${overallWoba.toFixed(3)} | ${tier.name}`;
-            document.getElementById('batter-label-container').style.opacity = '1';
-            updateBottomDock(batterObj, matchups);
-            saveSearch(batterObj);
-
-            // Update directory to show batter stats
-            buildArchetypeDirectory();
-        }
-
-        function spawnBeams(batterObj, matchups) {
-            const sunPos = sunGroup.position.clone();
-            Object.entries(DATA.clusters).forEach(([clusterId, cluster], idx) => {
-                if (!STATE.visibleClusters.has(clusterId)) return;
-                const matchup = matchups.find(m => String(m.cluster) === clusterId);
-                const pa = matchup ? matchup.PA||0 : 0;
-                if (pa < STATE.minPA) return;
-                const clusterColor = new THREE.Color(cluster.color);
-                const targetPos = pcaToWorld(cluster.pca_x, cluster.pca_y, cluster.pca_z);
-                const thickness = Math.max(0.04, Math.min(0.18, pa / 400));
-                const dist = sunPos.distanceTo(targetPos);
-                const arcHeight = dist * 0.25;
-                const mid1 = new THREE.Vector3(sunPos.x*0.65+targetPos.x*0.35, Math.max(sunPos.y,targetPos.y)+arcHeight, sunPos.z*0.65+targetPos.z*0.35);
-                const mid2 = new THREE.Vector3(sunPos.x*0.35+targetPos.x*0.65, Math.max(sunPos.y,targetPos.y)+arcHeight*0.6, sunPos.z*0.35+targetPos.z*0.65);
-                const curve = new THREE.CubicBezierCurve3(sunPos, mid1, mid2, targetPos);
-                const tubeMat = new THREE.MeshBasicMaterial({ color: clusterColor, transparent: true, opacity: 0, blending: THREE.AdditiveBlending });
-                const beam = new THREE.Mesh(new THREE.TubeGeometry(curve, 40, thickness, 8, false), tubeMat);
-                beam.userData = { batter: batterObj, cluster: clusterId, matchup };
-                scene.add(beam); currentBeams.push(beam);
-                new TWEEN.Tween(tubeMat).to({opacity: 0.8}, 800).delay(idx*60).easing(TWEEN.Easing.Quadratic.Out).start();
-            });
+            updateDock(batter, matchups);
+            saveSearch(batter);
+            buildArchetypeList();
+            render();
         }
 
         function clearBatter() {
-            while (sunGroup.children.length > 0) sunGroup.remove(sunGroup.children[0]);
-            currentBeams.forEach(b => scene.remove(b)); currentBeams = [];
-            document.getElementById('batter-label-container').style.opacity = '0';
+            document.getElementById('batter-badge').classList.remove('visible');
+            document.getElementById('led-batter').classList.remove('active');
             document.getElementById('stat-panel').classList.remove('visible');
+            render();
         }
 
-        function refreshBeams() {
+        function refreshData() {
             if (STATE.activeBatters.length === 0) return;
-            currentBeams.forEach(b => scene.remove(b)); currentBeams = [];
-            const batter = STATE.activeBatters[STATE.activeBatters.length - 1];
-            const matchups = getMatchupData(batter);
-            spawnBeams(batter, matchups);
-            updateBottomDock(batter, matchups);
+            const b = STATE.activeBatters[STATE.activeBatters.length-1];
+            updateDock(b, getMatchupData(b));
+            render();
         }
 
-        // Raycaster
-        const raycaster = new THREE.Raycaster(), mouse = new THREE.Vector2();
-        renderer.domElement.addEventListener('click', (e) => {
-            mouse.x = (e.clientX/window.innerWidth)*2-1; mouse.y = -(e.clientY/window.innerHeight)*2+1;
-            raycaster.setFromCamera(mouse, camera);
-            const hits = raycaster.intersectObjects(currentBeams);
-            if (hits.length > 0) {
-                const {batter, cluster, matchup} = hits[0].object.userData;
-                if (batter && cluster) showStatPanel(batter, cluster);
-            }
-        });
-
-        // ═══════════════════════════════════════════════
-        // STAT PANEL (right sidebar)
-        // ═══════════════════════════════════════════════
+        // ═══════════════════════════════════════
+        // STAT PANEL
+        // ═══════════════════════════════════════
         function showStatPanel(batterObj, clusterId) {
             const cluster = DATA.clusters[clusterId];
             if (!cluster) return;
             const panel = document.getElementById('stat-panel');
             const content = document.getElementById('panel-content');
-            const role = cluster.centroid?.is_sp > 0.5 ? 'SP' : 'RP';
+            const cent = cluster.centroid || {};
+            const role = cent.is_sp > 0.5 ? 'SP' : 'RP';
 
-            // Build panel content based on whether we have a batter
             let html = '';
-
             if (batterObj) {
-                // BATTER vs ARCHETYPE mode
-                const yearRows = DATA.hitterVsCluster.filter(r => r.batter === batterObj.batter && String(r.cluster) === clusterId).sort((a,b) => a.game_year - b.game_year);
-                const totals = { PA:0, AB:0, H:0, HR:0, BB:0, K:0, HBP:0, singles:0, doubles:0, triples:0 };
-                yearRows.forEach(r => { totals.PA+=r.PA||0; totals.AB+=r.AB||0; totals.H+=r.H||0; totals.HR+=r.HR||0; totals.BB+=r.BB||0; totals.K+=r.K||0; totals.HBP+=r.HBP||0; totals.singles+=r.singles||0; totals.doubles+=r.doubles||0; totals.triples+=r.triples||0; });
-                const ba = totals.AB>0 ? (totals.H/totals.AB).toFixed(3) : '.000';
-                const obp = totals.PA>0 ? ((totals.H+totals.BB+totals.HBP)/totals.PA).toFixed(3) : '.000';
-                const slg = totals.AB>0 ? ((totals.singles+2*totals.doubles+3*totals.triples+4*totals.HR)/totals.AB).toFixed(3) : '.000';
-                const kpct = totals.PA>0 ? ((totals.K/totals.PA)*100).toFixed(1)+'%' : '0%';
-                const bbpct = totals.PA>0 ? ((totals.BB/totals.PA)*100).toFixed(1)+'%' : '0%';
+                const yearRows = DATA.hitterVsCluster.filter(r => r.batter === batterObj.batter && String(r.cluster) === clusterId).sort((a,b)=>a.game_year-b.game_year);
+                const tot = { PA:0,AB:0,H:0,HR:0,BB:0,K:0,HBP:0,singles:0,doubles:0,triples:0 };
+                yearRows.forEach(r => { tot.PA+=r.PA||0; tot.AB+=r.AB||0; tot.H+=r.H||0; tot.HR+=r.HR||0; tot.BB+=r.BB||0; tot.K+=r.K||0; tot.HBP+=r.HBP||0; tot.singles+=r.singles||0; tot.doubles+=r.doubles||0; tot.triples+=r.triples||0; });
+                const ba = tot.AB>0?(tot.H/tot.AB).toFixed(3):'.000';
+                const obp = tot.PA>0?((tot.H+tot.BB+tot.HBP)/tot.PA).toFixed(3):'.000';
+                const slg = tot.AB>0?((tot.singles+2*tot.doubles+3*tot.triples+4*tot.HR)/tot.AB).toFixed(3):'.000';
+                const kp = tot.PA>0?((tot.K/tot.PA)*100).toFixed(1)+'%':'0%';
+                const bbp = tot.PA>0?((tot.BB/tot.PA)*100).toFixed(1)+'%':'0%';
 
-                html += `<div class="stat-card-header">${formatName(batterObj.batter_name)}</div>`;
-                html += `<div class="stat-card-sub" style="color:${cluster.color};">vs ${cluster.short_name} (${cluster.hand} ${role})</div>`;
-                html += `<div class="stat-grid">
-                    <div class="stat-box"><div class="stat-label">PA</div><div class="stat-val">${totals.PA}</div></div>
-                    <div class="stat-box"><div class="stat-label">BA</div><div class="stat-val">${ba}</div></div>
-                    <div class="stat-box"><div class="stat-label">OBP</div><div class="stat-val">${obp}</div></div>
-                    <div class="stat-box"><div class="stat-label">SLG</div><div class="stat-val">${slg}</div></div>
-                    <div class="stat-box"><div class="stat-label">HR</div><div class="stat-val">${totals.HR}</div></div>
-                    <div class="stat-box"><div class="stat-label">K%</div><div class="stat-val">${kpct}</div></div>
-                    <div class="stat-box"><div class="stat-label">BB%</div><div class="stat-val">${bbpct}</div></div>
-                    <div class="stat-box"><div class="stat-label">H</div><div class="stat-val">${totals.H}</div></div>
-                    <div class="stat-box"><div class="stat-label">2B</div><div class="stat-val">${totals.doubles}</div></div>
-                </div>`;
+                html += '<div class="stat-header">'+fmtName(batterObj.batter_name)+'</div>';
+                html += '<div class="stat-sub" style="color:'+cluster.color+'">vs '+cluster.short_name+' ('+cluster.hand+' '+role+')</div>';
+                html += '<div class="stat-grid">';
+                html += statCell('PA',tot.PA)+statCell('BA',ba)+statCell('OBP',obp);
+                html += statCell('SLG',slg)+statCell('HR',tot.HR)+statCell('K%',kp);
+                html += statCell('BB%',bbp)+statCell('H',tot.H)+statCell('2B',tot.doubles);
+                html += '</div>';
 
                 if (yearRows.length > 1) {
-                    html += `<div class="section-header">Year-by-Year wOBA</div>`;
+                    html += '<div class="section-hdr">Year-by-Year wOBA</div>';
                     yearRows.forEach(r => {
-                        const woba = r.wOBA||0;
-                        const barWidth = Math.min(100, Math.max(5, (woba/0.45)*100));
-                        const barColor = woba > 0.370 ? '#dfff00' : woba > 0.310 ? '#ffffff' : '#ff007f';
-                        html += `<div class="matchup-bar"><span class="year-label">${r.game_year}</span><div class="bar-track"><div class="bar-fill" style="width:${barWidth}%;background:${barColor};"></div></div><span class="woba-label">${woba.toFixed(3)}</span><span class="pa-label">${r.PA} PA</span></div>`;
+                        const w = r.wOBA||0;
+                        const bw = Math.min(100,Math.max(5,(w/0.45)*100));
+                        html += '<div class="matchup-bar"><span class="yr">'+r.game_year+'</span><div class="bar-track"><div class="bar-fill" style="width:'+bw+'%;background:'+wobaColor(w)+';"></div></div><span class="woba-val">'+w.toFixed(3)+'</span><span class="pa-val">'+r.PA+' PA</span></div>';
                     });
                 }
+
+                // ── Pitcher Roster vs This Batter ──
+                const pitcherMatchups = (DATA._hvpIndex[batterObj.batter] || {})[clusterId] || [];
+                if (pitcherMatchups.length > 0) {
+                    html += '<div class="roster-header">';
+                    html += '<span class="section-hdr">Pitchers in Group ('+pitcherMatchups.length+')</span>';
+                    html += '<div class="roster-sort">';
+                    html += '<span class="sort-btn active" data-sort="pa">PA</span>';
+                    html += '<span class="sort-btn" data-sort="ba">BA</span>';
+                    html += '<span class="sort-btn" data-sort="hr">HR</span>';
+                    html += '<span class="sort-btn" data-sort="k">K</span>';
+                    html += '</div></div>';
+                    html += '<div class="roster-head"><span>PITCHER</span><span>PA</span><span>BA</span><span>HR</span><span>K</span><span>WHIFF</span></div>';
+                    html += '<div class="roster-list" id="roster-list" data-cluster="'+clusterId+'" data-batter="'+batterObj.batter+'">';
+                    const sorted = [...pitcherMatchups].sort((a,b) => (b.pa||0) - (a.pa||0));
+                    sorted.forEach(m => {
+                        const baVal = m.ba != null ? m.ba.toFixed(3) : '\u2014';
+                        const whiff = m.w != null ? (m.w*100).toFixed(0)+'%' : '\u2014';
+                        const baColor = m.ba != null ? (m.ba >= 0.300 ? 'color:var(--perf-green)' : m.ba <= 0.180 ? 'color:var(--perf-red)' : '') : '';
+                        html += '<div class="roster-row">';
+                        html += '<span class="r-name">'+fmtName(m.pn)+'</span>';
+                        html += '<span class="r-val">'+(m.pa||0)+'</span>';
+                        html += '<span class="r-val highlight" style="'+baColor+'">'+baVal+'</span>';
+                        html += '<span class="r-val">'+(m.hr||0)+'</span>';
+                        html += '<span class="r-val">'+(m.k||0)+'</span>';
+                        html += '<span class="r-val">'+whiff+'</span>';
+                        html += '</div>';
+                    });
+                    html += '</div>';
+                } else {
+                    html += '<div class="section-hdr">Pitchers in Group</div>';
+                    html += '<div class="roster-empty">No individual matchup data</div>';
+                }
             } else {
-                // ARCHETYPE PROFILE mode (no batter selected)
-                html += `<div class="stat-card-header" style="color:${cluster.color};">${cluster.short_name}</div>`;
-                html += `<div class="stat-card-sub" style="color:${cluster.color};">${cluster.hand} ${role} — ${cluster.pitcher_count} pitchers</div>`;
-                html += `<div class="section-header">Cluster Profile</div>`;
-                html += `<div class="cluster-profile">`;
-                const c = cluster.centroid || {};
-                if (c.avg_velo_FF > 0) html += `<div class="profile-stat"><span>Avg Fastball</span><span class="pval">${c.avg_velo_FF.toFixed(1)} mph</span></div>`;
-                html += `<div class="profile-stat"><span>Whiff Rate</span><span class="pval">${(c.whiff_rate*100).toFixed(1)}%</span></div>`;
-                html += `<div class="profile-stat"><span>Zone Rate</span><span class="pval">${(c.zone_rate*100).toFixed(1)}%</span></div>`;
-                html += `<div class="profile-stat"><span>GB Rate</span><span class="pval">${(c.groundball_rate*100).toFixed(1)}%</span></div>`;
-                html += `<div class="profile-stat"><span>Arm Angle</span><span class="pval">${c.arm_angle.toFixed(1)}°</span></div>`;
-                // Top pitches
-                const pitches = ['FF','SI','FC','SL','CH','CU','FS','KC','ST','SV','KN'].map(p => ({p, v: c[`pct_${p}`]||0})).filter(x => x.v > 0.05).sort((a,b) => b.v - a.v);
-                html += `<div class="profile-stat"><span>Top Pitches</span><span class="pval">${pitches.map(x => `${x.p} ${(x.v*100).toFixed(0)}%`).join(', ')}</span></div>`;
-                html += `</div>`;
+                html += '<div class="stat-header" style="color:'+cluster.color+'">'+cluster.short_name+'</div>';
+                html += '<div class="stat-sub" style="color:'+cluster.color+'">'+cluster.hand+' '+role+' \u2014 '+cluster.pitcher_count+' pitchers</div>';
+                html += '<div class="section-hdr">Cluster Profile</div>';
+                if (cent.avg_velo_FF>0) html += '<div class="profile-row"><span>Avg Fastball</span><span class="pval">'+(cent.avg_velo_FF).toFixed(1)+' mph</span></div>';
+                html += '<div class="profile-row"><span>Whiff Rate</span><span class="pval">'+((cent.whiff_rate||0)*100).toFixed(1)+'%</span></div>';
+                html += '<div class="profile-row"><span>Zone Rate</span><span class="pval">'+((cent.zone_rate||0)*100).toFixed(1)+'%</span></div>';
+                html += '<div class="profile-row"><span>GB Rate</span><span class="pval">'+((cent.groundball_rate||0)*100).toFixed(1)+'%</span></div>';
+                html += '<div class="profile-row"><span>Arm Angle</span><span class="pval">'+(cent.arm_angle||0).toFixed(1)+'\u00b0</span></div>';
+                if (cent.pfx_x_avg!=null) html += '<div class="profile-row"><span>H-Break</span><span class="pval">'+((cent.pfx_x_avg)*12).toFixed(1)+'"</span></div>';
+                if (cent.pfx_z_avg!=null) html += '<div class="profile-row"><span>V-Break</span><span class="pval">'+((cent.pfx_z_avg)*12).toFixed(1)+'"</span></div>';
+                const pitches = ['FF','SI','FC','SL','CH','CU','FS','KC','ST','SV','KN'].map(p=>({p,v:cent['pct_'+p]||0})).filter(x=>x.v>0.05).sort((a,b)=>b.v-a.v);
+                html += '<div class="profile-row"><span>Top Pitches</span><span class="pval">'+pitches.map(x=>x.p+' '+((x.v)*100).toFixed(0)+'%').join(', ')+'</span></div>';
+
+                // Pitcher roster (no batter context — show cluster members with their stats)
+                const members = DATA.pitcherSeasons.filter(p => p.cluster === clusterId);
+                // Dedupe by pitcher ID, keep latest season
+                const seen = {};
+                members.forEach(p => {
+                    if (!seen[p.pitcher] || p.game_year > seen[p.pitcher].game_year) seen[p.pitcher] = p;
+                });
+                const uniquePitchers = Object.values(seen).sort((a,b) => (b.avg_velo_FF||0) - (a.avg_velo_FF||0));
+                if (uniquePitchers.length > 0) {
+                    html += '<div class="section-hdr">Pitchers ('+uniquePitchers.length+' unique)</div>';
+                    html += '<div class="roster-head"><span>PITCHER</span><span>YR</span><span>VELO</span><span></span><span></span><span>WHIFF</span></div>';
+                    html += '<div class="roster-list">';
+                    uniquePitchers.slice(0,50).forEach(p => {
+                        html += '<div class="roster-row">';
+                        html += '<span class="r-name">'+fmtName(p.player_name)+'</span>';
+                        html += '<span class="r-val">'+p.game_year+'</span>';
+                        html += '<span class="r-val highlight">'+(p.avg_velo_FF||0).toFixed(1)+'</span>';
+                        html += '<span class="r-val"></span>';
+                        html += '<span class="r-val"></span>';
+                        html += '<span class="r-val">'+((p.whiff_rate||0)*100).toFixed(0)+'%</span>';
+                        html += '</div>';
+                    });
+                    if (uniquePitchers.length > 50) html += '<div class="roster-empty">+'+(uniquePitchers.length-50)+' more</div>';
+                    html += '</div>';
+                }
             }
 
-            // Archetype Kings
+            // Kings
             const kings = DATA.archetypeKings[clusterId] || [];
             if (kings.length > 0) {
-                html += `<div class="section-header">Kings of ${cluster.short_name}</div>`;
-                kings.slice(0,10).forEach(k => {
-                    html += `<div class="king-row"><span class="pitcher-name">${k.name}</span><span class="king-stat" style="width:28px;">${k.seasons}yr</span><span class="king-stat" style="color:var(--accent-cyan);">${k.avg_velo>0?k.avg_velo.toFixed(0):'—'}</span><span class="king-stat" style="color:var(--accent-magenta);">${(k.avg_whiff*100).toFixed(0)}%</span></div>`;
+                html += '<div class="section-hdr">Kings of '+cluster.short_name+'</div>';
+                kings.slice(0,8).forEach(k => {
+                    html += '<div class="king-row"><span class="k-name">'+k.name+'</span><span class="k-stat" style="width:24px;">'+k.seasons+'yr</span><span class="k-stat" style="color:var(--perf-green);">'+(k.avg_velo>0?k.avg_velo.toFixed(0):'\u2014')+'</span><span class="k-stat" style="color:var(--perf-red);">'+((k.avg_whiff||0)*100).toFixed(0)+'%</span></div>';
                 });
             }
 
-            // Example pitchers
-            html += `<div class="section-header">Examples</div><div style="font-size:9px;color:var(--text-dim);">`;
-            (cluster.example_pitchers||[]).forEach(p => { html += `<div style="margin-bottom:1px;">${p}</div>`; });
-            html += `</div>`;
+            // Examples
+            html += '<div class="section-hdr">Examples</div><div style="font-size:9px;color:#666;font-family:var(--font-tech);">';
+            (cluster.example_pitchers||[]).forEach(p => { html += '<div style="margin-bottom:1px;">'+p+'</div>'; });
+            html += '</div>';
 
             content.innerHTML = html;
             panel.classList.add('visible');
+            STATE.highlightedCluster = clusterId;
+            render();
+            buildArchetypeList();
         }
 
-        // ═══════════════════════════════════════════════
-        // ARCHETYPE DIRECTORY (left sidebar)
-        // ═══════════════════════════════════════════════
-        function buildArchetypeDirectory() {
-            const dir = document.getElementById('archetype-directory');
-            const clusterIds = Object.keys(DATA.clusters);
-            const rhp = clusterIds.filter(id => DATA.clusters[id].hand === 'RHP').sort();
-            const lhp = clusterIds.filter(id => DATA.clusters[id].hand === 'LHP').sort();
-            const activeBatter = STATE.activeBatters.length > 0 ? STATE.activeBatters[STATE.activeBatters.length-1] : null;
-            let matchups = null;
-            if (activeBatter) matchups = getMatchupData(activeBatter);
+        function statCell(label, val) {
+            return '<div class="stat-cell"><div class="s-label">'+label+'</div><div class="s-val">'+val+'</div></div>';
+        }
+
+        // ═══════════════════════════════════════
+        // ARCHETYPE LIST (sidebar)
+        // ═══════════════════════════════════════
+        function perfClass(stat, val) {
+            if (stat === 'K_pct') return val < 0.15 ? 'perf-great' : val < 0.20 ? 'perf-good' : val > 0.30 ? 'perf-bad' : val > 0.25 ? 'perf-poor' : 'perf-avg';
+            if (stat === 'BB_pct') return val > 0.12 ? 'perf-great' : val > 0.10 ? 'perf-good' : val < 0.05 ? 'perf-bad' : val < 0.07 ? 'perf-poor' : 'perf-avg';
+            // wOBA, BA, SLG, OBP
+            return val >= 0.370 ? 'perf-great' : val >= 0.330 ? 'perf-good' : val >= 0.290 ? 'perf-avg' : val >= 0.250 ? 'perf-poor' : 'perf-bad';
+        }
+
+        function buildArchetypeList() {
+            const dir = document.getElementById('archetype-list');
+            const ids = Object.keys(DATA.clusters);
+            const rhp = ids.filter(id => DATA.clusters[id].hand === 'RHP').sort();
+            const lhp = ids.filter(id => DATA.clusters[id].hand === 'LHP').sort();
+            const batters = STATE.activeBatters;
+            const hasBatters = batters.length > 0;
+
+            // Pre-compute matchup data for all active batters
+            const allMatchups = batters.map(b => getMatchupData(b));
 
             let html = '';
 
-            const renderGroup = (ids, label, cssClass) => {
-                html += `<div class="archetype-section-header ${cssClass}">${label} (${ids.length})</div>`;
-                ids.forEach(id => {
-                    const c = DATA.clusters[id];
-                    const role = c.centroid?.is_sp > 0.5 ? 'SP' : 'RP';
-                    const isVisible = STATE.visibleClusters.has(id);
-                    const isHighlighted = STATE.highlightedCluster === id;
-                    const dimmed = !isVisible ? 'dimmed' : '';
-                    const selected = isHighlighted ? 'selected' : '';
+            // Column headers when batters are active
+            if (hasBatters) {
+                html += '<div class="arch-batter-cols">';
+                html += '<span class="col-label col-archetype">ARCHETYPE</span>';
+                batters.forEach(b => {
+                    const lastName = fmtName(b.batter_name).split(' ').pop();
+                    html += '<span class="col-label" style="width:44px;">'+lastName+'</span>';
+                });
+                html += '</div>';
+            }
 
-                    // If batter active, show their stat vs this cluster
-                    let statLabel = '';
-                    if (matchups && activeBatter) {
-                        const m = matchups.find(x => String(x.cluster) === id);
-                        if (m && m.PA >= STATE.minPA) {
-                            const val = m[STATE.selectedStat] || 0;
-                            const display = STATE.selectedStat === 'K_pct' || STATE.selectedStat === 'BB_pct'
-                                ? (val * 100).toFixed(0) + '%'
-                                : val.toFixed(3);
-                            const colorClass = (STATE.selectedStat === 'K_pct')
-                                ? (val < 0.20 ? 'good' : val > 0.30 ? 'bad' : '')
-                                : (val > 0.350 ? 'good' : val < 0.270 ? 'bad' : '');
-                            statLabel = `<span class="dock-stat ${colorClass}" style="width:40px;font-size:10px;">${display}</span>`;
-                        } else {
-                            statLabel = `<span style="width:40px;text-align:right;font-size:9px;color:var(--text-dim);">—</span>`;
-                        }
+            const renderGroup = (group, label) => {
+                html += '<div class="arch-group-header">'+label+' ('+group.length+')</div>';
+                group.forEach(id => {
+                    const c = DATA.clusters[id];
+                    const cent = c.centroid || {};
+                    const role = cent.is_sp > 0.5 ? 'SP' : 'RP';
+                    const vis = STATE.visibleClusters.has(id);
+                    const sel = STATE.highlightedCluster === id;
+                    const cls = 'arch-item' + (sel ? ' selected' : '') + (!vis ? ' dimmed' : '');
+
+                    html += '<div class="'+cls+'" data-cluster="'+id+'">';
+                    html += '<div class="arch-dot" style="background:'+c.color+';"></div>';
+                    html += '<span class="arch-name" style="color:'+(vis?c.color:'#aaa')+';">'+c.short_name+'</span>';
+                    html += '<span class="arch-role" style="color:'+c.color+';border-color:'+c.color+';">'+role+'</span>';
+
+                    if (hasBatters) {
+                        batters.forEach((b, bi) => {
+                            const matchups = allMatchups[bi];
+                            const m = matchups.find(x => String(x.cluster) === id);
+                            if (m && m.PA >= STATE.minPA) {
+                                const val = m[STATE.selectedStat] || 0;
+                                const display = (STATE.selectedStat === 'K_pct' || STATE.selectedStat === 'BB_pct')
+                                    ? (val*100).toFixed(0)+'%' : val.toFixed(3);
+                                const pClass = perfClass(STATE.selectedStat, val);
+                                html += '<span class="arch-stat '+pClass+'">'+display+'</span>';
+                            } else {
+                                html += '<span class="arch-stat empty">\u2014</span>';
+                            }
+                        });
+                    } else {
+                        html += '<span class="arch-count">'+c.pitcher_count+'</span>';
                     }
 
-                    html += `<div class="archetype-item ${dimmed} ${selected}" data-cluster="${id}" style="border-left-color:${isHighlighted ? c.color : 'transparent'};">
-                        <div class="arch-dot" style="background:${c.color};color:${c.color};"></div>
-                        <span class="arch-name" style="color:${isVisible ? c.color : '#555'};">${c.short_name}</span>
-                        <span class="arch-role" style="color:${c.color};border-color:${c.color};">${role}</span>
-                        ${statLabel}
-                        <span class="arch-count">${c.pitcher_count}</span>
-                    </div>`;
+                    html += '</div>';
                 });
             };
-
-            renderGroup(rhp, 'Right-Handed', 'rhp');
-            renderGroup(lhp, 'Left-Handed', 'lhp');
-
+            renderGroup(rhp, 'Right-Handed');
+            renderGroup(lhp, 'Left-Handed');
             dir.innerHTML = html;
 
-            // Bind clicks
-            dir.querySelectorAll('.archetype-item').forEach(el => {
+            dir.querySelectorAll('.arch-item').forEach(el => {
                 el.addEventListener('click', () => {
                     const id = el.dataset.cluster;
                     if (STATE.highlightedCluster === id) {
-                        // Deselect
                         STATE.highlightedCluster = null;
                         document.getElementById('stat-panel').classList.remove('visible');
                     } else {
                         STATE.highlightedCluster = id;
-                        // Show stat panel for this cluster
-                        const activeBatter = STATE.activeBatters.length > 0 ? STATE.activeBatters[STATE.activeBatters.length-1] : null;
-                        showStatPanel(activeBatter, id);
+                        const ab = STATE.activeBatters.length > 0 ? STATE.activeBatters[STATE.activeBatters.length-1] : null;
+                        showStatPanel(ab, id);
                     }
-                    updateDotVisibility();
-                    buildArchetypeDirectory();
+                    render();
+                    buildArchetypeList();
                 });
             });
         }
 
-        // ═══════════════════════════════════════════════
-        // BOTTOM DOCK
-        // ═══════════════════════════════════════════════
-        function updateBottomDock(batterObj, matchups) {
-            const validMatchups = matchups.filter(m => (m.PA||0) >= STATE.minPA);
-            const sorted = [...validMatchups].sort((a,b) => (b.wOBA||0) - (a.wOBA||0));
-            const bestDiv = document.getElementById('dock-best-content');
-            const worstDiv = document.getElementById('dock-worst-content');
-            const pitcherDiv = document.getElementById('dock-pitchers-content');
+        // ═══════════════════════════════════════
+        // DOCK
+        // ═══════════════════════════════════════
+        function updateDock(batter, matchups) {
+            const valid = matchups.filter(m => (m.PA||0) >= STATE.minPA);
+            const sorted = [...valid].sort((a,b) => (b.wOBA||0) - (a.wOBA||0));
+
+            const bestEl = document.getElementById('dock-best-content');
+            const worstEl = document.getElementById('dock-worst-content');
+            const kingsEl = document.getElementById('dock-kings-content');
 
             if (sorted.length > 0) {
-                bestDiv.innerHTML = sorted.slice(0,3).map(m => {
+                bestEl.innerHTML = sorted.slice(0,3).map(m => {
                     const cl = DATA.clusters[m.cluster];
-                    return `<div class="dock-row"><span class="pitcher-name" style="color:${cl?.color||'#fff'}">${cl?.short_name||m.cluster} (${cl?.hand})</span><span class="dock-stat">${m.PA}PA</span><span class="dock-stat good">${(m.wOBA||0).toFixed(3)}</span></div>`;
+                    return '<div class="dock-row"><span class="d-name" style="color:'+(cl?.color||'#333')+'">'+( cl?.short_name||m.cluster)+'</span><span class="d-stat">'+m.PA+'PA</span><span class="d-stat good">'+(m.wOBA||0).toFixed(3)+'</span></div>';
                 }).join('');
-                worstDiv.innerHTML = sorted.slice(-3).reverse().map(m => {
+                worstEl.innerHTML = sorted.slice(-3).reverse().map(m => {
                     const cl = DATA.clusters[m.cluster];
-                    return `<div class="dock-row"><span class="pitcher-name" style="color:${cl?.color||'#fff'}">${cl?.short_name||m.cluster} (${cl?.hand})</span><span class="dock-stat">${m.PA}PA</span><span class="dock-stat bad">${(m.wOBA||0).toFixed(3)}</span></div>`;
+                    return '<div class="dock-row"><span class="d-name" style="color:'+(cl?.color||'#333')+'">'+( cl?.short_name||m.cluster)+'</span><span class="d-stat">'+m.PA+'PA</span><span class="d-stat bad">'+(m.wOBA||0).toFixed(3)+'</span></div>';
                 }).join('');
             } else {
-                bestDiv.innerHTML = '<span style="color:var(--text-dim)">Not enough PA</span>';
-                worstDiv.innerHTML = '<span style="color:var(--text-dim)">Not enough PA</span>';
+                bestEl.innerHTML = '<span style="color:var(--text-label)">Not enough PA</span>';
+                worstEl.innerHTML = '<span style="color:var(--text-label)">Not enough PA</span>';
             }
 
-            if (DATA.archetypeKings && sorted.length > 0) {
+            if (sorted.length > 0) {
                 const topId = sorted[0].cluster;
                 const kings = DATA.archetypeKings[topId] || [];
                 const cl = DATA.clusters[topId];
-                pitcherDiv.innerHTML = kings.length > 0
-                    ? `<div style="font-size:8px;color:${cl?.color};margin-bottom:4px;font-weight:700;">${cl?.short_name} KINGS</div>` + kings.slice(0,6).map(k => `<div class="dock-row"><span class="pitcher-name">${k.name}</span><span class="dock-stat" style="width:24px;">${k.seasons}yr</span></div>`).join('')
-                    : '<span style="color:var(--text-dim)">—</span>';
+                kingsEl.innerHTML = kings.length > 0
+                    ? '<div style="font-size:8px;color:'+(cl?.color)+';font-weight:700;margin-bottom:2px;">'+(cl?.short_name)+' KINGS</div>' + kings.slice(0,5).map(k => '<div class="dock-row"><span class="d-name">'+k.name+'</span><span class="d-stat" style="width:20px;">'+k.seasons+'yr</span></div>').join('')
+                    : '<span style="color:var(--text-label)">\u2014</span>';
             }
         }
 
-        // ═══════════════════════════════════════════════
+        // ═══════════════════════════════════════
         // SAVED SEARCHES
-        // ═══════════════════════════════════════════════
-        function saveSearch(batterObj) {
-            const existing = STATE.savedSearches.findIndex(s => s.batter === batterObj.batter);
-            if (existing >= 0) STATE.savedSearches.splice(existing, 1);
-            STATE.savedSearches.unshift({ batter: batterObj.batter, batter_name: batterObj.batter_name, total_PA: batterObj.total_PA });
+        // ═══════════════════════════════════════
+        function saveSearch(batter) {
+            const idx = STATE.savedSearches.findIndex(s => s.batter === batter.batter);
+            if (idx >= 0) STATE.savedSearches.splice(idx, 1);
+            STATE.savedSearches.unshift({ batter: batter.batter, batter_name: batter.batter_name, total_PA: batter.total_PA });
             if (STATE.savedSearches.length > 10) STATE.savedSearches = STATE.savedSearches.slice(0, 10);
-            localStorage.setItem('cosmos_saved', JSON.stringify(STATE.savedSearches));
-            renderSavedSearches();
+            localStorage.setItem('pfx_saved', JSON.stringify(STATE.savedSearches));
+            renderSaved();
         }
 
-        function renderSavedSearches() {
+        function renderSaved() {
             const div = document.getElementById('dock-saved-content');
-            if (STATE.savedSearches.length === 0) { div.innerHTML = '<span style="color:var(--text-dim)">No saved searches</span>'; return; }
-            div.innerHTML = STATE.savedSearches.map(s => `<div class="saved-batter" data-batter-id="${s.batter}"><span>${formatName(s.batter_name)}</span><span style="color:var(--text-dim)">${(s.total_PA||0).toLocaleString()} PA</span></div>`).join('');
-            div.querySelectorAll('.saved-batter').forEach(el => {
-                el.addEventListener('click', () => { const b = DATA.batters.find(b => b.batter === parseInt(el.dataset.batterId)); if (b) addBatter(b); });
+            if (STATE.savedSearches.length === 0) { div.innerHTML = '<span style="color:var(--text-label)">No saved searches</span>'; return; }
+            div.innerHTML = STATE.savedSearches.map(s => '<div class="saved-item" data-bid="'+s.batter+'"><span>'+fmtName(s.batter_name)+'</span><span class="s-pa">'+(s.total_PA||0).toLocaleString()+' PA</span></div>').join('');
+            div.querySelectorAll('.saved-item').forEach(el => {
+                el.addEventListener('click', () => {
+                    const b = DATA.batters.find(x => x.batter === parseInt(el.dataset.bid));
+                    if (b) addBatter(b);
+                });
             });
         }
 
-        // ═══════════════════════════════════════════════
+        // ═══════════════════════════════════════
         // SEARCH
-        // ═══════════════════════════════════════════════
+        // ═══════════════════════════════════════
         let fuse = null;
         function initSearch() { fuse = new Fuse(DATA.batters, { keys: ['batter_name'], threshold: 0.3, distance: 100 }); }
 
         const searchInput = document.getElementById('batter-search');
-        const searchDropdown = document.getElementById('search-dropdown');
-        let searchHighlight = 0, searchResults = [];
+        const searchDrop = document.getElementById('search-dropdown');
+        let sHighlight = 0, sResults = [];
 
         searchInput.addEventListener('input', () => {
-            const q = searchInput.value; if (q.length < 2) { searchDropdown.classList.remove('visible'); return; }
-            searchResults = fuse.search(q).slice(0,8).map(r => r.item); searchHighlight = 0; renderSearchResults();
+            const q = searchInput.value;
+            if (q.length < 2) { searchDrop.classList.remove('visible'); return; }
+            sResults = fuse.search(q).slice(0,8).map(r => r.item);
+            sHighlight = 0;
+            renderSearchResults();
         });
         searchInput.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowDown') { e.preventDefault(); searchHighlight = Math.min(searchHighlight+1, searchResults.length-1); renderSearchResults(); }
-            else if (e.key === 'ArrowUp') { e.preventDefault(); searchHighlight = Math.max(searchHighlight-1, 0); renderSearchResults(); }
-            else if (e.key === 'Enter') { e.preventDefault(); if (searchResults[searchHighlight]) selectSearchResult(searchResults[searchHighlight]); }
-            else if (e.key === 'Escape') searchDropdown.classList.remove('visible');
+            if (e.key === 'ArrowDown') { e.preventDefault(); sHighlight = Math.min(sHighlight+1, sResults.length-1); renderSearchResults(); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); sHighlight = Math.max(sHighlight-1, 0); renderSearchResults(); }
+            else if (e.key === 'Enter') { e.preventDefault(); if (sResults[sHighlight]) selectResult(sResults[sHighlight]); }
+            else if (e.key === 'Escape') searchDrop.classList.remove('visible');
         });
 
         function renderSearchResults() {
-            if (searchResults.length === 0) { searchDropdown.classList.remove('visible'); return; }
-            searchDropdown.innerHTML = searchResults.map((b,i) => `<div class="search-result ${i===searchHighlight?'highlighted':''}" data-idx="${i}"><span>${formatName(b.batter_name)}</span><span class="pa-label">${(b.total_PA||0).toLocaleString()} PA</span></div>`).join('');
-            searchDropdown.classList.add('visible');
-            searchDropdown.querySelectorAll('.search-result').forEach(el => {
-                el.addEventListener('click', () => selectSearchResult(searchResults[parseInt(el.dataset.idx)]));
-                el.addEventListener('mouseenter', () => { searchHighlight = parseInt(el.dataset.idx); renderSearchResults(); });
+            if (sResults.length === 0) { searchDrop.classList.remove('visible'); return; }
+            searchDrop.innerHTML = sResults.map((b,i) =>
+                '<div class="search-result '+(i===sHighlight?'highlighted':'')+'" data-idx="'+i+'"><span>'+fmtName(b.batter_name)+'</span><span class="pa-label">'+(b.total_PA||0).toLocaleString()+' PA</span></div>'
+            ).join('');
+            searchDrop.classList.add('visible');
+            searchDrop.querySelectorAll('.search-result').forEach(el => {
+                el.addEventListener('click', () => selectResult(sResults[parseInt(el.dataset.idx)]));
+                el.addEventListener('mouseenter', () => { sHighlight = parseInt(el.dataset.idx); renderSearchResults(); });
             });
         }
 
-        function selectSearchResult(batter) { addBatter(batter); searchInput.value = ''; searchDropdown.classList.remove('visible'); searchInput.focus(); }
-
-        function playScanTransition(name) {
-            const o = document.getElementById('scan-overlay');
-            o.innerHTML = `<div class="scan-line"></div><div class="scan-flash"></div><div class="scan-text">SCANNING: ${name.toUpperCase()}</div>`;
-            o.classList.add('active');
-            setTimeout(() => { o.classList.remove('active'); o.innerHTML = ''; }, 1400);
-        }
+        function selectResult(batter) { addBatter(batter); searchInput.value = ''; searchDrop.classList.remove('visible'); searchInput.focus(); }
 
         function addBatter(batter) {
             STATE.activeBatters = STATE.activeBatters.filter(b => b.batter !== batter.batter);
             if (STATE.activeBatters.length >= 5) STATE.activeBatters.shift();
             STATE.activeBatters.push(batter);
-            renderBatterChips();
-            playScanTransition(batter.batter_name);
-            setTimeout(() => spawnBatter(batter), 400);
+            renderBatterStack();
+            playScan(batter.batter_name);
+            setTimeout(() => spawnBatter(batter), 300);
         }
 
         function removeBatter(id) {
             STATE.activeBatters = STATE.activeBatters.filter(b => b.batter !== id);
-            renderBatterChips();
+            renderBatterStack();
             if (STATE.activeBatters.length > 0) spawnBatter(STATE.activeBatters[STATE.activeBatters.length-1]);
-            else { clearBatter(); buildArchetypeDirectory(); }
+            else { clearBatter(); buildArchetypeList(); }
         }
 
-        function renderBatterChips() {
-            const c = document.getElementById('batter-chips');
-            c.innerHTML = STATE.activeBatters.map(b => `<div class="batter-chip" data-id="${b.batter}">${formatName(b.batter_name)}<span class="remove" data-id="${b.batter}">✕</span></div>`).join('');
-            c.querySelectorAll('.remove').forEach(el => { el.addEventListener('click', (e) => { e.stopPropagation(); removeBatter(parseInt(el.dataset.id)); }); });
+        function renderBatterStack() {
+            const el = document.getElementById('batter-stack');
+            el.innerHTML = STATE.activeBatters.map(b =>
+                '<div class="batter-chip" data-id="'+b.batter+'">'+fmtName(b.batter_name)+'<span class="remove" data-id="'+b.batter+'">\u2715</span></div>'
+            ).join('');
+            el.querySelectorAll('.remove').forEach(r => {
+                r.addEventListener('click', (e) => { e.stopPropagation(); removeBatter(parseInt(r.dataset.id)); });
+            });
         }
 
-        // ═══════════════════════════════════════════════
+        function playScan(name) {
+            const o = document.getElementById('scan-overlay');
+            o.innerHTML = '<div class="scan-line"></div><div class="scan-text">SCANNING: '+name.toUpperCase()+'</div>';
+            o.classList.add('active');
+            document.getElementById('led-scan').classList.add('active');
+            setTimeout(() => { o.classList.remove('active'); o.innerHTML = ''; document.getElementById('led-scan').classList.remove('active'); }, 900);
+        }
+
+        // ═══════════════════════════════════════
         // UI CONTROLS
-        // ═══════════════════════════════════════════════
-        document.getElementById('metric-toggles').addEventListener('click', (e) => {
-            if (!e.target.classList.contains('toggle')) return;
-            document.querySelectorAll('#metric-toggles .toggle').forEach(t => t.classList.remove('active'));
-            e.target.classList.add('active'); STATE.selectedStat = e.target.dataset.stat;
-            refreshBeams(); buildArchetypeDirectory();
+        // ═══════════════════════════════════════
+        document.getElementById('metric-keys').addEventListener('click', (e) => {
+            const key = e.target.closest('.key');
+            if (!key || !key.dataset.stat) return;
+            document.querySelectorAll('#metric-keys .key').forEach(k => { k.className = 'key key-dark'; });
+            key.className = 'key key-orange';
+            STATE.selectedStat = key.dataset.stat;
+            refreshData(); buildArchetypeList();
         });
 
-        document.getElementById('filter-toggles').addEventListener('click', (e) => {
-            if (!e.target.classList.contains('toggle')) return;
-            document.querySelectorAll('#filter-toggles .toggle').forEach(t => t.classList.remove('active'));
-            e.target.classList.add('active');
-            const filter = e.target.dataset.filter;
+        document.getElementById('filter-keys').addEventListener('click', (e) => {
+            const key = e.target.closest('.key');
+            if (!key || !key.dataset.filter) return;
+            document.querySelectorAll('#filter-keys .key').forEach(k => { k.className = 'key key-dark'; });
+            key.className = 'key key-orange';
+            const filter = key.dataset.filter;
             Object.keys(DATA.clusters).forEach(id => {
                 const c = DATA.clusters[id];
                 const show = filter === 'all' || c.hand === filter;
                 if (show) STATE.visibleClusters.add(id); else STATE.visibleClusters.delete(id);
             });
-            updateDotVisibility(); refreshBeams(); buildArchetypeDirectory();
+            render(); refreshData(); buildArchetypeList();
         });
 
-        document.getElementById('year-select').addEventListener('change', (e) => { STATE.selectedYear = e.target.value; refreshBeams(); buildArchetypeDirectory(); });
+        document.getElementById('year-select').addEventListener('change', (e) => {
+            STATE.selectedYear = e.target.value; refreshData(); buildArchetypeList(); render();
+        });
 
         const paSlider = document.getElementById('pa-slider'), paVal = document.getElementById('pa-val');
-        paSlider.addEventListener('input', () => { STATE.minPA = parseInt(paSlider.value); paVal.textContent = STATE.minPA; refreshBeams(); buildArchetypeDirectory(); });
-
-        document.getElementById('close-panel').addEventListener('click', () => {
-            document.getElementById('stat-panel').classList.remove('visible');
-            STATE.highlightedCluster = null; updateDotVisibility(); buildArchetypeDirectory();
+        paSlider.addEventListener('input', () => {
+            STATE.minPA = parseInt(paSlider.value); paVal.textContent = STATE.minPA;
+            refreshData(); buildArchetypeList(); render();
         });
 
-        document.getElementById('dock-header').addEventListener('click', () => document.getElementById('bottom-dock').classList.toggle('collapsed'));
-        document.addEventListener('mousedown', (e) => { if (!e.target.closest('.search-container')) searchDropdown.classList.remove('visible'); });
+        document.getElementById('stat-close').addEventListener('click', () => {
+            document.getElementById('stat-panel').classList.remove('visible');
+            STATE.highlightedCluster = null; render(); buildArchetypeList();
+        });
 
-        // Utility
-        function formatName(name) { if (!name) return 'Unknown'; return name.split(' ').map(w => w.charAt(0).toUpperCase()+w.slice(1)).join(' '); }
+        // Roster sort handler (delegated)
+        document.getElementById('panel-content').addEventListener('click', (e) => {
+            const sortBtn = e.target.closest('.sort-btn');
+            if (!sortBtn) return;
+            const rosterList = document.getElementById('roster-list');
+            if (!rosterList) return;
+            const clusterId = rosterList.dataset.cluster;
+            const batterId = parseInt(rosterList.dataset.batter);
+            const sortKey = sortBtn.dataset.sort;
 
-        // ═══════════════════════════════════════════════
-        // ANIMATION LOOP
-        // ═══════════════════════════════════════════════
-        const clock = new THREE.Clock();
-        const labelContainer = document.getElementById('batter-label-container');
+            // Update active button
+            sortBtn.parentElement.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+            sortBtn.classList.add('active');
 
-        function animate() {
-            requestAnimationFrame(animate);
-            const time = clock.getElapsedTime();
-            if (sunGroup.children.length > 0) {
-                const sunMesh = sunGroup.children[0];
-                if (sunMesh.material?.uniforms) sunMesh.material.uniforms.time.value = time;
+            const pitcherMatchups = (DATA._hvpIndex[batterId] || {})[clusterId] || [];
+            let sorted;
+            if (sortKey === 'pa') sorted = [...pitcherMatchups].sort((a,b) => (b.pa||0) - (a.pa||0));
+            else if (sortKey === 'ba') sorted = [...pitcherMatchups].sort((a,b) => (b.ba||0) - (a.ba||0));
+            else if (sortKey === 'hr') sorted = [...pitcherMatchups].sort((a,b) => (b.hr||0) - (a.hr||0));
+            else if (sortKey === 'k') sorted = [...pitcherMatchups].sort((a,b) => (b.k||0) - (a.k||0));
+            else sorted = pitcherMatchups;
+
+            rosterList.innerHTML = sorted.map(m => {
+                const baVal = m.ba != null ? m.ba.toFixed(3) : '\u2014';
+                const whiff = m.w != null ? (m.w*100).toFixed(0)+'%' : '\u2014';
+                const baColor = m.ba != null ? (m.ba >= 0.300 ? 'color:var(--perf-green)' : m.ba <= 0.180 ? 'color:var(--perf-red)' : '') : '';
+                return '<div class="roster-row"><span class="r-name">'+fmtName(m.pn)+'</span><span class="r-val">'+(m.pa||0)+'</span><span class="r-val highlight" style="'+baColor+'">'+baVal+'</span><span class="r-val">'+(m.hr||0)+'</span><span class="r-val">'+(m.k||0)+'</span><span class="r-val">'+whiff+'</span></div>';
+            }).join('');
+        });
+
+        // ═══════════════════════════════════════
+        // HISTORY PANEL
+        // ═══════════════════════════════════════
+        const historyPanel = document.getElementById('history-panel');
+        const historyContent = document.getElementById('history-content');
+
+        document.getElementById('history-toggle').addEventListener('click', () => {
+            historyPanel.classList.toggle('visible');
+            if (historyPanel.classList.contains('visible')) renderHistory();
+        });
+
+        document.getElementById('history-clear').addEventListener('click', () => {
+            STATE.savedSearches = [];
+            localStorage.setItem('pfx_saved', JSON.stringify(STATE.savedSearches));
+            renderHistory();
+            renderSaved();
+        });
+
+        function renderHistory() {
+            if (STATE.savedSearches.length === 0) {
+                historyContent.innerHTML = '<div class="history-empty">No search history yet.<br>Search for a batter to begin.</div>';
+                return;
             }
-            TWEEN.update(); controls.update(); composer.render();
-            updateClusterLabels();
-            if (sunGroup.children.length > 0) {
-                const vec = sunGroup.position.clone(); vec.y -= 5; vec.x += 2; vec.project(camera);
-                labelContainer.style.transform = `translate(${(vec.x*0.5+0.5)*window.innerWidth}px, ${(-(vec.y*0.5)+0.5)*window.innerHeight}px)`;
-            }
+            const activeId = STATE.activeBatters.length > 0 ? STATE.activeBatters[STATE.activeBatters.length-1].batter : null;
+            historyContent.innerHTML = STATE.savedSearches.map(s => {
+                const isActive = s.batter === activeId;
+                return '<div class="history-item'+(isActive ? ' active' : '')+'" data-bid="'+s.batter+'">'
+                    +'<span class="h-name">'+fmtName(s.batter_name)+'</span>'
+                    +'<span class="h-pa">'+(s.total_PA||0).toLocaleString()+' PA</span>'
+                    +'<span class="h-remove" data-bid="'+s.batter+'">\u2715</span>'
+                    +'</div>';
+            }).join('');
+
+            historyContent.querySelectorAll('.history-item').forEach(el => {
+                el.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('h-remove')) return;
+                    const b = DATA.batters.find(x => x.batter === parseInt(el.dataset.bid));
+                    if (b) { addBatter(b); renderHistory(); }
+                });
+            });
+            historyContent.querySelectorAll('.h-remove').forEach(el => {
+                el.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const bid = parseInt(el.dataset.bid);
+                    STATE.savedSearches = STATE.savedSearches.filter(s => s.batter !== bid);
+                    localStorage.setItem('pfx_saved', JSON.stringify(STATE.savedSearches));
+                    renderHistory();
+                    renderSaved();
+                });
+            });
         }
 
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight); composer.setSize(window.innerWidth, window.innerHeight);
+        // Close history panel when clicking elsewhere
+        document.addEventListener('mousedown', (e) => {
+            if (!e.target.closest('.search-box') && !e.target.closest('.search-dropdown')) searchDrop.classList.remove('visible');
+            if (!e.target.closest('.history-panel') && !e.target.closest('#history-toggle')) historyPanel.classList.remove('visible');
         });
 
-        // ═══════════════════════════════════════════════
+        function fmtName(name) {
+            if (!name) return 'Unknown';
+            return name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        }
+
+        // ═══════════════════════════════════════
+        // RESIZE
+        // ═══════════════════════════════════════
+        window.addEventListener('resize', resizeCanvas);
+
+        // ═══════════════════════════════════════
         // BOOT
-        // ═══════════════════════════════════════════════
+        // ═══════════════════════════════════════
         async function boot() {
             try {
                 await loadAllData();
-                createStars(); createPitcherDots(); createClusterLabels();
-                buildArchetypeDirectory(); initSearch(); renderSavedSearches();
+                resizeCanvas();
+                buildArchetypeList();
+                initSearch();
+                renderSaved();
                 const total = DATA.pitcherSeasons.length;
-                document.getElementById('system-status').innerHTML =
-                    `● ${Object.keys(DATA.clusters).length} ARCHETYPES · ${total.toLocaleString()} SEASONS<br>` +
-                    `● ${DATA.batters.length.toLocaleString()} BATTERS · ${DATA.hitterVsCluster.length.toLocaleString()} MATCHUPS`;
+                document.getElementById('sidebar-status').textContent =
+                    Object.keys(DATA.clusters).length + ' ARCHETYPES \u00b7 ' + total.toLocaleString() + ' SEASONS \u00b7 ' + DATA.batters.length.toLocaleString() + ' BATTERS';
+                document.getElementById('led-data').classList.add('green');
                 setTimeout(() => {
                     const loader = document.getElementById('loader');
-                    loader.style.opacity = '0'; setTimeout(() => loader.remove(), 1000); animate();
-                }, 800);
+                    loader.style.opacity = '0';
+                    setTimeout(() => loader.remove(), 800);
+                }, 500);
             } catch (err) {
                 console.error('Boot failed:', err);
                 document.getElementById('loader-status').textContent = 'ERROR: ' + err.message;

@@ -170,6 +170,16 @@ def compute_velo_and_extras(df: pd.DataFrame) -> pd.DataFrame:
     return result
 
 
+def compute_movement(df: pd.DataFrame) -> pd.DataFrame:
+    """Compute average horizontal and vertical pitch movement per pitcher-season."""
+    subset = df.dropna(subset=["pfx_x", "pfx_z"]).copy()
+    result = subset.groupby(["pitcher", "game_year"]).agg(
+        pfx_x_avg=("pfx_x", "mean"),
+        pfx_z_avg=("pfx_z", "mean"),
+    ).reset_index()
+    return result
+
+
 def compute_pitcher_names(df: pd.DataFrame) -> pd.DataFrame:
     """Extract the most common player_name per pitcher ID."""
     names = df.groupby("pitcher")["player_name"].agg(
@@ -205,11 +215,12 @@ def process_season(year: int) -> pd.DataFrame:
     whiff = compute_whiff_rate(df)
     hand = compute_handedness(df)
     extras = compute_velo_and_extras(df)
+    movement = compute_movement(df)
     names = compute_pitcher_names(df)
 
     # Merge everything on pitcher + game_year
     features = usage
-    for feat_df in [spin, arm, whiff, hand, extras]:
+    for feat_df in [spin, arm, whiff, hand, extras, movement]:
         features = features.merge(feat_df, on=["pitcher", "game_year"], how="left")
 
     # Add names (pitcher-level, no game_year)
@@ -260,7 +271,7 @@ def main():
 
     # Fill remaining NaNs with 0 for clustering features
     fill_cols = [c for c in pitcher_seasons.columns if c.startswith(("pct_", "spin_", "avg_"))]
-    fill_cols += ["arm_angle", "whiff_rate", "zone_rate", "groundball_rate", "avg_extension"]
+    fill_cols += ["arm_angle", "whiff_rate", "zone_rate", "groundball_rate", "avg_extension", "pfx_x_avg", "pfx_z_avg"]
     for col in fill_cols:
         if col in pitcher_seasons.columns:
             pitcher_seasons[col] = pitcher_seasons[col].fillna(0)

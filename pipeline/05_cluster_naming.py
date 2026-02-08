@@ -291,6 +291,15 @@ def main():
                 "pca_z": round(float(pca_row.get("centroid_pca_z", 0)), 4),
             }
 
+        # Build centroid dict from clustering features
+        centroid_dict = {col: round(float(row[col]), 4) for col in features_used if col in row.index}
+
+        # Add movement data (not a clustering feature, but needed for display axes)
+        cluster_mask = pitcher_seasons["cluster"] == cid
+        for extra_col in ["pfx_x_avg", "pfx_z_avg"]:
+            if extra_col in pitcher_seasons.columns and cluster_mask.sum() > 0:
+                centroid_dict[extra_col] = round(float(pitcher_seasons.loc[cluster_mask, extra_col].mean()), 4)
+
         profiles[cid] = {
             "full_name": full_name,
             "short_name": short_name,
@@ -298,7 +307,7 @@ def main():
             "hand": hand,
             "pitcher_count": count,
             "example_pitchers": examples,
-            "centroid": {col: round(float(row[col]), 4) for col in features_used if col in row.index},
+            "centroid": centroid_dict,
             **pca_pos,
         }
 
@@ -314,7 +323,7 @@ def main():
         json.dump(profiles, f, indent=2)
     print(f"Saved: {out_path}")
 
-    # Also export for frontend
+    # Also export for frontend (src/data and public)
     frontend_path = os.path.join(
         os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
         "frontend", "src", "data", "clusters.json",
@@ -323,6 +332,15 @@ def main():
     with open(frontend_path, "w") as f:
         json.dump(profiles, f, indent=2)
     print(f"Frontend export: {frontend_path}")
+
+    public_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "frontend", "public", "clusters.json",
+    )
+    if os.path.isdir(os.path.dirname(public_path)):
+        with open(public_path, "w") as f:
+            json.dump(profiles, f, indent=2)
+        print(f"Public export: {public_path}")
 
 
 if __name__ == "__main__":
