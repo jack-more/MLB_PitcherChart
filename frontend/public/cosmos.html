@@ -1023,17 +1023,17 @@
                 }
 
                 const color = perfHex(STATE.selectedStat, statVal);
-                const thickness = Math.max(1, Math.min(4, pa / 120));
+                const thickness = Math.max(1.5, Math.min(5, pa / 80));
 
                 // Glow
                 ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(pos.x, pos.y);
-                ctx.strokeStyle = color; ctx.lineWidth = thickness + 3;
-                ctx.globalAlpha = 0.08; ctx.stroke(); ctx.globalAlpha = 1;
+                ctx.strokeStyle = color; ctx.lineWidth = thickness + 5;
+                ctx.globalAlpha = 0.12; ctx.stroke(); ctx.globalAlpha = 1;
 
                 // Main line
                 ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(pos.x, pos.y);
                 ctx.strokeStyle = color; ctx.lineWidth = thickness;
-                ctx.globalAlpha = 0.7; ctx.stroke(); ctx.globalAlpha = 1;
+                ctx.globalAlpha = 0.9; ctx.stroke(); ctx.globalAlpha = 1;
             });
         }
 
@@ -1537,11 +1537,27 @@
                 '<div class="search-result '+(i===sHighlight?'highlighted':'')+'" data-idx="'+i+'"><span>'+fmtName(b.batter_name)+'</span><span class="pa-label">'+(b.total_PA||0).toLocaleString()+' PA</span></div>'
             ).join('');
             searchDrop.classList.add('visible');
-            searchDrop.querySelectorAll('.search-result').forEach(el => {
-                el.addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); selectResult(sResults[parseInt(el.dataset.idx)]); });
-                el.addEventListener('mouseenter', () => { sHighlight = parseInt(el.dataset.idx); renderSearchResults(); });
-            });
         }
+
+        // Delegated handlers on the dropdown container — survive innerHTML rebuilds
+        searchDrop.addEventListener('mousedown', (e) => {
+            const el = e.target.closest('.search-result');
+            if (!el) return;
+            e.preventDefault();
+            e.stopPropagation();
+            selectResult(sResults[parseInt(el.dataset.idx)]);
+        });
+        searchDrop.addEventListener('mouseover', (e) => {
+            const el = e.target.closest('.search-result');
+            if (!el) return;
+            const idx = parseInt(el.dataset.idx);
+            if (idx !== sHighlight) {
+                sHighlight = idx;
+                searchDrop.querySelectorAll('.search-result').forEach((r, i) => {
+                    r.classList.toggle('highlighted', i === sHighlight);
+                });
+            }
+        });
 
         function selectResult(batter) { addBatter(batter); searchInput.value = ''; searchDrop.classList.remove('visible'); searchInput.focus(); }
 
