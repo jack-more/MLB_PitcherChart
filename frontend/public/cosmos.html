@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>COSMOS METRICS // v5</title>
+    <title>COSMOS METRICS // v6</title>
     <style>
         :root {
             --bg-deep: #050505;
-            --glass-panel: rgba(10, 10, 12, 0.85);
+            --glass-panel: rgba(10, 10, 12, 0.88);
             --glass-border: rgba(255, 0, 150, 0.3);
             --text-main: #ffffff;
-            --text-dim: #999999;
+            --text-dim: #888888;
             --accent-cyan: #dfff00;
             --accent-magenta: #ff007f;
             --accent-gold: #00ff41;
@@ -20,45 +20,21 @@
 
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            user-select: none;
-            -webkit-font-smoothing: antialiased;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-font-smoothing: antialiased; }
 
-        body {
-            background-color: var(--bg-deep);
-            color: var(--text-main);
-            font-family: var(--font-mono);
-            overflow: hidden;
-            width: 100vw;
-            height: 100vh;
-        }
+        body { background-color: var(--bg-deep); color: var(--text-main); font-family: var(--font-mono); overflow: hidden; width: 100vw; height: 100vh; }
 
-        #canvas-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-        }
+        #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
 
         #ui-layer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 10;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10;
             pointer-events: none;
             display: grid;
-            grid-template-columns: 320px 1fr 340px;
-            grid-template-rows: auto 1fr auto auto;
-            padding: 24px;
-            gap: 16px;
+            grid-template-columns: 300px minmax(0, 1fr) 320px;
+            grid-template-rows: auto 1fr auto;
+            padding: 16px;
+            gap: 10px;
+            overflow: hidden;
         }
 
         .glass-panel {
@@ -68,633 +44,280 @@
             border: 1px solid var(--glass-border);
             border-radius: 0px;
             pointer-events: auto;
-            box-shadow: 0 0 20px rgba(255, 0, 150, 0.1);
+            box-shadow: 0 0 20px rgba(255, 0, 150, 0.08);
         }
 
         /* ── HEADER ── */
         header {
             grid-column: 1 / -1;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 60px;
+            display: flex; align-items: center; height: 56px;
             border-bottom: 2px solid var(--accent-magenta) !important;
         }
 
         .brand {
-            font-size: 14px;
-            letter-spacing: 2px;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            font-size: 18px; letter-spacing: 2px; font-weight: 700;
+            text-transform: uppercase; color: #fff;
+            display: flex; align-items: center; gap: 10px;
         }
+        .brand::before { content: ''; width: 10px; height: 10px; background: var(--accent-magenta); box-shadow: 0 0 12px var(--accent-magenta); }
 
-        .brand::before {
-            content: '';
-            width: 12px;
-            height: 12px;
-            background: var(--accent-magenta);
-            box-shadow: 0 0 15px var(--accent-magenta);
-            border-radius: 0%;
-        }
-
-        .search-container {
-            position: relative;
-            width: 300px;
-        }
+        .search-container { position: relative; width: 280px; }
 
         input[type="text"] {
-            width: 100%;
-            background: rgba(0,0,0,0.8);
-            border: 1px solid var(--accent-magenta);
-            color: var(--accent-cyan);
-            padding: 8px 12px;
-            font-family: var(--font-mono);
-            font-size: 12px;
-            border-radius: 0px;
-            outline: none;
-            transition: border-color 0.3s, box-shadow 0.3s;
+            width: 100%; background: rgba(0,0,0,0.8); border: 1px solid var(--accent-magenta);
+            color: var(--accent-cyan); padding: 10px 14px; font-family: var(--font-mono); font-size: 14px;
+            border-radius: 0px; outline: none; transition: border-color 0.3s, box-shadow 0.3s;
         }
-
-        input[type="text"]:focus {
-            border-color: var(--accent-cyan);
-            box-shadow: 0 0 15px rgba(223, 255, 0, 0.4);
-        }
+        input[type="text"]:focus { border-color: var(--accent-cyan); box-shadow: 0 0 12px rgba(223,255,0,0.3); }
 
         .search-dropdown {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            width: 100%;
-            max-height: 300px;
-            overflow-y: auto;
-            background: rgba(10, 8, 20, 0.95);
-            border: 1px solid var(--glass-border);
-            border-top: none;
-            z-index: 100;
-            display: none;
+            position: absolute; top: 100%; left: 0; width: 100%; max-height: 280px;
+            overflow-y: auto; background: rgba(10,8,20,0.95); border: 1px solid var(--glass-border);
+            border-top: none; z-index: 100; display: none;
         }
-
         .search-dropdown.visible { display: block; }
 
         .search-result {
-            padding: 8px 12px;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            font-size: 12px;
+            padding: 10px 14px; cursor: pointer; display: flex; justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 14px;
         }
+        .search-result:hover, .search-result.highlighted { background: rgba(223,255,0,0.08); }
+        .search-result .pa-label { color: var(--text-dim); font-size: 12px; }
 
-        .search-result:hover, .search-result.highlighted {
-            background: rgba(0, 240, 255, 0.1);
-        }
-
-        .search-result .pa-label {
-            color: var(--text-dim);
-            font-size: 10px;
-        }
-
-        /* Active batter chips */
-        .batter-chips {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
+        .batter-chips { display: flex; gap: 6px; align-items: center; }
         .batter-chip {
-            background: rgba(255,215,0,0.1);
-            border: 1px solid rgba(255,215,0,0.3);
-            color: var(--accent-gold);
-            padding: 4px 10px;
-            font-size: 10px;
-            font-family: var(--font-mono);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            cursor: default;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            background: rgba(0,255,65,0.08); border: 1px solid rgba(0,255,65,0.3);
+            color: var(--accent-gold); padding: 5px 10px; font-size: 12px; font-family: var(--font-mono);
+            display: flex; align-items: center; gap: 5px; cursor: default;
+            text-transform: uppercase; letter-spacing: 1px;
         }
-
-        .batter-chip .remove {
-            cursor: pointer;
-            opacity: 0.5;
-            font-size: 12px;
-        }
-
+        .batter-chip .remove { cursor: pointer; opacity: 0.5; font-size: 14px; }
         .batter-chip .remove:hover { opacity: 1; }
 
-        /* ── LEFT SIDEBAR ── */
+        /* ── LEFT SIDEBAR — ARCHETYPE DIRECTORY ── */
         .sidebar-left {
-            grid-column: 1;
-            grid-row: 2;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            align-self: start;
-            padding: 16px;
-            max-height: calc(100vh - 220px);
-            overflow-y: auto;
-            border-left: 4px solid var(--accent-cyan) !important;
+            grid-column: 1; grid-row: 2 / 4;
+            display: flex; flex-direction: column; gap: 0;
+            align-self: start; max-height: calc(100vh - 140px);
+            overflow-y: auto; border-left: 3px solid var(--accent-cyan) !important;
         }
 
-        .control-group { margin-bottom: 8px; }
+        .controls-bar {
+            padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
 
         .label {
-            font-size: 10px;
-            text-transform: uppercase;
-            color: var(--accent-magenta);
-            margin-bottom: 8px;
-            display: block;
-            letter-spacing: 1px;
-            font-weight: bold;
+            font-size: 12px; text-transform: uppercase; color: var(--accent-magenta);
+            margin-bottom: 6px; display: block; letter-spacing: 1px; font-weight: bold;
         }
 
-        .toggle-row {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
+        .toggle-row { display: flex; gap: 4px; flex-wrap: wrap; }
 
         button.toggle {
-            background: transparent;
-            border: 1px solid var(--text-dim);
-            color: var(--text-main);
-            padding: 5px 10px;
-            font-family: var(--font-mono);
-            font-size: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
+            background: transparent; border: 1px solid rgba(255,255,255,0.2);
+            color: var(--text-main); padding: 5px 10px; font-family: var(--font-mono);
+            font-size: 12px; cursor: pointer; transition: all 0.2s;
         }
-
         button.toggle.active {
-            background: var(--accent-magenta);
-            border-color: var(--accent-magenta);
-            color: #000;
-            font-weight: bold;
-            box-shadow: 0 0 10px var(--accent-magenta);
+            background: var(--accent-magenta); border-color: var(--accent-magenta);
+            color: #000; font-weight: bold; box-shadow: 0 0 8px var(--accent-magenta);
+        }
+        button.toggle:hover { background: rgba(223,255,0,0.15); border-color: var(--accent-cyan); }
+
+        /* Archetype list */
+        .archetype-section-header {
+            font-size: 12px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 2px; padding: 10px 12px 5px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+        .archetype-section-header.rhp { color: #ff4081; }
+        .archetype-section-header.lhp { color: #40c4ff; }
+
+        .archetype-item {
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 12px; cursor: pointer; font-size: 13px;
+            transition: all 0.2s; border-left: 3px solid transparent;
+        }
+        .archetype-item:hover { background: rgba(255,255,255,0.04); }
+        .archetype-item.selected { background: rgba(255,255,255,0.08); }
+        .archetype-item.dimmed { opacity: 0.25; }
+
+        .arch-dot {
+            width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+            box-shadow: 0 0 6px currentColor;
+        }
+        .arch-name { flex: 1; font-weight: 700; letter-spacing: 0.5px; }
+        .arch-count { color: var(--text-dim); font-size: 11px; }
+        .arch-role {
+            font-size: 9px; padding: 2px 5px; font-weight: 700; letter-spacing: 0.5px;
+            border: 1px solid; opacity: 0.7;
         }
 
-        button.toggle:hover {
-            background: rgba(223, 255, 0, 0.2);
-            border-color: var(--accent-cyan);
-        }
-
-        /* Cluster toggles in sidebar */
-        .cluster-toggle-list {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .cluster-toggle {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 4px 8px;
-            cursor: pointer;
-            font-size: 10px;
-            transition: opacity 0.2s;
-            border: 1px solid transparent;
-        }
-
-        .cluster-toggle:hover { background: rgba(255,255,255,0.05); }
-        .cluster-toggle.off { opacity: 0.3; }
-
-        .cluster-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-
-        .cluster-toggle .count {
-            margin-left: auto;
-            color: var(--text-dim);
-            font-size: 9px;
+        .sidebar-footer {
+            padding: 8px 12px; border-top: 1px solid rgba(255,255,255,0.08);
+            font-size: 11px; color: var(--accent-cyan);
         }
 
         /* Range slider */
-        input[type=range] {
-            -webkit-appearance: none;
-            width: 100%;
-            background: transparent;
-        }
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
         input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            height: 16px;
-            width: 8px;
-            background: var(--accent-cyan);
-            cursor: pointer;
-            margin-top: -7px;
-            box-shadow: 0 0 10px var(--accent-cyan);
+            -webkit-appearance: none; height: 14px; width: 6px;
+            background: var(--accent-cyan); cursor: pointer; margin-top: -6px;
+            box-shadow: 0 0 8px var(--accent-cyan);
         }
-        input[type=range]::-webkit-slider-runnable-track {
-            width: 100%;
-            height: 2px;
-            background: var(--accent-magenta);
-        }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 2px; background: var(--accent-magenta); }
 
         /* ── RIGHT SIDEBAR — STAT PANEL ── */
         .sidebar-right {
-            grid-column: 3;
-            grid-row: 2 / 4;
-            align-self: start;
-            padding: 20px;
-            transform: translateX(20px);
-            opacity: 0;
-            transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
-            max-height: calc(100vh - 160px);
-            overflow-y: auto;
+            grid-column: 3; grid-row: 2 / 4;
+            align-self: start; padding: 14px;
+            transform: translateX(16px); opacity: 0;
+            transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+            max-height: calc(100vh - 120px); overflow-y: auto;
             pointer-events: none;
-            border-right: 4px solid var(--accent-magenta) !important;
+            border-right: 3px solid var(--accent-magenta) !important;
+            overflow-x: hidden; min-width: 0; max-width: 100%;
         }
-
-        .sidebar-right.visible {
-            transform: translateX(0);
-            opacity: 1;
-            pointer-events: auto;
-        }
+        .sidebar-right.visible { transform: translateX(0); opacity: 1; pointer-events: auto; }
 
         .stat-card-header {
-            font-family: var(--font-serif);
-            font-style: italic;
-            font-size: 24px;
-            margin-bottom: 4px;
-            color: var(--accent-cyan);
-            text-shadow: 0 0 10px var(--accent-cyan);
+            font-family: var(--font-serif); font-style: italic; font-size: 22px;
+            margin-bottom: 3px; color: var(--accent-cyan); text-shadow: 0 0 10px var(--accent-cyan);
+            word-wrap: break-word; overflow-wrap: break-word;
         }
-
         .stat-card-sub {
-            font-size: 11px;
-            color: var(--accent-magenta);
-            margin-bottom: 16px;
-            text-transform: uppercase;
-            border-bottom: 1px solid var(--accent-magenta);
-            padding-bottom: 8px;
-            display: inline-block;
-            font-weight: bold;
+            font-size: 13px; margin-bottom: 14px; text-transform: uppercase;
+            border-bottom: 1px solid; padding-bottom: 6px; display: inline-block; font-weight: bold;
         }
 
-        .stat-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-
+        .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 14px; }
         .stat-box {
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.08);
-            padding: 8px;
-            text-align: center;
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            padding: 6px; text-align: center;
+        }
+        .stat-box .stat-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
+        .stat-box .stat-val { font-size: 18px; font-weight: 700; color: #fff; }
+
+        .section-header {
+            font-size: 11px; color: var(--text-dim); text-transform: uppercase;
+            letter-spacing: 1px; margin: 14px 0 6px; border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding-bottom: 3px;
         }
 
-        .stat-box .stat-label {
-            font-size: 9px;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 4px;
-        }
+        .matchup-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 12px; }
+        .matchup-bar .year-label { width: 34px; color: var(--text-dim); }
+        .matchup-bar .bar-track { flex: 1; height: 10px; background: rgba(255,255,255,0.05); overflow: hidden; }
+        .matchup-bar .bar-fill { height: 100%; transition: width 0.5s ease; }
+        .matchup-bar .woba-label { width: 42px; text-align: right; color: #aaa; }
+        .matchup-bar .pa-label { width: 42px; text-align: right; color: var(--text-dim); font-size: 11px; }
 
-        .stat-box .stat-val {
-            font-size: 16px;
-            font-weight: 700;
-            color: #fff;
-        }
-
-        .stat-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            font-size: 12px;
-        }
-
-        .stat-val { font-weight: 700; color: #fff; }
-
-        .matchup-bar {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 6px;
-            font-size: 11px;
-        }
-
-        .matchup-bar .year-label { width: 32px; color: var(--text-dim); }
-        .matchup-bar .bar-track {
-            flex: 1;
-            height: 10px;
-            background: rgba(255,255,255,0.05);
-            overflow: hidden;
-        }
-        .matchup-bar .bar-fill {
-            height: 100%;
-            transition: width 0.5s ease;
-        }
-        .matchup-bar .woba-label {
-            width: 40px;
-            text-align: right;
-            color: #aaa;
-        }
-        .matchup-bar .pa-label {
-            width: 40px;
-            text-align: right;
-            color: var(--text-dim);
-            font-size: 10px;
-        }
-
-        .close-panel {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            background: none;
-            border: none;
-            color: var(--text-dim);
-            font-size: 18px;
-            cursor: pointer;
-        }
+        .close-panel { position: absolute; top: 10px; right: 10px; background: none; border: none; color: var(--text-dim); font-size: 20px; cursor: pointer; }
         .close-panel:hover { color: #fff; }
 
-        /* Section headers in panel */
-        .section-header {
-            font-size: 10px;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin: 16px 0 8px;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-            padding-bottom: 4px;
+        .king-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 4px 0; font-size: 12px; border-bottom: 1px solid rgba(255,255,255,0.03);
         }
+        .king-row .pitcher-name { flex: 1; }
+        .king-row .king-stat { width: 44px; text-align: right; font-weight: 700; }
+
+        /* Cluster profile in panel */
+        .cluster-profile { margin-bottom: 12px; }
+        .profile-stat { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; gap: 8px; }
+        .profile-stat .pval { font-weight: 700; color: var(--accent-cyan); text-align: right; word-break: break-word; }
 
         /* ── BOTTOM DOCK ── */
         .bottom-dock {
-            grid-column: 1 / -1;
-            grid-row: 3;
-            display: flex;
-            flex-direction: column;
-            gap: 0;
-            max-height: 260px;
-            transition: max-height 0.4s ease;
+            grid-column: 2; grid-row: 3;
+            display: flex; flex-direction: column; gap: 0;
+            max-height: 220px; transition: max-height 0.4s ease;
         }
-
-        .bottom-dock.collapsed { max-height: 44px; }
+        .bottom-dock.collapsed { max-height: 36px; }
 
         .dock-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 16px;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-            cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 6px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); cursor: pointer;
         }
-
-        .dock-header .dock-title {
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: var(--text-dim);
-        }
-
-        .dock-header .dock-toggle {
-            font-size: 12px;
-            color: var(--text-dim);
-            transition: transform 0.3s;
-        }
-
+        .dock-header .dock-title { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-dim); }
+        .dock-header .dock-toggle { font-size: 14px; color: var(--text-dim); transition: transform 0.3s; }
         .bottom-dock.collapsed .dock-toggle { transform: rotate(180deg); }
 
-        .dock-content {
-            padding: 12px 16px;
-            display: flex;
-            gap: 16px;
-            overflow-x: auto;
-            overflow-y: hidden;
-        }
-
-        .dock-module {
-            flex: 1;
-            min-width: 240px;
-            max-width: 350px;
-        }
-
-        .dock-module-title {
-            font-size: 9px;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: var(--accent-cyan);
-            margin-bottom: 8px;
-        }
+        .dock-content { padding: 10px 14px; display: flex; gap: 14px; overflow-x: auto; overflow-y: hidden; }
+        .dock-module { flex: 1; min-width: 120px; max-width: 300px; }
+        .dock-module-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent-cyan); margin-bottom: 6px; font-weight: 700; }
 
         .dock-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 4px 0;
-            font-size: 11px;
-            border-bottom: 1px solid rgba(255,255,255,0.04);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 4px 0; font-size: 12px; border-bottom: 1px solid rgba(255,255,255,0.03);
         }
-
         .dock-row .pitcher-name { color: var(--text-main); flex: 1; }
-        .dock-row .dock-stat {
-            width: 50px;
-            text-align: right;
-            font-weight: 700;
-        }
-
+        .dock-row .dock-stat { width: 44px; text-align: right; font-weight: 700; }
         .dock-row .dock-stat.good { color: var(--accent-cyan); }
-        .dock-row .dock-stat.avg { color: #ffffff; }
         .dock-row .dock-stat.bad { color: var(--accent-magenta); }
 
-        /* Saved batters module */
         .saved-batter {
-            padding: 4px 8px;
-            font-size: 10px;
-            color: var(--text-main);
-            cursor: pointer;
-            border: 1px solid rgba(255,255,255,0.06);
-            margin-bottom: 4px;
-            display: flex;
-            justify-content: space-between;
-            transition: all 0.2s;
+            padding: 4px 8px; font-size: 12px; color: var(--text-main); cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.05); margin-bottom: 3px;
+            display: flex; justify-content: space-between; transition: all 0.2s;
         }
-
-        .saved-batter:hover {
-            background: rgba(0, 240, 255, 0.1);
-            border-color: var(--accent-cyan);
-        }
-
-        /* ── LEGEND BAR ── */
-        .legend-bar {
-            grid-column: 1 / -1;
-            grid-row: 4;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            padding: 0 10px;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 10px;
-            color: var(--text-dim);
-            background: rgba(0,0,0,0.6);
-            padding: 4px 8px;
-            border-radius: 4px;
-        }
-
-        .dot { width: 8px; height: 8px; border-radius: 50%; }
-        .dot.cool { background: #00f0ff; box-shadow: 0 0 8px #00f0ff; }
-        .dot.warm { background: #ff00ff; box-shadow: 0 0 8px #ff00ff; }
-
-        .gradient-bar {
-            width: 100px;
-            height: 4px;
-            background: linear-gradient(to right, var(--accent-magenta), #ffffff, var(--accent-cyan));
-            border-radius: 0px;
-        }
+        .saved-batter:hover { background: rgba(223,255,0,0.08); border-color: var(--accent-cyan); }
 
         /* ── LOADER ── */
         #loader {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #000;
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 100;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
             transition: opacity 1s;
         }
-
-        .loader-text {
-            font-size: 12px;
-            letter-spacing: 4px;
-            color: var(--accent-cyan);
-            animation: pulse 2s infinite;
-        }
-
-        .loader-sub {
-            font-size: 10px;
-            color: var(--text-dim);
-            margin-top: 12px;
-        }
-
+        .loader-text { font-size: 12px; letter-spacing: 4px; color: var(--accent-cyan); animation: pulse 2s infinite; }
+        .loader-sub { font-size: 14px; color: var(--text-dim); margin-top: 12px; }
         @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; text-shadow: 0 0 20px var(--accent-cyan); } 100% { opacity: 0.5; } }
 
         /* 3D labels */
-        .cluster-label-3d {
-            position: absolute;
-            pointer-events: none;
-            text-align: center;
-            z-index: 5;
-        }
+        .cluster-label-3d { position: absolute; pointer-events: none; text-align: left; z-index: 5; transition: opacity 0.3s; }
         .cl-name {
-            font-family: var(--font-mono);
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            text-shadow: 0 0 10px #000, 0 2px 8px #000;
-            padding: 2px 6px;
-            background: rgba(0,0,0,0.5);
-            display: inline-block;
+            font-family: var(--font-mono); font-size: 11px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1px;
+            text-shadow: 0 0 10px #000, 0 0 20px #000, 0 0 30px #000;
+            padding: 3px 8px; background: rgba(0,0,0,0.75);
+            border-left: 2px solid currentColor; display: inline-block; white-space: nowrap;
         }
-        .cl-count {
-            font-size: 8px;
-            color: var(--text-dim);
-        }
+        .cl-hand { font-size: 9px; font-weight: 700; padding: 1px 4px; display: inline-block; margin-left: 4px; opacity: 0.5; }
+        .cl-count { font-size: 9px; color: var(--text-dim); margin-top: 0px; padding-left: 9px; display: none; }
 
-        .batter-label-3d {
-            position: absolute;
-            color: #fff;
-            pointer-events: none;
-            text-align: left;
-            opacity: 0;
-            transition: opacity 0.5s;
-            z-index: 5;
-        }
-        .bl-name { font-family: var(--font-serif); font-style: italic; font-size: 2.5rem; text-shadow: 0 0 20px var(--accent-magenta); line-height: 1; }
-        .bl-stats { font-family: var(--font-mono); font-size: 0.8rem; margin-top: 4px; color: #000; background: var(--accent-cyan); padding: 4px 10px; display: inline-block; font-weight: bold; }
+        .batter-label-3d { position: absolute; color: #fff; pointer-events: none; text-align: left; opacity: 0; transition: opacity 0.5s; z-index: 5; }
+        .bl-name { font-family: var(--font-serif); font-style: italic; font-size: 2.2rem; text-shadow: 0 0 20px var(--accent-magenta); line-height: 1; }
+        .bl-stats { font-family: var(--font-mono); font-size: 0.75rem; margin-top: 4px; color: #000; background: var(--accent-cyan); padding: 3px 8px; display: inline-block; font-weight: bold; }
 
-        /* Scanning animation overlay */
-        #scan-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 50;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
+        /* Scanning overlay */
+        #scan-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 50; pointer-events: none; opacity: 0; transition: opacity 0.3s; }
         #scan-overlay.active { opacity: 1; }
         .scan-line {
-            position: absolute;
-            left: 0;
-            width: 100%;
-            height: 2px;
+            position: absolute; left: 0; width: 100%; height: 2px;
             background: linear-gradient(to right, transparent, var(--accent-magenta), var(--accent-cyan), var(--accent-magenta), transparent);
             box-shadow: 0 0 15px var(--accent-magenta), 0 0 30px var(--accent-cyan);
             animation: scanDown 1.2s ease-in-out;
         }
-        @keyframes scanDown {
-            0% { top: 0; opacity: 1; }
-            100% { top: 100%; opacity: 0; }
-        }
-        .scan-flash {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, rgba(255,0,127,0.15) 0%, transparent 70%);
-            animation: flashPulse 0.6s ease-out;
-        }
-        @keyframes flashPulse {
-            0% { opacity: 1; transform: scale(0.8); }
-            100% { opacity: 0; transform: scale(1.2); }
-        }
-        .scan-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-family: var(--font-mono);
-            font-size: 14px;
-            letter-spacing: 4px;
-            color: var(--accent-cyan);
-            text-transform: uppercase;
-            animation: scanTextAnim 1.2s ease-out;
-        }
-        @keyframes scanTextAnim {
-            0% { opacity: 0; letter-spacing: 20px; }
-            30% { opacity: 1; letter-spacing: 4px; }
-            80% { opacity: 1; }
-            100% { opacity: 0; }
-        }
+        @keyframes scanDown { 0% { top: 0; opacity: 1; } 100% { top: 100%; opacity: 0; } }
+        .scan-flash { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, rgba(255,0,127,0.12) 0%, transparent 70%); animation: flashPulse 0.6s ease-out; }
+        @keyframes flashPulse { 0% { opacity: 1; transform: scale(0.8); } 100% { opacity: 0; transform: scale(1.2); } }
+        .scan-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: var(--font-mono); font-size: 14px; letter-spacing: 4px; color: var(--accent-cyan); text-transform: uppercase; animation: scanTextAnim 1.2s ease-out; }
+        @keyframes scanTextAnim { 0% { opacity: 0; letter-spacing: 20px; } 30% { opacity: 1; letter-spacing: 4px; } 80% { opacity: 1; } 100% { opacity: 0; } }
 
-        /* Scrollbar styling */
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); }
     </style>
 </head>
 <body>
 
     <div id="loader">
         <div class="loader-text">OVERRIDING_SYSTEM_CORE... [NEON_ACTIVE]</div>
-        <div class="loader-sub" id="loader-status" style="color: var(--accent-cyan); margin-top: 12px;">Loading cluster data...</div>
+        <div class="loader-sub" id="loader-status" style="color: var(--accent-cyan);">Loading cluster data...</div>
     </div>
 
     <div id="canvas-container"></div>
-
-    <!-- 3D labels container -->
     <div id="labels-3d"></div>
-
-    <!-- Scan transition overlay -->
     <div id="scan-overlay"></div>
 
     <div id="batter-label-container" class="batter-label-3d">
@@ -704,73 +327,56 @@
 
     <div id="ui-layer">
         <header class="glass-panel">
-            <div style="padding: 0 20px; display: flex; width: 100%; justify-content: space-between; align-items: center;">
-                <div class="brand">COSMOS METRICS <span style="font-size: 10px; color: var(--accent-cyan); margin-left: 10px;">// NEON LINK ESTABLISHED</span></div>
-
+            <div style="padding: 0 16px; display: flex; width: 100%; justify-content: space-between; align-items: center;">
+                <div class="brand">COSMOS METRICS <span style="font-size: 9px; color: var(--accent-cyan); margin-left: 8px;">// v6</span></div>
                 <div class="search-container">
                     <input type="text" id="batter-search" placeholder="SEARCH BATTER [e.g. Judge, Soto]..." autocomplete="off">
                     <div class="search-dropdown" id="search-dropdown"></div>
                 </div>
-
                 <div class="batter-chips" id="batter-chips"></div>
             </div>
         </header>
 
+        <!-- LEFT: Archetype Directory -->
         <aside class="sidebar-left glass-panel">
-            <div class="control-group">
-                <span class="label">Metric</span>
-                <div class="toggle-row" id="metric-toggles">
+            <div class="controls-bar">
+                <span class="label">Controls</span>
+                <div class="toggle-row" id="metric-toggles" style="margin-bottom: 6px;">
                     <button class="toggle active" data-stat="wOBA">wOBA</button>
                     <button class="toggle" data-stat="BA">BA</button>
                     <button class="toggle" data-stat="SLG">SLG</button>
                     <button class="toggle" data-stat="K_pct">K%</button>
                     <button class="toggle" data-stat="BB_pct">BB%</button>
                 </div>
-            </div>
-
-            <div class="control-group">
-                <span class="label">Filter</span>
-                <div class="toggle-row" id="filter-toggles">
+                <div class="toggle-row" id="filter-toggles" style="margin-bottom: 6px;">
                     <button class="toggle active" data-filter="all">ALL</button>
                     <button class="toggle" data-filter="RHP">RHP</button>
                     <button class="toggle" data-filter="LHP">LHP</button>
-                    <button class="toggle" data-filter="SP">SP</button>
-                    <button class="toggle" data-filter="RP">RP</button>
                 </div>
-            </div>
-
-            <div class="control-group">
-                <span class="label">Year</span>
-                <div class="toggle-row">
-                    <select id="year-select" style="background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); color: #fff; padding: 5px 8px; font-family: var(--font-mono); font-size: 10px; outline: none; width: 100%;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                    <span style="font-size: 11px; color: var(--text-dim); white-space: nowrap;">MIN PA: <span id="pa-val">10</span></span>
+                    <input type="range" min="1" max="200" value="10" id="pa-slider" style="flex:1;">
+                </div>
+                <div style="margin-top: 4px;">
+                    <select id="year-select" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 3px 6px; font-family: var(--font-mono); font-size: 9px; outline: none; width: 100%;">
                         <option value="all">ALL YEARS</option>
                     </select>
                 </div>
             </div>
 
-            <div class="control-group">
-                <span class="label">PA Confidence (Min: <span id="pa-val">10</span>)</span>
-                <input type="range" min="1" max="200" value="10" id="pa-slider">
-            </div>
+            <!-- Archetype directory -->
+            <div id="archetype-directory"></div>
 
-            <div class="control-group">
-                <span class="label">Archetypes</span>
-                <div class="cluster-toggle-list" id="cluster-toggles"></div>
-            </div>
-
-            <div style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px;">
-                <span class="label">System</span>
-                <div style="font-size: 10px; color: var(--accent-cyan);" id="system-status">● LOADING...</div>
-            </div>
+            <div class="sidebar-footer" id="system-status">● LOADING...</div>
         </aside>
 
-        <!-- Right stat panel -->
+        <!-- RIGHT: Stat Panel -->
         <aside class="sidebar-right glass-panel" id="stat-panel" style="position: relative;">
             <button class="close-panel" id="close-panel">✕</button>
             <div id="panel-content"></div>
         </aside>
 
-        <!-- Bottom dock -->
+        <!-- Bottom Dock -->
         <div class="bottom-dock glass-panel" id="bottom-dock">
             <div class="dock-header" id="dock-header">
                 <span class="dock-title">MATCHUP INTELLIGENCE</span>
@@ -778,35 +384,21 @@
             </div>
             <div class="dock-content" id="dock-content">
                 <div class="dock-module" id="dock-best">
-                    <div class="dock-module-title">BEST MATCHUPS</div>
-                    <div id="dock-best-content" style="font-size: 11px; color: var(--text-dim);">Search a batter to see matchup data</div>
+                    <div class="dock-module-title">Best Matchups</div>
+                    <div id="dock-best-content" style="font-size: 10px; color: var(--text-dim);">Search a batter</div>
                 </div>
                 <div class="dock-module" id="dock-worst">
-                    <div class="dock-module-title">WORST MATCHUPS</div>
-                    <div id="dock-worst-content" style="font-size: 11px; color: var(--text-dim);">—</div>
+                    <div class="dock-module-title">Worst Matchups</div>
+                    <div id="dock-worst-content" style="font-size: 10px; color: var(--text-dim);">—</div>
                 </div>
                 <div class="dock-module" id="dock-pitchers">
-                    <div class="dock-module-title">TOP PITCHERS FACED</div>
-                    <div id="dock-pitchers-content" style="font-size: 11px; color: var(--text-dim);">—</div>
+                    <div class="dock-module-title">Archetype Kings</div>
+                    <div id="dock-pitchers-content" style="font-size: 10px; color: var(--text-dim);">—</div>
                 </div>
                 <div class="dock-module" id="dock-saved">
-                    <div class="dock-module-title">SAVED SEARCHES</div>
-                    <div id="dock-saved-content" style="font-size: 11px; color: var(--text-dim);">No saved searches</div>
+                    <div class="dock-module-title">Saved Searches</div>
+                    <div id="dock-saved-content" style="font-size: 10px; color: var(--text-dim);">No saved searches</div>
                 </div>
-            </div>
-        </div>
-
-        <div class="legend-bar">
-            <div class="legend-item">
-                <div class="dot cool"></div> LHP
-                <div class="dot warm" style="margin-left: 8px;"></div> RHP
-            </div>
-            <div class="legend-item" id="legend-stats">
-                <span id="pitcher-count-label">—</span>
-            </div>
-            <div class="legend-item">
-                <span style="margin-right: 8px;">PERFORMANCE</span>
-                <div class="gradient-bar"></div>
             </div>
         </div>
     </div>
@@ -821,7 +413,6 @@
     <script src="https://unpkg.com/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
     <script src="https://unpkg.com/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
-    <!-- Fuse.js for fuzzy search -->
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
 
     <script>
@@ -829,24 +420,17 @@
         'use strict';
 
         // ═══════════════════════════════════════════════
-        // DATA STORE
+        // DATA STORE & STATE
         // ═══════════════════════════════════════════════
-        const DATA = {
-            clusters: {},
-            batters: [],
-            pitcherSeasons: [],
-            hitterVsCluster: [],
-            archetypeKings: {},
-        };
+        const DATA = { clusters: {}, batters: [], pitcherSeasons: [], hitterVsCluster: [], archetypeKings: {} };
 
-        // APP STATE
         const STATE = {
-            activeBatters: [],       // [{batter, batter_name, total_PA}, ...]
+            activeBatters: [],
             selectedStat: 'wOBA',
             selectedYear: 'all',
             minPA: 10,
             visibleClusters: new Set(),
-            selectedLine: null,      // {batter, cluster}
+            highlightedCluster: null,    // clicked from directory
             savedSearches: JSON.parse(localStorage.getItem('cosmos_saved') || '[]'),
         };
 
@@ -856,7 +440,7 @@
         async function loadJSON(url, label, setStatus) {
             setStatus(`Loading ${label}...`);
             const resp = await fetch(url);
-            if (!resp.ok) throw new Error(`Failed to load ${label}: ${resp.status} ${resp.statusText}`);
+            if (!resp.ok) throw new Error(`Failed to load ${label}: ${resp.status}`);
             const text = await resp.text();
             setStatus(`Parsing ${label} (${(text.length / 1e6).toFixed(1)}MB)...`);
             return JSON.parse(text);
@@ -868,43 +452,25 @@
                 const el = document.getElementById('loader-status');
                 if (el) el.textContent = msg;
             };
-
             DATA.clusters = await loadJSON('clusters.json', 'cluster profiles', setStatus);
             DATA.batters = await loadJSON('batters.json', 'batter index', setStatus);
-            DATA.pitcherSeasons = await loadJSON('pitcher_seasons.json', 'pitcher seasons (6K dots)', setStatus);
+            DATA.pitcherSeasons = await loadJSON('pitcher_seasons.json', 'pitcher seasons', setStatus);
             DATA.hitterVsCluster = await loadJSON('hitter_vs_cluster.json', 'hitter matchups', setStatus);
-
-            // Load archetype kings (compact, ~13KB)
-            try {
-                DATA.archetypeKings = await loadJSON('archetype_kings.json', 'archetype kings', setStatus);
-            } catch(e) {
-                console.log('Archetype kings data not available');
-                DATA.archetypeKings = {};
-            }
-
-            // Initialize visibility
+            try { DATA.archetypeKings = await loadJSON('archetype_kings.json', 'archetype kings', setStatus); }
+            catch(e) { DATA.archetypeKings = {}; }
             STATE.visibleClusters = new Set(Object.keys(DATA.clusters));
-
-            // Extract available years
             const years = [...new Set(DATA.hitterVsCluster.map(r => r.game_year))].sort();
             const yearSelect = document.getElementById('year-select');
-            years.forEach(y => {
-                const opt = document.createElement('option');
-                opt.value = y;
-                opt.textContent = y;
-                yearSelect.appendChild(opt);
-            });
-
+            years.forEach(y => { const opt = document.createElement('option'); opt.value = y; opt.textContent = y; yearSelect.appendChild(opt); });
             setStatus('Initializing cosmos...');
         }
 
-
         // ═══════════════════════════════════════════════
-        // THREE.JS SCENE SETUP
+        // THREE.JS SCENE
         // ═══════════════════════════════════════════════
         const container = document.getElementById('canvas-container');
         const scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0x050505, 0.008);
+        scene.fog = new THREE.FogExp2(0x050505, 0.007);
         scene.background = new THREE.Color(0x050505);
 
         const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -922,120 +488,63 @@
         controls.maxDistance = 120;
         controls.minDistance = 15;
 
-        // Post-processing bloom
         const renderScene = new THREE.RenderPass(scene, camera);
-        const bloomPass = new THREE.UnrealBloomPass(
-            new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85
-        );
+        const bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
         bloomPass.threshold = 0;
-        bloomPass.strength = 2.2;
-        bloomPass.radius = 0.6;
-
+        bloomPass.strength = 2.0;
+        bloomPass.radius = 0.5;
         const composer = new THREE.EffectComposer(renderer);
         composer.addPass(renderScene);
         composer.addPass(bloomPass);
 
-        // ═══════════════════════════════════════════════
-        // COORDINATE SCALING
-        // ═══════════════════════════════════════════════
-        // PCA ranges: x ~ [-10, 7], y ~ [-2.5, 1.8], z ~ [-1, 3]
-        // Scale to visually nice 3D space
+        // Coordinate scaling
         const SCALE = { x: 3.5, y: 8.0, z: 5.0 };
         const OFFSET = { x: 1.5, y: 2.0, z: 0.0 };
-
         function pcaToWorld(px, py, pz) {
-            return new THREE.Vector3(
-                px * SCALE.x + OFFSET.x,
-                py * SCALE.y + OFFSET.y,
-                pz * SCALE.z + OFFSET.z
-            );
+            return new THREE.Vector3(px * SCALE.x + OFFSET.x, py * SCALE.y + OFFSET.y, pz * SCALE.z + OFFSET.z);
         }
 
-
-        // ═══════════════════════════════════════════════
-        // BACKGROUND STARS
-        // ═══════════════════════════════════════════════
+        // Stars
         function createStars() {
             const geo = new THREE.BufferGeometry();
-            const positions = [];
-            const colors = [];
+            const positions = [], colors = [];
             const palette = [new THREE.Color(0xff00ff), new THREE.Color(0x00f0ff), new THREE.Color(0xffffff), new THREE.Color(0xdfff00)];
             for (let i = 0; i < 1200; i++) {
-                positions.push(
-                    (Math.random() - 0.5) * 300,
-                    (Math.random() - 0.5) * 300,
-                    (Math.random() - 0.5) * 300
-                );
+                positions.push((Math.random()-0.5)*300, (Math.random()-0.5)*300, (Math.random()-0.5)*300);
                 const c = palette[Math.floor(Math.random() * palette.length)];
                 colors.push(c.r, c.g, c.b);
             }
             geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
             geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-            const mat = new THREE.PointsMaterial({
-                size: 0.6,
-                vertexColors: true,
-                transparent: true,
-                opacity: 0.5,
-                blending: THREE.AdditiveBlending,
-            });
-            scene.add(new THREE.Points(geo, mat));
+            scene.add(new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.5, vertexColors: true, transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending })));
         }
 
-
         // ═══════════════════════════════════════════════
-        // PITCHER DOTS (InstancedMesh for performance)
+        // PITCHER DOTS
         // ═══════════════════════════════════════════════
-        let pitcherDots = null;
-        let pitcherDotData = [];  // parallel array of data per instance
+        let pitcherDots = null, pitcherDotData = [];
 
         function createPitcherDots() {
             const count = DATA.pitcherSeasons.length;
             const geo = new THREE.SphereGeometry(0.12, 6, 6);
-            const mat = new THREE.MeshBasicMaterial({
-                color: 0xffffff,
-                transparent: true,
-                blending: THREE.AdditiveBlending,
-            });
+            const mat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, blending: THREE.AdditiveBlending });
             pitcherDots = new THREE.InstancedMesh(geo, mat, count);
             pitcherDotData = [];
-
-            const dummy = new THREE.Object3D();
-            const color = new THREE.Color();
+            const dummy = new THREE.Object3D(), color = new THREE.Color();
 
             DATA.pitcherSeasons.forEach((ps, i) => {
                 const cluster = DATA.clusters[ps.cluster];
                 if (!cluster) return;
-
                 const pos = pcaToWorld(ps.pca_x, ps.pca_y, ps.pca_z);
-
-                // Tiny random jitter for organic feel
-                pos.x += (Math.random() - 0.5) * 0.3;
-                pos.y += (Math.random() - 0.5) * 0.3;
-                pos.z += (Math.random() - 0.5) * 0.3;
-
+                pos.x += (Math.random()-0.5)*0.3; pos.y += (Math.random()-0.5)*0.3; pos.z += (Math.random()-0.5)*0.3;
                 dummy.position.copy(pos);
-
-                // Slight random size variation
-                const s = 0.8 + Math.random() * 0.4;
-                dummy.scale.set(s, s, s);
-                dummy.updateMatrix();
+                const s = 0.8 + Math.random()*0.4;
+                dummy.scale.set(s,s,s); dummy.updateMatrix();
                 pitcherDots.setMatrixAt(i, dummy.matrix);
-
-                // Color from cluster
                 color.set(cluster.color);
                 pitcherDots.setColorAt(i, color);
-
-                pitcherDotData.push({
-                    index: i,
-                    cluster: ps.cluster,
-                    name: ps.player_name,
-                    year: ps.game_year,
-                    velo: ps.avg_velo_FF,
-                    whiff: ps.whiff_rate,
-                    worldPos: pos.clone(),
-                });
+                pitcherDotData.push({ index: i, cluster: ps.cluster, name: ps.player_name, year: ps.game_year, worldPos: pos.clone() });
             });
-
             pitcherDots.instanceMatrix.needsUpdate = true;
             if (pitcherDots.instanceColor) pitcherDots.instanceColor.needsUpdate = true;
             scene.add(pitcherDots);
@@ -1044,7 +553,10 @@
         function updateDotVisibility() {
             if (!pitcherDots) return;
             const dummy = new THREE.Object3D();
-            const hiddenPos = new THREE.Vector3(9999, 9999, 9999);
+            const hiddenPos = new THREE.Vector3(9999,9999,9999);
+            const color = new THREE.Color();
+            const dimColor = new THREE.Color(0x222222);
+            const highlighted = STATE.highlightedCluster;
 
             pitcherDotData.forEach((d, i) => {
                 const visible = STATE.visibleClusters.has(d.cluster);
@@ -1056,43 +568,64 @@
                 } else {
                     dummy.position.copy(d.worldPos);
                 }
+
+                // Dim non-highlighted clusters when one is selected
+                if (highlighted && visible) {
+                    if (d.cluster === highlighted) {
+                        const s = 1.2;
+                        dummy.scale.set(s,s,s);
+                        color.set(DATA.clusters[d.cluster].color);
+                    } else {
+                        const s = 0.6;
+                        dummy.scale.set(s,s,s);
+                        color.copy(dimColor);
+                    }
+                    pitcherDots.setColorAt(i, color);
+                } else if (visible) {
+                    color.set(DATA.clusters[d.cluster]?.color || '#fff');
+                    pitcherDots.setColorAt(i, color);
+                }
+
                 dummy.updateMatrix();
                 pitcherDots.setMatrixAt(i, dummy.matrix);
             });
             pitcherDots.instanceMatrix.needsUpdate = true;
+            if (pitcherDots.instanceColor) pitcherDots.instanceColor.needsUpdate = true;
         }
 
-
         // ═══════════════════════════════════════════════
-        // CLUSTER LABELS (HTML overlays)
+        // CLUSTER LABELS
         // ═══════════════════════════════════════════════
         const clusterLabelEls = {};
 
         function createClusterLabels() {
             const labelsContainer = document.getElementById('labels-3d');
             Object.entries(DATA.clusters).forEach(([id, cluster]) => {
+                // Determine role from centroid
+                const role = cluster.centroid?.is_sp > 0.5 ? 'SP' : 'RP';
                 const el = document.createElement('div');
                 el.className = 'cluster-label-3d';
                 el.innerHTML = `
-                    <div class="cl-name" style="color: ${cluster.color};">${cluster.short_name}</div>
-                    <div class="cl-count">${cluster.pitcher_count} pitchers</div>
+                    <div class="cl-name" style="color: ${cluster.color};">${cluster.short_name}<span class="cl-hand">${cluster.hand} ${role}</span></div>
+                    <div class="cl-count">${cluster.pitcher_count}</div>
                 `;
                 labelsContainer.appendChild(el);
-                clusterLabelEls[id] = {
-                    el: el,
-                    worldPos: pcaToWorld(cluster.pca_x, cluster.pca_y, cluster.pca_z),
-                };
+                clusterLabelEls[id] = { el, worldPos: pcaToWorld(cluster.pca_x, cluster.pca_y, cluster.pca_z) };
             });
         }
 
         function updateClusterLabels() {
             Object.entries(clusterLabelEls).forEach(([id, data]) => {
                 const visible = STATE.visibleClusters.has(id);
-                if (!visible) {
-                    data.el.style.display = 'none';
+                const highlighted = STATE.highlightedCluster;
+                if (!visible || (highlighted && id !== highlighted)) {
+                    data.el.style.opacity = highlighted && id !== highlighted ? '0.15' : '0';
+                    if (!visible) data.el.style.display = 'none';
+                    else data.el.style.display = 'block';
                     return;
                 }
                 data.el.style.display = 'block';
+                data.el.style.opacity = '1';
                 const vec = data.worldPos.clone().project(camera);
                 const x = (vec.x * 0.5 + 0.5) * window.innerWidth;
                 const y = (-(vec.y * 0.5) + 0.5) * window.innerHeight;
@@ -1100,90 +633,24 @@
             });
         }
 
-
         // ═══════════════════════════════════════════════
-        // SUN SHADER (for batter)
+        // SUN SHADER
         // ═══════════════════════════════════════════════
-        const sunVertexShader = `
-            varying vec2 vUv;
-            varying vec3 vPosition;
-            void main() {
-                vUv = uv;
-                vPosition = position;
-                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-            }
-        `;
-
+        const sunVertexShader = `varying vec2 vUv; varying vec3 vPosition; void main() { vUv = uv; vPosition = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
         const sunFragmentShader = `
-            varying vec2 vUv;
-            varying vec3 vPosition;
-            uniform float time;
-            uniform vec3 color1;
-            uniform vec3 color2;
-
-            vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-            vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-            vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
-            vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
-            float snoise(vec3 v) {
-                const vec2 C = vec2(1.0/6.0, 1.0/3.0);
-                const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
-                vec3 i = floor(v + dot(v, C.yyy));
-                vec3 x0 = v - i + dot(i, C.xxx);
-                vec3 g = step(x0.yzx, x0.xyz);
-                vec3 l = 1.0 - g;
-                vec3 i1 = min(g.xyz, l.zxy);
-                vec3 i2 = max(g.xyz, l.zxy);
-                vec3 x1 = x0 - i1 + C.xxx;
-                vec3 x2 = x0 - i2 + C.yyy;
-                vec3 x3 = x0 - D.yyy;
-                i = mod289(i);
-                vec4 p = permute(permute(permute(
-                    i.z + vec4(0.0, i1.z, i2.z, 1.0))
-                    + i.y + vec4(0.0, i1.y, i2.y, 1.0))
-                    + i.x + vec4(0.0, i1.x, i2.x, 1.0));
-                float n_ = 0.142857142857;
-                vec3 ns = n_ * D.wyz - D.xzx;
-                vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
-                vec4 x_ = floor(j * ns.z);
-                vec4 y_ = floor(j - 7.0 * x_);
-                vec4 x = x_ *ns.x + ns.yyyy;
-                vec4 y = y_ *ns.x + ns.yyyy;
-                vec4 h = 1.0 - abs(x) - abs(y);
-                vec4 b0 = vec4(x.xy, y.xy);
-                vec4 b1 = vec4(x.zw, y.zw);
-                vec4 s0 = floor(b0)*2.0 + 1.0;
-                vec4 s1 = floor(b1)*2.0 + 1.0;
-                vec4 sh = -step(h, vec4(0.0));
-                vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy;
-                vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
-                vec3 p0 = vec3(a0.xy,h.x);
-                vec3 p1 = vec3(a0.zw,h.y);
-                vec3 p2 = vec3(a1.xy,h.z);
-                vec3 p3 = vec3(a1.zw,h.w);
-                vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3)));
-                p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
-                vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
-                m = m * m;
-                return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
-            }
-
-            void main() {
-                float n = snoise(vPosition * 2.0 + time * 0.5);
-                vec3 finalColor = mix(color1, color2, n * 0.5 + 0.5);
-                gl_FragColor = vec4(finalColor * (1.5 + n), 1.0);
-            }
+            varying vec2 vUv; varying vec3 vPosition; uniform float time; uniform vec3 color1; uniform vec3 color2;
+            vec3 mod289(vec3 x){return x-floor(x*(1./289.))*289.;}vec4 mod289(vec4 x){return x-floor(x*(1./289.))*289.;}
+            vec4 permute(vec4 x){return mod289(((x*34.)+1.)*x);}vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}
+            float snoise(vec3 v){const vec2 C=vec2(1./6.,1./3.);const vec4 D=vec4(0.,.5,1.,2.);vec3 i=floor(v+dot(v,C.yyy));vec3 x0=v-i+dot(i,C.xxx);vec3 g=step(x0.yzx,x0.xyz);vec3 l=1.-g;vec3 i1=min(g.xyz,l.zxy);vec3 i2=max(g.xyz,l.zxy);vec3 x1=x0-i1+C.xxx;vec3 x2=x0-i2+C.yyy;vec3 x3=x0-D.yyy;i=mod289(i);vec4 p=permute(permute(permute(i.z+vec4(0.,i1.z,i2.z,1.))+i.y+vec4(0.,i1.y,i2.y,1.))+i.x+vec4(0.,i1.x,i2.x,1.));float n_=.142857142857;vec3 ns=n_*D.wyz-D.xzx;vec4 j=p-49.*floor(p*ns.z*ns.z);vec4 x_=floor(j*ns.z);vec4 y_=floor(j-7.*x_);vec4 x=x_*ns.x+ns.yyyy;vec4 y=y_*ns.x+ns.yyyy;vec4 h=1.-abs(x)-abs(y);vec4 b0=vec4(x.xy,y.xy);vec4 b1=vec4(x.zw,y.zw);vec4 s0=floor(b0)*2.+1.;vec4 s1=floor(b1)*2.+1.;vec4 sh=-step(h,vec4(0.));vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy;vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;vec3 p0=vec3(a0.xy,h.x);vec3 p1=vec3(a0.zw,h.y);vec3 p2=vec3(a1.xy,h.z);vec3 p3=vec3(a1.zw,h.w);vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));p0*=norm.x;p1*=norm.y;p2*=norm.z;p3*=norm.w;vec4 m=max(.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.);m=m*m;return 42.*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));}
+            void main(){float n=snoise(vPosition*2.+time*.5);vec3 fc=mix(color1,color2,n*.5+.5);gl_FragColor=vec4(fc*(1.5+n),1.);}
         `;
 
-
         // ═══════════════════════════════════════════════
-        // BATTER SUN + ENERGY BEAMS
+        // BATTER SUN + BEAMS
         // ═══════════════════════════════════════════════
         let sunGroup = new THREE.Group();
         let currentBeams = [];
         scene.add(sunGroup);
-
-        // Sun position: in front of the cluster cloud, centered
         const SUN_POS = new THREE.Vector3(2, -8, 35);
 
         function getSunTier(woba) {
@@ -1194,289 +661,147 @@
             return { name: 'BROWN DWARF', color1: 0x666666, color2: 0x999999 };
         }
 
-        function getBeamColor(val, stat) {
-            // For K% and Whiff%, lower is better for the batter
-            const inverted = (stat === 'K_pct' || stat === 'BB_pct');
-            let t;
-            if (stat === 'wOBA') {
-                t = Math.max(0, Math.min(1, (val - 0.250) / (0.400 - 0.250)));
-            } else if (stat === 'BA') {
-                t = Math.max(0, Math.min(1, (val - 0.180) / (0.320 - 0.180)));
-            } else if (stat === 'SLG') {
-                t = Math.max(0, Math.min(1, (val - 0.250) / (0.550 - 0.250)));
-            } else if (stat === 'K_pct') {
-                t = 1.0 - Math.max(0, Math.min(1, (val - 0.10) / (0.35 - 0.10)));
-            } else if (stat === 'BB_pct') {
-                t = Math.max(0, Math.min(1, (val - 0.04) / (0.16 - 0.04)));
-            } else {
-                t = 0.5;
-            }
-            // Magenta → White → Yellow-Green (neon)
-            const bad = new THREE.Color(0xff007f);
-            const mid = new THREE.Color(0xffffff);
-            const good = new THREE.Color(0xdfff00);
-            if (t < 0.5) {
-                return new THREE.Color().lerpColors(bad, mid, t * 2);
-            } else {
-                return new THREE.Color().lerpColors(mid, good, (t - 0.5) * 2);
-            }
-        }
-
-        // Derive stats from counting stats
         function deriveStats(r) {
-            const pa = r.PA || 0, ab = r.AB || 0, h = r.H || 0;
-            const hr = r.HR || 0, bb = r.BB || 0, k = r.K || 0, hbp = r.HBP || 0;
-            const s = r.singles || 0, d = r.doubles || 0, t = r.triples || 0;
-            r.BA = ab > 0 ? h / ab : 0;
-            r.OBP = pa > 0 ? (h + bb + hbp) / pa : 0;
-            r.SLG = ab > 0 ? (s + 2*d + 3*t + 4*hr) / ab : 0;
-            r.K_pct = pa > 0 ? k / pa : 0;
-            r.BB_pct = pa > 0 ? bb / pa : 0;
+            const pa = r.PA||0, ab = r.AB||0, h = r.H||0, hr = r.HR||0, bb = r.BB||0, k = r.K||0, hbp = r.HBP||0;
+            const s = r.singles||0, d = r.doubles||0, t = r.triples||0;
+            r.BA = ab>0 ? h/ab : 0; r.OBP = pa>0 ? (h+bb+hbp)/pa : 0;
+            r.SLG = ab>0 ? (s+2*d+3*t+4*hr)/ab : 0; r.K_pct = pa>0 ? k/pa : 0; r.BB_pct = pa>0 ? bb/pa : 0;
             return r;
         }
 
         function getMatchupData(batterObj) {
             let rows = DATA.hitterVsCluster.filter(r => r.batter === batterObj.batter);
-            if (STATE.selectedYear !== 'all') {
-                rows = rows.filter(r => r.game_year === parseInt(STATE.selectedYear));
-            }
-            // Aggregate across years if "all"
+            if (STATE.selectedYear !== 'all') rows = rows.filter(r => r.game_year === parseInt(STATE.selectedYear));
             if (STATE.selectedYear === 'all' && rows.length > 0) {
                 const grouped = {};
                 rows.forEach(r => {
                     const k = r.cluster;
-                    if (!grouped[k]) {
-                        grouped[k] = { cluster: k, PA: 0, AB: 0, H: 0, HR: 0, BB: 0, K: 0, HBP: 0, singles: 0, doubles: 0, triples: 0, woba_sum: 0 };
-                    }
+                    if (!grouped[k]) grouped[k] = { cluster: k, PA:0, AB:0, H:0, HR:0, BB:0, K:0, HBP:0, singles:0, doubles:0, triples:0, woba_sum:0 };
                     const g = grouped[k];
-                    g.PA += r.PA || 0; g.AB += r.AB || 0; g.H += r.H || 0;
-                    g.HR += r.HR || 0; g.BB += r.BB || 0; g.K += r.K || 0;
-                    g.HBP += r.HBP || 0; g.singles += r.singles || 0;
-                    g.doubles += r.doubles || 0; g.triples += r.triples || 0;
-                    g.woba_sum += (r.wOBA || 0) * (r.PA || 0);
+                    g.PA+=r.PA||0; g.AB+=r.AB||0; g.H+=r.H||0; g.HR+=r.HR||0; g.BB+=r.BB||0; g.K+=r.K||0;
+                    g.HBP+=r.HBP||0; g.singles+=r.singles||0; g.doubles+=r.doubles||0; g.triples+=r.triples||0;
+                    g.woba_sum += (r.wOBA||0) * (r.PA||0);
                 });
-                return Object.values(grouped).map(g => {
-                    g.wOBA = g.PA > 0 ? g.woba_sum / g.PA : 0;
-                    return deriveStats(g);
-                });
+                return Object.values(grouped).map(g => { g.wOBA = g.PA>0 ? g.woba_sum/g.PA : 0; return deriveStats(g); });
             }
-            // Derive stats for single-year rows too
             return rows.map(r => deriveStats({...r}));
         }
 
         function spawnBatter(batterObj) {
-            // Clean previous
             while (sunGroup.children.length > 0) sunGroup.remove(sunGroup.children[0]);
-            currentBeams.forEach(b => scene.remove(b));
-            currentBeams = [];
-
-            // Compute overall wOBA
+            currentBeams.forEach(b => scene.remove(b)); currentBeams = [];
             const matchups = getMatchupData(batterObj);
-            const totalPA = matchups.reduce((s, r) => s + (r.PA || 0), 0);
-            const totalWoba = matchups.reduce((s, r) => s + (r.wOBA || 0) * (r.PA || 0), 0);
-            const overallWoba = totalPA > 0 ? totalWoba / totalPA : 0;
-
+            const totalPA = matchups.reduce((s,r) => s+(r.PA||0), 0);
+            const totalWoba = matchups.reduce((s,r) => s+(r.wOBA||0)*(r.PA||0), 0);
+            const overallWoba = totalPA > 0 ? totalWoba/totalPA : 0;
             const tier = getSunTier(overallWoba);
 
-            // Create sun
             const sunGeo = new THREE.SphereGeometry(2.5, 32, 32);
             const sunMat = new THREE.ShaderMaterial({
-                uniforms: {
-                    time: { value: 0 },
-                    color1: { value: new THREE.Color(tier.color1) },
-                    color2: { value: new THREE.Color(tier.color2) },
-                },
-                vertexShader: sunVertexShader,
-                fragmentShader: sunFragmentShader,
+                uniforms: { time: {value:0}, color1: {value: new THREE.Color(tier.color1)}, color2: {value: new THREE.Color(tier.color2)} },
+                vertexShader: sunVertexShader, fragmentShader: sunFragmentShader,
             });
-            const sun = new THREE.Mesh(sunGeo, sunMat);
-            sunGroup.add(sun);
+            sunGroup.add(new THREE.Mesh(sunGeo, sunMat));
 
-            // Glow sprite
-            const canvas = document.createElement('canvas');
-            canvas.width = 128;
-            canvas.height = 128;
+            const canvas = document.createElement('canvas'); canvas.width=128; canvas.height=128;
             const ctx = canvas.getContext('2d');
-            const gradient = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
-            gradient.addColorStop(0, 'rgba(255, 0, 127, 0.8)');
-            gradient.addColorStop(0.4, 'rgba(223, 255, 0, 0.3)');
-            gradient.addColorStop(1, 'rgba(255, 0, 255, 0)');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, 128, 128);
-            const glowTexture = new THREE.CanvasTexture(canvas);
-            const spriteMat = new THREE.SpriteMaterial({
-                map: glowTexture,
-                color: tier.color1,
-                transparent: true,
-                blending: THREE.AdditiveBlending,
-            });
-            const sprite = new THREE.Sprite(spriteMat);
-            sprite.scale.set(16, 16, 1);
-            sunGroup.add(sprite);
-
+            const gradient = ctx.createRadialGradient(64,64,0,64,64,64);
+            gradient.addColorStop(0, 'rgba(255,0,127,0.8)'); gradient.addColorStop(0.4, 'rgba(223,255,0,0.3)'); gradient.addColorStop(1, 'rgba(255,0,255,0)');
+            ctx.fillStyle = gradient; ctx.fillRect(0,0,128,128);
+            const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas), color: tier.color1, transparent: true, blending: THREE.AdditiveBlending }));
+            sprite.scale.set(16,16,1); sunGroup.add(sprite);
             sunGroup.position.copy(SUN_POS);
+            sunGroup.scale.set(0,0,0);
+            new TWEEN.Tween(sunGroup.scale).to({x:1,y:1,z:1}, 1200).easing(TWEEN.Easing.Elastic.Out).onComplete(() => spawnBeams(batterObj, matchups)).start();
 
-            // Animate in
-            sunGroup.scale.set(0, 0, 0);
-            new TWEEN.Tween(sunGroup.scale)
-                .to({ x: 1, y: 1, z: 1 }, 1200)
-                .easing(TWEEN.Easing.Elastic.Out)
-                .onComplete(() => {
-                    spawnBeams(batterObj, matchups);
-                })
-                .start();
-
-            // Update label
-            const labelContainer = document.getElementById('batter-label-container');
             document.getElementById('bl-name').textContent = formatName(batterObj.batter_name);
             document.getElementById('bl-stats').textContent = `wOBA ${overallWoba.toFixed(3)} | ${tier.name}`;
-            labelContainer.style.opacity = '1';
-
-            // Update bottom dock
+            document.getElementById('batter-label-container').style.opacity = '1';
             updateBottomDock(batterObj, matchups);
-
-            // Save search
             saveSearch(batterObj);
+
+            // Update directory to show batter stats
+            buildArchetypeDirectory();
         }
 
         function spawnBeams(batterObj, matchups) {
             const sunPos = sunGroup.position.clone();
-            const stat = STATE.selectedStat;
-
             Object.entries(DATA.clusters).forEach(([clusterId, cluster], idx) => {
                 if (!STATE.visibleClusters.has(clusterId)) return;
-
                 const matchup = matchups.find(m => String(m.cluster) === clusterId);
-                const pa = matchup ? matchup.PA || 0 : 0;
-
+                const pa = matchup ? matchup.PA||0 : 0;
                 if (pa < STATE.minPA) return;
-
-                // USE CLUSTER COLOR for the beam (each archetype gets its own color)
                 const clusterColor = new THREE.Color(cluster.color);
-
-                // Target = exact cluster centroid in world space
                 const targetPos = pcaToWorld(cluster.pca_x, cluster.pca_y, cluster.pca_z);
-
-                // Beam thickness based on PA (thicker = more confident)
                 const thickness = Math.max(0.04, Math.min(0.18, pa / 400));
-
-                // Curved bezier path — beams arc from sun INTO the cluster
                 const dist = sunPos.distanceTo(targetPos);
                 const arcHeight = dist * 0.25;
-
-                const mid1 = new THREE.Vector3(
-                    sunPos.x * 0.65 + targetPos.x * 0.35,
-                    Math.max(sunPos.y, targetPos.y) + arcHeight,
-                    sunPos.z * 0.65 + targetPos.z * 0.35
-                );
-                const mid2 = new THREE.Vector3(
-                    sunPos.x * 0.35 + targetPos.x * 0.65,
-                    Math.max(sunPos.y, targetPos.y) + arcHeight * 0.6,
-                    sunPos.z * 0.35 + targetPos.z * 0.65
-                );
-
-                // Beam goes exactly FROM sun TO cluster centroid
+                const mid1 = new THREE.Vector3(sunPos.x*0.65+targetPos.x*0.35, Math.max(sunPos.y,targetPos.y)+arcHeight, sunPos.z*0.65+targetPos.z*0.35);
+                const mid2 = new THREE.Vector3(sunPos.x*0.35+targetPos.x*0.65, Math.max(sunPos.y,targetPos.y)+arcHeight*0.6, sunPos.z*0.35+targetPos.z*0.65);
                 const curve = new THREE.CubicBezierCurve3(sunPos, mid1, mid2, targetPos);
-                const tubeGeo = new THREE.TubeGeometry(curve, 40, thickness, 8, false);
-                const tubeMat = new THREE.MeshBasicMaterial({
-                    color: clusterColor,
-                    transparent: true,
-                    opacity: 0,
-                    blending: THREE.AdditiveBlending,
-                });
-                const beam = new THREE.Mesh(tubeGeo, tubeMat);
-                beam.userData = { batter: batterObj, cluster: clusterId, matchup: matchup };
-                scene.add(beam);
-                currentBeams.push(beam);
-
-                // Staggered beam animation
-                new TWEEN.Tween(tubeMat)
-                    .to({ opacity: 0.8 }, 800)
-                    .delay(idx * 60)
-                    .easing(TWEEN.Easing.Quadratic.Out)
-                    .start();
+                const tubeMat = new THREE.MeshBasicMaterial({ color: clusterColor, transparent: true, opacity: 0, blending: THREE.AdditiveBlending });
+                const beam = new THREE.Mesh(new THREE.TubeGeometry(curve, 40, thickness, 8, false), tubeMat);
+                beam.userData = { batter: batterObj, cluster: clusterId, matchup };
+                scene.add(beam); currentBeams.push(beam);
+                new TWEEN.Tween(tubeMat).to({opacity: 0.8}, 800).delay(idx*60).easing(TWEEN.Easing.Quadratic.Out).start();
             });
         }
 
         function clearBatter() {
             while (sunGroup.children.length > 0) sunGroup.remove(sunGroup.children[0]);
-            currentBeams.forEach(b => scene.remove(b));
-            currentBeams = [];
+            currentBeams.forEach(b => scene.remove(b)); currentBeams = [];
             document.getElementById('batter-label-container').style.opacity = '0';
             document.getElementById('stat-panel').classList.remove('visible');
         }
 
         function refreshBeams() {
             if (STATE.activeBatters.length === 0) return;
-            // Re-create beams for current batter
-            currentBeams.forEach(b => scene.remove(b));
-            currentBeams = [];
+            currentBeams.forEach(b => scene.remove(b)); currentBeams = [];
             const batter = STATE.activeBatters[STATE.activeBatters.length - 1];
             const matchups = getMatchupData(batter);
             spawnBeams(batter, matchups);
             updateBottomDock(batter, matchups);
         }
 
-
-        // ═══════════════════════════════════════════════
-        // RAYCASTER (beam clicking)
-        // ═══════════════════════════════════════════════
-        const raycaster = new THREE.Raycaster();
-        const mouse = new THREE.Vector2();
-
+        // Raycaster
+        const raycaster = new THREE.Raycaster(), mouse = new THREE.Vector2();
         renderer.domElement.addEventListener('click', (e) => {
-            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+            mouse.x = (e.clientX/window.innerWidth)*2-1; mouse.y = -(e.clientY/window.innerHeight)*2+1;
             raycaster.setFromCamera(mouse, camera);
-
             const hits = raycaster.intersectObjects(currentBeams);
             if (hits.length > 0) {
-                const beam = hits[0].object;
-                const { batter, cluster, matchup } = beam.userData;
-                if (batter && cluster) {
-                    showStatPanel(batter, cluster, matchup);
-                }
+                const {batter, cluster, matchup} = hits[0].object.userData;
+                if (batter && cluster) showStatPanel(batter, cluster);
             }
         });
-
 
         // ═══════════════════════════════════════════════
         // STAT PANEL (right sidebar)
         // ═══════════════════════════════════════════════
-        function showStatPanel(batterObj, clusterId, matchup) {
+        function showStatPanel(batterObj, clusterId) {
             const cluster = DATA.clusters[clusterId];
             if (!cluster) return;
-
             const panel = document.getElementById('stat-panel');
             const content = document.getElementById('panel-content');
+            const role = cluster.centroid?.is_sp > 0.5 ? 'SP' : 'RP';
 
-            // Get year-by-year data
-            const yearRows = DATA.hitterVsCluster
-                .filter(r => r.batter === batterObj.batter && String(r.cluster) === clusterId)
-                .sort((a, b) => a.game_year - b.game_year);
+            // Build panel content based on whether we have a batter
+            let html = '';
 
-            // Per-pitcher data is no longer loaded individually
-            // Instead we show "archetype kings" below
+            if (batterObj) {
+                // BATTER vs ARCHETYPE mode
+                const yearRows = DATA.hitterVsCluster.filter(r => r.batter === batterObj.batter && String(r.cluster) === clusterId).sort((a,b) => a.game_year - b.game_year);
+                const totals = { PA:0, AB:0, H:0, HR:0, BB:0, K:0, HBP:0, singles:0, doubles:0, triples:0 };
+                yearRows.forEach(r => { totals.PA+=r.PA||0; totals.AB+=r.AB||0; totals.H+=r.H||0; totals.HR+=r.HR||0; totals.BB+=r.BB||0; totals.K+=r.K||0; totals.HBP+=r.HBP||0; totals.singles+=r.singles||0; totals.doubles+=r.doubles||0; totals.triples+=r.triples||0; });
+                const ba = totals.AB>0 ? (totals.H/totals.AB).toFixed(3) : '.000';
+                const obp = totals.PA>0 ? ((totals.H+totals.BB+totals.HBP)/totals.PA).toFixed(3) : '.000';
+                const slg = totals.AB>0 ? ((totals.singles+2*totals.doubles+3*totals.triples+4*totals.HR)/totals.AB).toFixed(3) : '.000';
+                const kpct = totals.PA>0 ? ((totals.K/totals.PA)*100).toFixed(1)+'%' : '0%';
+                const bbpct = totals.PA>0 ? ((totals.BB/totals.PA)*100).toFixed(1)+'%' : '0%';
 
-            // Aggregate totals
-            const totals = { PA: 0, AB: 0, H: 0, HR: 0, BB: 0, K: 0, HBP: 0, singles: 0, doubles: 0, triples: 0 };
-            yearRows.forEach(r => {
-                totals.PA += r.PA || 0; totals.AB += r.AB || 0; totals.H += r.H || 0;
-                totals.HR += r.HR || 0; totals.BB += r.BB || 0; totals.K += r.K || 0;
-                totals.HBP += r.HBP || 0; totals.singles += r.singles || 0;
-                totals.doubles += r.doubles || 0; totals.triples += r.triples || 0;
-            });
-            const ba = totals.AB > 0 ? (totals.H / totals.AB).toFixed(3) : '.000';
-            const obp = totals.PA > 0 ? ((totals.H + totals.BB + totals.HBP) / totals.PA).toFixed(3) : '.000';
-            const slg = totals.AB > 0 ? ((totals.singles + 2*totals.doubles + 3*totals.triples + 4*totals.HR) / totals.AB).toFixed(3) : '.000';
-            const kpct = totals.PA > 0 ? ((totals.K / totals.PA) * 100).toFixed(1) + '%' : '0%';
-            const bbpct = totals.PA > 0 ? ((totals.BB / totals.PA) * 100).toFixed(1) + '%' : '0%';
-
-            let html = `
-                <div class="stat-card-header">${formatName(batterObj.batter_name)}</div>
-                <div class="stat-card-sub" style="color: ${cluster.color};">vs ${cluster.short_name}</div>
-
-                <div class="stat-grid">
+                html += `<div class="stat-card-header">${formatName(batterObj.batter_name)}</div>`;
+                html += `<div class="stat-card-sub" style="color:${cluster.color};">vs ${cluster.short_name} (${cluster.hand} ${role})</div>`;
+                html += `<div class="stat-grid">
                     <div class="stat-box"><div class="stat-label">PA</div><div class="stat-val">${totals.PA}</div></div>
                     <div class="stat-box"><div class="stat-label">BA</div><div class="stat-val">${ba}</div></div>
                     <div class="stat-box"><div class="stat-label">OBP</div><div class="stat-val">${obp}</div></div>
@@ -1486,117 +811,163 @@
                     <div class="stat-box"><div class="stat-label">BB%</div><div class="stat-val">${bbpct}</div></div>
                     <div class="stat-box"><div class="stat-label">H</div><div class="stat-val">${totals.H}</div></div>
                     <div class="stat-box"><div class="stat-label">2B</div><div class="stat-val">${totals.doubles}</div></div>
-                </div>
-            `;
+                </div>`;
 
-            // Year-by-year bars
-            if (yearRows.length > 1) {
-                html += `<div class="section-header">Year-by-Year wOBA</div>`;
-                yearRows.forEach(r => {
-                    const woba = r.wOBA || 0;
-                    const barWidth = Math.min(100, Math.max(5, (woba / 0.450) * 100));
-                    const barColor = woba > 0.370 ? '#dfff00' : woba > 0.310 ? '#ffffff' : '#ff007f';
-                    html += `
-                        <div class="matchup-bar">
-                            <span class="year-label">${r.game_year}</span>
-                            <div class="bar-track"><div class="bar-fill" style="width:${barWidth}%;background:${barColor};"></div></div>
-                            <span class="woba-label">${woba.toFixed(3)}</span>
-                            <span class="pa-label">${r.PA} PA</span>
-                        </div>
-                    `;
-                });
-            }
-
-            // Archetype Kings (top pitchers in this cluster)
-            const kings = DATA.archetypeKings ? DATA.archetypeKings[clusterId] || [] : [];
-            if (kings.length > 0) {
-                html += `<div class="section-header">Kings of ${cluster.short_name}</div>`;
-                html += `<div style="font-size: 10px;">`;
-                kings.slice(0, 10).forEach(k => {
-                    html += `
-                        <div class="dock-row">
-                            <span class="pitcher-name">${k.name}</span>
-                            <span class="dock-stat" style="width:30px;">${k.seasons}yr</span>
-                            <span class="dock-stat" style="color:var(--accent-cyan);">${k.avg_velo > 0 ? k.avg_velo.toFixed(0) : '—'}</span>
-                            <span class="dock-stat" style="color:var(--accent-magenta);">${(k.avg_whiff * 100).toFixed(0)}%</span>
-                        </div>
-                    `;
-                });
+                if (yearRows.length > 1) {
+                    html += `<div class="section-header">Year-by-Year wOBA</div>`;
+                    yearRows.forEach(r => {
+                        const woba = r.wOBA||0;
+                        const barWidth = Math.min(100, Math.max(5, (woba/0.45)*100));
+                        const barColor = woba > 0.370 ? '#dfff00' : woba > 0.310 ? '#ffffff' : '#ff007f';
+                        html += `<div class="matchup-bar"><span class="year-label">${r.game_year}</span><div class="bar-track"><div class="bar-fill" style="width:${barWidth}%;background:${barColor};"></div></div><span class="woba-label">${woba.toFixed(3)}</span><span class="pa-label">${r.PA} PA</span></div>`;
+                    });
+                }
+            } else {
+                // ARCHETYPE PROFILE mode (no batter selected)
+                html += `<div class="stat-card-header" style="color:${cluster.color};">${cluster.short_name}</div>`;
+                html += `<div class="stat-card-sub" style="color:${cluster.color};">${cluster.hand} ${role} — ${cluster.pitcher_count} pitchers</div>`;
+                html += `<div class="section-header">Cluster Profile</div>`;
+                html += `<div class="cluster-profile">`;
+                const c = cluster.centroid || {};
+                if (c.avg_velo_FF > 0) html += `<div class="profile-stat"><span>Avg Fastball</span><span class="pval">${c.avg_velo_FF.toFixed(1)} mph</span></div>`;
+                html += `<div class="profile-stat"><span>Whiff Rate</span><span class="pval">${(c.whiff_rate*100).toFixed(1)}%</span></div>`;
+                html += `<div class="profile-stat"><span>Zone Rate</span><span class="pval">${(c.zone_rate*100).toFixed(1)}%</span></div>`;
+                html += `<div class="profile-stat"><span>GB Rate</span><span class="pval">${(c.groundball_rate*100).toFixed(1)}%</span></div>`;
+                html += `<div class="profile-stat"><span>Arm Angle</span><span class="pval">${c.arm_angle.toFixed(1)}°</span></div>`;
+                // Top pitches
+                const pitches = ['FF','SI','FC','SL','CH','CU','FS','KC','ST','SV','KN'].map(p => ({p, v: c[`pct_${p}`]||0})).filter(x => x.v > 0.05).sort((a,b) => b.v - a.v);
+                html += `<div class="profile-stat"><span>Top Pitches</span><span class="pval">${pitches.map(x => `${x.p} ${(x.v*100).toFixed(0)}%`).join(', ')}</span></div>`;
                 html += `</div>`;
             }
 
-            // Example pitchers in this archetype
-            html += `<div class="section-header">Archetype Examples</div>`;
-            html += `<div style="font-size: 10px; color: var(--text-dim);">`;
-            (cluster.example_pitchers || []).forEach(p => {
-                html += `<div style="margin-bottom: 2px;">${p}</div>`;
-            });
+            // Archetype Kings
+            const kings = DATA.archetypeKings[clusterId] || [];
+            if (kings.length > 0) {
+                html += `<div class="section-header">Kings of ${cluster.short_name}</div>`;
+                kings.slice(0,10).forEach(k => {
+                    html += `<div class="king-row"><span class="pitcher-name">${k.name}</span><span class="king-stat" style="width:28px;">${k.seasons}yr</span><span class="king-stat" style="color:var(--accent-cyan);">${k.avg_velo>0?k.avg_velo.toFixed(0):'—'}</span><span class="king-stat" style="color:var(--accent-magenta);">${(k.avg_whiff*100).toFixed(0)}%</span></div>`;
+                });
+            }
+
+            // Example pitchers
+            html += `<div class="section-header">Examples</div><div style="font-size:9px;color:var(--text-dim);">`;
+            (cluster.example_pitchers||[]).forEach(p => { html += `<div style="margin-bottom:1px;">${p}</div>`; });
             html += `</div>`;
 
             content.innerHTML = html;
             panel.classList.add('visible');
         }
 
+        // ═══════════════════════════════════════════════
+        // ARCHETYPE DIRECTORY (left sidebar)
+        // ═══════════════════════════════════════════════
+        function buildArchetypeDirectory() {
+            const dir = document.getElementById('archetype-directory');
+            const clusterIds = Object.keys(DATA.clusters);
+            const rhp = clusterIds.filter(id => DATA.clusters[id].hand === 'RHP').sort();
+            const lhp = clusterIds.filter(id => DATA.clusters[id].hand === 'LHP').sort();
+            const activeBatter = STATE.activeBatters.length > 0 ? STATE.activeBatters[STATE.activeBatters.length-1] : null;
+            let matchups = null;
+            if (activeBatter) matchups = getMatchupData(activeBatter);
+
+            let html = '';
+
+            const renderGroup = (ids, label, cssClass) => {
+                html += `<div class="archetype-section-header ${cssClass}">${label} (${ids.length})</div>`;
+                ids.forEach(id => {
+                    const c = DATA.clusters[id];
+                    const role = c.centroid?.is_sp > 0.5 ? 'SP' : 'RP';
+                    const isVisible = STATE.visibleClusters.has(id);
+                    const isHighlighted = STATE.highlightedCluster === id;
+                    const dimmed = !isVisible ? 'dimmed' : '';
+                    const selected = isHighlighted ? 'selected' : '';
+
+                    // If batter active, show their stat vs this cluster
+                    let statLabel = '';
+                    if (matchups && activeBatter) {
+                        const m = matchups.find(x => String(x.cluster) === id);
+                        if (m && m.PA >= STATE.minPA) {
+                            const val = m[STATE.selectedStat] || 0;
+                            const display = STATE.selectedStat === 'K_pct' || STATE.selectedStat === 'BB_pct'
+                                ? (val * 100).toFixed(0) + '%'
+                                : val.toFixed(3);
+                            const colorClass = (STATE.selectedStat === 'K_pct')
+                                ? (val < 0.20 ? 'good' : val > 0.30 ? 'bad' : '')
+                                : (val > 0.350 ? 'good' : val < 0.270 ? 'bad' : '');
+                            statLabel = `<span class="dock-stat ${colorClass}" style="width:40px;font-size:10px;">${display}</span>`;
+                        } else {
+                            statLabel = `<span style="width:40px;text-align:right;font-size:9px;color:var(--text-dim);">—</span>`;
+                        }
+                    }
+
+                    html += `<div class="archetype-item ${dimmed} ${selected}" data-cluster="${id}" style="border-left-color:${isHighlighted ? c.color : 'transparent'};">
+                        <div class="arch-dot" style="background:${c.color};color:${c.color};"></div>
+                        <span class="arch-name" style="color:${isVisible ? c.color : '#555'};">${c.short_name}</span>
+                        <span class="arch-role" style="color:${c.color};border-color:${c.color};">${role}</span>
+                        ${statLabel}
+                        <span class="arch-count">${c.pitcher_count}</span>
+                    </div>`;
+                });
+            };
+
+            renderGroup(rhp, 'Right-Handed', 'rhp');
+            renderGroup(lhp, 'Left-Handed', 'lhp');
+
+            dir.innerHTML = html;
+
+            // Bind clicks
+            dir.querySelectorAll('.archetype-item').forEach(el => {
+                el.addEventListener('click', () => {
+                    const id = el.dataset.cluster;
+                    if (STATE.highlightedCluster === id) {
+                        // Deselect
+                        STATE.highlightedCluster = null;
+                        document.getElementById('stat-panel').classList.remove('visible');
+                    } else {
+                        STATE.highlightedCluster = id;
+                        // Show stat panel for this cluster
+                        const activeBatter = STATE.activeBatters.length > 0 ? STATE.activeBatters[STATE.activeBatters.length-1] : null;
+                        showStatPanel(activeBatter, id);
+                    }
+                    updateDotVisibility();
+                    buildArchetypeDirectory();
+                });
+            });
+        }
 
         // ═══════════════════════════════════════════════
         // BOTTOM DOCK
         // ═══════════════════════════════════════════════
         function updateBottomDock(batterObj, matchups) {
-            // Best/Worst matchups
-            const validMatchups = matchups.filter(m => (m.PA || 0) >= STATE.minPA);
-            const sorted = [...validMatchups].sort((a, b) => (b.wOBA || 0) - (a.wOBA || 0));
-
+            const validMatchups = matchups.filter(m => (m.PA||0) >= STATE.minPA);
+            const sorted = [...validMatchups].sort((a,b) => (b.wOBA||0) - (a.wOBA||0));
             const bestDiv = document.getElementById('dock-best-content');
             const worstDiv = document.getElementById('dock-worst-content');
             const pitcherDiv = document.getElementById('dock-pitchers-content');
 
             if (sorted.length > 0) {
-                const best = sorted.slice(0, 3);
-                bestDiv.innerHTML = best.map(m => {
+                bestDiv.innerHTML = sorted.slice(0,3).map(m => {
                     const cl = DATA.clusters[m.cluster];
-                    return `<div class="dock-row">
-                        <span class="pitcher-name" style="color:${cl?.color || '#fff'}">${cl?.short_name || m.cluster}</span>
-                        <span class="dock-stat">${m.PA}PA</span>
-                        <span class="dock-stat good">${(m.wOBA || 0).toFixed(3)}</span>
-                    </div>`;
+                    return `<div class="dock-row"><span class="pitcher-name" style="color:${cl?.color||'#fff'}">${cl?.short_name||m.cluster} (${cl?.hand})</span><span class="dock-stat">${m.PA}PA</span><span class="dock-stat good">${(m.wOBA||0).toFixed(3)}</span></div>`;
                 }).join('');
-
-                const worst = sorted.slice(-3).reverse();
-                worstDiv.innerHTML = worst.map(m => {
+                worstDiv.innerHTML = sorted.slice(-3).reverse().map(m => {
                     const cl = DATA.clusters[m.cluster];
-                    return `<div class="dock-row">
-                        <span class="pitcher-name" style="color:${cl?.color || '#fff'}">${cl?.short_name || m.cluster}</span>
-                        <span class="dock-stat">${m.PA}PA</span>
-                        <span class="dock-stat bad">${(m.wOBA || 0).toFixed(3)}</span>
-                    </div>`;
+                    return `<div class="dock-row"><span class="pitcher-name" style="color:${cl?.color||'#fff'}">${cl?.short_name||m.cluster} (${cl?.hand})</span><span class="dock-stat">${m.PA}PA</span><span class="dock-stat bad">${(m.wOBA||0).toFixed(3)}</span></div>`;
                 }).join('');
             } else {
                 bestDiv.innerHTML = '<span style="color:var(--text-dim)">Not enough PA</span>';
                 worstDiv.innerHTML = '<span style="color:var(--text-dim)">Not enough PA</span>';
             }
 
-            // Show archetype kings for best/worst clusters
             if (DATA.archetypeKings && sorted.length > 0) {
-                const topClusterId = sorted[0].cluster;
-                const kings = DATA.archetypeKings[topClusterId] || [];
-                if (kings.length > 0) {
-                    const cl = DATA.clusters[topClusterId];
-                    pitcherDiv.innerHTML = `<div style="font-size:9px;color:${cl?.color || '#fff'};margin-bottom:6px;">${cl?.short_name || topClusterId} KINGS</div>` +
-                        kings.slice(0, 8).map(k => {
-                            return `<div class="dock-row">
-                                <span class="pitcher-name">${k.name}</span>
-                                <span class="dock-stat" style="width:30px;">${k.seasons}yr</span>
-                                <span class="dock-stat" style="color:var(--accent-cyan);">${k.avg_velo > 0 ? k.avg_velo.toFixed(0) + 'mph' : '—'}</span>
-                            </div>`;
-                        }).join('');
-                } else {
-                    pitcherDiv.innerHTML = '<span style="color:var(--text-dim)">No archetype data</span>';
-                }
-            } else {
-                pitcherDiv.innerHTML = '<span style="color:var(--text-dim)">Search a batter to see kings</span>';
+                const topId = sorted[0].cluster;
+                const kings = DATA.archetypeKings[topId] || [];
+                const cl = DATA.clusters[topId];
+                pitcherDiv.innerHTML = kings.length > 0
+                    ? `<div style="font-size:8px;color:${cl?.color};margin-bottom:4px;font-weight:700;">${cl?.short_name} KINGS</div>` + kings.slice(0,6).map(k => `<div class="dock-row"><span class="pitcher-name">${k.name}</span><span class="dock-stat" style="width:24px;">${k.seasons}yr</span></div>`).join('')
+                    : '<span style="color:var(--text-dim)">—</span>';
             }
         }
-
 
         // ═══════════════════════════════════════════════
         // SAVED SEARCHES
@@ -1612,282 +983,113 @@
 
         function renderSavedSearches() {
             const div = document.getElementById('dock-saved-content');
-            if (STATE.savedSearches.length === 0) {
-                div.innerHTML = '<span style="color:var(--text-dim)">No saved searches</span>';
-                return;
-            }
-            div.innerHTML = STATE.savedSearches.map(s => `
-                <div class="saved-batter" data-batter-id="${s.batter}">
-                    <span>${formatName(s.batter_name)}</span>
-                    <span style="color:var(--text-dim)">${(s.total_PA || 0).toLocaleString()} PA</span>
-                </div>
-            `).join('');
-
+            if (STATE.savedSearches.length === 0) { div.innerHTML = '<span style="color:var(--text-dim)">No saved searches</span>'; return; }
+            div.innerHTML = STATE.savedSearches.map(s => `<div class="saved-batter" data-batter-id="${s.batter}"><span>${formatName(s.batter_name)}</span><span style="color:var(--text-dim)">${(s.total_PA||0).toLocaleString()} PA</span></div>`).join('');
             div.querySelectorAll('.saved-batter').forEach(el => {
-                el.addEventListener('click', () => {
-                    const id = parseInt(el.dataset.batterId);
-                    const batter = DATA.batters.find(b => b.batter === id);
-                    if (batter) addBatter(batter);
-                });
+                el.addEventListener('click', () => { const b = DATA.batters.find(b => b.batter === parseInt(el.dataset.batterId)); if (b) addBatter(b); });
             });
         }
 
-
         // ═══════════════════════════════════════════════
-        // BATTER SEARCH
+        // SEARCH
         // ═══════════════════════════════════════════════
         let fuse = null;
-
-        function initSearch() {
-            fuse = new Fuse(DATA.batters, {
-                keys: ['batter_name'],
-                threshold: 0.3,
-                distance: 100,
-            });
-        }
+        function initSearch() { fuse = new Fuse(DATA.batters, { keys: ['batter_name'], threshold: 0.3, distance: 100 }); }
 
         const searchInput = document.getElementById('batter-search');
         const searchDropdown = document.getElementById('search-dropdown');
-        let searchHighlight = 0;
-        let searchResults = [];
+        let searchHighlight = 0, searchResults = [];
 
         searchInput.addEventListener('input', () => {
-            const query = searchInput.value;
-            if (query.length < 2) {
-                searchDropdown.classList.remove('visible');
-                return;
-            }
-            searchResults = fuse.search(query).slice(0, 8).map(r => r.item);
-            searchHighlight = 0;
-            renderSearchResults();
+            const q = searchInput.value; if (q.length < 2) { searchDropdown.classList.remove('visible'); return; }
+            searchResults = fuse.search(q).slice(0,8).map(r => r.item); searchHighlight = 0; renderSearchResults();
         });
-
         searchInput.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowDown') { e.preventDefault(); searchHighlight = Math.min(searchHighlight + 1, searchResults.length - 1); renderSearchResults(); }
-            else if (e.key === 'ArrowUp') { e.preventDefault(); searchHighlight = Math.max(searchHighlight - 1, 0); renderSearchResults(); }
+            if (e.key === 'ArrowDown') { e.preventDefault(); searchHighlight = Math.min(searchHighlight+1, searchResults.length-1); renderSearchResults(); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); searchHighlight = Math.max(searchHighlight-1, 0); renderSearchResults(); }
             else if (e.key === 'Enter') { e.preventDefault(); if (searchResults[searchHighlight]) selectSearchResult(searchResults[searchHighlight]); }
-            else if (e.key === 'Escape') { searchDropdown.classList.remove('visible'); }
+            else if (e.key === 'Escape') searchDropdown.classList.remove('visible');
         });
 
         function renderSearchResults() {
-            if (searchResults.length === 0) {
-                searchDropdown.classList.remove('visible');
-                return;
-            }
-            searchDropdown.innerHTML = searchResults.map((b, i) => `
-                <div class="search-result ${i === searchHighlight ? 'highlighted' : ''}" data-idx="${i}">
-                    <span>${formatName(b.batter_name)}</span>
-                    <span class="pa-label">${(b.total_PA || 0).toLocaleString()} PA</span>
-                </div>
-            `).join('');
+            if (searchResults.length === 0) { searchDropdown.classList.remove('visible'); return; }
+            searchDropdown.innerHTML = searchResults.map((b,i) => `<div class="search-result ${i===searchHighlight?'highlighted':''}" data-idx="${i}"><span>${formatName(b.batter_name)}</span><span class="pa-label">${(b.total_PA||0).toLocaleString()} PA</span></div>`).join('');
             searchDropdown.classList.add('visible');
-
             searchDropdown.querySelectorAll('.search-result').forEach(el => {
-                el.addEventListener('click', () => {
-                    const idx = parseInt(el.dataset.idx);
-                    selectSearchResult(searchResults[idx]);
-                });
-                el.addEventListener('mouseenter', () => {
-                    searchHighlight = parseInt(el.dataset.idx);
-                    renderSearchResults();
-                });
+                el.addEventListener('click', () => selectSearchResult(searchResults[parseInt(el.dataset.idx)]));
+                el.addEventListener('mouseenter', () => { searchHighlight = parseInt(el.dataset.idx); renderSearchResults(); });
             });
         }
 
-        function selectSearchResult(batter) {
-            addBatter(batter);
-            searchInput.value = '';
-            searchDropdown.classList.remove('visible');
-            searchInput.focus();
-        }
+        function selectSearchResult(batter) { addBatter(batter); searchInput.value = ''; searchDropdown.classList.remove('visible'); searchInput.focus(); }
 
-        function playScanTransition(batterName) {
-            const overlay = document.getElementById('scan-overlay');
-            overlay.innerHTML = `
-                <div class="scan-line"></div>
-                <div class="scan-flash"></div>
-                <div class="scan-text">SCANNING: ${batterName.toUpperCase()}</div>
-            `;
-            overlay.classList.add('active');
-            setTimeout(() => {
-                overlay.classList.remove('active');
-                overlay.innerHTML = '';
-            }, 1400);
+        function playScanTransition(name) {
+            const o = document.getElementById('scan-overlay');
+            o.innerHTML = `<div class="scan-line"></div><div class="scan-flash"></div><div class="scan-text">SCANNING: ${name.toUpperCase()}</div>`;
+            o.classList.add('active');
+            setTimeout(() => { o.classList.remove('active'); o.innerHTML = ''; }, 1400);
         }
 
         function addBatter(batter) {
-            // Remove if already active
             STATE.activeBatters = STATE.activeBatters.filter(b => b.batter !== batter.batter);
             if (STATE.activeBatters.length >= 5) STATE.activeBatters.shift();
             STATE.activeBatters.push(batter);
             renderBatterChips();
-
-            // Play scan transition then spawn
             playScanTransition(batter.batter_name);
-            setTimeout(() => {
-                spawnBatter(batter);
-            }, 400);
+            setTimeout(() => spawnBatter(batter), 400);
         }
 
-        function removeBatter(batterId) {
-            STATE.activeBatters = STATE.activeBatters.filter(b => b.batter !== batterId);
+        function removeBatter(id) {
+            STATE.activeBatters = STATE.activeBatters.filter(b => b.batter !== id);
             renderBatterChips();
-            if (STATE.activeBatters.length > 0) {
-                spawnBatter(STATE.activeBatters[STATE.activeBatters.length - 1]);
-            } else {
-                clearBatter();
-            }
+            if (STATE.activeBatters.length > 0) spawnBatter(STATE.activeBatters[STATE.activeBatters.length-1]);
+            else { clearBatter(); buildArchetypeDirectory(); }
         }
 
         function renderBatterChips() {
-            const container = document.getElementById('batter-chips');
-            container.innerHTML = STATE.activeBatters.map(b => `
-                <div class="batter-chip" data-id="${b.batter}">
-                    ${formatName(b.batter_name)}
-                    <span class="remove" data-id="${b.batter}">✕</span>
-                </div>
-            `).join('');
-
-            container.querySelectorAll('.remove').forEach(el => {
-                el.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    removeBatter(parseInt(el.dataset.id));
-                });
-            });
+            const c = document.getElementById('batter-chips');
+            c.innerHTML = STATE.activeBatters.map(b => `<div class="batter-chip" data-id="${b.batter}">${formatName(b.batter_name)}<span class="remove" data-id="${b.batter}">✕</span></div>`).join('');
+            c.querySelectorAll('.remove').forEach(el => { el.addEventListener('click', (e) => { e.stopPropagation(); removeBatter(parseInt(el.dataset.id)); }); });
         }
-
 
         // ═══════════════════════════════════════════════
         // UI CONTROLS
         // ═══════════════════════════════════════════════
-        function buildClusterToggles() {
-            const container = document.getElementById('cluster-toggles');
-            const clusterIds = Object.keys(DATA.clusters);
-            const rhp = clusterIds.filter(id => DATA.clusters[id].hand === 'RHP');
-            const lhp = clusterIds.filter(id => DATA.clusters[id].hand === 'LHP');
-
-            let html = '<div style="font-size:9px;color:#ff6b4f;margin-bottom:4px;font-weight:700;">RHP</div>';
-            rhp.forEach(id => {
-                const c = DATA.clusters[id];
-                html += `<div class="cluster-toggle" data-cluster="${id}">
-                    <div class="cluster-dot" style="background:${c.color};box-shadow:0 0 4px ${c.color};"></div>
-                    <span>${c.short_name}</span>
-                    <span class="count">${c.pitcher_count}</span>
-                </div>`;
-            });
-
-            html += '<div style="font-size:9px;color:#4f9fff;margin-top:8px;margin-bottom:4px;font-weight:700;">LHP</div>';
-            lhp.forEach(id => {
-                const c = DATA.clusters[id];
-                html += `<div class="cluster-toggle" data-cluster="${id}">
-                    <div class="cluster-dot" style="background:${c.color};box-shadow:0 0 4px ${c.color};"></div>
-                    <span>${c.short_name}</span>
-                    <span class="count">${c.pitcher_count}</span>
-                </div>`;
-            });
-
-            container.innerHTML = html;
-
-            container.querySelectorAll('.cluster-toggle').forEach(el => {
-                el.addEventListener('click', () => {
-                    const id = el.dataset.cluster;
-                    if (STATE.visibleClusters.has(id)) {
-                        STATE.visibleClusters.delete(id);
-                        el.classList.add('off');
-                    } else {
-                        STATE.visibleClusters.add(id);
-                        el.classList.remove('off');
-                    }
-                    updateDotVisibility();
-                    refreshBeams();
-                });
-            });
-        }
-
-        // Metric toggles
         document.getElementById('metric-toggles').addEventListener('click', (e) => {
-            if (e.target.classList.contains('toggle')) {
-                document.querySelectorAll('#metric-toggles .toggle').forEach(t => t.classList.remove('active'));
-                e.target.classList.add('active');
-                STATE.selectedStat = e.target.dataset.stat;
-                refreshBeams();
-            }
+            if (!e.target.classList.contains('toggle')) return;
+            document.querySelectorAll('#metric-toggles .toggle').forEach(t => t.classList.remove('active'));
+            e.target.classList.add('active'); STATE.selectedStat = e.target.dataset.stat;
+            refreshBeams(); buildArchetypeDirectory();
         });
 
-        // Filter toggles
         document.getElementById('filter-toggles').addEventListener('click', (e) => {
             if (!e.target.classList.contains('toggle')) return;
             document.querySelectorAll('#filter-toggles .toggle').forEach(t => t.classList.remove('active'));
             e.target.classList.add('active');
-
             const filter = e.target.dataset.filter;
-            const clusterIds = Object.keys(DATA.clusters);
-
-            clusterIds.forEach(id => {
+            Object.keys(DATA.clusters).forEach(id => {
                 const c = DATA.clusters[id];
-                let show = false;
-                if (filter === 'all') show = true;
-                else if (filter === 'RHP') show = c.hand === 'RHP';
-                else if (filter === 'LHP') show = c.hand === 'LHP';
-                else if (filter === 'SP') show = c.centroid?.is_sp > 0.5;
-                else if (filter === 'RP') show = c.centroid?.is_sp <= 0.5;
-
-                if (show) STATE.visibleClusters.add(id);
-                else STATE.visibleClusters.delete(id);
+                const show = filter === 'all' || c.hand === filter;
+                if (show) STATE.visibleClusters.add(id); else STATE.visibleClusters.delete(id);
             });
-
-            // Update toggle list UI
-            document.querySelectorAll('.cluster-toggle').forEach(el => {
-                const id = el.dataset.cluster;
-                if (STATE.visibleClusters.has(id)) el.classList.remove('off');
-                else el.classList.add('off');
-            });
-
-            updateDotVisibility();
-            refreshBeams();
+            updateDotVisibility(); refreshBeams(); buildArchetypeDirectory();
         });
 
-        // Year select
-        document.getElementById('year-select').addEventListener('change', (e) => {
-            STATE.selectedYear = e.target.value;
-            refreshBeams();
-        });
+        document.getElementById('year-select').addEventListener('change', (e) => { STATE.selectedYear = e.target.value; refreshBeams(); buildArchetypeDirectory(); });
 
-        // PA slider
-        const paSlider = document.getElementById('pa-slider');
-        const paVal = document.getElementById('pa-val');
-        paSlider.addEventListener('input', () => {
-            STATE.minPA = parseInt(paSlider.value);
-            paVal.textContent = STATE.minPA;
-            refreshBeams();
-        });
+        const paSlider = document.getElementById('pa-slider'), paVal = document.getElementById('pa-val');
+        paSlider.addEventListener('input', () => { STATE.minPA = parseInt(paSlider.value); paVal.textContent = STATE.minPA; refreshBeams(); buildArchetypeDirectory(); });
 
-        // Close panel
         document.getElementById('close-panel').addEventListener('click', () => {
             document.getElementById('stat-panel').classList.remove('visible');
+            STATE.highlightedCluster = null; updateDotVisibility(); buildArchetypeDirectory();
         });
 
-        // Dock collapse
-        document.getElementById('dock-header').addEventListener('click', () => {
-            document.getElementById('bottom-dock').classList.toggle('collapsed');
-        });
+        document.getElementById('dock-header').addEventListener('click', () => document.getElementById('bottom-dock').classList.toggle('collapsed'));
+        document.addEventListener('mousedown', (e) => { if (!e.target.closest('.search-container')) searchDropdown.classList.remove('visible'); });
 
-        // Close dropdown on outside click
-        document.addEventListener('mousedown', (e) => {
-            if (!e.target.closest('.search-container')) {
-                searchDropdown.classList.remove('visible');
-            }
-        });
-
-
-        // ═══════════════════════════════════════════════
-        // UTILITY
-        // ═══════════════════════════════════════════════
-        function formatName(name) {
-            if (!name) return 'Unknown';
-            return name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-        }
-
+        // Utility
+        function formatName(name) { if (!name) return 'Unknown'; return name.split(' ').map(w => w.charAt(0).toUpperCase()+w.slice(1)).join(' '); }
 
         // ═══════════════════════════════════════════════
         // ANIMATION LOOP
@@ -1898,83 +1100,46 @@
         function animate() {
             requestAnimationFrame(animate);
             const time = clock.getElapsedTime();
-
-            // Update sun shader
             if (sunGroup.children.length > 0) {
                 const sunMesh = sunGroup.children[0];
-                if (sunMesh.material && sunMesh.material.uniforms) {
-                    sunMesh.material.uniforms.time.value = time;
-                }
+                if (sunMesh.material?.uniforms) sunMesh.material.uniforms.time.value = time;
             }
-
-            TWEEN.update();
-            controls.update();
-            composer.render();
-
-            // Update labels
+            TWEEN.update(); controls.update(); composer.render();
             updateClusterLabels();
-
-            // Update batter label position
             if (sunGroup.children.length > 0) {
-                const vec = sunGroup.position.clone();
-                vec.y -= 5;
-                vec.x += 2;
-                vec.project(camera);
-                const x = (vec.x * 0.5 + 0.5) * window.innerWidth;
-                const y = (-(vec.y * 0.5) + 0.5) * window.innerHeight;
-                labelContainer.style.transform = `translate(${x}px, ${y}px)`;
+                const vec = sunGroup.position.clone(); vec.y -= 5; vec.x += 2; vec.project(camera);
+                labelContainer.style.transform = `translate(${(vec.x*0.5+0.5)*window.innerWidth}px, ${(-(vec.y*0.5)+0.5)*window.innerHeight}px)`;
             }
         }
 
-        // Resize
         window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            composer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight); composer.setSize(window.innerWidth, window.innerHeight);
         });
 
-
         // ═══════════════════════════════════════════════
-        // BOOT SEQUENCE
+        // BOOT
         // ═══════════════════════════════════════════════
         async function boot() {
             try {
                 await loadAllData();
-
-                createStars();
-                createPitcherDots();
-                createClusterLabels();
-                buildClusterToggles();
-                initSearch();
-                renderSavedSearches();
-
-                const totalPitchers = DATA.pitcherSeasons.length;
-                document.getElementById('pitcher-count-label').textContent =
-                    `${Object.keys(DATA.clusters).length} ARCHETYPES · ${totalPitchers.toLocaleString()} PITCHER-SEASONS`;
-
+                createStars(); createPitcherDots(); createClusterLabels();
+                buildArchetypeDirectory(); initSearch(); renderSavedSearches();
+                const total = DATA.pitcherSeasons.length;
                 document.getElementById('system-status').innerHTML =
-                    `● ${Object.keys(DATA.clusters).length} CLUSTERS LOADED<br>` +
-                    `● ${DATA.batters.length.toLocaleString()} BATTERS INDEXED<br>` +
-                    `● ${DATA.hitterVsCluster.length.toLocaleString()} MATCHUP ROWS`;
-
-                // Hide loader
+                    `● ${Object.keys(DATA.clusters).length} ARCHETYPES · ${total.toLocaleString()} SEASONS<br>` +
+                    `● ${DATA.batters.length.toLocaleString()} BATTERS · ${DATA.hitterVsCluster.length.toLocaleString()} MATCHUPS`;
                 setTimeout(() => {
                     const loader = document.getElementById('loader');
-                    loader.style.opacity = '0';
-                    setTimeout(() => loader.remove(), 1000);
-                    animate();
+                    loader.style.opacity = '0'; setTimeout(() => loader.remove(), 1000); animate();
                 }, 800);
             } catch (err) {
                 console.error('Boot failed:', err);
                 document.getElementById('loader-status').textContent = 'ERROR: ' + err.message;
             }
         }
-
         boot();
-
     })();
     </script>
-
 </body>
 </html>
