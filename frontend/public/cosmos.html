@@ -853,35 +853,30 @@
         // ═══════════════════════════════════════════════
         // DATA LOADING
         // ═══════════════════════════════════════════════
+        async function loadJSON(url, label, setStatus) {
+            setStatus(`Loading ${label}...`);
+            const resp = await fetch(url);
+            if (!resp.ok) throw new Error(`Failed to load ${label}: ${resp.status} ${resp.statusText}`);
+            const text = await resp.text();
+            setStatus(`Parsing ${label} (${(text.length / 1e6).toFixed(1)}MB)...`);
+            return JSON.parse(text);
+        }
+
         async function loadAllData() {
             const setStatus = (msg) => {
+                console.log(msg);
                 const el = document.getElementById('loader-status');
                 if (el) el.textContent = msg;
             };
 
-            setStatus('Loading cluster profiles...');
-            const clustersResp = await fetch('clusters.json');
-            DATA.clusters = await clustersResp.json();
-
-            setStatus('Loading batter index...');
-            const battersResp = await fetch('batters.json');
-            DATA.batters = await battersResp.json();
-
-            setStatus('Loading pitcher seasons (6K dots)...');
-            const psResp = await fetch('pitcher_seasons.json');
-            DATA.pitcherSeasons = await psResp.json();
-
-            setStatus('Loading hitter vs cluster matchups...');
-            const hvcResp = await fetch('hitter_vs_cluster.json');
-            DATA.hitterVsCluster = await hvcResp.json();
+            DATA.clusters = await loadJSON('clusters.json', 'cluster profiles', setStatus);
+            DATA.batters = await loadJSON('batters.json', 'batter index', setStatus);
+            DATA.pitcherSeasons = await loadJSON('pitcher_seasons.json', 'pitcher seasons (6K dots)', setStatus);
+            DATA.hitterVsCluster = await loadJSON('hitter_vs_cluster.json', 'hitter matchups', setStatus);
 
             // Load archetype kings (compact, ~13KB)
-            setStatus('Loading archetype kings...');
             try {
-                const kingsResp = await fetch('archetype_kings.json');
-                if (kingsResp.ok) {
-                    DATA.archetypeKings = await kingsResp.json();
-                }
+                DATA.archetypeKings = await loadJSON('archetype_kings.json', 'archetype kings', setStatus);
             } catch(e) {
                 console.log('Archetype kings data not available');
                 DATA.archetypeKings = {};
@@ -925,7 +920,7 @@
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
         controls.maxDistance = 120;
-        controls.minDistance: 15;
+        controls.minDistance = 15;
 
         // Post-processing bloom
         const renderScene = new THREE.RenderPass(scene, camera);
@@ -1227,6 +1222,19 @@
             }
         }
 
+        // Derive stats from counting stats
+        function deriveStats(r) {
+            const pa = r.PA || 0, ab = r.AB || 0, h = r.H || 0;
+            const hr = r.HR || 0, bb = r.BB || 0, k = r.K || 0, hbp = r.HBP || 0;
+            const s = r.singles || 0, d = r.doubles || 0, t = r.triples || 0;
+            r.BA = ab > 0 ? h / ab : 0;
+            r.OBP = pa > 0 ? (h + bb + hbp) / pa : 0;
+            r.SLG = ab > 0 ? (s + 2*d + 3*t + 4*hr) / ab : 0;
+            r.K_pct = pa > 0 ? k / pa : 0;
+            r.BB_pct = pa > 0 ? bb / pa : 0;
+            return r;
+        }
+
         function getMatchupData(batterObj) {
             let rows = DATA.hitterVsCluster.filter(r => r.batter === batterObj.batter);
             if (STATE.selectedYear !== 'all') {
@@ -1247,17 +1255,13 @@
                     g.doubles += r.doubles || 0; g.triples += r.triples || 0;
                     g.woba_sum += (r.wOBA || 0) * (r.PA || 0);
                 });
-                return Object.values(grouped).map(g => ({
-                    ...g,
-                    BA: g.AB > 0 ? g.H / g.AB : 0,
-                    OBP: g.PA > 0 ? (g.H + g.BB + g.HBP) / g.PA : 0,
-                    SLG: g.AB > 0 ? (g.singles + 2*g.doubles + 3*g.triples + 4*g.HR) / g.AB : 0,
-                    K_pct: g.PA > 0 ? g.K / g.PA : 0,
-                    BB_pct: g.PA > 0 ? g.BB / g.PA : 0,
-                    wOBA: g.PA > 0 ? g.woba_sum / g.PA : 0,
-                }));
+                return Object.values(grouped).map(g => {
+                    g.wOBA = g.PA > 0 ? g.woba_sum / g.PA : 0;
+                    return deriveStats(g);
+                });
             }
-            return rows;
+            // Derive stats for single-year rows too
+            return rows.map(r => deriveStats({...r}));
         }
 
         function spawnBatter(batterObj) {
