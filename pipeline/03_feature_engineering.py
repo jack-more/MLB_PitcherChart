@@ -226,25 +226,37 @@ def process_season(year: int) -> pd.DataFrame:
     # Add names (pitcher-level, no game_year)
     features = features.merge(names, on="pitcher", how="left")
 
-    # Filter by minimum pitches
-    features = features[features["total_pitches"] >= MIN_PITCHES].copy()
+    # Split by minimum pitches: qualified for clustering vs sub-threshold
+    qualified = features[features["total_pitches"] >= MIN_PITCHES].copy()
+    sub_threshold = features[features["total_pitches"] < MIN_PITCHES].copy()
 
-    print(f"  {len(features)} qualified pitcher-seasons for {year}")
-    return features
+    print(f"  {len(qualified)} qualified pitcher-seasons for {year}")
+    if len(sub_threshold) > 0:
+        print(f"  {len(sub_threshold)} sub-threshold pitcher-seasons (< {MIN_PITCHES} pitches)")
+
+    return qualified, sub_threshold
 
 
 def main():
     os.makedirs(PROCESSED_DATA_DIR, exist_ok=True)
 
     all_features = []
+    all_sub_threshold = []
     for year in SEASONS:
         print(f"\n{'='*50}")
         print(f"Processing {year}")
         print(f"{'='*50}")
 
-        features = process_season(year)
-        if len(features) > 0:
-            all_features.append(features)
+        result = process_season(year)
+        if isinstance(result, tuple):
+            qualified, sub_thresh = result
+        else:
+            qualified, sub_thresh = result, pd.DataFrame()
+
+        if len(qualified) > 0:
+            all_features.append(qualified)
+        if len(sub_thresh) > 0:
+            all_sub_threshold.append(sub_thresh)
 
         gc.collect()
 
@@ -281,6 +293,33 @@ def main():
     print(f"\nSaved: {out_path}")
     print(f"Total pitcher-seasons: {len(pitcher_seasons):,}")
     print(f"Columns: {list(pitcher_seasons.columns)}")
+
+    # Save sub-threshold pitchers for nearest-cluster assignment in step 4
+    if all_sub_threshold:
+        sub_df = pd.concat(all_sub_threshold, ignore_index=True)
+
+        # Merge SP/RP roles for sub-threshold too
+        if os.path.exists(roles_path):
+            sub_df = sub_df.merge(
+                roles[["pitcher", "game_year", "role"]],
+                on=["pitcher", "game_year"],
+                how="left",
+            )
+            sub_df["is_sp"] = (sub_df["role"] == "SP").astype(int)
+            sub_df.drop(columns=["role"], inplace=True)
+        else:
+            sub_df["is_sp"] = 0
+
+        for col in fill_cols:
+            if col in sub_df.columns:
+                sub_df[col] = sub_df[col].fillna(0)
+
+        sub_path = os.path.join(PROCESSED_DATA_DIR, "pitcher_seasons_sub_threshold.parquet")
+        sub_df.to_parquet(sub_path, engine="pyarrow", compression="snappy")
+        print(f"\nSaved sub-threshold: {sub_path}")
+        print(f"Sub-threshold pitcher-seasons: {len(sub_df):,}")
+    else:
+        print("\nNo sub-threshold pitcher-seasons found.")
 
 
 if __name__ == "__main__":

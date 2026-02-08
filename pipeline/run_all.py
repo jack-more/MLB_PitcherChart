@@ -19,6 +19,7 @@ STEPS = [
     ("04_clustering.py", "K-Means clustering"),
     ("05_cluster_naming.py", "Generate archetype names"),
     ("06_hitter_vs_cluster.py", "Compute hitter vs cluster stats"),
+    ("07_hitter_vs_pitcher.py", "Compute hitter vs pitcher stats"),
 ]
 
 PIPELINE_DIR = os.path.dirname(os.path.abspath(__file__))

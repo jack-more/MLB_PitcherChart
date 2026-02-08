@@ -215,6 +215,46 @@ def main():
     print(f"Frontend hitter_vs_pitcher: {len(hvc_json):,} rows")
     print(f"  File size: {os.path.getsize(out_json) / 1e6:.1f} MB")
 
+    # --- Compact export for frontend/public/ (short keys, fewer fields) ---
+    public_dir = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "frontend", "public",
+    )
+    if os.path.isdir(public_dir):
+        # Aggregate across years: group by batter × pitcher × cluster
+        agg = export_df.groupby(["batter", "pitcher", "pitcher_name", "cluster"]).agg(
+            PA=("PA", "sum"),
+            H=("H", "sum"),
+            HR=("HR", "sum"),
+            K=("K", "sum"),
+            BB=("BB", "sum"),
+            woba_sum=pd.NamedAgg(column="PA", aggfunc=lambda x: (export_df.loc[x.index, "wOBA"] * x).sum()),
+        ).reset_index()
+        agg["BA"] = (agg["H"] / agg["PA"].clip(lower=1)).round(4)
+        agg["wOBA"] = (agg["woba_sum"] / agg["PA"].clip(lower=1)).round(4)
+
+        compact = []
+        for _, r in agg.iterrows():
+            compact.append({
+                "b": int(r["batter"]),
+                "p": int(r["pitcher"]),
+                "pn": r["pitcher_name"],
+                "c": r["cluster"],
+                "pa": int(r["PA"]),
+                "h": int(r["H"]),
+                "hr": int(r["HR"]),
+                "k": int(r["K"]),
+                "bb": int(r["BB"]),
+                "w": round(float(r["wOBA"]), 4),
+                "ba": round(float(r["BA"]), 4),
+            })
+
+        public_path = os.path.join(public_dir, "hitter_vs_pitcher.json")
+        with open(public_path, "w") as f:
+            json.dump(compact, f, separators=(",", ":"))
+        print(f"\nCompact public export: {len(compact):,} rows")
+        print(f"  File size: {os.path.getsize(public_path) / 1e6:.1f} MB")
+
     print("\nPer-pitcher hitter matchup processing complete!")
 
 

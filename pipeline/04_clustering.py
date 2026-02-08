@@ -194,6 +194,68 @@ def main():
     with open(os.path.join(MODELS_DIR, "kmeans_meta.json"), "w") as f:
         json.dump(meta, f, indent=2)
 
+    # ═══════════════════════════════════════════════════════════════
+    # Assign sub-threshold pitchers to nearest cluster
+    # ═══════════════════════════════════════════════════════════════
+    sub_path = os.path.join(PROCESSED_DATA_DIR, "pitcher_seasons_sub_threshold.parquet")
+    if os.path.exists(sub_path):
+        print(f"\n{'='*50}")
+        print("Assigning sub-threshold pitchers to nearest clusters...")
+        print(f"{'='*50}")
+
+        sub = pd.read_parquet(sub_path)
+
+        # Fill missing features
+        for f in HAND_CLUSTER_FEATURES:
+            if f not in sub.columns:
+                sub[f] = 0.0
+
+        # Split by hand
+        sub_rhp = sub[sub["is_rhp"] == 1].copy() if "is_rhp" in sub.columns else pd.DataFrame()
+        sub_lhp = sub[sub["is_rhp"] == 0].copy() if "is_rhp" in sub.columns else pd.DataFrame()
+
+        sub_parts = []
+        for prefix, models, sub_hand, label in [
+            ("R", rhp_models, sub_rhp, "RHP"),
+            ("L", lhp_models, sub_lhp, "LHP"),
+        ]:
+            if len(sub_hand) == 0:
+                continue
+
+            X_sub = sub_hand[HAND_CLUSTER_FEATURES].fillna(0).values
+            X_sub = np.nan_to_num(X_sub, nan=0.0, posinf=0.0, neginf=0.0)
+
+            # Scale using the fitted scaler
+            X_sub_scaled = models["scaler"].transform(X_sub)
+            X_sub_scaled = np.clip(X_sub_scaled, -10, 10)
+            X_sub_scaled = np.nan_to_num(X_sub_scaled, nan=0.0, posinf=0.0, neginf=0.0)
+
+            # Predict nearest cluster
+            local_labels = models["kmeans"].predict(X_sub_scaled)
+            sub_hand["cluster"] = [f"{prefix}_{c}" for c in local_labels]
+
+            # PCA coordinates
+            X_3d = models["pca"].transform(X_sub_scaled)
+            sub_hand["pca_y"] = X_3d[:, 1]
+            sub_hand["pca_z"] = X_3d[:, 2]
+            if prefix == "R":
+                sub_hand["pca_x"] = X_3d[:, 0] + X_OFFSET
+            else:
+                sub_hand["pca_x"] = -X_3d[:, 0] - X_OFFSET
+
+            sub_parts.append(sub_hand)
+            print(f"  Assigned {len(sub_hand):,} sub-threshold {label} pitchers")
+
+        if sub_parts:
+            sub_assigned = pd.concat(sub_parts, ignore_index=True)
+            # Combine with qualified pitchers and save
+            all_pitchers = pd.concat([all_pitchers, sub_assigned], ignore_index=True)
+            all_pitchers.to_parquet(data_path, engine="pyarrow", compression="snappy")
+            print(f"\n  Updated pitcher_seasons with sub-threshold assignments")
+            print(f"  New total: {len(all_pitchers):,} pitcher-seasons")
+    else:
+        print("\nNo sub-threshold pitcher file found — skipping nearest-cluster assignment.")
+
     print("\nClustering complete!")
 
 
