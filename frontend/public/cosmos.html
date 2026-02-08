@@ -545,6 +545,7 @@
         <div class="batter-stack" id="batter-stack"></div>
 
         <div class="header-controls">
+            <div class="key key-dark" id="simlab-toggle" style="height:28px;padding:0 10px;font-size:9px;letter-spacing:0.5px;border:1px solid #ff4400;color:#ff4400;cursor:pointer;">SIM LAB</div>
             <div class="key key-dark" id="history-toggle" style="height:28px;padding:0 10px;font-size:9px;letter-spacing:0.5px;">HISTORY</div>
             <div class="led active" id="led-data"></div>
             <div class="led" id="led-batter"></div>
@@ -1843,6 +1844,587 @@
         function fmtName(name) {
             if (!name) return 'Unknown';
             return name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        }
+
+        // ═══════════════════════════════════════
+        // SIM LAB
+        // ═══════════════════════════════════════
+        document.getElementById('simlab-toggle').addEventListener('click', () => {
+            const ab = STATE.activeBatters.length > 0 ? STATE.activeBatters[STATE.activeBatters.length-1] : null;
+            openSimLab(ab);
+        });
+
+        function openSimLab(batterObj) {
+            // Serialize data for the sim lab page
+            const serData = {
+                pitcherSeasons: DATA.pitcherSeasons,
+                hitterVsCluster: DATA.hitterVsCluster,
+                hitterVsPitcher: DATA.hitterVsPitcher,
+                clusters: DATA.clusters,
+                batters: DATA.batters,
+                archetypeKings: DATA.archetypeKings
+            };
+            const preselect = batterObj ? JSON.stringify(batterObj) : 'null';
+
+            const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SIM LAB // PITCH.FX</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#050505;--panel:#111;--card:#1a1a1a;--input-bg:#0a0a0a;--accent:#ff4400;--accent-hover:#cc3600;--text:#fff;--text-sec:#e0e0e0;--text-label:#888;--text-dim:#555;--text-muted:#444;--border:#2a2a2a;--border-lt:#333;--green:#2a9d8f;--red:#e63946;--orange:#e76f51;--yellow:#f4a261;--font:'Space Mono','Courier New',monospace}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh}
+.topbar{position:fixed;top:0;left:0;right:0;height:56px;background:#0a0a0a;border-bottom:1px solid #222;display:flex;align-items:center;padding:0 24px;gap:16px;z-index:100}
+.logo{display:flex;flex-direction:column}.logo-title{font-size:16px;font-weight:700;color:var(--accent)}.logo-sub{font-size:8px;color:var(--text-dim);letter-spacing:2px}
+.search-wrap{position:relative;flex:0 0 360px}
+.search-wrap input{width:100%;height:36px;background:#141414;border:1px solid var(--border-lt);border-radius:4px;color:var(--text);font-family:var(--font);font-size:13px;padding:0 14px;outline:none}
+.search-wrap input:focus{border-color:var(--accent)}
+.search-wrap input::placeholder{color:var(--text-label)}
+.s-drop{position:absolute;top:100%;left:0;width:100%;max-height:260px;overflow-y:auto;background:#141414;border:1px solid var(--border-lt);border-top:none;border-radius:0 0 4px 4px;display:none;z-index:200}
+.s-drop.visible{display:block}
+.s-item{display:flex;justify-content:space-between;align-items:center;padding:0 14px;height:36px;font-size:12px;color:#eee;cursor:pointer;border-bottom:1px solid #1a1a1a}
+.s-item:hover,.s-item.hl{background:#1e1e1e}
+.s-item .pa{color:#666;font-size:10px}
+.week-wrap{display:flex;align-items:center;gap:8px}
+.week-wrap label{font-size:9px;color:var(--text-label);text-transform:uppercase;letter-spacing:1px;font-weight:700}
+.week-wrap input[type=date]{background:#141414;border:1px solid var(--border-lt);color:var(--text);font-family:var(--font);font-size:12px;padding:4px 8px;border-radius:3px;outline:none}
+.week-wrap input[type=date]:focus{border-color:var(--accent)}
+.btn-run{height:36px;padding:0 20px;background:var(--accent);border:none;border-radius:4px;color:#fff;font-family:var(--font);font-size:11px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:background 0.15s}
+.btn-run:hover{background:var(--accent-hover)}
+.btn-run:disabled{opacity:0.3;cursor:not-allowed}
+.loader-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);display:none}
+.loader-dot.active{display:block;animation:pulse 0.8s infinite alternate}
+@keyframes pulse{from{opacity:0.3}to{opacity:1}}
+.content{max-width:1000px;margin:0 auto;padding:80px 24px 40px}
+.hitter-card{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:16px 20px;margin-bottom:24px;display:none;animation:slideIn 0.3s ease}
+.hitter-card.visible{display:flex;justify-content:space-between;align-items:center}
+@keyframes slideIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+.hc-name{font-size:20px;font-weight:800}.hc-sub{font-size:11px;color:var(--text-label);font-weight:600;margin-top:2px}.hc-career{font-size:10px;color:#666;margin-top:4px}
+.hc-clear{font-size:18px;color:var(--text-dim);cursor:pointer;padding:4px 8px}.hc-clear:hover{color:var(--accent)}
+.day-hdr{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:var(--text-dim);margin-bottom:6px;padding-left:4px;margin-top:20px}
+.off-day{font-size:11px;font-style:italic;color:var(--text-muted);padding:8px 0}
+.game-card{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:20px;margin-bottom:16px}
+.gc-title{font-size:14px;font-weight:700;color:#eee}.gc-title .arch{font-weight:700}.gc-title .code{font-size:10px;color:#666;margin-left:4px}
+.gc-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:16px}
+.gc-section{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#666;font-weight:700;margin-bottom:8px}
+.gc-section.warn{color:var(--orange)}
+.gc-section .pa-note{color:var(--text-label);font-weight:600}
+.stat-row{display:flex;gap:8px;flex-wrap:wrap}
+.sc{background:var(--card);border-radius:4px;padding:10px 12px;text-align:center;min-width:60px;flex:1}
+.sc .sl{font-size:8px;text-transform:uppercase;color:#666;letter-spacing:0.5px;font-weight:700;margin-bottom:4px}
+.sc .sv{font-size:18px;font-weight:800;color:var(--text)}
+.sc .sv.est{color:var(--text-sec)}
+.sc .sv.good{color:var(--green)}.sc .sv.bad{color:var(--red)}
+.proj-row{margin-top:16px;padding-top:16px;border-top:1px solid #222}
+.proj-label{font-size:9px;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:4px}
+.proj-method{font-size:10px;color:var(--text-dim);font-style:italic;margin-bottom:10px}
+.proj-cards{display:flex;gap:8px;flex-wrap:wrap}
+.proj-cards .sc{min-width:65px}
+.pa-edit{width:30px;background:var(--input-bg);border:1px solid var(--border-lt);color:var(--text);font-family:var(--font);font-size:18px;font-weight:800;text-align:center;border-radius:3px;outline:none}
+.pa-edit:focus{border-color:var(--accent)}
+.totals-box{background:#0d0d0d;border:2px solid var(--accent);border-radius:8px;padding:24px;margin-top:24px}
+.totals-title{font-size:12px;text-transform:uppercase;letter-spacing:2px;color:var(--accent);font-weight:800;margin-bottom:16px}
+.totals-row{display:flex;gap:10px;flex-wrap:wrap}
+.totals-row .sc{min-width:80px;padding:12px 16px}.totals-row .sc .sv{font-size:22px}
+.btn-save{display:block;margin:20px auto 0;height:40px;padding:0 24px;background:var(--card);border:2px solid var(--accent);color:var(--accent);font-family:var(--font);font-size:11px;font-weight:700;letter-spacing:1px;border-radius:4px;cursor:pointer;transition:all 0.15s}
+.btn-save:hover{background:var(--accent);color:#fff}
+.saved-box{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:20px;margin-top:32px}
+.saved-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.saved-title{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-label);font-weight:700}
+.saved-btns{display:flex;gap:8px}
+.btn-sm{background:none;border:1px solid var(--border-lt);color:var(--text-label);font-family:var(--font);font-size:9px;padding:4px 10px;border-radius:3px;cursor:pointer;transition:all 0.15s}
+.btn-sm:hover{border-color:var(--red);color:var(--red)}
+.btn-sm.export:hover{border-color:var(--green);color:var(--green)}
+.saved-table{width:100%}
+.saved-table .t-hdr{display:grid;grid-template-columns:1fr 80px repeat(8,50px) 30px;padding:8px 12px;font-size:9px;color:#666;text-transform:uppercase;letter-spacing:1px;font-weight:700;border-bottom:1px solid var(--border-lt);background:#0d0d0d}
+.saved-table .t-row{display:grid;grid-template-columns:1fr 80px repeat(8,50px) 30px;padding:10px 12px;font-size:12px;color:var(--text-sec);font-weight:600;border-bottom:1px solid #1a1a1a;transition:background 0.1s;align-items:center}
+.saved-table .t-row:hover{background:rgba(255,255,255,0.02)}
+.saved-table .t-hdr span,.saved-table .t-row span{text-align:right}
+.saved-table .t-hdr span:first-child,.saved-table .t-row span:first-child{text-align:left}
+.saved-table .t-row .del{color:#444;cursor:pointer;font-size:12px;text-align:center}.t-row .del:hover{color:var(--red)}
+.empty-msg{text-align:center;color:var(--text-muted);font-size:12px;padding:40px 0}
+.pad-box{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:20px;margin-top:24px}
+.pad-title{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-label);font-weight:700;margin-bottom:12px}
+.pad-area{width:100%;min-height:200px;background:var(--input-bg);border:1px solid #222;border-radius:4px;color:var(--text-sec);font-family:var(--font);font-size:12px;line-height:1.6;padding:14px;resize:vertical;outline:none}
+.pad-area:focus{border-color:var(--accent)}
+.pad-area::placeholder{color:var(--text-muted)}
+.pad-btns{display:flex;gap:8px;margin-top:12px}
+.pad-btn{background:var(--card);border:1px solid var(--border-lt);color:#ccc;font-family:var(--font);font-size:10px;font-weight:700;padding:8px 16px;border-radius:3px;cursor:pointer;transition:all 0.15s}
+.pad-btn:hover{border-color:var(--accent);color:var(--accent)}
+.pad-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.pad-btn.primary:hover{background:var(--accent-hover)}
+.flash{font-size:10px;color:var(--green);margin-left:8px;opacity:0;transition:opacity 0.3s}
+.flash.show{opacity:1}
+.status-banner{background:#1a1a1a;border:1px solid var(--orange);border-radius:4px;padding:12px 16px;margin-bottom:16px;font-size:11px;color:var(--orange);display:none}
+.status-banner.visible{display:block}
+@media(max-width:768px){.search-wrap{flex:1;min-width:200px}.gc-grid{grid-template-columns:1fr}.stat-row{flex-wrap:wrap}.sc{min-width:45px}.saved-table{overflow-x:auto}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo"><span class="logo-title">SIM LAB</span><span class="logo-sub">PITCH.FX // CLUSTER</span></div>
+  <div class="search-wrap"><input type="text" id="search" placeholder="SEARCH HITTER..." autocomplete="off"><div class="s-drop" id="s-drop"></div></div>
+  <div class="week-wrap"><label>Week of</label><input type="date" id="week-date"></div>
+  <button class="btn-run" id="btn-run" disabled>RUN SLATE</button>
+  <div class="loader-dot" id="loader-dot"></div>
+</div>
+<div class="content">
+  <div class="hitter-card" id="hitter-card"><div><div class="hc-name" id="hc-name"></div><div class="hc-sub" id="hc-sub"></div><div class="hc-career" id="hc-career"></div></div><div class="hc-clear" id="hc-clear">&times;</div></div>
+  <div class="status-banner" id="status-banner"></div>
+  <div id="slate"></div>
+  <div class="saved-box">
+    <div class="saved-hdr"><span class="saved-title">Saved Projections</span><div class="saved-btns"><button class="btn-sm" id="btn-clear-all">CLEAR ALL</button><button class="btn-sm export" id="btn-export">EXPORT CSV</button></div></div>
+    <div class="saved-table"><div class="t-hdr"><span>Hitter</span><span>Week</span><span>PA</span><span>AB</span><span>H</span><span>HR</span><span>K</span><span>BB</span><span>BA</span><span>wOBA</span><span></span></div><div id="saved-rows"></div></div>
+    <div class="empty-msg" id="empty-msg">No saved projections yet. Search a hitter and run a slate.</div>
+  </div>
+  <div class="pad-box">
+    <div class="pad-title">Research Pad</div>
+    <textarea class="pad-area" id="pad" placeholder="Type research notes, observations, strategy ideas..."></textarea>
+    <div class="pad-btns"><button class="pad-btn primary" id="pad-save">Save<span class="flash" id="flash-save">Saved!</span></button><button class="pad-btn" id="pad-copy">Copy to Clipboard<span class="flash" id="flash-copy">Copied!</span></button><button class="pad-btn" id="pad-clear">Clear</button></div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"><\/script>
+<script>
+// ═══ INJECTED DATA ═══
+const DATA = ${JSON.stringify(serData)};
+const PRESELECT = ${preselect};
+
+// Build indexes
+DATA._hvpIndex = {};
+(DATA.hitterVsPitcher||[]).forEach(r => {
+    if (!DATA._hvpIndex[r.b]) DATA._hvpIndex[r.b] = {};
+    if (!DATA._hvpIndex[r.b][r.c]) DATA._hvpIndex[r.b][r.c] = [];
+    DATA._hvpIndex[r.b][r.c].push(r);
+});
+
+// ═══ STATE ═══
+let selectedBatter = null;
+let teamId = null;
+let schedule = [];
+let projections = [];
+
+// ═══ HELPERS ═══
+function fmtName(n){if(!n)return'Unknown';return n.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ')}
+function baColor(v){return v>=0.300?'good':v<=0.180?'bad':''}
+function wobaColor(v){return v>=0.370?'good':v<=0.250?'bad':''}
+function nextMonday(){const d=new Date();const day=d.getDay();const diff=day===0?1:(8-day);d.setDate(d.getDate()+diff);return d.toISOString().split('T')[0]}
+function fmtDate(s){const d=new Date(s+'T12:00:00');return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}).toUpperCase()}
+function endOfWeek(start){const d=new Date(start+'T12:00:00');d.setDate(d.getDate()+6);return d.toISOString().split('T')[0]}
+
+// ═══ SEARCH ═══
+const fuse = new Fuse(DATA.batters, {keys:['batter_name'],threshold:0.3});
+const searchInput = document.getElementById('search');
+const sDrop = document.getElementById('s-drop');
+let sResults=[], sHighlight=0;
+
+searchInput.addEventListener('input', () => {
+    const q = searchInput.value.trim();
+    if (q.length < 2) { sDrop.classList.remove('visible'); sResults=[]; return; }
+    sResults = fuse.search(q).slice(0,8).map(r=>r.item);
+    sHighlight = 0;
+    renderSearchResults();
+});
+searchInput.addEventListener('keydown', (e) => {
+    if (e.key==='ArrowDown'){e.preventDefault();sHighlight=Math.min(sHighlight+1,sResults.length-1);renderSearchResults();}
+    if (e.key==='ArrowUp'){e.preventDefault();sHighlight=Math.max(sHighlight-1,0);renderSearchResults();}
+    if (e.key==='Enter'&&sResults[sHighlight]){selectBatter(sResults[sHighlight]);sDrop.classList.remove('visible');}
+    if (e.key==='Escape'){sDrop.classList.remove('visible');}
+});
+searchInput.addEventListener('blur', ()=>{setTimeout(()=>sDrop.classList.remove('visible'),150)});
+
+function renderSearchResults(){
+    if(!sResults.length){sDrop.classList.remove('visible');return}
+    sDrop.innerHTML=sResults.map((b,i)=>'<div class="s-item'+(i===sHighlight?' hl':'')+'" data-idx="'+i+'"><span>'+fmtName(b.batter_name)+'</span><span class="pa">'+(b.total_PA||0).toLocaleString()+' PA</span></div>').join('');
+    sDrop.classList.add('visible');
+}
+sDrop.addEventListener('mousedown',(e)=>{const el=e.target.closest('.s-item');if(!el)return;e.preventDefault();selectBatter(sResults[parseInt(el.dataset.idx)]);sDrop.classList.remove('visible');});
+
+// ═══ BATTER SELECTION ═══
+async function selectBatter(batter){
+    selectedBatter = batter;
+    searchInput.value='';
+    sDrop.classList.remove('visible');
+
+    // Aggregate career stats
+    const rows = DATA.hitterVsCluster.filter(r=>r.batter===batter.batter);
+    let totalPA=0,totalHR=0,wobaSum=0;
+    rows.forEach(r=>{totalPA+=r.PA||0;totalHR+=r.HR||0;wobaSum+=(r.wOBA||0)*(r.PA||0)});
+    const careerWoba = totalPA>0?(wobaSum/totalPA).toFixed(3):'.000';
+
+    document.getElementById('hc-name').textContent=fmtName(batter.batter_name);
+    document.getElementById('hc-sub').textContent='';
+    document.getElementById('hc-career').textContent='Career: '+careerWoba+' wOBA \\u00b7 '+totalHR+' HR \\u00b7 '+totalPA.toLocaleString()+' PA';
+    document.getElementById('hitter-card').classList.add('visible');
+    document.getElementById('btn-run').disabled=false;
+
+    // Try to get team from MLB API
+    showLoader(true);
+    try{
+        const res = await fetch('https://statsapi.mlb.com/api/v1/people/'+batter.batter+'?hydrate=currentTeam');
+        const data = await res.json();
+        if(data.people&&data.people[0]){
+            const p=data.people[0];
+            teamId=p.currentTeam?p.currentTeam.id:null;
+            const teamAbbr=p.currentTeam?p.currentTeam.abbreviation:'';
+            const pos=p.primaryPosition?p.primaryPosition.abbreviation:'';
+            const bat=p.batSide?p.batSide.code:'';
+            document.getElementById('hc-sub').textContent=[teamAbbr,pos,bat].filter(Boolean).join(' \\u00b7 ');
+        }
+    }catch(e){console.warn('MLB API player lookup failed:',e);showBanner('Could not reach MLB API. You can still run projections with archetype data.')}
+    showLoader(false);
+}
+
+document.getElementById('hc-clear').addEventListener('click',()=>{
+    selectedBatter=null;teamId=null;schedule=[];projections=[];
+    document.getElementById('hitter-card').classList.remove('visible');
+    document.getElementById('slate').innerHTML='';
+    document.getElementById('btn-run').disabled=true;
+    hideBanner();
+});
+
+// ═══ WEEK DATE ═══
+const weekInput = document.getElementById('week-date');
+weekInput.value = nextMonday();
+
+// ═══ RUN SLATE ═══
+document.getElementById('btn-run').addEventListener('click', runSlate);
+
+async function runSlate(){
+    if(!selectedBatter)return;
+    const startDate = weekInput.value;
+    const endDate = endOfWeek(startDate);
+    showLoader(true);
+    hideBanner();
+
+    // Fetch schedule
+    schedule = [];
+    if(teamId){
+        try{
+            const res=await fetch('https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId='+teamId+'&startDate='+startDate+'&endDate='+endDate+'&hydrate=probablePitcher');
+            const data=await res.json();
+            if(data.dates){
+                data.dates.forEach(dateObj=>{
+                    dateObj.games.forEach(game=>{
+                        const isHome=game.teams.home.team.id===teamId;
+                        const opp=isHome?game.teams.away:game.teams.home;
+                        const oppPitcher=opp.probablePitcher||null;
+                        schedule.push({
+                            date:game.officialDate||dateObj.date,
+                            oppTeam:opp.team.abbreviation||opp.team.name,
+                            pitcher:oppPitcher?{id:oppPitcher.id,name:oppPitcher.fullName}:null
+                        });
+                    });
+                });
+            }
+        }catch(e){console.warn('Schedule fetch failed:',e);showBanner('Could not fetch MLB schedule. Showing archetype-only projections.')}
+    }else{
+        showBanner('Team not found for this player. Add pitcher matchups manually or use archetype projections.');
+    }
+
+    // Build slate for each day of the week
+    const slateEl=document.getElementById('slate');
+    let html='';
+    projections=[];
+    const days=[];
+    for(let i=0;i<7;i++){
+        const d=new Date(startDate+'T12:00:00');
+        d.setDate(d.getDate()+i);
+        days.push(d.toISOString().split('T')[0]);
+    }
+
+    days.forEach(day=>{
+        const games=schedule.filter(g=>g.date===day);
+        html+='<div class="day-hdr">'+fmtDate(day)+'</div>';
+        if(games.length===0){
+            html+='<div class="off-day">OFF DAY</div>';
+            return;
+        }
+        games.forEach(game=>{
+            const proj = buildGameCard(game, day);
+            html += proj.html;
+            projections.push(proj.data);
+        });
+    });
+
+    // Week totals
+    if(projections.length>0){
+        html += buildTotals(projections);
+    }
+
+    slateEl.innerHTML=html;
+    showLoader(false);
+
+    // Bind PA edit fields
+    document.querySelectorAll('.pa-edit').forEach(el=>{
+        el.addEventListener('change',()=>{
+            const idx=parseInt(el.dataset.idx);
+            const newPA=parseFloat(el.value)||4;
+            projections[idx].pa=newPA;
+            recalcGame(idx, newPA);
+        });
+    });
+}
+
+function buildGameCard(game, day){
+    // Find pitcher in our data
+    let ps = null, cluster = null, cent = null;
+    if(game.pitcher){
+        const allSeasons=DATA.pitcherSeasons.filter(p=>p.pitcher===game.pitcher.id);
+        if(allSeasons.length>0){
+            ps=allSeasons.sort((a,b)=>b.game_year-a.game_year)[0]; // latest season
+            cluster=DATA.clusters[ps.cluster]||null;
+            cent=cluster?cluster.centroid||{}:{};
+        }
+    }
+    const clusterName=cluster?cluster.short_name:'Unknown';
+    const clusterColor=cluster?cluster.color:'#666';
+    const clusterCode=ps?ps.cluster:'';
+    const pitcherName=game.pitcher?game.pitcher.name:'TBD';
+    const role=ps?(ps.is_sp?'SP':'RP'):'SP';
+
+    // Head-to-head matchup
+    let h2h=null;
+    if(game.pitcher&&selectedBatter){
+        const allMatchups=Object.values(DATA._hvpIndex[selectedBatter.batter]||{}).flat();
+        h2h=allMatchups.find(m=>m.p===game.pitcher.id)||null;
+    }
+
+    // Archetype matchup
+    let archMatch=null;
+    if(ps&&selectedBatter){
+        const archRows=DATA.hitterVsCluster.filter(r=>r.batter===selectedBatter.batter&&String(r.cluster)===ps.cluster);
+        if(archRows.length>0){
+            const tot={PA:0,AB:0,H:0,HR:0,BB:0,K:0,HBP:0,woba_sum:0};
+            archRows.forEach(r=>{tot.PA+=r.PA||0;tot.AB+=r.AB||0;tot.H+=r.H||0;tot.HR+=r.HR||0;tot.BB+=r.BB||0;tot.K+=r.K||0;tot.HBP+=r.HBP||0;tot.woba_sum+=(r.wOBA||0)*(r.PA||0)});
+            archMatch={PA:tot.PA,BA:tot.AB>0?tot.H/tot.AB:0,wOBA:tot.PA>0?tot.woba_sum/tot.PA:0,HR:tot.HR,K:tot.K,BB:tot.BB,K_pct:tot.PA>0?tot.K/tot.PA:0,BB_pct:tot.PA>0?tot.BB/tot.PA:0};
+        }
+    }
+
+    // Projection logic
+    const assumedPA=role==='SP'?4:1.5;
+    let projBA=0,projWOBA=0,projHRrate=0,projKrate=0,projBBrate=0,projSource='';
+    if(h2h&&h2h.pa>=10){
+        projBA=h2h.ba||0;projWOBA=h2h.w||0;projHRrate=h2h.pa>0?(h2h.hr||0)/h2h.pa:0;projKrate=h2h.pa>0?(h2h.k||0)/h2h.pa:0;projBBrate=h2h.pa>0?(h2h.bb||0)/h2h.pa:0;
+        projSource='head-to-head ('+h2h.pa+' PA)';
+    }else if(archMatch&&archMatch.PA>=5){
+        projBA=archMatch.BA;projWOBA=archMatch.wOBA;projHRrate=archMatch.PA>0?archMatch.HR/archMatch.PA:0;projKrate=archMatch.K_pct;projBBrate=archMatch.BB_pct;
+        projSource=h2h?'archetype avg (<10 PA direct)':'archetype avg (no direct history)';
+    }else{
+        projSource='insufficient data';
+    }
+    const projAB=assumedPA*(1-projBBrate);
+    const projH=projAB*projBA;
+    const projHR=assumedPA*projHRrate;
+    const projK=assumedPA*projKrate;
+    const projBB=assumedPA*projBBrate;
+
+    const gameData={pa:assumedPA,ab:projAB,h:projH,hr:projHR,k:projK,bb:projBB,ba:projBA,woba:projWOBA,pitcher:pitcherName,cluster:clusterCode,source:projSource};
+
+    let card='<div class="game-card">';
+    card+='<div class="gc-title">vs '+game.oppTeam+' \\u00b7 '+pitcherName+' \\u00b7 <span class="arch" style="color:'+clusterColor+'">'+clusterName+'</span><span class="code"> ('+clusterCode+')</span></div>';
+
+    // Row 1: Pitcher profile + Head-to-head
+    card+='<div class="gc-grid">';
+    // Left: pitcher profile
+    card+='<div>';
+    card+='<div class="gc-section">Pitcher Profile</div>';
+    card+='<div class="stat-row">';
+    card+=sc('VELO',ps?(ps.avg_velo_FF||0).toFixed(1):'\\u2014');
+    card+=sc('WHIFF',ps?((ps.whiff_rate||0)*100).toFixed(0)+'%':'\\u2014');
+    card+=sc('ARM',ps?(ps.arm_angle||0).toFixed(0)+'\\u00b0':'\\u2014');
+    card+=sc('H-BRK',ps?((ps.pfx_x_avg||0)*12).toFixed(1)+'"':'\\u2014');
+    card+='</div></div>';
+    // Right: head-to-head
+    card+='<div>';
+    if(h2h&&h2h.pa>=1){
+        card+='<div class="gc-section">Head-to-Head <span class="pa-note">('+h2h.pa+' PA)</span></div>';
+        card+='<div class="stat-row">';
+        card+=sc('PA',h2h.pa);
+        card+=scC('BA',h2h.ba!=null?h2h.ba.toFixed(3):'\\u2014',baColor(h2h.ba||0));
+        card+=scC('wOBA',h2h.w!=null?h2h.w.toFixed(3):'\\u2014',wobaColor(h2h.w||0));
+        card+=sc('HR',h2h.hr||0);
+        card+=sc('K',h2h.k||0);
+        card+='</div>';
+    }else{
+        card+='<div class="gc-section warn">No Direct History \\u2014 Using Archetype</div>';
+        if(archMatch){
+            card+='<div class="stat-row">';
+            card+=sc('PA','~'+archMatch.PA);
+            card+=scC('BA','~'+archMatch.BA.toFixed(3),baColor(archMatch.BA));
+            card+=scC('wOBA','~'+archMatch.wOBA.toFixed(3),wobaColor(archMatch.wOBA));
+            card+=sc('K%',(archMatch.K_pct*100).toFixed(0)+'%');
+            card+=sc('BB%',(archMatch.BB_pct*100).toFixed(0)+'%');
+            card+='</div>';
+        }else{
+            card+='<div style="font-size:11px;color:#444;padding:8px 0">No matchup data available</div>';
+        }
+    }
+    card+='</div></div>';
+
+    // Row 2: Archetype profile + vs archetype
+    card+='<div class="gc-grid">';
+    card+='<div>';
+    card+='<div class="gc-section" style="color:'+clusterColor+'">Archetype: '+clusterName+'</div>';
+    card+='<div class="stat-row">';
+    card+=sc('VELO',cent&&cent.avg_velo_FF?(cent.avg_velo_FF).toFixed(1):'\\u2014');
+    card+=sc('WHIFF',cent?((cent.whiff_rate||0)*100).toFixed(0)+'%':'\\u2014');
+    card+=sc('ZONE%',cent?((cent.zone_rate||0)*100).toFixed(0)+'%':'\\u2014');
+    card+=sc('GB%',cent?((cent.groundball_rate||0)*100).toFixed(0)+'%':'\\u2014');
+    card+='</div></div>';
+    card+='<div>';
+    card+='<div class="gc-section">vs Archetype (All Time)</div>';
+    if(archMatch){
+        card+='<div class="stat-row">';
+        card+=sc('PA',archMatch.PA);
+        card+=scC('BA',archMatch.BA.toFixed(3),baColor(archMatch.BA));
+        card+=scC('wOBA',archMatch.wOBA.toFixed(3),wobaColor(archMatch.wOBA));
+        card+=sc('K%',(archMatch.K_pct*100).toFixed(0)+'%');
+        card+=sc('BB%',(archMatch.BB_pct*100).toFixed(0)+'%');
+        card+='</div>';
+    }else{
+        card+='<div style="font-size:11px;color:#444;padding:8px 0">No archetype data</div>';
+    }
+    card+='</div></div>';
+
+    // Row 3: Projection
+    const idx=projections.length;
+    card+='<div class="proj-row">';
+    card+='<div class="proj-label">Projection</div>';
+    card+='<div class="proj-method">Using '+projSource+'</div>';
+    card+='<div class="proj-cards">';
+    card+='<div class="sc"><div class="sl">PA</div><div class="sv"><input class="pa-edit" type="number" value="'+assumedPA+'" min="1" max="9" step="0.5" data-idx="'+idx+'"></div></div>';
+    card+=sc('BA',projBA>0?projBA.toFixed(3):'\\u2014');
+    card+=scC('wOBA',projWOBA>0?projWOBA.toFixed(3):'\\u2014',wobaColor(projWOBA));
+    card+=sc('HR',projHR.toFixed(2));
+    card+=sc('K',projK.toFixed(2));
+    card+=sc('BB',projBB.toFixed(2));
+    card+='</div></div>';
+    card+='</div>';
+
+    return {html:card, data:gameData};
+}
+
+function sc(label,val){return '<div class="sc"><div class="sl">'+label+'</div><div class="sv">'+val+'</div></div>'}
+function scC(label,val,cls){return '<div class="sc"><div class="sl">'+label+'</div><div class="sv '+(cls||'')+'">'+val+'</div></div>'}
+
+function buildTotals(projs){
+    let tPA=0,tAB=0,tH=0,tHR=0,tK=0,tBB=0,tWobaSum=0;
+    projs.forEach(p=>{tPA+=p.pa;tAB+=p.ab;tH+=p.h;tHR+=p.hr;tK+=p.k;tBB+=p.bb;tWobaSum+=p.woba*p.pa});
+    const tBA=tAB>0?tH/tAB:0;
+    const tWOBA=tPA>0?tWobaSum/tPA:0;
+    let html='<div class="totals-box">';
+    html+='<div class="totals-title">Projected Week Totals</div>';
+    html+='<div class="totals-row">';
+    html+=sc('PA',tPA.toFixed(0));
+    html+=sc('AB',tAB.toFixed(0));
+    html+=sc('H',tH.toFixed(1));
+    html+=sc('HR',tHR.toFixed(1));
+    html+=sc('K',tK.toFixed(1));
+    html+=sc('BB',tBB.toFixed(1));
+    html+=scC('BA',tBA.toFixed(3),baColor(tBA));
+    html+=scC('wOBA',tWOBA.toFixed(3),wobaColor(tWOBA));
+    html+='</div>';
+    html+='<button class="btn-save" id="btn-save-proj">SAVE PROJECTION</button>';
+    html+='</div>';
+    return html;
+}
+
+function recalcGame(idx, newPA){
+    const p=projections[idx];
+    if(!p)return;
+    p.pa=newPA;
+    p.ab=newPA*(1-(p.ba>0?(p.bb/(p.bb+p.ab+p.h)):0));
+    p.h=p.ab*p.ba;
+    p.hr=newPA*(p.hr/p.pa||0);
+    p.k=newPA*(p.k/p.pa||0);
+    p.bb=newPA*(p.bb/p.pa||0);
+    // Rebuild totals
+    const totalsBox=document.querySelector('.totals-box');
+    if(totalsBox){totalsBox.outerHTML=buildTotals(projections)}
+    bindSaveBtn();
+}
+
+// ═══ SAVE/LOAD PROJECTIONS ═══
+let savedProjections=JSON.parse(localStorage.getItem('pfx_sim_projections')||'[]');
+renderSaved();
+
+function bindSaveBtn(){
+    const btn=document.getElementById('btn-save-proj');
+    if(btn){btn.onclick=saveProjection}
+}
+document.addEventListener('click',(e)=>{if(e.target&&e.target.id==='btn-save-proj')saveProjection()});
+
+function saveProjection(){
+    if(!selectedBatter||projections.length===0)return;
+    let tPA=0,tAB=0,tH=0,tHR=0,tK=0,tBB=0,tWS=0;
+    projections.forEach(p=>{tPA+=p.pa;tAB+=p.ab;tH+=p.h;tHR+=p.hr;tK+=p.k;tBB+=p.bb;tWS+=p.woba*p.pa});
+    savedProjections.push({
+        hitter_name:selectedBatter.batter_name,hitter_id:selectedBatter.batter,
+        week_start:weekInput.value,pa:+tPA.toFixed(0),ab:+tAB.toFixed(0),h:+tH.toFixed(1),
+        hr:+tHR.toFixed(1),k:+tK.toFixed(1),bb:+tBB.toFixed(1),
+        ba:tAB>0?+(tH/tAB).toFixed(3):0,woba:tPA>0?+(tWS/tPA).toFixed(3):0,
+        timestamp:Date.now(),games:projections.map(p=>({pitcher:p.pitcher,cluster:p.cluster}))
+    });
+    localStorage.setItem('pfx_sim_projections',JSON.stringify(savedProjections));
+    renderSaved();
+}
+
+function renderSaved(){
+    const rows=document.getElementById('saved-rows');
+    const empty=document.getElementById('empty-msg');
+    if(!savedProjections.length){rows.innerHTML='';empty.style.display='block';return}
+    empty.style.display='none';
+    rows.innerHTML=savedProjections.map((s,i)=>{
+        const wk=new Date(s.week_start+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+        return '<div class="t-row" data-idx="'+i+'"><span>'+fmtName(s.hitter_name)+'</span><span>'+wk+'</span><span>'+s.pa+'</span><span>'+s.ab+'</span><span>'+s.h+'</span><span>'+s.hr+'</span><span>'+s.k+'</span><span>'+s.bb+'</span><span style="color:'+(s.ba>=0.300?'var(--green)':s.ba<=0.200?'var(--red)':'inherit')+'">'+s.ba.toFixed(3)+'</span><span style="color:'+(s.woba>=0.370?'var(--green)':s.woba<=0.280?'var(--red)':'inherit')+'">'+s.woba.toFixed(3)+'</span><span class="del" data-del="'+i+'">\\u00d7</span></div>';
+    }).join('');
+}
+document.getElementById('saved-rows').addEventListener('click',(e)=>{
+    const del=e.target.closest('.del');
+    if(!del)return;
+    savedProjections.splice(parseInt(del.dataset.del),1);
+    localStorage.setItem('pfx_sim_projections',JSON.stringify(savedProjections));
+    renderSaved();
+});
+document.getElementById('btn-clear-all').addEventListener('click',()=>{
+    if(!confirm('Clear all saved projections?'))return;
+    savedProjections=[];localStorage.removeItem('pfx_sim_projections');renderSaved();
+});
+document.getElementById('btn-export').addEventListener('click',()=>{
+    if(!savedProjections.length)return;
+    let csv='Hitter,Week,PA,AB,H,HR,K,BB,BA,wOBA\\n';
+    savedProjections.forEach(s=>{csv+=fmtName(s.hitter_name)+','+s.week_start+','+s.pa+','+s.ab+','+s.h+','+s.hr+','+s.k+','+s.bb+','+s.ba+','+s.woba+'\\n'});
+    const blob=new Blob([csv],{type:'text/csv'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='projections_'+new Date().toISOString().split('T')[0]+'.csv';a.click();
+});
+
+// ═══ RESEARCH PAD ═══
+const pad=document.getElementById('pad');
+pad.value=localStorage.getItem('pfx_sim_notes')||'';
+let padDirty=false;
+pad.addEventListener('input',()=>{padDirty=true});
+setInterval(()=>{if(padDirty){localStorage.setItem('pfx_sim_notes',pad.value);padDirty=false}},5000);
+document.getElementById('pad-save').addEventListener('click',()=>{localStorage.setItem('pfx_sim_notes',pad.value);flash('flash-save')});
+document.getElementById('pad-copy').addEventListener('click',()=>{navigator.clipboard.writeText(pad.value).then(()=>flash('flash-copy'))});
+document.getElementById('pad-clear').addEventListener('click',()=>{if(confirm('Clear all notes?')){pad.value='';localStorage.removeItem('pfx_sim_notes')}});
+function flash(id){const el=document.getElementById(id);el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1500)}
+
+// ═══ UI HELPERS ═══
+function showLoader(on){document.getElementById('loader-dot').classList.toggle('active',on)}
+function showBanner(msg){const b=document.getElementById('status-banner');b.textContent=msg;b.classList.add('visible')}
+function hideBanner(){document.getElementById('status-banner').classList.remove('visible')}
+
+// ═══ INIT ═══
+if(PRESELECT){selectBatter(PRESELECT)}
+<\/script>
+</body>
+</html>`;
+
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            window.open(url, '_blank');
         }
 
         // ═══════════════════════════════════════
