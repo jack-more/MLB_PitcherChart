@@ -437,6 +437,10 @@
             animation: scanTextAnim 0.8s ease-out;
         }
         @keyframes scanTextAnim { 0% { opacity:0; letter-spacing:16px; } 30% { opacity:1; letter-spacing:4px; } 80% { opacity:1; } 100% { opacity:0; } }
+        @keyframes simGlow {
+            0%, 100% { box-shadow: 0 0 8px rgba(255,68,0,0.4), 0 0 20px rgba(255,68,0,0.15); }
+            50% { box-shadow: 0 0 14px rgba(255,68,0,0.6), 0 0 30px rgba(255,68,0,0.25); }
+        }
 
         /* ═══ PITCHER ROSTER ═══ */
         .roster-header {
@@ -545,7 +549,7 @@
         <div class="batter-stack" id="batter-stack"></div>
 
         <div class="header-controls">
-            <div class="key key-dark" id="simlab-toggle" style="height:28px;padding:0 10px;font-size:9px;letter-spacing:0.5px;border:1px solid #ff4400;color:#ff4400;cursor:pointer;">SIM LAB</div>
+            <div class="key key-dark" id="simlab-toggle" style="height:30px;padding:0 14px;font-size:10px;letter-spacing:1px;font-weight:700;background:linear-gradient(135deg,#ff4400,#cc2200);color:#fff;border:none;cursor:pointer;border-radius:4px;box-shadow:0 0 8px rgba(255,68,0,0.4),0 0 20px rgba(255,68,0,0.15);animation:simGlow 2s ease-in-out infinite;display:flex;align-items:center;gap:6px;"><span style="font-size:13px;">⚡</span> SIM LAB</div>
             <div class="key key-dark" id="history-toggle" style="height:28px;padding:0 10px;font-size:9px;letter-spacing:0.5px;">HISTORY</div>
             <div class="led active" id="led-data"></div>
             <div class="led" id="led-batter"></div>
@@ -1130,8 +1134,19 @@
                 const pos = d2c((c.pfx_x_avg||0)*12, c.avg_velo_FF);
                 if (Math.sqrt((mx-pos.x)**2+(my-pos.y)**2) < 22) {
                     centroidHit = true;
-                    const ab = STATE.activeBatters.length > 0 ? STATE.activeBatters[STATE.activeBatters.length-1] : null;
-                    showStatPanel(ab, id);
+                    if (STATE.highlightedCluster === id) {
+                        // Toggle off — deselect and close panel
+                        STATE.highlightedCluster = null;
+                        document.getElementById('stat-panel').classList.remove('visible');
+                        if (STATE.activeBatters.length > 0) {
+                            const ab2 = STATE.activeBatters[STATE.activeBatters.length-1];
+                            updateDock(ab2, getMatchupData(ab2));
+                        }
+                        render(); buildArchetypeList();
+                    } else {
+                        const ab = STATE.activeBatters.length > 0 ? STATE.activeBatters[STATE.activeBatters.length-1] : null;
+                        showStatPanel(ab, id);
+                    }
                 }
             });
             if (centroidHit) return;
@@ -1149,6 +1164,15 @@
             if (closestDot) {
                 const ab = STATE.activeBatters.length > 0 ? STATE.activeBatters[STATE.activeBatters.length-1] : null;
                 showPitcherStatPanel(closestDot, ab);
+            } else if (STATE.highlightedCluster) {
+                // Clicked empty canvas space — reset to show all archetypes
+                STATE.highlightedCluster = null;
+                document.getElementById('stat-panel').classList.remove('visible');
+                if (STATE.activeBatters.length > 0) {
+                    const ab = STATE.activeBatters[STATE.activeBatters.length-1];
+                    updateDock(ab, getMatchupData(ab));
+                }
+                render(); buildArchetypeList();
             }
         });
 
@@ -1464,6 +1488,11 @@
 
             let html = '';
 
+            // Show "SHOW ALL" reset button when an archetype is selected
+            if (STATE.highlightedCluster) {
+                html += '<div id="show-all-btn" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:6px 10px;margin:0 10px 8px;background:rgba(255,68,0,0.08);border:1px solid rgba(255,68,0,0.3);border-radius:4px;cursor:pointer;font-size:10px;font-weight:700;color:#ff4400;font-family:var(--font-tech);letter-spacing:0.5px;transition:all 0.15s;"><span style="font-size:14px;">↩</span> SHOW ALL ARCHETYPES</div>';
+            }
+
             // Column headers when batters are active
             if (hasBatters) {
                 html += '<div class="arch-batter-cols">';
@@ -1551,6 +1580,21 @@
                     buildArchetypeList();
                 });
             });
+
+            // "SHOW ALL" button handler
+            const showAllBtn = document.getElementById('show-all-btn');
+            if (showAllBtn) {
+                showAllBtn.addEventListener('click', () => {
+                    STATE.highlightedCluster = null;
+                    document.getElementById('stat-panel').classList.remove('visible');
+                    if (STATE.activeBatters.length > 0) {
+                        const ab = STATE.activeBatters[STATE.activeBatters.length-1];
+                        updateDock(ab, getMatchupData(ab));
+                    }
+                    render();
+                    buildArchetypeList();
+                });
+            }
         }
 
         // ═══════════════════════════════════════
