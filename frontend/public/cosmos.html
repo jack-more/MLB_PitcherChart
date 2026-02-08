@@ -139,7 +139,7 @@
             font-size: 11px; outline: none; border-radius: 3px;
         }
         .search-box input:focus { border-color: var(--accent-orange); }
-        .search-box input::placeholder { color: #555; }
+        .search-box input::placeholder { color: #999; }
 
         .search-dropdown {
             position: absolute; top: 100%; left: 0; width: 100%; max-height: 260px;
@@ -1118,16 +1118,37 @@
             if (isDragging) return;
             const rect = canvas.getBoundingClientRect();
             const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+
+            // Priority 1: cluster centroid clicks
+            let centroidHit = false;
             Object.entries(DATA.clusters).forEach(([id, cl]) => {
+                if (centroidHit) return;
                 if (!STATE.visibleClusters.has(id)) return;
                 const c = cl.centroid || {};
                 if (!c.avg_velo_FF) return;
                 const pos = d2c((c.pfx_x_avg||0)*12, c.avg_velo_FF);
                 if (Math.sqrt((mx-pos.x)**2+(my-pos.y)**2) < 22) {
+                    centroidHit = true;
                     const ab = STATE.activeBatters.length > 0 ? STATE.activeBatters[STATE.activeBatters.length-1] : null;
                     showStatPanel(ab, id);
                 }
             });
+            if (centroidHit) return;
+
+            // Priority 2: individual pitcher dot clicks
+            let closestDot = null, closestDist = 12;
+            for (let i = 0; i < DATA.pitcherSeasons.length; i++) {
+                const ps = DATA.pitcherSeasons[i];
+                if (!STATE.visibleClusters.has(ps.cluster)) continue;
+                if (!ps.avg_velo_FF) continue;
+                const pos = d2c((ps.pfx_x_avg||0)*12, ps.avg_velo_FF);
+                const dist = Math.sqrt((mx-pos.x)**2+(my-pos.y)**2);
+                if (dist < closestDist) { closestDist = dist; closestDot = ps; }
+            }
+            if (closestDot) {
+                const ab = STATE.activeBatters.length > 0 ? STATE.activeBatters[STATE.activeBatters.length-1] : null;
+                showPitcherStatPanel(closestDot, ab);
+            }
         });
 
         // ═══════════════════════════════════════
@@ -1328,6 +1349,84 @@
         }
 
         // ═══════════════════════════════════════
+        // PITCHER DOT STAT PANEL
+        // ═══════════════════════════════════════
+        function showPitcherStatPanel(ps, batterObj) {
+            const cluster = DATA.clusters[ps.cluster];
+            if (!cluster) return;
+            const panel = document.getElementById('stat-panel');
+            const content = document.getElementById('panel-content');
+            const cent = cluster.centroid || {};
+            const role = ps.is_sp ? 'SP' : 'RP';
+
+            let html = '';
+            html += '<div class="stat-header">'+fmtName(ps.player_name)+'</div>';
+            html += '<div class="stat-sub" style="color:'+cluster.color+'">'+ps.game_year+' // '+cluster.short_name+'</div>';
+
+            // Pitcher profile stats
+            html += '<div class="section-hdr">Pitcher Profile</div>';
+            html += '<div class="stat-grid">';
+            html += statCell('VELO', (ps.avg_velo_FF||0).toFixed(1));
+            html += statCell('WHIFF', ((ps.whiff_rate||0)*100).toFixed(0)+'%');
+            html += statCell('ARM', (ps.arm_angle||0).toFixed(0)+'\u00b0');
+            html += '</div>';
+            html += '<div class="profile-row"><span>Hand</span><span class="pval">'+(ps.is_rhp ? 'Right' : 'Left')+'</span></div>';
+            html += '<div class="profile-row"><span>Role</span><span class="pval">'+role+'</span></div>';
+            html += '<div class="profile-row"><span>H-Break</span><span class="pval">'+((ps.pfx_x_avg||0)*12).toFixed(1)+'"</span></div>';
+            html += '<div class="profile-row"><span>V-Break</span><span class="pval">'+((ps.pfx_z_avg||0)*12).toFixed(1)+'"</span></div>';
+
+            // Head-to-head matchup if batter is active
+            if (batterObj) {
+                const hvpData = (DATA._hvpIndex[batterObj.batter] || {})[ps.cluster] || [];
+                const matchup = hvpData.find(m => m.p === ps.pitcher);
+
+                if (matchup) {
+                    html += '<div class="section-hdr">vs '+fmtName(batterObj.batter_name)+'</div>';
+                    html += '<div class="stat-grid">';
+                    html += statCell('PA', matchup.pa||0);
+                    html += statCell('BA', matchup.ba != null ? matchup.ba.toFixed(3) : '\u2014');
+                    html += statCell('wOBA', matchup.w != null ? matchup.w.toFixed(3) : '\u2014');
+                    html += statCell('HR', matchup.hr||0);
+                    html += statCell('K', matchup.k||0);
+                    html += statCell('BB', matchup.bb||0);
+                    html += '</div>';
+                } else {
+                    html += '<div class="section-hdr">vs '+fmtName(batterObj.batter_name)+'</div>';
+                    html += '<div style="font-size:11px;color:#666;font-family:var(--font-tech);padding:4px 0;">No direct matchup data</div>';
+                }
+            }
+
+            // Link to full archetype
+            html += '<div class="section-hdr">Archetype</div>';
+            html += '<div class="arch-link" data-cluster="'+ps.cluster+'" style="cursor:pointer;padding:6px 8px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:3px;display:flex;align-items:center;gap:6px;transition:border-color 0.15s;">';
+            html += '<span style="width:8px;height:8px;border-radius:50%;background:'+cluster.color+';flex-shrink:0;"></span>';
+            html += '<span style="font-size:11px;font-weight:700;color:#eee;font-family:var(--font-tech);">'+cluster.short_name+'</span>';
+            html += '<span style="font-size:9px;color:#888;margin-left:auto;">'+cluster.hand+' '+role+' \u2022 '+cluster.pitcher_count+' pitchers \u2192</span>';
+            html += '</div>';
+
+            content.innerHTML = html;
+            panel.classList.add('visible');
+            STATE.highlightedCluster = ps.cluster;
+
+            // Click handler for archetype link
+            const archLink = content.querySelector('.arch-link');
+            if (archLink) {
+                archLink.addEventListener('click', () => {
+                    showStatPanel(batterObj, ps.cluster);
+                });
+                archLink.addEventListener('mouseenter', () => { archLink.style.borderColor = cluster.color; });
+                archLink.addEventListener('mouseleave', () => { archLink.style.borderColor = '#2a2a2a'; });
+            }
+
+            render();
+            buildArchetypeList();
+            // Update dock kings
+            if (STATE.activeBatters.length > 0) {
+                updateDock(batterObj || STATE.activeBatters[STATE.activeBatters.length-1], getMatchupData(batterObj || STATE.activeBatters[STATE.activeBatters.length-1]));
+            }
+        }
+
+        // ═══════════════════════════════════════
         // ARCHETYPE LIST (sidebar)
         // ═══════════════════════════════════════
         function perfClass(stat, val) {
@@ -1442,6 +1541,11 @@
                         const ab = STATE.activeBatters.length > 0 ? STATE.activeBatters[STATE.activeBatters.length-1] : null;
                         showStatPanel(ab, id);
                     }
+                    // Update dock kings to reflect selected archetype
+                    if (STATE.activeBatters.length > 0) {
+                        const ab = STATE.activeBatters[STATE.activeBatters.length-1];
+                        updateDock(ab, getMatchupData(ab));
+                    }
                     render();
                     buildArchetypeList();
                 });
@@ -1473,10 +1577,16 @@
                 worstEl.innerHTML = '<span style="color:var(--text-label)">Not enough PA</span>';
             }
 
-            if (sorted.length > 0) {
-                const topId = sorted[0].cluster;
-                const kings = DATA.archetypeKings[topId] || [];
-                const cl = DATA.clusters[topId];
+            // Kings — prioritize highlighted cluster from sidebar, fall back to top performer
+            let kingsClusterId = null;
+            if (STATE.highlightedCluster && DATA.clusters[STATE.highlightedCluster]) {
+                kingsClusterId = STATE.highlightedCluster;
+            } else if (sorted.length > 0) {
+                kingsClusterId = sorted[0].cluster;
+            }
+            if (kingsClusterId) {
+                const kings = DATA.archetypeKings[kingsClusterId] || [];
+                const cl = DATA.clusters[kingsClusterId];
                 kingsEl.innerHTML = kings.length > 0
                     ? '<div style="font-size:8px;color:'+(cl?.color)+';font-weight:700;margin-bottom:2px;">'+(cl?.short_name)+' KINGS</div>' + kings.slice(0,5).map(k => '<div class="dock-row"><span class="d-name">'+k.name+'</span><span class="d-stat" style="width:20px;">'+k.seasons+'yr</span></div>').join('')
                     : '<span style="color:var(--text-label)">\u2014</span>';
@@ -1633,7 +1743,13 @@
 
         document.getElementById('stat-close').addEventListener('click', () => {
             document.getElementById('stat-panel').classList.remove('visible');
-            STATE.highlightedCluster = null; render(); buildArchetypeList();
+            STATE.highlightedCluster = null;
+            // Revert dock kings to top performer
+            if (STATE.activeBatters.length > 0) {
+                const ab = STATE.activeBatters[STATE.activeBatters.length-1];
+                updateDock(ab, getMatchupData(ab));
+            }
+            render(); buildArchetypeList();
         });
 
         // Roster sort handler (delegated)
