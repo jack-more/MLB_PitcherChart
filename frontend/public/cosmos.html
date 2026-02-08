@@ -1337,6 +1337,20 @@
             return val >= 0.370 ? 'perf-great' : val >= 0.330 ? 'perf-good' : val >= 0.290 ? 'perf-avg' : val >= 0.250 ? 'perf-poor' : 'perf-bad';
         }
 
+        // Returns a hex color for the archetype row based on batter performance
+        function perfHex(stat, val) {
+            if (stat === 'K_pct') {
+                // Lower K% = better for batter
+                return val < 0.15 ? '#2a9d8f' : val < 0.20 ? '#6bbe8a' : val > 0.30 ? '#e63946' : val > 0.25 ? '#e76f51' : '#f4a261';
+            }
+            if (stat === 'BB_pct') {
+                // Higher BB% = better for batter
+                return val > 0.12 ? '#2a9d8f' : val > 0.10 ? '#6bbe8a' : val < 0.05 ? '#e63946' : val < 0.07 ? '#e76f51' : '#f4a261';
+            }
+            // wOBA, BA, SLG — higher = better
+            return val >= 0.370 ? '#2a9d8f' : val >= 0.330 ? '#6bbe8a' : val >= 0.290 ? '#f4a261' : val >= 0.250 ? '#e76f51' : '#e63946';
+        }
+
         function buildArchetypeList() {
             const dir = document.getElementById('archetype-list');
             const ids = Object.keys(DATA.clusters);
@@ -1371,10 +1385,26 @@
                     const sel = STATE.highlightedCluster === id;
                     const cls = 'arch-item' + (sel ? ' selected' : '') + (!vis ? ' dimmed' : '');
 
+                    // Determine row color from most recent batter's matchup
+                    let rowColor = c.color;
+                    let dotColor = c.color;
+                    if (hasBatters) {
+                        const lastMatchups = allMatchups[allMatchups.length - 1];
+                        const lm = lastMatchups.find(x => String(x.cluster) === id);
+                        if (lm && lm.PA >= STATE.minPA) {
+                            const lv = lm[STATE.selectedStat] || 0;
+                            rowColor = perfHex(STATE.selectedStat, lv);
+                            dotColor = rowColor;
+                        } else {
+                            rowColor = '#666';
+                            dotColor = '#666';
+                        }
+                    }
+
                     html += '<div class="'+cls+'" data-cluster="'+id+'">';
-                    html += '<div class="arch-dot" style="background:'+c.color+';"></div>';
-                    html += '<span class="arch-name" style="color:'+(vis?c.color:'#aaa')+';">'+c.short_name+'</span>';
-                    html += '<span class="arch-role" style="color:'+c.color+';border-color:'+c.color+';">'+role+'</span>';
+                    html += '<div class="arch-dot" style="background:'+dotColor+';"></div>';
+                    html += '<span class="arch-name" style="color:'+(vis ? rowColor : '#aaa')+';">'+c.short_name+'</span>';
+                    html += '<span class="arch-role" style="color:'+rowColor+';border-color:'+rowColor+';">'+role+'</span>';
 
                     if (hasBatters) {
                         batters.forEach((b, bi) => {
@@ -1508,7 +1538,7 @@
             ).join('');
             searchDrop.classList.add('visible');
             searchDrop.querySelectorAll('.search-result').forEach(el => {
-                el.addEventListener('click', () => selectResult(sResults[parseInt(el.dataset.idx)]));
+                el.addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); selectResult(sResults[parseInt(el.dataset.idx)]); });
                 el.addEventListener('mouseenter', () => { sHighlight = parseInt(el.dataset.idx); renderSearchResults(); });
             });
         }
