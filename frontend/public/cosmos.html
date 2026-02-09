@@ -41,7 +41,7 @@
             --sidebar-w: 380px;
             --stat-panel-w: 320px;
             --header-h: 56px;
-            --dock-h: 50px;
+            --dock-h: 110px;
 
             /* ── Fonts ── */
             --font-tech: 'Courier New', Courier, monospace;
@@ -315,7 +315,7 @@
             position: absolute; top: 14px; right: 14px; width: 310px;
             max-height: calc(100% - 28px); overflow-y: auto;
             background: rgba(18,18,18,0.96); border: 1px solid #333;
-            border-radius: 12px; padding: 16px;
+            border-radius: 6px; padding: 16px;
             transform: translateX(330px); opacity: 0;
             transition: all 0.35s cubic-bezier(0.19,1,0.22,1);
             z-index: 20; box-shadow: -4px 0 20px rgba(0,0,0,0.5);
@@ -366,17 +366,16 @@
         /* ═══ DOCK ═══ */
         #dock {
             grid-area: dock;
-            display: flex; align-items: center; padding: 6px 20px; gap: 24px;
-            border-top: 1px solid rgba(255,255,255,0.06);
-            background: #111113;
+            display: flex; align-items: center; padding: 8px 20px; gap: 24px;
+            border-top: 1px solid rgba(0,0,0,0.08);
         }
 
         .dock-module {
             flex: 1; min-width: 0;
         }
         .dock-title {
-            font-size: 8px; font-weight: 800; text-transform: uppercase;
-            letter-spacing: 1px; color: #555; margin-bottom: 2px;
+            font-size: 9px; font-weight: 800; text-transform: uppercase;
+            letter-spacing: 1px; color: var(--text-label); margin-bottom: 4px;
         }
         .dock-row {
             display: flex; justify-content: space-between; align-items: center;
@@ -389,13 +388,13 @@
         .dock-row .d-stat.bad { color: var(--perf-red); }
 
         .saved-item {
-            display: inline-flex; align-items: center; gap: 6px;
-            padding: 3px 8px; font-size: 10px; font-family: var(--font-tech);
-            cursor: pointer; border: 1px solid rgba(255,255,255,0.08); border-radius: 3px;
-            color: #ccc; font-weight: 600; margin-right: 6px; white-space: nowrap;
+            display: flex; justify-content: space-between;
+            padding: 3px 0; font-size: 11px; font-family: var(--font-tech);
+            cursor: pointer; border-bottom: 1px solid rgba(0,0,0,0.05);
+            color: var(--key-dark); font-weight: 600;
         }
-        .saved-item:hover { color: var(--accent-orange); border-color: var(--accent-orange); }
-        .saved-item .s-pa { color: #666; font-size: 9px; }
+        .saved-item:hover { color: var(--accent-orange); }
+        .saved-item .s-pa { color: var(--text-label); }
 
         .knob-group { display: flex; gap: 20px; }
         .knob-container { display: flex; flex-direction: column; align-items: center; gap: 4px; }
@@ -630,13 +629,21 @@
     </main>
 
     <footer id="dock">
-        <div class="dock-module" id="dock-saved" style="flex:1;">
+        <div class="dock-module" id="dock-best">
+            <div class="dock-title">Best Matchups</div>
+            <div id="dock-best-content" style="font-size:9px;color:var(--text-label);">Search a batter</div>
+        </div>
+        <div class="dock-module" id="dock-worst">
+            <div class="dock-title">Worst Matchups</div>
+            <div id="dock-worst-content" style="font-size:9px;color:var(--text-label);">&mdash;</div>
+        </div>
+        <div class="dock-module" id="dock-kings">
+            <div class="dock-title">Archetype Kings</div>
+            <div id="dock-kings-content" style="font-size:9px;color:var(--text-label);">&mdash;</div>
+        </div>
+        <div class="dock-module" id="dock-saved">
             <div class="dock-title">Saved Searches</div>
             <div id="dock-saved-content" style="font-size:9px;color:var(--text-label);">No saved searches</div>
-        </div>
-
-        <div class="dock-status" id="dock-status" style="flex:2;text-align:center;font-size:10px;color:#555;font-family:var(--font-tech);">
-            19 ARCHETYPES &middot; CLICK AN ARCHETYPE OR SEARCH A BATTER TO BEGIN
         </div>
 
         <div class="knob-group">
@@ -649,7 +656,7 @@
                 <span class="label">PAN</span>
             </div>
         </div>
-        <a href="cosmos-mobile.html" style="display:inline-flex;align-items:center;font-size:9px;color:#666;font-family:var(--font-tech);text-decoration:none;white-space:nowrap;">📱 Mobile</a>
+        <a href="cosmos-mobile.html" style="display:block;text-align:center;font-size:9px;color:#666;font-family:var(--font-tech);padding:4px 0;text-decoration:none;margin-top:4px;">📱 Mobile Version</a>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
@@ -1755,18 +1762,37 @@
             const isLowerBetter = ss === 'K_pct';
             const sorted = [...valid].sort((a,b) => isLowerBetter ? (a[ss]||0)-(b[ss]||0) : (b[ss]||0)-(a[ss]||0));
 
-            const statusEl = document.getElementById('dock-status');
-            if (statusEl && batter) {
-                const best = sorted[0];
-                const worst = sorted[sorted.length - 1];
-                let msg = fmtName(batter.batter_name) + ' \u2022 ' + valid.length + ' archetypes w/ ' + STATE.minPA + '+ PA';
-                if (best && worst) {
-                    const bestCl = DATA.clusters[best.cluster];
-                    const worstCl = DATA.clusters[worst.cluster];
-                    msg += ' \u2022 Best: <span style="color:'+(bestCl?.color||'#0f0')+'">'+archNameOnly(best.cluster)+'</span>';
-                    msg += ' \u2022 Worst: <span style="color:'+(worstCl?.color||'#f00')+'">'+archNameOnly(worst.cluster)+'</span>';
-                }
-                statusEl.innerHTML = msg;
+            const bestEl = document.getElementById('dock-best-content');
+            const worstEl = document.getElementById('dock-worst-content');
+            const kingsEl = document.getElementById('dock-kings-content');
+
+            if (sorted.length > 0) {
+                bestEl.innerHTML = sorted.slice(0,3).map(m => {
+                    const cl = DATA.clusters[m.cluster];
+                    return '<div class="dock-row"><span class="d-name" style="color:'+(cl?.color||'#333')+'">'+archName(m.cluster)+'</span><span class="d-stat">'+m.PA+'PA</span><span class="d-stat good">'+fmtStatVal(ss,m[ss]||0)+'</span></div>';
+                }).join('');
+                worstEl.innerHTML = sorted.slice(-3).reverse().map(m => {
+                    const cl = DATA.clusters[m.cluster];
+                    return '<div class="dock-row"><span class="d-name" style="color:'+(cl?.color||'#333')+'">'+archName(m.cluster)+'</span><span class="d-stat">'+m.PA+'PA</span><span class="d-stat bad">'+fmtStatVal(ss,m[ss]||0)+'</span></div>';
+                }).join('');
+            } else {
+                bestEl.innerHTML = '<span style="color:var(--text-label)">Not enough PA</span>';
+                worstEl.innerHTML = '<span style="color:var(--text-label)">Not enough PA</span>';
+            }
+
+            // Kings — prioritize highlighted cluster from sidebar, fall back to top performer
+            let kingsClusterId = null;
+            if (STATE.highlightedCluster && DATA.clusters[STATE.highlightedCluster]) {
+                kingsClusterId = STATE.highlightedCluster;
+            } else if (sorted.length > 0) {
+                kingsClusterId = sorted[0].cluster;
+            }
+            if (kingsClusterId) {
+                const kings = DATA.archetypeKings[kingsClusterId] || [];
+                const cl = DATA.clusters[kingsClusterId];
+                kingsEl.innerHTML = kings.length > 0
+                    ? '<div style="font-size:8px;color:'+(cl?.color)+';font-weight:700;margin-bottom:2px;">'+archName(kingsClusterId)+' KINGS</div>' + kings.slice(0,5).map(k => '<div class="dock-row"><span class="d-name">'+k.name+'</span><span class="d-stat" style="width:20px;">'+k.seasons+'yr</span></div>').join('')
+                    : '<span style="color:var(--text-label)">\u2014</span>';
             }
         }
 
