@@ -993,6 +993,36 @@
             return '#e63946';
         }
 
+        // Dynamic stat helpers — adapt panels/bars/badges to STATE.selectedStat
+        function statLabel(stat) {
+            return { wOBA:'wOBA', BA:'BA', SLG:'SLG', OBP:'OBP', K_pct:'K%', BB_pct:'BB%' }[stat] || stat;
+        }
+        function statBarMax(stat) {
+            return { wOBA:0.450, BA:0.400, SLG:0.700, OBP:0.450, K_pct:0.40, BB_pct:0.20 }[stat] || 0.450;
+        }
+        function statBarColor(stat, val) {
+            if (stat === 'K_pct') return val < 0.15 ? '#2a9d8f' : val < 0.20 ? '#a8dadc' : val > 0.30 ? '#e63946' : val > 0.25 ? '#e76f51' : '#f4a261';
+            if (stat === 'BB_pct') return val > 0.12 ? '#2a9d8f' : val > 0.10 ? '#a8dadc' : val < 0.05 ? '#e63946' : val < 0.07 ? '#e76f51' : '#f4a261';
+            if (stat === 'BA') return val >= 0.300 ? '#2a9d8f' : val >= 0.270 ? '#a8dadc' : val >= 0.240 ? '#f4a261' : val >= 0.210 ? '#e76f51' : '#e63946';
+            if (stat === 'SLG') return val >= 0.500 ? '#2a9d8f' : val >= 0.430 ? '#a8dadc' : val >= 0.370 ? '#f4a261' : val >= 0.300 ? '#e76f51' : '#e63946';
+            if (stat === 'OBP') return val >= 0.370 ? '#2a9d8f' : val >= 0.330 ? '#a8dadc' : val >= 0.300 ? '#f4a261' : val >= 0.270 ? '#e76f51' : '#e63946';
+            return val >= 0.370 ? '#2a9d8f' : val >= 0.330 ? '#a8dadc' : val >= 0.290 ? '#f4a261' : val >= 0.250 ? '#e76f51' : '#e63946';
+        }
+        function getStatFromRow(r, stat) {
+            const pa=r.PA||0, ab=r.AB||0, h=r.H||0, hr=r.HR||0, bb=r.BB||0, k=r.K||0, hbp=r.HBP||0;
+            const s=r.singles||0, d=r.doubles||0, t=r.triples||0;
+            if (stat==='wOBA') return r.wOBA||0;
+            if (stat==='BA') return ab>0?h/ab:0;
+            if (stat==='OBP') return pa>0?(h+bb+hbp)/pa:0;
+            if (stat==='SLG') return ab>0?(s+2*d+3*t+4*hr)/ab:0;
+            if (stat==='K_pct') return pa>0?k/pa:0;
+            if (stat==='BB_pct') return pa>0?bb/pa:0;
+            return r[stat]||0;
+        }
+        function fmtStatVal(stat, val) {
+            return (stat==='K_pct'||stat==='BB_pct') ? (val*100).toFixed(1)+'%' : val.toFixed(3);
+        }
+
         function drawBatterLines() {
             if (STATE.activeBatters.length === 0) return;
             const batter = STATE.activeBatters[STATE.activeBatters.length - 1];
@@ -1208,11 +1238,12 @@
         function spawnBatter(batter) {
             const matchups = getMatchupData(batter);
             const totalPA = matchups.reduce((s,r)=>s+(r.PA||0),0);
-            const totalWoba = matchups.reduce((s,r)=>s+(r.wOBA||0)*(r.PA||0),0);
-            const ow = totalPA > 0 ? totalWoba/totalPA : 0;
+            const stat = STATE.selectedStat;
+            const totalStatWeighted = matchups.reduce((s,r)=>s+(r[stat]||0)*(r.PA||0),0);
+            const avgStat = totalPA > 0 ? totalStatWeighted/totalPA : 0;
 
             document.getElementById('badge-name').textContent = fmtName(batter.batter_name);
-            document.getElementById('badge-stat').textContent = ow.toFixed(3) + ' wOBA \u00b7 ' + totalPA.toLocaleString() + ' PA';
+            document.getElementById('badge-stat').textContent = fmtStatVal(stat, avgStat) + ' ' + statLabel(stat) + ' \u00b7 ' + totalPA.toLocaleString() + ' PA';
             document.getElementById('batter-badge').classList.add('visible');
             document.getElementById('led-batter').classList.add('active');
 
@@ -1232,7 +1263,14 @@
         function refreshData() {
             if (STATE.activeBatters.length === 0) return;
             const b = STATE.activeBatters[STATE.activeBatters.length-1];
-            updateDock(b, getMatchupData(b));
+            const matchups = getMatchupData(b);
+            updateDock(b, matchups);
+            // Update badge to reflect current stat
+            const totalPA = matchups.reduce((s,r)=>s+(r.PA||0),0);
+            const stat = STATE.selectedStat;
+            const totalStatWeighted = matchups.reduce((s,r)=>s+(r[stat]||0)*(r.PA||0),0);
+            const avgStat = totalPA > 0 ? totalStatWeighted/totalPA : 0;
+            document.getElementById('badge-stat').textContent = fmtStatVal(stat, avgStat) + ' ' + statLabel(stat) + ' \u00b7 ' + totalPA.toLocaleString() + ' PA';
             render();
         }
 
@@ -1267,11 +1305,12 @@
                 html += '</div>';
 
                 if (yearRows.length > 1) {
-                    html += '<div class="section-hdr">Year-by-Year wOBA</div>';
+                    const ss = STATE.selectedStat;
+                    html += '<div class="section-hdr">Year-by-Year '+statLabel(ss)+'</div>';
                     yearRows.forEach(r => {
-                        const w = r.wOBA||0;
-                        const bw = Math.min(100,Math.max(5,(w/0.45)*100));
-                        html += '<div class="matchup-bar"><span class="yr">'+r.game_year+'</span><div class="bar-track"><div class="bar-fill" style="width:'+bw+'%;background:'+wobaColor(w)+';"></div></div><span class="woba-val">'+w.toFixed(3)+'</span><span class="pa-val">'+r.PA+' PA</span></div>';
+                        const v = getStatFromRow(r, ss);
+                        const bw = Math.min(100,Math.max(5,(v/statBarMax(ss))*100));
+                        html += '<div class="matchup-bar"><span class="yr">'+r.game_year+'</span><div class="bar-track"><div class="bar-fill" style="width:'+bw+'%;background:'+statBarColor(ss,v)+';"></div></div><span class="woba-val">'+fmtStatVal(ss,v)+'</span><span class="pa-val">'+r.PA+' PA</span></div>';
                     });
                 }
 
@@ -1406,11 +1445,20 @@
                 const matchup = hvpData.find(m => m.p === ps.pitcher);
 
                 if (matchup) {
+                    const ss = STATE.selectedStat;
+                    // Compute selected stat from compact pitcher matchup data
+                    const pa = matchup.pa||0;
+                    let featVal = 0;
+                    if (ss==='wOBA') featVal = matchup.w||0;
+                    else if (ss==='BA') featVal = matchup.ba||0;
+                    else if (ss==='K_pct') featVal = pa>0 ? (matchup.k||0)/pa : 0;
+                    else if (ss==='BB_pct') featVal = pa>0 ? (matchup.bb||0)/pa : 0;
+                    else featVal = matchup.w||0; // SLG/OBP not in compact data, fallback to wOBA
                     html += '<div class="section-hdr">vs '+fmtName(batterObj.batter_name)+'</div>';
                     html += '<div class="stat-grid">';
-                    html += statCell('PA', matchup.pa||0);
+                    html += statCell('PA', pa);
                     html += statCell('BA', matchup.ba != null ? matchup.ba.toFixed(3) : '\u2014');
-                    html += statCell('wOBA', matchup.w != null ? matchup.w.toFixed(3) : '\u2014');
+                    html += statCell(statLabel(ss), fmtStatVal(ss, featVal));
                     html += statCell('HR', matchup.hr||0);
                     html += statCell('K', matchup.k||0);
                     html += statCell('BB', matchup.bb||0);
@@ -1457,21 +1505,21 @@
         function perfClass(stat, val) {
             if (stat === 'K_pct') return val < 0.15 ? 'perf-great' : val < 0.20 ? 'perf-good' : val > 0.30 ? 'perf-bad' : val > 0.25 ? 'perf-poor' : 'perf-avg';
             if (stat === 'BB_pct') return val > 0.12 ? 'perf-great' : val > 0.10 ? 'perf-good' : val < 0.05 ? 'perf-bad' : val < 0.07 ? 'perf-poor' : 'perf-avg';
-            // wOBA, BA, SLG, OBP
+            if (stat === 'BA') return val >= 0.300 ? 'perf-great' : val >= 0.270 ? 'perf-good' : val >= 0.240 ? 'perf-avg' : val >= 0.210 ? 'perf-poor' : 'perf-bad';
+            if (stat === 'SLG') return val >= 0.500 ? 'perf-great' : val >= 0.430 ? 'perf-good' : val >= 0.370 ? 'perf-avg' : val >= 0.300 ? 'perf-poor' : 'perf-bad';
+            if (stat === 'OBP') return val >= 0.370 ? 'perf-great' : val >= 0.330 ? 'perf-good' : val >= 0.300 ? 'perf-avg' : val >= 0.270 ? 'perf-poor' : 'perf-bad';
+            // wOBA
             return val >= 0.370 ? 'perf-great' : val >= 0.330 ? 'perf-good' : val >= 0.290 ? 'perf-avg' : val >= 0.250 ? 'perf-poor' : 'perf-bad';
         }
 
         // Returns a hex color for the archetype row based on batter performance
         function perfHex(stat, val) {
-            if (stat === 'K_pct') {
-                // Lower K% = better for batter
-                return val < 0.15 ? '#2a9d8f' : val < 0.20 ? '#6bbe8a' : val > 0.30 ? '#e63946' : val > 0.25 ? '#e76f51' : '#f4a261';
-            }
-            if (stat === 'BB_pct') {
-                // Higher BB% = better for batter
-                return val > 0.12 ? '#2a9d8f' : val > 0.10 ? '#6bbe8a' : val < 0.05 ? '#e63946' : val < 0.07 ? '#e76f51' : '#f4a261';
-            }
-            // wOBA, BA, SLG — higher = better
+            if (stat === 'K_pct') return val < 0.15 ? '#2a9d8f' : val < 0.20 ? '#6bbe8a' : val > 0.30 ? '#e63946' : val > 0.25 ? '#e76f51' : '#f4a261';
+            if (stat === 'BB_pct') return val > 0.12 ? '#2a9d8f' : val > 0.10 ? '#6bbe8a' : val < 0.05 ? '#e63946' : val < 0.07 ? '#e76f51' : '#f4a261';
+            if (stat === 'BA') return val >= 0.300 ? '#2a9d8f' : val >= 0.270 ? '#6bbe8a' : val >= 0.240 ? '#f4a261' : val >= 0.210 ? '#e76f51' : '#e63946';
+            if (stat === 'SLG') return val >= 0.500 ? '#2a9d8f' : val >= 0.430 ? '#6bbe8a' : val >= 0.370 ? '#f4a261' : val >= 0.300 ? '#e76f51' : '#e63946';
+            if (stat === 'OBP') return val >= 0.370 ? '#2a9d8f' : val >= 0.330 ? '#6bbe8a' : val >= 0.300 ? '#f4a261' : val >= 0.270 ? '#e76f51' : '#e63946';
+            // wOBA
             return val >= 0.370 ? '#2a9d8f' : val >= 0.330 ? '#6bbe8a' : val >= 0.290 ? '#f4a261' : val >= 0.250 ? '#e76f51' : '#e63946';
         }
 
@@ -1602,7 +1650,9 @@
         // ═══════════════════════════════════════
         function updateDock(batter, matchups) {
             const valid = matchups.filter(m => (m.PA||0) >= STATE.minPA);
-            const sorted = [...valid].sort((a,b) => (b.wOBA||0) - (a.wOBA||0));
+            const ss = STATE.selectedStat;
+            const isLowerBetter = ss === 'K_pct';
+            const sorted = [...valid].sort((a,b) => isLowerBetter ? (a[ss]||0)-(b[ss]||0) : (b[ss]||0)-(a[ss]||0));
 
             const bestEl = document.getElementById('dock-best-content');
             const worstEl = document.getElementById('dock-worst-content');
@@ -1611,11 +1661,11 @@
             if (sorted.length > 0) {
                 bestEl.innerHTML = sorted.slice(0,3).map(m => {
                     const cl = DATA.clusters[m.cluster];
-                    return '<div class="dock-row"><span class="d-name" style="color:'+(cl?.color||'#333')+'">'+( cl?.short_name||m.cluster)+'</span><span class="d-stat">'+m.PA+'PA</span><span class="d-stat good">'+(m.wOBA||0).toFixed(3)+'</span></div>';
+                    return '<div class="dock-row"><span class="d-name" style="color:'+(cl?.color||'#333')+'">'+( cl?.short_name||m.cluster)+'</span><span class="d-stat">'+m.PA+'PA</span><span class="d-stat good">'+fmtStatVal(ss,m[ss]||0)+'</span></div>';
                 }).join('');
                 worstEl.innerHTML = sorted.slice(-3).reverse().map(m => {
                     const cl = DATA.clusters[m.cluster];
-                    return '<div class="dock-row"><span class="d-name" style="color:'+(cl?.color||'#333')+'">'+( cl?.short_name||m.cluster)+'</span><span class="d-stat">'+m.PA+'PA</span><span class="d-stat bad">'+(m.wOBA||0).toFixed(3)+'</span></div>';
+                    return '<div class="dock-row"><span class="d-name" style="color:'+(cl?.color||'#333')+'">'+( cl?.short_name||m.cluster)+'</span><span class="d-stat">'+m.PA+'PA</span><span class="d-stat bad">'+fmtStatVal(ss,m[ss]||0)+'</span></div>';
                 }).join('');
             } else {
                 bestEl.innerHTML = '<span style="color:var(--text-label)">Not enough PA</span>';
@@ -1760,6 +1810,11 @@
             key.className = 'key key-orange';
             STATE.selectedStat = key.dataset.stat;
             refreshData(); buildArchetypeList();
+            // Re-render stat panel if visible
+            if (STATE.highlightedCluster && document.getElementById('stat-panel').classList.contains('visible')) {
+                const ab = STATE.activeBatters.length > 0 ? STATE.activeBatters[STATE.activeBatters.length-1] : null;
+                showStatPanel(ab, STATE.highlightedCluster);
+            }
         });
 
         document.getElementById('filter-keys').addEventListener('click', (e) => {
