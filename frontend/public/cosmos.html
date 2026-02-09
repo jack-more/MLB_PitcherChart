@@ -701,19 +701,19 @@
         function archNameOnly(id) { return ARCHETYPE_MAP[id]?.name || id; }
 
         const ARCHETYPE_DESC = {
-            'Firestarter':    'Fastball-slider gas combo, high velo power arm',
-            'Earthworm':      'Heavy sinker, elite ground ball rate',
-            'Splitter Demon': 'Splitter/forkball tunneled off the fastball',
-            'Boomerang':      'Sweeping pitch that wraps back across the zone',
-            'Side-Sweeper':   'Sweeper-dominant with extreme horizontal break',
-            'Big Hooker':     'Knuckle-curve as the primary breaking weapon',
-            'Cut & Curved':   'Cutter-curveball combination pitch mix',
-            'Ghost Baller':   'Changeup-dominant, the pitch vanishes on hitters',
-            'Triple Threat':  'Balanced fastball + slider + curveball arsenal',
-            'Snakey':         'Sinker-cutter with no four-seam fastball',
-            'Undertow':       'Pure sinker LHP, heavy sink and ground balls',
-            'Craftsman':      'Cutter-based LHP finesse, command over velocity',
-            'Uncle Charlie':  'Curveball-led balanced lefty, old-school arsenal',
+            'Firestarter':    'High-velo power arm, lives on heat + slider',
+            'Earthworm':      'Ground ball machine, sinker-heavy contact manager',
+            'Splitter Demon': 'Strikeout artist, tunnels splitter off fastball',
+            'Boomerang':      'Sweep-pitch specialist with late lateral action',
+            'Side-Sweeper':   'Sweeper-first pitcher, extreme horizontal movement',
+            'Big Hooker':     'Breaking ball artist, hooks hitters with the curve',
+            'Cut & Curved':   'Pitch mix craftsman, cutter + curveball combo',
+            'Ghost Baller':   'Deception arm, changeup makes the fastball play up',
+            'Triple Threat':  'Three-pitch mix workhorse, no glaring weakness',
+            'Snakey':         'Movement pitcher, sinker-cutter with no four-seam',
+            'Undertow':       'LHP ground ball specialist, pulls everything down',
+            'Craftsman':      'Finesse lefty, commands the zone with precision',
+            'Uncle Charlie':  'Old-school lefty, curveball-anchored pitch mix',
         };
         function archDesc(id) { return ARCHETYPE_DESC[archNameOnly(id)] || ''; }
 
@@ -1690,7 +1690,6 @@
                     html += '<span class="arch-name" style="color:'+(vis ? rowColor : '#aaa')+';">'+archName(id)+'</span>';
                     html += '<div class="arch-desc">'+archDesc(id)+'</div>';
                     html += '</div>';
-                    html += '<span class="arch-role" style="color:'+rowColor+';border-color:'+rowColor+';">'+role+'</span>';
 
                     if (hasBatters) {
                         batters.forEach((b, bi) => {
