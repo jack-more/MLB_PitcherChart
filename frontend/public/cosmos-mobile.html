@@ -592,7 +592,7 @@ function drawGrid(w, h) {
 
     ctx.font = 'bold 11px -apple-system, sans-serif'; ctx.fillStyle = '#bbb'; ctx.textAlign = 'center';
     const lp = d2c(-9, VELO_MAX), rp = d2c(9, VELO_MAX);
-    ctx.fillText('\u2190 RHP', lp.x, lp.y - 4); ctx.fillText('LHP \u2192', rp.x, rp.y - 4);
+    ctx.fillText('\u{1F4AA} \u2190 RHP', lp.x, lp.y - 4); ctx.fillText('LHP \u2192 \u{1F933}', rp.x, rp.y - 4);
 }
 
 function hexRgb(hex) {

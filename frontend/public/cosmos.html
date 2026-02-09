@@ -38,7 +38,7 @@
             --perf-teal: #a8dadc;
 
             /* ── Layout ── */
-            --sidebar-w: 340px;
+            --sidebar-w: 380px;
             --stat-panel-w: 320px;
             --header-h: 56px;
             --dock-h: 110px;
@@ -178,12 +178,13 @@
         #sidebar {
             grid-area: sidebar;
             display: flex; flex-direction: column;
-            border-right: 1px solid rgba(0,0,0,0.08);
+            border-right: 1px solid rgba(255,255,255,0.08);
             overflow: hidden;
+            background: #1a1a1e;
         }
 
         .filter-bar {
-            padding: 10px 14px; border-bottom: 1px solid rgba(0,0,0,0.08);
+            padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.08);
             display: flex; flex-direction: column; gap: 8px;
         }
 
@@ -199,34 +200,36 @@
         /* Multi-batter column header */
         .arch-batter-cols {
             display: flex; align-items: center; padding: 4px 10px;
-            border-bottom: 1px solid rgba(0,0,0,0.08);
-            background: rgba(0,0,0,0.03); gap: 2px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.04); gap: 2px;
         }
         .arch-batter-cols .col-label {
             font-size: 9px; font-weight: 800; text-transform: uppercase;
-            letter-spacing: 0.5px; color: var(--text-on-light); text-align: center;
+            letter-spacing: 0.5px; color: #999; text-align: center;
             overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
         .arch-batter-cols .col-archetype { flex: 1; text-align: left; }
 
         .arch-group-header {
             font-size: 10px; font-weight: 800; text-transform: uppercase;
-            letter-spacing: 1px; padding: 10px 10px 4px; color: var(--text-on-light);
-            border-top: 1px solid rgba(0,0,0,0.08);
+            letter-spacing: 1px; padding: 10px 10px 4px; color: #777;
+            border-top: 1px solid rgba(255,255,255,0.06);
         }
         .arch-item {
-            display: flex; align-items: center; gap: 4px;
-            padding: 6px 10px; cursor: pointer; font-size: 11px;
+            display: flex; align-items: flex-start; gap: 4px;
+            padding: 8px 10px; cursor: pointer; font-size: 11px;
             transition: background 0.15s; border-left: 3px solid transparent;
         }
-        .arch-item:hover { background: rgba(0,0,0,0.05); }
+        .arch-item:hover { background: rgba(255,255,255,0.05); }
         .arch-item.selected {
-            background: rgba(0,0,0,0.08);
+            background: rgba(255,255,255,0.08);
             border-left-color: var(--accent-orange);
         }
         .arch-item.dimmed { opacity: 0.2; }
-        .arch-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-        .arch-name { flex: 1; font-weight: 700; font-size: 11px; color: var(--key-dark); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .arch-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+        .arch-name-group { flex: 1; min-width: 0; overflow: hidden; }
+        .arch-name { font-weight: 700; font-size: 12px; color: #e0e0e0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .arch-desc { font-size: 9px; color: #777; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; line-height: 1.2; }
         .arch-role {
             font-size: 8px; padding: 1px 4px; font-weight: 800; letter-spacing: 0.5px;
             border: 1px solid; border-radius: 2px; opacity: 0.85; flex-shrink: 0;
@@ -238,20 +241,30 @@
         }
         .arch-stat.perf-great { background: rgba(42,157,143,0.15); color: var(--perf-green); }
         .arch-stat.perf-good { background: rgba(168,218,220,0.12); color: var(--perf-teal); }
-        .arch-stat.perf-avg { color: var(--text-on-light); }
+        .arch-stat.perf-avg { color: #bbb; }
         .arch-stat.perf-poor { background: rgba(231,111,81,0.12); color: var(--perf-orange); }
         .arch-stat.perf-bad { background: rgba(230,57,70,0.15); color: var(--perf-red); }
         .arch-stat.empty { color: var(--text-muted); font-weight: 400; }
         .arch-count {
-            font-size: 10px; color: var(--text-label); font-family: var(--font-tech);
+            font-size: 10px; color: #888; font-family: var(--font-tech);
             width: 24px; text-align: right; flex-shrink: 0; font-weight: 700;
         }
 
         .sidebar-status {
-            padding: 8px 14px; border-top: 1px solid rgba(0,0,0,0.08);
-            font-size: 10px; color: var(--text-on-light); font-family: var(--font-tech);
+            padding: 8px 14px; border-top: 1px solid rgba(255,255,255,0.06);
+            font-size: 10px; color: #888; font-family: var(--font-tech);
             font-weight: 700;
         }
+        #sidebar .label { color: #999; }
+        .roster-row.roster-clickable { cursor: pointer; }
+        .roster-row.roster-clickable:hover { background: rgba(255,68,0,0.08); }
+        .dna-row { display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;font-family:var(--font-tech);color:#ccc; }
+        .dna-row.dna-own { color:#fff;font-weight:700; }
+        .dna-emoji { width:18px;text-align:center;font-size:13px;flex-shrink:0; }
+        .dna-name { width:95px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;flex-shrink:0; }
+        .dna-bar { flex:1;height:6px;background:#1a1a1a;border-radius:2px;overflow:hidden; }
+        .dna-fill { height:100%;border-radius:2px;transition:width 0.4s; }
+        .dna-pct { width:28px;text-align:right;font-weight:800;font-size:11px; }
 
         /* Range slider */
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
@@ -259,7 +272,7 @@
             -webkit-appearance: none; height: 14px; width: 6px;
             background: var(--key-dark); cursor: pointer; margin-top: -6px; border-radius: 2px;
         }
-        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 2px; background: #aaa; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 2px; background: #444; }
 
         /* ═══ SCREEN (canvas area) ═══ */
         #screen {
@@ -592,7 +605,7 @@
                 </div>
             </div>
             <div>
-                <select id="year-select" style="width:100%;background:#f0f0f0;border:1px solid #bbb;color:#333;padding:4px 6px;font-family:var(--font-tech);font-size:9px;outline:none;border-radius:3px;">
+                <select id="year-select" style="width:100%;background:#1e2124;border:1px solid #333;color:#e0e0e0;padding:4px 6px;font-family:var(--font-tech);font-size:9px;outline:none;border-radius:3px;">
                     <option value="all">ALL YEARS</option>
                 </select>
             </div>
@@ -685,6 +698,44 @@
         function archName(id)  { const a = ARCHETYPE_MAP[id]; return a ? a.emoji + ' ' + a.name : id; }
         function archEmoji(id) { return ARCHETYPE_MAP[id]?.emoji || ''; }
         function archNameOnly(id) { return ARCHETYPE_MAP[id]?.name || id; }
+
+        const ARCHETYPE_DESC = {
+            'Firestarter':    'Fastball-slider gas combo, high velo power arm',
+            'Earthworm':      'Heavy sinker, elite ground ball rate',
+            'Splitter Demon': 'Splitter/forkball tunneled off the fastball',
+            'Boomerang':      'Sweeping pitch that wraps back across the zone',
+            'Side-Sweeper':   'Sweeper-dominant with extreme horizontal break',
+            'Big Hooker':     'Knuckle-curve as the primary breaking weapon',
+            'Cut & Curved':   'Cutter-curveball combination pitch mix',
+            'Ghost Baller':   'Changeup-dominant, the pitch vanishes on hitters',
+            'Triple Threat':  'Balanced fastball + slider + curveball arsenal',
+            'Snakey':         'Sinker-cutter with no four-seam fastball',
+            'Undertow':       'Pure sinker LHP, heavy sink and ground balls',
+            'Craftsman':      'Cutter-based LHP finesse, command over velocity',
+            'Uncle Charlie':  'Curveball-led balanced lefty, old-school arsenal',
+        };
+        function archDesc(id) { return ARCHETYPE_DESC[archNameOnly(id)] || ''; }
+
+        function calcArchetypeDNA(ps) {
+            const px = ps.pca_x, py = ps.pca_y, pz = ps.pca_z;
+            if (px == null || py == null) return [];
+            const distances = [];
+            Object.entries(DATA.clusters).forEach(([cid, cl]) => {
+                if (cl.pca_x == null) return;
+                const d = Math.sqrt((px-cl.pca_x)**2 + (py-cl.pca_y)**2 + ((pz||0)-(cl.pca_z||0))**2);
+                distances.push({ cid, dist: d, color: cl.color });
+            });
+            if (!distances.length) return [];
+            const sorted = [...distances].sort((a,b) => a.dist - b.dist);
+            const sigma = (sorted[0].dist + (sorted[1]?.dist || sorted[0].dist)) / 2 || 0.5;
+            distances.forEach(d => { d.sim = Math.exp(-(d.dist*d.dist)/(2*sigma*sigma)); });
+            const total = distances.reduce((s,d) => s+d.sim, 0);
+            distances.forEach(d => { d.pct = total > 0 ? (d.sim/total)*100 : 0; });
+            distances.sort((a,b) => b.pct - a.pct);
+            const own = distances.findIndex(d => d.cid === ps.cluster);
+            if (own > 0) { const [item] = distances.splice(own,1); distances.unshift(item); }
+            return distances.slice(0,5);
+        }
 
         const STATE = {
             activeBatters: [],
@@ -886,8 +937,8 @@
             ctx.textAlign = 'center';
             const lp = d2c(-9, VELO_MAX);
             const rp = d2c(9, VELO_MAX);
-            ctx.fillText('\u2190 RHP', lp.x, lp.y - 6);
-            ctx.fillText('LHP \u2192', rp.x, rp.y - 6);
+            ctx.fillText('\u{1F4AA} \u2190 RHP', lp.x, lp.y - 6);
+            ctx.fillText('LHP \u2192 \u{1F933}', rp.x, rp.y - 6);
         }
 
         function hexRgb(hex) {
@@ -1363,7 +1414,7 @@
                         const baVal = m.ba != null ? m.ba.toFixed(3) : '\u2014';
                         const whiff = m.w != null ? (m.w*100).toFixed(0)+'%' : '\u2014';
                         const baColor = m.ba != null ? (m.ba >= 0.300 ? 'color:var(--perf-green)' : m.ba <= 0.180 ? 'color:var(--perf-red)' : '') : '';
-                        html += '<div class="roster-row">';
+                        html += '<div class="roster-row roster-clickable" data-pid="'+m.p+'">';
                         html += '<span class="r-name">'+fmtName(m.pn)+'</span>';
                         html += '<span class="r-val">'+(m.pa||0)+'</span>';
                         html += '<span class="r-val highlight" style="'+baColor+'">'+baVal+'</span>';
@@ -1404,7 +1455,7 @@
                     html += '<div class="roster-head"><span>PITCHER</span><span>YR</span><span>VELO</span><span></span><span></span><span>WHIFF</span></div>';
                     html += '<div class="roster-list">';
                     uniquePitchers.slice(0,50).forEach(p => {
-                        html += '<div class="roster-row">';
+                        html += '<div class="roster-row roster-clickable" data-pid="'+p.pitcher+'">';
                         html += '<span class="r-name">'+fmtName(p.player_name)+'</span>';
                         html += '<span class="r-val">'+p.game_year+'</span>';
                         html += '<span class="r-val highlight">'+(p.avg_velo_FF||0).toFixed(1)+'</span>';
@@ -1431,6 +1482,14 @@
             html += '<div class="section-hdr">Examples</div><div style="font-size:9px;color:#666;font-family:var(--font-tech);">';
             (cluster.example_pitchers||[]).forEach(p => { html += '<div style="margin-bottom:1px;">'+p+'</div>'; });
             html += '</div>';
+
+            // Timing analysis placeholder (only when batter selected)
+            if (batterObj) {
+                html += '<div class="section-hdr">\u{1F550} Timing Analysis</div>';
+                html += '<div style="font-size:10px;color:#555;font-style:italic;font-family:var(--font-tech);padding:6px 0;text-align:center;border:1px dashed #333;border-radius:4px;">';
+                html += 'Coming Soon \u2014 TTO splits, ambush rate, consistency';
+                html += '</div>';
+            }
 
             content.innerHTML = html;
             panel.classList.add('visible');
@@ -1469,6 +1528,21 @@
             html += '<div class="profile-row"><span>Role</span><span class="pval">'+role+'</span></div>';
             html += '<div class="profile-row"><span>H-Break</span><span class="pval">'+((ps.pfx_x_avg||0)*12).toFixed(1)+'"</span></div>';
             html += '<div class="profile-row"><span>V-Break</span><span class="pval">'+((ps.pfx_z_avg||0)*12).toFixed(1)+'"</span></div>';
+
+            // Archetype DNA
+            const dna = calcArchetypeDNA(ps);
+            if (dna.length > 0) {
+                html += '<div class="section-hdr">Archetype DNA</div>';
+                dna.forEach(d => {
+                    const isOwn = d.cid === ps.cluster;
+                    html += '<div class="dna-row'+(isOwn?' dna-own':'')+'">';
+                    html += '<span class="dna-emoji">'+archEmoji(d.cid)+'</span>';
+                    html += '<span class="dna-name">'+archNameOnly(d.cid)+'</span>';
+                    html += '<div class="dna-bar"><div class="dna-fill" style="width:'+Math.max(3,d.pct)+'%;background:'+d.color+';"></div></div>';
+                    html += '<span class="dna-pct">'+d.pct.toFixed(0)+'%</span>';
+                    html += '</div>';
+                });
+            }
 
             // Head-to-head matchup if batter is active
             if (batterObj) {
@@ -1611,7 +1685,10 @@
 
                     html += '<div class="'+cls+'" data-cluster="'+id+'">';
                     html += '<div class="arch-dot" style="background:'+dotColor+';"></div>';
+                    html += '<div class="arch-name-group">';
                     html += '<span class="arch-name" style="color:'+(vis ? rowColor : '#aaa')+';">'+archName(id)+'</span>';
+                    html += '<div class="arch-desc">'+archDesc(id)+'</div>';
+                    html += '</div>';
                     html += '<span class="arch-role" style="color:'+rowColor+';border-color:'+rowColor+';">'+role+'</span>';
 
                     if (hasBatters) {
@@ -1909,8 +1986,29 @@
                 const baVal = m.ba != null ? m.ba.toFixed(3) : '\u2014';
                 const whiff = m.w != null ? (m.w*100).toFixed(0)+'%' : '\u2014';
                 const baColor = m.ba != null ? (m.ba >= 0.300 ? 'color:var(--perf-green)' : m.ba <= 0.180 ? 'color:var(--perf-red)' : '') : '';
-                return '<div class="roster-row"><span class="r-name">'+fmtName(m.pn)+'</span><span class="r-val">'+(m.pa||0)+'</span><span class="r-val highlight" style="'+baColor+'">'+baVal+'</span><span class="r-val">'+(m.hr||0)+'</span><span class="r-val">'+(m.k||0)+'</span><span class="r-val">'+whiff+'</span></div>';
+                return '<div class="roster-row roster-clickable" data-pid="'+m.p+'"><span class="r-name">'+fmtName(m.pn)+'</span><span class="r-val">'+(m.pa||0)+'</span><span class="r-val highlight" style="'+baColor+'">'+baVal+'</span><span class="r-val">'+(m.hr||0)+'</span><span class="r-val">'+(m.k||0)+'</span><span class="r-val">'+whiff+'</span></div>';
             }).join('');
+        });
+
+        // Roster row click → open pitcher profile
+        document.getElementById('panel-content').addEventListener('click', (e) => {
+            if (e.target.closest('.sort-btn')) return;
+            const row = e.target.closest('.roster-clickable');
+            if (!row) return;
+            const pid = parseInt(row.dataset.pid);
+            if (!pid) return;
+            const cid = STATE.highlightedCluster;
+            let ps = null;
+            const cands = DATA.pitcherSeasons.filter(p => p.pitcher === pid && (!cid || p.cluster === cid));
+            if (cands.length > 0) ps = cands.sort((a,b) => b.game_year - a.game_year)[0];
+            else {
+                const all = DATA.pitcherSeasons.filter(p => p.pitcher === pid);
+                if (all.length > 0) ps = all.sort((a,b) => b.game_year - a.game_year)[0];
+            }
+            if (ps) {
+                const ab = STATE.activeBatters.length > 0 ? STATE.activeBatters[STATE.activeBatters.length-1] : null;
+                showPitcherStatPanel(ps, ab);
+            }
         });
 
         // ═══════════════════════════════════════
