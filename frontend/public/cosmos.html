@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PITCH.FX // CLUSTER</title>
+    <title>ARCHETYPE//ATLAS.MLB</title>
     <style>
         :root {
             /* ── Chassis (hardware body) ── */
@@ -154,6 +154,41 @@
         }
         .search-result:hover, .search-result.highlighted { background: #1e1e1e; color: #fff; }
         .search-result .pa-label { color: #888; font-size: 10px; font-weight: 500; }
+
+        /* ═══ TEAM FILTER ═══ */
+        .team-filter { position: relative; }
+        .team-filter input {
+            width: 100%; background: #1e2124; border: 1px solid #333;
+            color: #e0e0e0; padding: 5px 28px 5px 8px; font-family: var(--font-tech);
+            font-size: 10px; outline: none; border-radius: 3px; box-sizing: border-box;
+        }
+        .team-filter input:focus { border-color: var(--accent-orange); }
+        .team-filter input::placeholder { color: #666; }
+        .team-dropdown {
+            position: absolute; top: 100%; left: 0; width: 100%; max-height: 260px;
+            overflow-y: auto; background: #141414; border: 1px solid #333;
+            border-top: none; z-index: 200; display: none; border-radius: 0 0 3px 3px;
+        }
+        .team-dropdown.visible { display: block; }
+        .team-group-header {
+            padding: 4px 8px; font-size: 8px; letter-spacing: 1px; color: #555;
+            font-family: var(--font-tech); font-weight: 700; text-transform: uppercase;
+            border-bottom: 1px solid #1a1a1a; background: #0e0e0e;
+        }
+        .team-option {
+            padding: 5px 8px; cursor: pointer; font-size: 10px;
+            font-family: var(--font-tech); color: #ccc; display: flex;
+            justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #1a1a1a;
+        }
+        .team-option:hover, .team-option.highlighted { background: #1e1e1e; color: #fff; }
+        .team-option .team-count { color: #555; font-size: 9px; }
+        .team-clear {
+            position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+            cursor: pointer; color: #555; font-size: 14px; font-weight: bold;
+            line-height: 1; display: none;
+        }
+        .team-clear:hover { color: var(--accent-orange); }
 
         .batter-stack {
             display: flex; gap: 4px; align-items: center; flex-wrap: wrap; flex: 1; overflow: hidden;
@@ -551,7 +586,7 @@
     <div id="loader">
         <div class="loader-brand">
             <div style="width:24px;height:24px;background:var(--accent-orange);border-radius:3px;"></div>
-            PITCH.FX // CLUSTER
+            ARCHETYPE//ATLAS.MLB
         </div>
         <div class="loader-status" id="loader-status">INITIALIZING...</div>
     </div>
@@ -561,7 +596,7 @@
     <header>
         <div class="brand">
             <div class="brand-icon"></div>
-            PITCH.FX // CLUSTER
+            ARCHETYPE//ATLAS.MLB
         </div>
 
         <div class="search-box">
@@ -607,6 +642,14 @@
                     <div class="key key-orange" data-filter="all">ALL</div>
                     <div class="key key-dark" data-filter="RHP">RHP</div>
                     <div class="key key-dark" data-filter="LHP">LHP</div>
+                </div>
+            </div>
+            <div>
+                <div class="label-line"><span class="label">Team</span></div>
+                <div class="team-filter" id="team-filter">
+                    <input type="text" id="team-search" placeholder="ALL TEAMS" autocomplete="off">
+                    <div class="team-dropdown" id="team-dropdown"></div>
+                    <span class="team-clear" id="team-clear">&times;</span>
                 </div>
             </div>
             <div>
@@ -675,7 +718,7 @@
         // ═══════════════════════════════════════
         // DATA & STATE
         // ═══════════════════════════════════════
-        const DATA = { clusters: {}, batters: [], pitcherSeasons: [], hitterVsCluster: [], hitterVsPitcher: [], archetypeKings: {} };
+        const DATA = { clusters: {}, batters: [], pitcherSeasons: [], hitterVsCluster: [], hitterVsPitcher: [], archetypeKings: {}, teamRosters: {} };
 
         // ═══════════════════════════════════════
         // ARCHETYPE IDENTITY MAP
@@ -762,7 +805,27 @@
             visibleClusters: new Set(),
             highlightedCluster: null,
             savedSearches: JSON.parse(localStorage.getItem('pfx_saved') || '[]'),
+            teamFilter: null,
         };
+
+        // Team filter: cached Set of pitcher MLBAM IDs for the active team
+        let _teamPitcherIds = null;
+
+        function updateTeamFilter(abbr) {
+            STATE.teamFilter = abbr;
+            if (abbr && DATA.teamRosters.rosters && DATA.teamRosters.rosters[abbr]) {
+                _teamPitcherIds = new Set(DATA.teamRosters.rosters[abbr]);
+            } else {
+                _teamPitcherIds = null;
+            }
+            render(); refreshData(); buildArchetypeList();
+        }
+
+        function isPitcherVisible(ps) {
+            if (!STATE.visibleClusters.has(ps.cluster)) return false;
+            if (_teamPitcherIds && !_teamPitcherIds.has(ps.pitcher)) return false;
+            return true;
+        }
 
         // ═══════════════════════════════════════
         // DATA LOADING
@@ -789,6 +852,8 @@
             catch(e) { DATA.hitterVsPitcher = []; }
             try { DATA.archetypeKings = await loadJSON('archetype_kings.json', 'archetype kings', setStatus); }
             catch(e) { DATA.archetypeKings = {}; }
+            try { DATA.teamRosters = await loadJSON('teams_2026.json', 'team rosters', setStatus); }
+            catch(e) { DATA.teamRosters = { teams: {}, rosters: {} }; }
 
             // Fix centroids with missing velo (avg_velo_FF = 0): compute from pitcher_seasons
             Object.entries(DATA.clusters).forEach(([cid, cluster]) => {
@@ -970,7 +1035,7 @@
                 const ps = seasons[i];
                 const cluster = DATA.clusters[ps.cluster];
                 if (!cluster) continue;
-                if (!STATE.visibleClusters.has(ps.cluster)) continue;
+                if (!isPitcherVisible(ps)) continue;
                 const moveIn = (ps.pfx_x_avg || 0) * 12; // feet → inches
                 const velo = ps.avg_velo_FF;
                 if (!velo || velo === 0) continue;
@@ -1232,7 +1297,7 @@
             let closestDot = null, closestDist = 8;
             for (let i = 0; i < DATA.pitcherSeasons.length; i++) {
                 const ps = DATA.pitcherSeasons[i];
-                if (!STATE.visibleClusters.has(ps.cluster)) continue;
+                if (!isPitcherVisible(ps)) continue;
                 if (!ps.avg_velo_FF) continue;
                 const pos = d2c((ps.pfx_x_avg||0)*12, ps.avg_velo_FF);
                 const dist = Math.sqrt((mx-pos.x)**2+(my-pos.y)**2);
@@ -1293,7 +1358,7 @@
             let closestDot = null, closestDist = 12;
             for (let i = 0; i < DATA.pitcherSeasons.length; i++) {
                 const ps = DATA.pitcherSeasons[i];
-                if (!STATE.visibleClusters.has(ps.cluster)) continue;
+                if (!isPitcherVisible(ps)) continue;
                 if (!ps.avg_velo_FF) continue;
                 const pos = d2c((ps.pfx_x_avg||0)*12, ps.avg_velo_FF);
                 const dist = Math.sqrt((mx-pos.x)**2+(my-pos.y)**2);
@@ -1474,7 +1539,7 @@
                 html += '<div class="profile-row"><span>Top Pitches</span><span class="pval">'+pitches.map(x=>x.p+' '+((x.v)*100).toFixed(0)+'%').join(', ')+'</span></div>';
 
                 // Pitcher roster (no batter context — show cluster members with their stats)
-                const members = DATA.pitcherSeasons.filter(p => p.cluster === clusterId);
+                const members = DATA.pitcherSeasons.filter(p => p.cluster === clusterId && (!_teamPitcherIds || _teamPitcherIds.has(p.pitcher)));
                 // Dedupe by pitcher ID, keep latest season
                 const seen = {};
                 members.forEach(p => {
@@ -1673,6 +1738,17 @@
             const batters = STATE.activeBatters;
             const hasBatters = batters.length > 0;
 
+            // Pre-compute team-filtered pitcher counts per cluster
+            let _teamCounts = null;
+            if (_teamPitcherIds) {
+                _teamCounts = {};
+                DATA.pitcherSeasons.forEach(ps => {
+                    if (!_teamPitcherIds.has(ps.pitcher)) return;
+                    if (!_teamCounts[ps.cluster]) _teamCounts[ps.cluster] = new Set();
+                    _teamCounts[ps.cluster].add(ps.pitcher);
+                });
+            }
+
             // Pre-compute matchup data for all active batters
             const allMatchups = batters.map(b => getMatchupData(b));
 
@@ -1742,7 +1818,8 @@
                             }
                         });
                     } else {
-                        html += '<span class="arch-count">'+c.pitcher_count+'</span>';
+                        const displayCount = _teamCounts ? (_teamCounts[id] ? _teamCounts[id].size : 0) : c.pitcher_count;
+                        html += '<span class="arch-count">'+displayCount+'</span>';
                     }
 
                     html += '</div>';
@@ -1786,6 +1863,17 @@
                     render();
                     buildArchetypeList();
                 });
+            }
+
+            // Update sidebar status when team filter active
+            if (STATE.teamFilter) {
+                const tName = DATA.teamRosters.teams[STATE.teamFilter] ? DATA.teamRosters.teams[STATE.teamFilter].name : STATE.teamFilter;
+                const filteredCount = _teamCounts ? Object.values(_teamCounts).reduce((s, set) => s + set.size, 0) : 0;
+                document.getElementById('sidebar-status').textContent =
+                    filteredCount + ' PITCHERS \u00b7 ' + tName.toUpperCase();
+            } else if (DATA.pitcherSeasons.length > 0) {
+                document.getElementById('sidebar-status').textContent =
+                    Object.keys(DATA.clusters).length + ' ARCHETYPES \u00b7 ' + DATA.pitcherSeasons.length.toLocaleString() + ' SEASONS \u00b7 ' + DATA.batters.length.toLocaleString() + ' BATTERS';
             }
         }
 
@@ -2010,6 +2098,145 @@
         document.getElementById('year-select').addEventListener('change', (e) => {
             STATE.selectedYear = e.target.value; refreshData(); buildArchetypeList(); render();
         });
+
+        // ═══ TEAM FILTER ═══
+        (function() {
+            const input = document.getElementById('team-search');
+            const dropdown = document.getElementById('team-dropdown');
+            const clearBtn = document.getElementById('team-clear');
+            let highlightIdx = -1;
+
+            // Division ordering for grouped dropdown
+            const DIV_ORDER = [
+                { label: 'AL East', teams: ['BAL','BOS','NYY','TB','TOR'] },
+                { label: 'AL Central', teams: ['CLE','CWS','DET','KC','MIN'] },
+                { label: 'AL West', teams: ['HOU','LAA','OAK','SEA','TEX'] },
+                { label: 'NL East', teams: ['ATL','MIA','NYM','PHI','WSH'] },
+                { label: 'NL Central', teams: ['CHC','CIN','MIL','PIT','STL'] },
+                { label: 'NL West', teams: ['ARI','COL','LAD','SD','SF'] },
+            ];
+
+            function getTeamEntries() {
+                if (!DATA.teamRosters || !DATA.teamRosters.teams) return [];
+                return Object.entries(DATA.teamRosters.teams);
+            }
+
+            function countInData(abbr) {
+                const roster = DATA.teamRosters.rosters && DATA.teamRosters.rosters[abbr];
+                if (!roster) return 0;
+                const knownIds = new Set(DATA.pitcherSeasons.map(p => p.pitcher));
+                return roster.filter(id => knownIds.has(id)).length;
+            }
+
+            function renderDropdown(filter) {
+                const q = (filter || '').toLowerCase();
+                let html = '';
+                const teams = DATA.teamRosters.teams || {};
+                const rosters = DATA.teamRosters.rosters || {};
+
+                // MLB divisions
+                DIV_ORDER.forEach(div => {
+                    const matching = div.teams.filter(abbr => {
+                        const t = teams[abbr];
+                        if (!t) return false;
+                        if (!q) return true;
+                        return abbr.toLowerCase().includes(q) || t.name.toLowerCase().includes(q);
+                    });
+                    if (matching.length === 0) return;
+                    html += '<div class="team-group-header">' + div.label + '</div>';
+                    matching.forEach(abbr => {
+                        const t = teams[abbr];
+                        const count = (rosters[abbr] || []).length;
+                        html += '<div class="team-option" data-abbr="' + abbr + '">'
+                            + '<span>' + abbr + ' — ' + t.name + '</span>'
+                            + '<span class="team-count">' + count + 'P</span></div>';
+                    });
+                });
+
+                // WBC teams
+                const wbcTeams = Object.keys(teams).filter(a => a.startsWith('WBC-')).sort();
+                const matchingWbc = wbcTeams.filter(abbr => {
+                    const t = teams[abbr];
+                    if (!q) return true;
+                    return abbr.toLowerCase().includes(q) || t.name.toLowerCase().includes(q);
+                });
+                if (matchingWbc.length > 0) {
+                    html += '<div class="team-group-header">WBC 2026</div>';
+                    matchingWbc.forEach(abbr => {
+                        const t = teams[abbr];
+                        const count = (rosters[abbr] || []).length;
+                        html += '<div class="team-option" data-abbr="' + abbr + '">'
+                            + '<span>' + abbr.replace('WBC-','') + ' — ' + t.name + '</span>'
+                            + '<span class="team-count">' + count + 'P</span></div>';
+                    });
+                }
+
+                dropdown.innerHTML = html;
+                highlightIdx = -1;
+                dropdown.classList.toggle('visible', html.length > 0);
+            }
+
+            function selectTeam(abbr) {
+                const t = DATA.teamRosters.teams[abbr];
+                input.value = (abbr.startsWith('WBC-') ? abbr.replace('WBC-','') + ' — ' : abbr + ' — ') + (t ? t.name : abbr);
+                clearBtn.style.display = 'block';
+                dropdown.classList.remove('visible');
+                updateTeamFilter(abbr);
+            }
+
+            function clearTeam() {
+                input.value = '';
+                clearBtn.style.display = 'none';
+                updateTeamFilter(null);
+            }
+
+            input.addEventListener('focus', () => {
+                if (!STATE.teamFilter) renderDropdown(input.value);
+            });
+
+            input.addEventListener('input', () => {
+                clearBtn.style.display = 'none';
+                if (STATE.teamFilter) { updateTeamFilter(null); }
+                renderDropdown(input.value);
+            });
+
+            input.addEventListener('keydown', (e) => {
+                const opts = dropdown.querySelectorAll('.team-option');
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    highlightIdx = Math.min(highlightIdx + 1, opts.length - 1);
+                    opts.forEach((o, i) => o.classList.toggle('highlighted', i === highlightIdx));
+                    if (opts[highlightIdx]) opts[highlightIdx].scrollIntoView({ block: 'nearest' });
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    highlightIdx = Math.max(highlightIdx - 1, 0);
+                    opts.forEach((o, i) => o.classList.toggle('highlighted', i === highlightIdx));
+                    if (opts[highlightIdx]) opts[highlightIdx].scrollIntoView({ block: 'nearest' });
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (highlightIdx >= 0 && opts[highlightIdx]) {
+                        selectTeam(opts[highlightIdx].dataset.abbr);
+                    }
+                } else if (e.key === 'Escape') {
+                    dropdown.classList.remove('visible');
+                    input.blur();
+                }
+            });
+
+            dropdown.addEventListener('click', (e) => {
+                const opt = e.target.closest('.team-option');
+                if (opt) selectTeam(opt.dataset.abbr);
+            });
+
+            clearBtn.addEventListener('click', clearTeam);
+
+            // Close dropdown on click outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('#team-filter')) {
+                    dropdown.classList.remove('visible');
+                }
+            });
+        })();
 
         const paSlider = document.getElementById('pa-slider'), paVal = document.getElementById('pa-val');
         paSlider.addEventListener('input', () => {
@@ -2314,7 +2541,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 </head>
 <body>
 <div class="topbar">
-  <div class="logo"><span class="logo-title">SIM LAB</span><span class="logo-sub">PITCH.FX // CLUSTER</span></div>
+  <div class="logo"><span class="logo-title">SIM LAB</span><span class="logo-sub">ARCHETYPE//ATLAS.MLB</span></div>
   <div class="search-wrap"><input type="text" id="search" placeholder="SEARCH HITTER..." autocomplete="off"><div class="s-drop" id="s-drop"></div></div>
   <div class="week-wrap"><label>Week of</label><input type="date" id="week-date"></div>
   <button class="btn-run" id="btn-run" disabled>RUN SLATE</button>
