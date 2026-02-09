@@ -1,8 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta http-equiv="refresh" content="0; url=cosmos.html">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PITCH.FX // CLUSTER</title>
+    <script>
+        // Route based on screen width (768px breakpoint) and user agent
+        var isMobile = window.innerWidth <= 768 ||
+            /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        window.location.replace(isMobile ? 'cosmos-mobile.html' : 'cosmos.html');
+    </script>
 </head>
 <body>
     <a href="cosmos.html">Loading PITCH.FX // CLUSTER...</a>

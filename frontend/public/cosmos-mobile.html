@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>PITCH.FX // CLUSTER</title>
+<style>
+:root {
+    --bg: #0a0a0a;
+    --panel: #111111;
+    --card: #1a1a1a;
+    --accent: #ff4400;
+    --accent-dark: #cc3600;
+    --text: #f0f0f0;
+    --text-sec: #e0e0e0;
+    --text-label: #888;
+    --text-dim: #666;
+    --text-muted: #444;
+    --border: #2a2a2a;
+    --border-lt: #333;
+    --green: #2a9d8f;
+    --teal: #a8dadc;
+    --yellow: #f4a261;
+    --orange: #e76f51;
+    --red: #e63946;
+    --font-tech: 'Courier New', Courier, monospace;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --topbar-h: 52px;
+    --tabbar-h: 56px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+body {
+    background: var(--bg); color: var(--text); font-family: var(--font-ui);
+    width: 100vw; min-height: 100vh; overflow-x: hidden;
+    overscroll-behavior: contain; -webkit-text-size-adjust: 100%;
+    padding-top: var(--topbar-h);
+    padding-bottom: var(--tabbar-h);
+}
+/* ═══ TOPBAR ═══ */
+.topbar {
+    position: fixed; top: 0; left: 0; right: 0; height: var(--topbar-h);
+    background: var(--bg); border-bottom: 1px solid #222;
+    display: flex; align-items: center; padding: 0 12px; gap: 10px; z-index: 100;
+}
+.logo { font-size: 14px; font-weight: 800; color: var(--accent); font-family: var(--font-ui); white-space: nowrap; }
+.search-box { position: relative; flex: 1; min-width: 0; }
+.search-box input {
+    width: 100%; height: 34px; background: #141414; border: 1px solid var(--border-lt);
+    border-radius: 4px; color: var(--text); font-family: var(--font-tech);
+    font-size: 12px; padding: 0 10px; outline: none;
+}
+.search-box input:focus { border-color: var(--accent); }
+.search-box input::placeholder { color: #666; }
+.search-dropdown {
+    position: absolute; top: 100%; left: 0; width: 100%; max-height: 240px;
+    overflow-y: auto; background: #141414; border: 1px solid var(--border-lt);
+    border-top: none; z-index: 200; display: none; border-radius: 0 0 4px 4px;
+}
+.search-dropdown.visible { display: block; }
+.search-result {
+    padding: 10px 12px; display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid #1a1a1a; font-size: 12px; color: #e0e0e0;
+    font-family: var(--font-tech); font-weight: 600; min-height: 44px;
+}
+.search-result.highlighted { background: #1e1e1e; color: #fff; }
+.search-result .pa-label { color: #888; font-size: 10px; }
+.filter-toggle {
+    width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+    background: var(--card); border: 1px solid var(--border-lt); border-radius: 4px;
+    color: var(--text-label); font-size: 16px; cursor: pointer; flex-shrink: 0;
+}
+.filter-toggle.active { border-color: var(--accent); color: var(--accent); }
+
+/* ═══ BATTER CHIP ═══ */
+.batter-chip-bar {
+    display: none; padding: 6px 12px; background: var(--bg); border-bottom: 1px solid #1a1a1a;
+    overflow-x: auto; white-space: nowrap; gap: 6px;
+}
+.batter-chip-bar.visible { display: flex; }
+.batter-chip {
+    display: inline-flex; align-items: center; gap: 4px; background: var(--card);
+    border: 1px solid var(--border-lt); color: var(--text); padding: 4px 10px;
+    border-radius: 16px; font-size: 11px; font-family: var(--font-tech); font-weight: 700;
+    white-space: nowrap; flex-shrink: 0;
+}
+.batter-chip .remove { color: #666; font-size: 14px; margin-left: 2px; padding: 0 2px; }
+
+/* ═══ FILTER BAR ═══ */
+.filter-bar {
+    display: none; padding: 8px 12px; overflow-x: auto; white-space: nowrap;
+    gap: 6px; background: var(--bg); border-bottom: 1px solid #1a1a1a;
+    -webkit-overflow-scrolling: touch;
+}
+.filter-bar.visible { display: flex; }
+.pill {
+    display: inline-flex; align-items: center; justify-content: center;
+    height: 32px; padding: 0 12px; background: var(--card); border: 1px solid var(--border-lt);
+    border-radius: 16px; font-size: 11px; font-weight: 600; color: var(--text-label);
+    font-family: var(--font-ui); white-space: nowrap; flex-shrink: 0; cursor: pointer;
+    transition: all 0.15s; min-width: 44px;
+}
+.pill.active { border-color: var(--accent); color: var(--accent); }
+.pill-sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; margin: 0 2px; }
+.filter-bar select {
+    height: 32px; background: var(--card); border: 1px solid var(--border-lt);
+    border-radius: 16px; color: var(--text-label); font-size: 11px; padding: 0 8px;
+    font-family: var(--font-ui); outline: none; -webkit-appearance: none;
+}
+.filter-bar .pa-wrap {
+    display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+}
+.filter-bar .pa-wrap span { font-size: 9px; color: var(--text-label); font-weight: 700; white-space: nowrap; }
+.filter-bar input[type=range] {
+    -webkit-appearance: none; width: 60px; height: 2px; background: #555; border-radius: 1px;
+}
+.filter-bar input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 14px; height: 14px; background: var(--accent);
+    border-radius: 50%; cursor: pointer;
+}
+
+/* ═══ CANVAS ═══ */
+.canvas-wrap {
+    width: 100%; height: 52vh; position: relative; background: var(--bg);
+    touch-action: none; overflow: hidden;
+}
+.canvas-wrap canvas { display: block; width: 100%; height: 100%; }
+.batter-badge {
+    position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+    background: rgba(30,33,36,0.92); border: 1px solid #333;
+    color: #fff; padding: 5px 14px; border-radius: 16px;
+    font-family: var(--font-tech); font-size: 11px; font-weight: 700;
+    z-index: 10; white-space: nowrap; opacity: 0; transition: opacity 0.3s;
+    pointer-events: none;
+}
+.batter-badge.visible { opacity: 1; }
+
+/* ═══ ARCHETYPE LIST ═══ */
+.arch-list { background: var(--bg); }
+.arch-group-hdr {
+    font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+    padding: 12px 16px 4px; color: var(--text-dim); border-top: 1px solid #1a1a1a;
+}
+.arch-row {
+    display: flex; align-items: center; gap: 8px; padding: 12px 16px;
+    border-bottom: 1px solid #1a1a1a; min-height: 48px; cursor: pointer;
+    transition: background 0.1s;
+}
+.arch-row:active { background: rgba(255,255,255,0.03); }
+.arch-row.selected { background: rgba(255,68,0,0.06); border-left: 3px solid var(--accent); padding-left: 13px; }
+.arch-row.dimmed { opacity: 0.2; }
+.arch-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.arch-name { flex: 1; font-weight: 700; font-size: 13px; color: var(--text); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.arch-role {
+    font-size: 9px; padding: 2px 5px; font-weight: 800; letter-spacing: 0.5px;
+    border: 1px solid; border-radius: 3px; flex-shrink: 0;
+}
+.arch-stat {
+    font-size: 12px; font-weight: 800; font-family: var(--font-tech);
+    width: 48px; text-align: center; flex-shrink: 0; padding: 2px 4px; border-radius: 3px;
+}
+.arch-stat.perf-great { background: rgba(42,157,143,0.15); color: var(--green); }
+.arch-stat.perf-good { background: rgba(168,218,220,0.12); color: var(--teal); }
+.arch-stat.perf-avg { color: var(--text-sec); }
+.arch-stat.perf-poor { background: rgba(231,111,81,0.12); color: var(--orange); }
+.arch-stat.perf-bad { background: rgba(230,57,70,0.15); color: var(--red); }
+.arch-stat.empty { color: var(--text-muted); font-weight: 400; }
+.arch-count { font-size: 11px; color: var(--text-label); font-family: var(--font-tech); font-weight: 700; }
+
+/* ═══ BOTTOM SHEET ═══ */
+.sheet-backdrop {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5); z-index: 199; opacity: 0; pointer-events: none;
+    transition: opacity 0.3s;
+}
+.sheet-backdrop.visible { opacity: 1; pointer-events: auto; }
+.bottom-sheet {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    background: #0d0d0d; border-top-left-radius: 16px; border-top-right-radius: 16px;
+    z-index: 200; transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.19,1,0.22,1);
+    max-height: 88vh; display: flex; flex-direction: column;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+}
+.bottom-sheet.peek { transform: translateY(calc(100% - 140px)); }
+.bottom-sheet.full { transform: translateY(0); }
+.sheet-handle {
+    display: flex; justify-content: center; padding: 10px 0 6px; cursor: grab; flex-shrink: 0;
+}
+.sheet-handle-bar { width: 40px; height: 4px; background: #444; border-radius: 2px; }
+.sheet-content {
+    flex: 1; overflow-y: auto; padding: 0 16px 80px; -webkit-overflow-scrolling: touch;
+}
+/* Stat panel styles inside sheet */
+.sheet-content .stat-header { font-weight: 700; font-size: 18px; color: #fff; margin-bottom: 2px; }
+.sheet-content .stat-sub {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+    font-weight: 700; margin-bottom: 12px; padding-bottom: 6px;
+    border-bottom: 1px solid var(--border-lt); display: inline-block;
+}
+.sheet-content .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-bottom: 12px; }
+.sheet-content .stat-cell {
+    background: #1e2124; border-radius: 4px; padding: 8px 6px; text-align: center;
+}
+.sheet-content .s-label { font-size: 9px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; font-weight: 600; }
+.sheet-content .s-val { font-size: 17px; font-weight: 800; color: #fff; font-family: var(--font-tech); }
+.sheet-content .section-hdr {
+    font-size: 10px; color: #aaa; text-transform: uppercase;
+    letter-spacing: 1px; margin: 14px 0 6px; border-bottom: 1px solid var(--border-lt);
+    padding-bottom: 3px; font-weight: 700;
+}
+.sheet-content .profile-row {
+    display: flex; justify-content: space-between; font-size: 12px;
+    padding: 5px 0; color: #ccc; font-family: var(--font-tech); font-weight: 600;
+}
+.sheet-content .profile-row .pval { font-weight: 800; color: #fff; }
+.sheet-content .matchup-bar {
+    display: flex; align-items: center; gap: 6px; margin-bottom: 4px;
+    font-size: 11px; font-family: var(--font-tech); color: #ddd; font-weight: 600;
+}
+.sheet-content .matchup-bar .yr { width: 30px; color: #999; font-weight: 700; }
+.sheet-content .matchup-bar .bar-track { flex: 1; height: 7px; background: #1a1a1a; overflow: hidden; border-radius: 2px; }
+.sheet-content .matchup-bar .bar-fill { height: 100%; border-radius: 2px; }
+.sheet-content .matchup-bar .woba-val { width: 38px; text-align: right; font-weight: 700; }
+.sheet-content .matchup-bar .pa-val { width: 36px; text-align: right; color: #888; font-size: 10px; }
+.sheet-content .king-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 4px 0; font-size: 11px; border-bottom: 1px solid #1a1a1a;
+    color: #e0e0e0; font-family: var(--font-tech); font-weight: 600;
+}
+.sheet-content .king-row .k-name { flex: 1; }
+.sheet-content .king-row .k-stat { width: 32px; text-align: right; font-weight: 800; }
+.sheet-content .roster-head {
+    display: grid; grid-template-columns: 1fr 32px 38px 28px 28px 38px;
+    padding: 4px 4px; font-size: 9px; color: #888; text-transform: uppercase;
+    letter-spacing: 0.5px; border-bottom: 1px solid var(--border-lt); gap: 2px; font-weight: 700;
+}
+.sheet-content .roster-head span { text-align: right; }
+.sheet-content .roster-head span:first-child { text-align: left; }
+.sheet-content .roster-list { max-height: 300px; overflow-y: auto; margin-bottom: 8px; }
+.sheet-content .roster-row {
+    display: grid; grid-template-columns: 1fr 32px 38px 28px 28px 38px;
+    align-items: center; padding: 5px 4px; font-size: 11px;
+    font-family: var(--font-tech); color: #ccc;
+    border-bottom: 1px solid #1a1a1a; gap: 2px; font-weight: 600;
+}
+.sheet-content .roster-row .r-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #eee; font-weight: 700; }
+.sheet-content .roster-row .r-val { text-align: right; font-size: 10px; }
+.sheet-content .roster-row .r-val.highlight { font-weight: 800; }
+.sheet-content .roster-sort { display: flex; gap: 2px; }
+.sheet-content .sort-btn {
+    background: #1a1a1a; border: 1px solid #2a2a2a; color: #666;
+    font-size: 9px; padding: 3px 6px; font-family: var(--font-tech);
+    text-transform: uppercase; border-radius: 2px; min-height: 28px;
+}
+.sheet-content .sort-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.sheet-content .arch-link {
+    cursor: pointer; padding: 8px 10px; background: #1a1a1a; border: 1px solid #2a2a2a;
+    border-radius: 4px; display: flex; align-items: center; gap: 8px; margin-top: 8px;
+}
+.sheet-content .roster-empty { font-size: 10px; color: #444; font-family: var(--font-tech); padding: 8px 0; text-align: center; }
+
+/* ═══ TAB BAR ═══ */
+.tabbar {
+    position: fixed; bottom: 0; left: 0; right: 0; height: var(--tabbar-h);
+    background: var(--bg); border-top: 1px solid #222;
+    display: flex; z-index: 300;
+    padding-bottom: env(safe-area-inset-bottom);
+}
+.tab {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 2px; color: var(--text-dim);
+    font-size: 9px; font-weight: 600; cursor: pointer; transition: color 0.15s;
+    min-height: 44px;
+}
+.tab.active { color: var(--accent); }
+.tab-icon { font-size: 20px; line-height: 1; }
+
+/* ═══ LOADER ═══ */
+#loader {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--bg); z-index: 500;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    transition: opacity 0.8s;
+}
+.loader-brand { font-size: 18px; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 10px; }
+.loader-icon { width: 20px; height: 20px; background: var(--accent); border-radius: 3px; }
+.loader-status { font-size: 10px; color: var(--text-label); font-family: var(--font-tech); margin-top: 12px; letter-spacing: 1px; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 2px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #555; border-radius: 1px; }
+</style>
+</head>
+<body>
+
+<div id="loader">
+    <div class="loader-brand"><div class="loader-icon"></div>PITCH.FX // CLUSTER</div>
+    <div class="loader-status" id="loader-status">INITIALIZING...</div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+    <div class="logo">PFX</div>
+    <div class="search-box">
+        <input type="text" id="batter-search" placeholder="SEARCH BATTER..." autocomplete="off">
+        <div class="search-dropdown" id="search-dropdown"></div>
+    </div>
+    <div class="filter-toggle" id="filter-toggle">☰</div>
+</div>
+
+<!-- BATTER CHIPS -->
+<div class="batter-chip-bar" id="batter-chip-bar"></div>
+
+<!-- FILTER BAR -->
+<div class="filter-bar" id="filter-bar">
+    <div class="pill active" data-stat="wOBA">wOBA</div>
+    <div class="pill" data-stat="BA">BA</div>
+    <div class="pill" data-stat="SLG">SLG</div>
+    <div class="pill" data-stat="K_pct">K%</div>
+    <div class="pill" data-stat="BB_pct">BB%</div>
+    <div class="pill-sep"></div>
+    <div class="pill active" data-filter="all">ALL</div>
+    <div class="pill" data-filter="RHP">RHP</div>
+    <div class="pill" data-filter="LHP">LHP</div>
+    <div class="pill-sep"></div>
+    <select id="year-select"><option value="all">ALL YEARS</option></select>
+    <div class="pa-wrap">
+        <span>PA:<span id="pa-val">10</span></span>
+        <input type="range" min="1" max="200" value="10" id="pa-slider">
+    </div>
+</div>
+
+<!-- CANVAS -->
+<div class="canvas-wrap" id="canvas-wrap">
+    <canvas id="plot"></canvas>
+    <div class="batter-badge" id="batter-badge">
+        <strong id="badge-name"></strong> <span id="badge-stat"></span>
+    </div>
+</div>
+
+<!-- ARCHETYPE LIST -->
+<div class="arch-list" id="archetype-list"></div>
+
+<!-- BOTTOM SHEET -->
+<div class="sheet-backdrop" id="sheet-backdrop"></div>
+<div class="bottom-sheet" id="bottom-sheet">
+    <div class="sheet-handle" id="sheet-handle"><div class="sheet-handle-bar"></div></div>
+    <div class="sheet-content" id="sheet-content"></div>
+</div>
+
+<!-- TAB BAR -->
+<div class="tabbar">
+    <div class="tab active" data-tab="chart"><div class="tab-icon">◉</div>Chart</div>
+    <div class="tab" data-tab="list"><div class="tab-icon">☰</div>List</div>
+    <div class="tab" data-tab="dock"><div class="tab-icon">⚓</div>Dock</div>
+    <div class="tab" data-tab="sim"><div class="tab-icon">⚡</div>SIM</div>
+    <div class="tab" data-tab="more"><div class="tab-icon">⋯</div>More</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
+<script>
+(function() {
+'use strict';
+
+// ═══════════════════════════════════════
+// DATA & STATE
+// ═══════════════════════════════════════
+const DATA = { clusters: {}, batters: [], pitcherSeasons: [], hitterVsCluster: [], hitterVsPitcher: [], archetypeKings: {} };
+
+const STATE = {
+    activeBatters: [],
+    selectedStat: 'wOBA',
+    selectedYear: 'all',
+    minPA: 10,
+    visibleClusters: new Set(),
+    highlightedCluster: null,
+    savedSearches: JSON.parse(localStorage.getItem('pfx_saved') || '[]'),
+    sheetState: 'hidden', // hidden, peek, full
+};
+
+// ═══════════════════════════════════════
+// DATA LOADING (identical to desktop)
+// ═══════════════════════════════════════
+async function loadJSON(url, label, setStatus) {
+    setStatus('Loading ' + label + '...');
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error('Failed: ' + label);
+    const text = await resp.text();
+    setStatus('Parsing ' + label + ' (' + (text.length / 1e6).toFixed(1) + 'MB)...');
+    return JSON.parse(text);
+}
+
+async function loadAllData() {
+    const setStatus = (msg) => { const el = document.getElementById('loader-status'); if (el) el.textContent = msg; };
+    DATA.clusters = await loadJSON('clusters.json', 'cluster profiles', setStatus);
+    DATA.batters = await loadJSON('batters.json', 'batter index', setStatus);
+    DATA.pitcherSeasons = await loadJSON('pitcher_seasons.json', 'pitcher seasons', setStatus);
+    DATA.hitterVsCluster = await loadJSON('hitter_vs_cluster.json', 'hitter matchups', setStatus);
+    try { DATA.hitterVsPitcher = await loadJSON('hitter_vs_pitcher.json', 'pitcher matchups', setStatus); }
+    catch(e) { DATA.hitterVsPitcher = []; }
+    try { DATA.archetypeKings = await loadJSON('archetype_kings.json', 'archetype kings', setStatus); }
+    catch(e) { DATA.archetypeKings = {}; }
+
+    // Fix centroids with missing velo
+    Object.entries(DATA.clusters).forEach(([cid, cluster]) => {
+        const cent = cluster.centroid || {};
+        if (!cent.avg_velo_FF || cent.avg_velo_FF === 0) {
+            const members = DATA.pitcherSeasons.filter(p => p.cluster === cid && p.avg_velo_FF > 0);
+            if (members.length > 0) cent.avg_velo_FF = members.reduce((s, p) => s + p.avg_velo_FF, 0) / members.length;
+        }
+        if (cent.pfx_x_avg == null) {
+            const members = DATA.pitcherSeasons.filter(p => p.cluster === cid && p.pfx_x_avg != null);
+            if (members.length > 0) cent.pfx_x_avg = members.reduce((s, p) => s + p.pfx_x_avg, 0) / members.length;
+        }
+    });
+
+    // Build batter->pitcher matchup index
+    DATA._hvpIndex = {};
+    DATA.hitterVsPitcher.forEach(r => {
+        if (!DATA._hvpIndex[r.b]) DATA._hvpIndex[r.b] = {};
+        if (!DATA._hvpIndex[r.b][r.c]) DATA._hvpIndex[r.b][r.c] = [];
+        DATA._hvpIndex[r.b][r.c].push(r);
+    });
+
+    STATE.visibleClusters = new Set(Object.keys(DATA.clusters));
+
+    const years = [...new Set(DATA.hitterVsCluster.map(r => r.game_year))].sort();
+    const sel = document.getElementById('year-select');
+    years.forEach(y => { const o = document.createElement('option'); o.value = y; o.textContent = y; sel.appendChild(o); });
+}
+
+// ═══════════════════════════════════════
+// CANVAS SETUP
+// ═══════════════════════════════════════
+const canvas = document.getElementById('plot');
+const ctx = canvas.getContext('2d');
+const canvasWrap = document.getElementById('canvas-wrap');
+
+const MOVE_MIN = -18, MOVE_MAX = 18;
+const VELO_MIN = 82, VELO_MAX = 103;
+const MARGIN = { top: 30, right: 16, bottom: 30, left: 36 };
+
+let viewOffset = { x: 0, y: 0 };
+let viewZoom = 1.0;
+
+function cssW() { return canvas.getBoundingClientRect().width; }
+function cssH() { return canvas.getBoundingClientRect().height; }
+
+function plotArea() {
+    return { x: MARGIN.left, y: MARGIN.top, w: cssW() - MARGIN.left - MARGIN.right, h: cssH() - MARGIN.top - MARGIN.bottom };
+}
+
+function d2c(moveInches, velo) {
+    const p = plotArea();
+    const nx = (moveInches - MOVE_MIN) / (MOVE_MAX - MOVE_MIN);
+    const ny = 1 - (velo - VELO_MIN) / (VELO_MAX - VELO_MIN);
+    const cx = p.x + nx * p.w, cy = p.y + ny * p.h;
+    const cw = cssW(), ch = cssH();
+    return { x: (cx - cw/2) * viewZoom + cw/2 + viewOffset.x, y: (cy - ch/2) * viewZoom + ch/2 + viewOffset.y };
+}
+
+function c2d(sx, sy) {
+    const cw = cssW(), ch = cssH();
+    const ux = (sx - viewOffset.x - cw/2) / viewZoom + cw/2;
+    const uy = (sy - viewOffset.y - ch/2) / viewZoom + ch/2;
+    const p = plotArea();
+    const nx = (ux - p.x) / p.w, ny = (uy - p.y) / p.h;
+    return { moveInches: MOVE_MIN + nx * (MOVE_MAX - MOVE_MIN), velo: VELO_MAX - ny * (VELO_MAX - VELO_MIN) };
+}
+
+function resizeCanvas() {
+    const dpr = Math.min(window.devicePixelRatio, 2);
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    render();
+}
+
+// ═══════════════════════════════════════
+// RENDERING (same logic as desktop)
+// ═══════════════════════════════════════
+function render() {
+    const w = cssW(), h = cssH();
+    ctx.clearRect(0, 0, w, h);
+    drawGrid(w, h);
+    drawDots();
+    drawCentroids();
+    drawBatterLines();
+}
+
+function drawGrid(w, h) {
+    ctx.fillStyle = '#0a0a0a';
+    ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = '#1e1e1e'; ctx.lineWidth = 0.7;
+    for (let m = -18; m <= 18; m += 3) {
+        const a = d2c(m, VELO_MIN), b = d2c(m, VELO_MAX);
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+    }
+    for (let v = 84; v <= 102; v += 2) {
+        const a = d2c(MOVE_MIN, v), b = d2c(MOVE_MAX, v);
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+    }
+    const c0a = d2c(0, VELO_MIN), c0b = d2c(0, VELO_MAX);
+    ctx.strokeStyle = '#2a2a2a'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(c0a.x, c0a.y); ctx.lineTo(c0b.x, c0b.y); ctx.stroke();
+
+    ctx.font = 'bold 10px "Courier New", monospace'; ctx.fillStyle = '#aaa'; ctx.textAlign = 'center';
+    for (let m = -15; m <= 15; m += 6) { const p = d2c(m, VELO_MIN); ctx.fillText(m + '"', p.x, p.y + 12); }
+    ctx.textAlign = 'right';
+    for (let v = 84; v <= 102; v += 4) { const p = d2c(MOVE_MIN, v); ctx.fillText(v + '', p.x - 4, p.y + 3); }
+
+    ctx.fillStyle = '#ccc'; ctx.font = 'bold 11px -apple-system, sans-serif'; ctx.textAlign = 'center';
+    const mb = d2c(0, VELO_MIN); ctx.fillText('H-BREAK (IN)', mb.x, mb.y + 24);
+    ctx.save();
+    const ml = d2c(MOVE_MIN, (VELO_MIN + VELO_MAX) / 2);
+    ctx.translate(ml.x - 26, ml.y); ctx.rotate(-Math.PI / 2);
+    ctx.fillText('VELO (MPH)', 0, 0); ctx.restore();
+
+    ctx.font = 'bold 11px -apple-system, sans-serif'; ctx.fillStyle = '#bbb'; ctx.textAlign = 'center';
+    const lp = d2c(-9, VELO_MAX), rp = d2c(9, VELO_MAX);
+    ctx.fillText('\u2190 RHP', lp.x, lp.y - 4); ctx.fillText('LHP \u2192', rp.x, rp.y - 4);
+}
+
+function hexRgb(hex) {
+    hex = hex.replace('#', '');
+    return { r: parseInt(hex.substring(0,2),16), g: parseInt(hex.substring(2,4),16), b: parseInt(hex.substring(4,6),16) };
+}
+
+function drawDots() {
+    const hl = STATE.highlightedCluster;
+    for (let i = 0; i < DATA.pitcherSeasons.length; i++) {
+        const ps = DATA.pitcherSeasons[i];
+        const cluster = DATA.clusters[ps.cluster];
+        if (!cluster || !STATE.visibleClusters.has(ps.cluster)) continue;
+        const moveIn = (ps.pfx_x_avg || 0) * 12;
+        const velo = ps.avg_velo_FF;
+        if (!velo || velo === 0) continue;
+        const pos = d2c(moveIn, velo);
+        const rgb = hexRgb(cluster.color);
+        let alpha = 0.35, radius = 2;
+        if (hl) {
+            if (ps.cluster === hl) { alpha = 0.85; radius = 3; }
+            else { alpha = 0.04; radius = 1.5; }
+        }
+        ctx.beginPath(); ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + alpha + ')';
+        ctx.fill();
+    }
+}
+
+function drawCentroids() {
+    Object.entries(DATA.clusters).forEach(([id, cluster]) => {
+        if (!STATE.visibleClusters.has(id)) return;
+        const cent = cluster.centroid || {};
+        const moveIn = (cent.pfx_x_avg || 0) * 12;
+        const velo = cent.avg_velo_FF;
+        if (!velo || velo === 0) return;
+        const pos = d2c(moveIn, velo);
+        const hl = STATE.highlightedCluster;
+        const isHl = hl === id;
+        const dim = hl && !isHl;
+        const rgb = hexRgb(cluster.color);
+        const alpha = dim ? 0.10 : 1;
+        const outerR = isHl ? 22 : 16;
+        const innerR = isHl ? 5 : 4;
+
+        if (!dim) {
+            ctx.beginPath(); ctx.arc(pos.x, pos.y, outerR + 5, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',0.06)'; ctx.fill();
+        }
+        ctx.beginPath(); ctx.arc(pos.x, pos.y, outerR, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + alpha + ')';
+        ctx.lineWidth = isHl ? 3 : 2; ctx.stroke();
+        ctx.beginPath(); ctx.arc(pos.x, pos.y, innerR, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + alpha + ')'; ctx.fill();
+
+        if (!dim) {
+            const role = cent.is_sp > 0.5 ? 'SP' : 'RP';
+            ctx.font = 'bold 10px -apple-system, sans-serif';
+            const nameW = ctx.measureText(cluster.short_name).width;
+            const pillW = nameW + 8;
+            ctx.fillStyle = 'rgba(10,10,10,0.75)';
+            const pillX = pos.x - pillW/2, pillY = pos.y + outerR + 2, pillH = 16;
+            ctx.fillRect(pillX, pillY, pillW, pillH);
+            ctx.fillStyle = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + (alpha * 0.95) + ')';
+            ctx.textAlign = 'center';
+            ctx.fillText(cluster.short_name, pos.x, pos.y + outerR + 14);
+
+            if (STATE.activeBatters.length > 0) {
+                const batter = STATE.activeBatters[STATE.activeBatters.length - 1];
+                const matchups = getMatchupData(batter);
+                const m = matchups.find(x => String(x.cluster) === id);
+                if (m && (m.PA || 0) >= STATE.minPA) {
+                    const val = m[STATE.selectedStat] || 0;
+                    const display = (STATE.selectedStat === 'K_pct' || STATE.selectedStat === 'BB_pct')
+                        ? (val * 100).toFixed(0) + '%' : val.toFixed(3);
+                    ctx.font = 'bold 11px "Courier New", monospace';
+                    ctx.fillStyle = perfHex(STATE.selectedStat, val);
+                    ctx.textAlign = 'center';
+                    ctx.fillText(display, pos.x, pos.y - outerR - 4);
+                }
+            }
+        }
+    });
+}
+
+function wobaColor(w) {
+    if (w >= 0.370) return '#2a9d8f';
+    if (w >= 0.330) return '#a8dadc';
+    if (w >= 0.290) return '#f4a261';
+    if (w >= 0.250) return '#e76f51';
+    return '#e63946';
+}
+
+function drawBatterLines() {
+    if (STATE.activeBatters.length === 0) return;
+    const batter = STATE.activeBatters[STATE.activeBatters.length - 1];
+    const matchups = getMatchupData(batter);
+    const badge = document.getElementById('batter-badge');
+    const bRect = badge.getBoundingClientRect();
+    const cRect = canvasWrap.getBoundingClientRect();
+    const bx = bRect.left + bRect.width / 2 - cRect.left;
+    const by = bRect.bottom - cRect.top + 2;
+
+    Object.entries(DATA.clusters).forEach(([cid, cluster]) => {
+        if (!STATE.visibleClusters.has(cid)) return;
+        const cent = cluster.centroid || {};
+        const moveIn = (cent.pfx_x_avg || 0) * 12;
+        const velo = cent.avg_velo_FF;
+        if (!velo || velo === 0) return;
+        const hl = STATE.highlightedCluster;
+        if (hl && cid !== hl) return;
+        const pos = d2c(moveIn, velo);
+        const m = matchups.find(x => String(x.cluster) === cid);
+        const pa = m ? m.PA || 0 : 0;
+        const statVal = m ? (m[STATE.selectedStat] || 0) : 0;
+
+        if (pa < STATE.minPA) {
+            ctx.beginPath(); ctx.setLineDash([4,6]);
+            ctx.moveTo(bx, by); ctx.lineTo(pos.x, pos.y);
+            ctx.strokeStyle = 'rgba(60,60,60,0.3)'; ctx.lineWidth = 0.5;
+            ctx.stroke(); ctx.setLineDash([]);
+            return;
+        }
+        const color = perfHex(STATE.selectedStat, statVal);
+        const thickness = Math.max(1.5, Math.min(5, pa / 80));
+        ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(pos.x, pos.y);
+        ctx.strokeStyle = color; ctx.lineWidth = thickness + 5;
+        ctx.globalAlpha = 0.12; ctx.stroke(); ctx.globalAlpha = 1;
+        ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(pos.x, pos.y);
+        ctx.strokeStyle = color; ctx.lineWidth = thickness;
+        ctx.globalAlpha = 0.9; ctx.stroke(); ctx.globalAlpha = 1;
+    });
+}
+
+// ═══════════════════════════════════════
+// BATTER SYSTEM (same logic as desktop)
+// ═══════════════════════════════════════
+function deriveStats(r) {
+    const pa=r.PA||0, ab=r.AB||0, h=r.H||0, hr=r.HR||0, bb=r.BB||0, k=r.K||0, hbp=r.HBP||0;
+    const s=r.singles||0, d=r.doubles||0, t=r.triples||0;
+    r.BA = ab>0 ? h/ab : 0; r.OBP = pa>0 ? (h+bb+hbp)/pa : 0;
+    r.SLG = ab>0 ? (s+2*d+3*t+4*hr)/ab : 0; r.K_pct = pa>0 ? k/pa : 0; r.BB_pct = pa>0 ? bb/pa : 0;
+    return r;
+}
+
+function getMatchupData(batter) {
+    let rows = DATA.hitterVsCluster.filter(r => r.batter === batter.batter);
+    if (STATE.selectedYear !== 'all') rows = rows.filter(r => r.game_year === parseInt(STATE.selectedYear));
+    if (STATE.selectedYear === 'all' && rows.length > 0) {
+        const grouped = {};
+        rows.forEach(r => {
+            const k = r.cluster;
+            if (!grouped[k]) grouped[k] = { cluster:k, PA:0, AB:0, H:0, HR:0, BB:0, K:0, HBP:0, singles:0, doubles:0, triples:0, woba_sum:0 };
+            const g = grouped[k];
+            g.PA+=r.PA||0; g.AB+=r.AB||0; g.H+=r.H||0; g.HR+=r.HR||0; g.BB+=r.BB||0; g.K+=r.K||0;
+            g.HBP+=r.HBP||0; g.singles+=r.singles||0; g.doubles+=r.doubles||0; g.triples+=r.triples||0;
+            g.woba_sum+=(r.wOBA||0)*(r.PA||0);
+        });
+        return Object.values(grouped).map(g => { g.wOBA = g.PA>0 ? g.woba_sum/g.PA : 0; return deriveStats(g); });
+    }
+    return rows.map(r => deriveStats({...r}));
+}
+
+function spawnBatter(batter) {
+    const matchups = getMatchupData(batter);
+    const totalPA = matchups.reduce((s,r)=>s+(r.PA||0),0);
+    const totalWoba = matchups.reduce((s,r)=>s+(r.wOBA||0)*(r.PA||0),0);
+    const ow = totalPA > 0 ? totalWoba/totalPA : 0;
+    document.getElementById('badge-name').textContent = fmtName(batter.batter_name);
+    document.getElementById('badge-stat').textContent = ow.toFixed(3) + ' wOBA \u00b7 ' + totalPA.toLocaleString() + ' PA';
+    document.getElementById('batter-badge').classList.add('visible');
+    saveSearch(batter);
+    buildArchetypeList();
+    render();
+}
+
+function clearBatter() {
+    document.getElementById('batter-badge').classList.remove('visible');
+    render();
+}
+
+function refreshData() {
+    if (STATE.activeBatters.length === 0) return;
+    render();
+}
+
+// ═══════════════════════════════════════
+// PERFORMANCE HELPERS
+// ═══════════════════════════════════════
+function perfClass(stat, val) {
+    if (stat === 'K_pct') return val < 0.15 ? 'perf-great' : val < 0.20 ? 'perf-good' : val > 0.30 ? 'perf-bad' : val > 0.25 ? 'perf-poor' : 'perf-avg';
+    if (stat === 'BB_pct') return val > 0.12 ? 'perf-great' : val > 0.10 ? 'perf-good' : val < 0.05 ? 'perf-bad' : val < 0.07 ? 'perf-poor' : 'perf-avg';
+    return val >= 0.370 ? 'perf-great' : val >= 0.330 ? 'perf-good' : val >= 0.290 ? 'perf-avg' : val >= 0.250 ? 'perf-poor' : 'perf-bad';
+}
+
+function perfHex(stat, val) {
+    if (stat === 'K_pct') return val < 0.15 ? '#2a9d8f' : val < 0.20 ? '#6bbe8a' : val > 0.30 ? '#e63946' : val > 0.25 ? '#e76f51' : '#f4a261';
+    if (stat === 'BB_pct') return val > 0.12 ? '#2a9d8f' : val > 0.10 ? '#6bbe8a' : val < 0.05 ? '#e63946' : val < 0.07 ? '#e76f51' : '#f4a261';
+    return val >= 0.370 ? '#2a9d8f' : val >= 0.330 ? '#6bbe8a' : val >= 0.290 ? '#f4a261' : val >= 0.250 ? '#e76f51' : '#e63946';
+}
+
+function fmtName(name) {
+    if (!name) return 'Unknown';
+    return name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
+function statCell(label, val) {
+    return '<div class="stat-cell"><div class="s-label">'+label+'</div><div class="s-val">'+val+'</div></div>';
+}
+
+// ═══════════════════════════════════════
+// BOTTOM SHEET
+// ═══════════════════════════════════════
+const sheet = document.getElementById('bottom-sheet');
+const sheetContent = document.getElementById('sheet-content');
+const backdrop = document.getElementById('sheet-backdrop');
+let sheetTouchStartY = 0, sheetStartTranslate = 0;
+
+function openSheet(state) {
+    STATE.sheetState = state;
+    sheet.className = 'bottom-sheet ' + state;
+    backdrop.classList.toggle('visible', state === 'full');
+}
+
+function closeSheet() {
+    STATE.sheetState = 'hidden';
+    sheet.className = 'bottom-sheet';
+    backdrop.classList.remove('visible');
+}
+
+backdrop.addEventListener('click', closeSheet);
+
+// Sheet drag
+const sheetHandle = document.getElementById('sheet-handle');
+sheetHandle.addEventListener('touchstart', (e) => {
+    sheetTouchStartY = e.touches[0].clientY;
+}, { passive: true });
+sheetHandle.addEventListener('touchmove', (e) => {
+    const dy = e.touches[0].clientY - sheetTouchStartY;
+    if (STATE.sheetState === 'full' && dy > 40) { openSheet('peek'); sheetTouchStartY = e.touches[0].clientY; }
+    else if (STATE.sheetState === 'peek' && dy > 40) { closeSheet(); }
+    else if (STATE.sheetState === 'peek' && dy < -40) { openSheet('full'); sheetTouchStartY = e.touches[0].clientY; }
+}, { passive: true });
+
+// ═══════════════════════════════════════
+// STAT PANEL (in bottom sheet)
+// ═══════════════════════════════════════
+function showStatPanel(batterObj, clusterId) {
+    const cluster = DATA.clusters[clusterId];
+    if (!cluster) return;
+    const cent = cluster.centroid || {};
+    const role = cent.is_sp > 0.5 ? 'SP' : 'RP';
+    let html = '';
+
+    if (batterObj) {
+        const yearRows = DATA.hitterVsCluster.filter(r => r.batter === batterObj.batter && String(r.cluster) === clusterId).sort((a,b)=>a.game_year-b.game_year);
+        const tot = { PA:0,AB:0,H:0,HR:0,BB:0,K:0,HBP:0,singles:0,doubles:0,triples:0 };
+        yearRows.forEach(r => { tot.PA+=r.PA||0; tot.AB+=r.AB||0; tot.H+=r.H||0; tot.HR+=r.HR||0; tot.BB+=r.BB||0; tot.K+=r.K||0; tot.HBP+=r.HBP||0; tot.singles+=r.singles||0; tot.doubles+=r.doubles||0; tot.triples+=r.triples||0; });
+        const ba = tot.AB>0?(tot.H/tot.AB).toFixed(3):'.000';
+        const obp = tot.PA>0?((tot.H+tot.BB+tot.HBP)/tot.PA).toFixed(3):'.000';
+        const slg = tot.AB>0?((tot.singles+2*tot.doubles+3*tot.triples+4*tot.HR)/tot.AB).toFixed(3):'.000';
+        const kp = tot.PA>0?((tot.K/tot.PA)*100).toFixed(1)+'%':'0%';
+        const bbp = tot.PA>0?((tot.BB/tot.PA)*100).toFixed(1)+'%':'0%';
+
+        html += '<div class="stat-header">'+fmtName(batterObj.batter_name)+'</div>';
+        html += '<div class="stat-sub" style="color:'+cluster.color+'">vs '+cluster.short_name+' ('+cluster.hand+' '+role+')</div>';
+        html += '<div class="stat-grid">';
+        html += statCell('PA',tot.PA)+statCell('BA',ba)+statCell('OBP',obp);
+        html += statCell('SLG',slg)+statCell('HR',tot.HR)+statCell('K%',kp);
+        html += statCell('BB%',bbp)+statCell('H',tot.H)+statCell('2B',tot.doubles);
+        html += '</div>';
+
+        if (yearRows.length > 1) {
+            html += '<div class="section-hdr">Year-by-Year wOBA</div>';
+            yearRows.forEach(r => {
+                const w = r.wOBA||0;
+                const bw = Math.min(100,Math.max(5,(w/0.45)*100));
+                html += '<div class="matchup-bar"><span class="yr">'+r.game_year+'</span><div class="bar-track"><div class="bar-fill" style="width:'+bw+'%;background:'+wobaColor(w)+';"></div></div><span class="woba-val">'+w.toFixed(3)+'</span><span class="pa-val">'+r.PA+' PA</span></div>';
+            });
+        }
+
+        // Pitcher roster
+        const pitcherMatchups = (DATA._hvpIndex[batterObj.batter] || {})[clusterId] || [];
+        if (pitcherMatchups.length > 0) {
+            html += '<div style="display:flex;align-items:center;justify-content:space-between;margin:14px 0 6px;padding-bottom:4px;border-bottom:1px solid #222;">';
+            html += '<span class="section-hdr" style="margin:0;border:0;padding:0;">Pitchers ('+pitcherMatchups.length+')</span>';
+            html += '<div class="roster-sort">';
+            html += '<span class="sort-btn active" data-sort="pa">PA</span>';
+            html += '<span class="sort-btn" data-sort="ba">BA</span>';
+            html += '<span class="sort-btn" data-sort="hr">HR</span>';
+            html += '<span class="sort-btn" data-sort="k">K</span>';
+            html += '</div></div>';
+            html += '<div class="roster-head"><span>PITCHER</span><span>PA</span><span>BA</span><span>HR</span><span>K</span><span>WHIFF</span></div>';
+            html += '<div class="roster-list" id="m-roster-list" data-cluster="'+clusterId+'" data-batter="'+batterObj.batter+'">';
+            const sorted = [...pitcherMatchups].sort((a,b) => (b.pa||0) - (a.pa||0));
+            sorted.forEach(m => {
+                const baVal = m.ba != null ? m.ba.toFixed(3) : '\u2014';
+                const whiff = m.w != null ? (m.w*100).toFixed(0)+'%' : '\u2014';
+                const baColor = m.ba != null ? (m.ba >= 0.300 ? 'color:var(--green)' : m.ba <= 0.180 ? 'color:var(--red)' : '') : '';
+                html += '<div class="roster-row"><span class="r-name">'+fmtName(m.pn)+'</span><span class="r-val">'+(m.pa||0)+'</span><span class="r-val highlight" style="'+baColor+'">'+baVal+'</span><span class="r-val">'+(m.hr||0)+'</span><span class="r-val">'+(m.k||0)+'</span><span class="r-val">'+whiff+'</span></div>';
+            });
+            html += '</div>';
+        } else {
+            html += '<div class="section-hdr">Pitchers in Group</div>';
+            html += '<div class="roster-empty">No individual matchup data</div>';
+        }
+    } else {
+        html += '<div class="stat-header" style="color:'+cluster.color+'">'+cluster.short_name+'</div>';
+        html += '<div class="stat-sub" style="color:'+cluster.color+'">'+cluster.hand+' '+role+' \u2014 '+cluster.pitcher_count+' pitchers</div>';
+        html += '<div class="section-hdr">Cluster Profile</div>';
+        if (cent.avg_velo_FF>0) html += '<div class="profile-row"><span>Avg Fastball</span><span class="pval">'+(cent.avg_velo_FF).toFixed(1)+' mph</span></div>';
+        html += '<div class="profile-row"><span>Whiff Rate</span><span class="pval">'+((cent.whiff_rate||0)*100).toFixed(1)+'%</span></div>';
+        html += '<div class="profile-row"><span>Zone Rate</span><span class="pval">'+((cent.zone_rate||0)*100).toFixed(1)+'%</span></div>';
+        html += '<div class="profile-row"><span>GB Rate</span><span class="pval">'+((cent.groundball_rate||0)*100).toFixed(1)+'%</span></div>';
+        html += '<div class="profile-row"><span>Arm Angle</span><span class="pval">'+(cent.arm_angle||0).toFixed(1)+'\u00b0</span></div>';
+        if (cent.pfx_x_avg!=null) html += '<div class="profile-row"><span>H-Break</span><span class="pval">'+((cent.pfx_x_avg)*12).toFixed(1)+'"</span></div>';
+        if (cent.pfx_z_avg!=null) html += '<div class="profile-row"><span>V-Break</span><span class="pval">'+((cent.pfx_z_avg)*12).toFixed(1)+'"</span></div>';
+        const pitches = ['FF','SI','FC','SL','CH','CU','FS','KC','ST','SV','KN'].map(p=>({p,v:cent['pct_'+p]||0})).filter(x=>x.v>0.05).sort((a,b)=>b.v-a.v);
+        html += '<div class="profile-row"><span>Top Pitches</span><span class="pval">'+pitches.map(x=>x.p+' '+((x.v)*100).toFixed(0)+'%').join(', ')+'</span></div>';
+
+        // Pitcher roster (no batter)
+        const members = DATA.pitcherSeasons.filter(p => p.cluster === clusterId);
+        const seen = {};
+        members.forEach(p => { if (!seen[p.pitcher] || p.game_year > seen[p.pitcher].game_year) seen[p.pitcher] = p; });
+        const uniquePitchers = Object.values(seen).sort((a,b) => (b.avg_velo_FF||0) - (a.avg_velo_FF||0));
+        if (uniquePitchers.length > 0) {
+            html += '<div class="section-hdr">Pitchers ('+uniquePitchers.length+' unique)</div>';
+            html += '<div class="roster-head"><span>PITCHER</span><span>YR</span><span>VELO</span><span></span><span></span><span>WHIFF</span></div>';
+            html += '<div class="roster-list">';
+            uniquePitchers.slice(0,50).forEach(p => {
+                html += '<div class="roster-row"><span class="r-name">'+fmtName(p.player_name)+'</span><span class="r-val">'+p.game_year+'</span><span class="r-val highlight">'+(p.avg_velo_FF||0).toFixed(1)+'</span><span class="r-val"></span><span class="r-val"></span><span class="r-val">'+((p.whiff_rate||0)*100).toFixed(0)+'%</span></div>';
+            });
+            if (uniquePitchers.length > 50) html += '<div class="roster-empty">+'+(uniquePitchers.length-50)+' more</div>';
+            html += '</div>';
+        }
+    }
+
+    // Kings
+    const kings = DATA.archetypeKings[clusterId] || [];
+    if (kings.length > 0) {
+        html += '<div class="section-hdr">Kings of '+cluster.short_name+'</div>';
+        kings.slice(0,8).forEach(k => {
+            html += '<div class="king-row"><span class="k-name">'+k.name+'</span><span class="k-stat" style="width:24px;">'+k.seasons+'yr</span><span class="k-stat" style="color:var(--green);">'+(k.avg_velo>0?k.avg_velo.toFixed(0):'\u2014')+'</span><span class="k-stat" style="color:var(--red);">'+((k.avg_whiff||0)*100).toFixed(0)+'%</span></div>';
+        });
+    }
+
+    // Examples
+    html += '<div class="section-hdr">Examples</div><div style="font-size:10px;color:#666;font-family:var(--font-tech);">';
+    (cluster.example_pitchers||[]).forEach(p => { html += '<div style="margin-bottom:2px;">'+p+'</div>'; });
+    html += '</div>';
+
+    sheetContent.innerHTML = html;
+    STATE.highlightedCluster = clusterId;
+    openSheet('full');
+    render();
+    buildArchetypeList();
+
+    // Sort button handlers
+    sheetContent.querySelectorAll('.sort-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const rosterList = document.getElementById('m-roster-list');
+            if (!rosterList) return;
+            const cId = rosterList.dataset.cluster;
+            const bId = parseInt(rosterList.dataset.batter);
+            const sortKey = btn.dataset.sort;
+            btn.parentElement.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const pm = (DATA._hvpIndex[bId] || {})[cId] || [];
+            let s;
+            if (sortKey==='pa') s=[...pm].sort((a,b)=>(b.pa||0)-(a.pa||0));
+            else if (sortKey==='ba') s=[...pm].sort((a,b)=>(b.ba||0)-(a.ba||0));
+            else if (sortKey==='hr') s=[...pm].sort((a,b)=>(b.hr||0)-(a.hr||0));
+            else if (sortKey==='k') s=[...pm].sort((a,b)=>(b.k||0)-(a.k||0));
+            else s=pm;
+            rosterList.innerHTML = s.map(m => {
+                const baVal=m.ba!=null?m.ba.toFixed(3):'\u2014';
+                const whiff=m.w!=null?(m.w*100).toFixed(0)+'%':'\u2014';
+                const baColor=m.ba!=null?(m.ba>=0.300?'color:var(--green)':m.ba<=0.180?'color:var(--red)':''):'';
+                return '<div class="roster-row"><span class="r-name">'+fmtName(m.pn)+'</span><span class="r-val">'+(m.pa||0)+'</span><span class="r-val highlight" style="'+baColor+'">'+baVal+'</span><span class="r-val">'+(m.hr||0)+'</span><span class="r-val">'+(m.k||0)+'</span><span class="r-val">'+whiff+'</span></div>';
+            }).join('');
+        });
+    });
+}
+
+function showPitcherStatPanel(ps, batterObj) {
+    const cluster = DATA.clusters[ps.cluster];
+    if (!cluster) return;
+    const role = ps.is_sp ? 'SP' : 'RP';
+    let html = '';
+    html += '<div class="stat-header">'+fmtName(ps.player_name)+'</div>';
+    html += '<div class="stat-sub" style="color:'+cluster.color+'">'+ps.game_year+' // '+cluster.short_name+'</div>';
+    html += '<div class="section-hdr">Pitcher Profile</div>';
+    html += '<div class="stat-grid">';
+    html += statCell('VELO', (ps.avg_velo_FF||0).toFixed(1));
+    html += statCell('WHIFF', ((ps.whiff_rate||0)*100).toFixed(0)+'%');
+    html += statCell('ARM', (ps.arm_angle||0).toFixed(0)+'\u00b0');
+    html += '</div>';
+    html += '<div class="profile-row"><span>Hand</span><span class="pval">'+(ps.is_rhp ? 'Right' : 'Left')+'</span></div>';
+    html += '<div class="profile-row"><span>Role</span><span class="pval">'+role+'</span></div>';
+    html += '<div class="profile-row"><span>H-Break</span><span class="pval">'+((ps.pfx_x_avg||0)*12).toFixed(1)+'"</span></div>';
+    html += '<div class="profile-row"><span>V-Break</span><span class="pval">'+((ps.pfx_z_avg||0)*12).toFixed(1)+'"</span></div>';
+
+    if (batterObj) {
+        const hvpData = (DATA._hvpIndex[batterObj.batter] || {})[ps.cluster] || [];
+        const matchup = hvpData.find(m => m.p === ps.pitcher);
+        if (matchup) {
+            html += '<div class="section-hdr">vs '+fmtName(batterObj.batter_name)+'</div>';
+            html += '<div class="stat-grid">';
+            html += statCell('PA', matchup.pa||0);
+            html += statCell('BA', matchup.ba != null ? matchup.ba.toFixed(3) : '\u2014');
+            html += statCell('wOBA', matchup.w != null ? matchup.w.toFixed(3) : '\u2014');
+            html += statCell('HR', matchup.hr||0);
+            html += statCell('K', matchup.k||0);
+            html += statCell('BB', matchup.bb||0);
+            html += '</div>';
+        } else {
+            html += '<div class="section-hdr">vs '+fmtName(batterObj.batter_name)+'</div>';
+            html += '<div style="font-size:11px;color:#666;font-family:var(--font-tech);padding:4px 0;">No direct matchup data</div>';
+        }
+    }
+
+    // Archetype link
+    html += '<div class="section-hdr">Archetype</div>';
+    html += '<div class="arch-link" data-cluster="'+ps.cluster+'">';
+    html += '<span style="width:8px;height:8px;border-radius:50%;background:'+cluster.color+';flex-shrink:0;"></span>';
+    html += '<span style="font-size:11px;font-weight:700;color:#eee;font-family:var(--font-tech);">'+cluster.short_name+'</span>';
+    html += '<span style="font-size:9px;color:#888;margin-left:auto;">'+cluster.hand+' '+role+' \u2022 '+cluster.pitcher_count+' pitchers \u2192</span>';
+    html += '</div>';
+
+    sheetContent.innerHTML = html;
+    STATE.highlightedCluster = ps.cluster;
+    openSheet('full');
+    render(); buildArchetypeList();
+
+    const archLink = sheetContent.querySelector('.arch-link');
+    if (archLink) {
+        archLink.addEventListener('click', () => {
+            showStatPanel(batterObj, ps.cluster);
+        });
+    }
+}
+
+// ═══════════════════════════════════════
+// ARCHETYPE LIST
+// ═══════════════════════════════════════
+function buildArchetypeList() {
+    const dir = document.getElementById('archetype-list');
+    const ids = Object.keys(DATA.clusters);
+    const rhp = ids.filter(id => DATA.clusters[id].hand === 'RHP').sort();
+    const lhp = ids.filter(id => DATA.clusters[id].hand === 'LHP').sort();
+    const batters = STATE.activeBatters;
+    const hasBatters = batters.length > 0;
+    const allMatchups = batters.map(b => getMatchupData(b));
+    let html = '';
+
+    const renderGroup = (group, label) => {
+        html += '<div class="arch-group-hdr">'+label+' ('+group.length+')</div>';
+        group.forEach(id => {
+            const c = DATA.clusters[id];
+            const cent = c.centroid || {};
+            const role = cent.is_sp > 0.5 ? 'SP' : 'RP';
+            const vis = STATE.visibleClusters.has(id);
+            const sel = STATE.highlightedCluster === id;
+            const cls = 'arch-row' + (sel ? ' selected' : '') + (!vis ? ' dimmed' : '');
+
+            let rowColor = c.color, dotColor = c.color;
+            if (hasBatters) {
+                const lastMatchups = allMatchups[allMatchups.length - 1];
+                const lm = lastMatchups.find(x => String(x.cluster) === id);
+                if (lm && lm.PA >= STATE.minPA) {
+                    rowColor = perfHex(STATE.selectedStat, lm[STATE.selectedStat] || 0);
+                    dotColor = rowColor;
+                } else { rowColor = '#666'; dotColor = '#666'; }
+            }
+
+            html += '<div class="'+cls+'" data-cluster="'+id+'">';
+            html += '<div class="arch-dot" style="background:'+dotColor+';"></div>';
+            html += '<span class="arch-name" style="color:'+(vis ? rowColor : '#666')+';">'+c.short_name+'</span>';
+            html += '<span class="arch-role" style="color:'+rowColor+';border-color:'+rowColor+';">'+role+'</span>';
+
+            if (hasBatters) {
+                const matchups = allMatchups[allMatchups.length - 1];
+                const m = matchups.find(x => String(x.cluster) === id);
+                if (m && m.PA >= STATE.minPA) {
+                    const val = m[STATE.selectedStat] || 0;
+                    const display = (STATE.selectedStat === 'K_pct' || STATE.selectedStat === 'BB_pct')
+                        ? (val*100).toFixed(0)+'%' : val.toFixed(3);
+                    const pClass = perfClass(STATE.selectedStat, val);
+                    html += '<span class="arch-stat '+pClass+'">'+display+'</span>';
+                } else {
+                    html += '<span class="arch-stat empty">\u2014</span>';
+                }
+            } else {
+                html += '<span class="arch-count">'+c.pitcher_count+'</span>';
+            }
+            html += '</div>';
+        });
+    };
+    renderGroup(rhp, 'Right-Handed');
+    renderGroup(lhp, 'Left-Handed');
+    dir.innerHTML = html;
+
+    dir.querySelectorAll('.arch-row').forEach(el => {
+        el.addEventListener('click', () => {
+            const id = el.dataset.cluster;
+            const ab = STATE.activeBatters.length > 0 ? STATE.activeBatters[STATE.activeBatters.length-1] : null;
+            showStatPanel(ab, id);
+        });
+    });
+}
+
+// ═══════════════════════════════════════
+// TOUCH INTERACTIONS ON CANVAS
+// ═══════════════════════════════════════
+let touchState = {
+    startX: 0, startY: 0, startTime: 0,
+    lastPanX: 0, lastPanY: 0,
+    lastDist: 0, isPanning: false, isPinching: false,
+    moved: false, lastTap: 0,
+};
+
+canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    if (e.touches.length === 1) {
+        touchState.startX = e.touches[0].clientX;
+        touchState.startY = e.touches[0].clientY;
+        touchState.lastPanX = viewOffset.x;
+        touchState.lastPanY = viewOffset.y;
+        touchState.startTime = Date.now();
+        touchState.moved = false;
+        touchState.isPanning = false;
+        touchState.isPinching = false;
+    } else if (e.touches.length === 2) {
+        touchState.isPinching = true;
+        touchState.isPanning = false;
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        touchState.lastDist = Math.sqrt(dx*dx + dy*dy);
+    }
+}, { passive: false });
+
+canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    if (e.touches.length === 1 && !touchState.isPinching) {
+        const dx = e.touches[0].clientX - touchState.startX;
+        const dy = e.touches[0].clientY - touchState.startY;
+        if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+            touchState.moved = true;
+            touchState.isPanning = true;
+        }
+        if (touchState.isPanning) {
+            viewOffset.x = touchState.lastPanX + dx;
+            viewOffset.y = touchState.lastPanY + dy;
+            render();
+        }
+    } else if (e.touches.length === 2 && touchState.isPinching) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (touchState.lastDist > 0) {
+            const scale = dist / touchState.lastDist;
+            viewZoom = Math.max(0.5, Math.min(5, viewZoom * scale));
+            render();
+        }
+        touchState.lastDist = dist;
+    }
+}, { passive: false });
+
+canvas.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    if (touchState.isPinching) { touchState.isPinching = false; return; }
+    if (touchState.moved) { touchState.isPanning = false; return; }
+
+    // It's a tap — do hit testing
+    const now = Date.now();
+    const rect = canvas.getBoundingClientRect();
+    const mx = touchState.startX - rect.left;
+    const my = touchState.startY - rect.top;
+
+    // Double tap detection — reset zoom
+    if (now - touchState.lastTap < 300) {
+        viewZoom = 1.0; viewOffset = { x: 0, y: 0 }; render();
+        touchState.lastTap = 0;
+        return;
+    }
+    touchState.lastTap = now;
+
+    // Centroid hit test (28px radius for touch)
+    let centroidHit = false;
+    Object.entries(DATA.clusters).forEach(([id, cl]) => {
+        if (centroidHit) return;
+        if (!STATE.visibleClusters.has(id)) return;
+        const c = cl.centroid || {};
+        if (!c.avg_velo_FF) return;
+        const pos = d2c((c.pfx_x_avg||0)*12, c.avg_velo_FF);
+        if (Math.sqrt((mx-pos.x)**2+(my-pos.y)**2) < 28) {
+            centroidHit = true;
+            if (STATE.highlightedCluster === id) {
+                STATE.highlightedCluster = null;
+                closeSheet();
+                render(); buildArchetypeList();
+            } else {
+                const ab = STATE.activeBatters.length > 0 ? STATE.activeBatters[STATE.activeBatters.length-1] : null;
+                showStatPanel(ab, id);
+            }
+        }
+    });
+    if (centroidHit) return;
+
+    // Pitcher dot hit test (16px radius for touch)
+    let closestDot = null, closestDist = 16;
+    for (let i = 0; i < DATA.pitcherSeasons.length; i++) {
+        const ps = DATA.pitcherSeasons[i];
+        if (!STATE.visibleClusters.has(ps.cluster) || !ps.avg_velo_FF) continue;
+        const pos = d2c((ps.pfx_x_avg||0)*12, ps.avg_velo_FF);
+        const dist = Math.sqrt((mx-pos.x)**2+(my-pos.y)**2);
+        if (dist < closestDist) { closestDist = dist; closestDot = ps; }
+    }
+    if (closestDot) {
+        const ab = STATE.activeBatters.length > 0 ? STATE.activeBatters[STATE.activeBatters.length-1] : null;
+        showPitcherStatPanel(closestDot, ab);
+    } else if (STATE.highlightedCluster) {
+        STATE.highlightedCluster = null;
+        closeSheet();
+        render(); buildArchetypeList();
+    }
+}, { passive: false });
+
+// ═══════════════════════════════════════
+// SEARCH
+// ═══════════════════════════════════════
+let fuse = null;
+function initSearch() { fuse = new Fuse(DATA.batters, { keys: ['batter_name'], threshold: 0.3, distance: 100 }); }
+
+const searchInput = document.getElementById('batter-search');
+const searchDrop = document.getElementById('search-dropdown');
+let sHighlight = 0, sResults = [];
+
+searchInput.addEventListener('input', () => {
+    const q = searchInput.value;
+    if (q.length < 2) { searchDrop.classList.remove('visible'); return; }
+    sResults = fuse.search(q).slice(0,8).map(r => r.item);
+    sHighlight = 0;
+    renderSearchResults();
+});
+searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); sHighlight = Math.min(sHighlight+1, sResults.length-1); renderSearchResults(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); sHighlight = Math.max(sHighlight-1, 0); renderSearchResults(); }
+    else if (e.key === 'Enter') { e.preventDefault(); if (sResults[sHighlight]) selectResult(sResults[sHighlight]); }
+    else if (e.key === 'Escape') searchDrop.classList.remove('visible');
+});
+
+function renderSearchResults() {
+    if (sResults.length === 0) { searchDrop.classList.remove('visible'); return; }
+    searchDrop.innerHTML = sResults.map((b,i) =>
+        '<div class="search-result '+(i===sHighlight?'highlighted':'')+'" data-idx="'+i+'"><span>'+fmtName(b.batter_name)+'</span><span class="pa-label">'+(b.total_PA||0).toLocaleString()+' PA</span></div>'
+    ).join('');
+    searchDrop.classList.add('visible');
+}
+
+searchDrop.addEventListener('mousedown', (e) => {
+    const el = e.target.closest('.search-result');
+    if (!el) return;
+    e.preventDefault();
+    selectResult(sResults[parseInt(el.dataset.idx)]);
+});
+searchDrop.addEventListener('touchstart', (e) => {
+    const el = e.target.closest('.search-result');
+    if (!el) return;
+    selectResult(sResults[parseInt(el.dataset.idx)]);
+}, { passive: true });
+
+function selectResult(batter) { addBatter(batter); searchInput.value = ''; searchDrop.classList.remove('visible'); searchInput.blur(); }
+
+function addBatter(batter) {
+    STATE.activeBatters = STATE.activeBatters.filter(b => b.batter !== batter.batter);
+    if (STATE.activeBatters.length >= 3) STATE.activeBatters.shift();
+    STATE.activeBatters.push(batter);
+    renderBatterChips();
+    spawnBatter(batter);
+}
+
+function removeBatter(id) {
+    STATE.activeBatters = STATE.activeBatters.filter(b => b.batter !== id);
+    renderBatterChips();
+    if (STATE.activeBatters.length > 0) spawnBatter(STATE.activeBatters[STATE.activeBatters.length-1]);
+    else { clearBatter(); buildArchetypeList(); }
+}
+
+function renderBatterChips() {
+    const bar = document.getElementById('batter-chip-bar');
+    if (STATE.activeBatters.length === 0) { bar.classList.remove('visible'); return; }
+    bar.classList.add('visible');
+    bar.innerHTML = STATE.activeBatters.map(b =>
+        '<div class="batter-chip" data-id="'+b.batter+'">'+fmtName(b.batter_name)+'<span class="remove" data-id="'+b.batter+'">\u2715</span></div>'
+    ).join('');
+    bar.querySelectorAll('.remove').forEach(r => {
+        r.addEventListener('click', (e) => { e.stopPropagation(); removeBatter(parseInt(r.dataset.id)); });
+    });
+}
+
+// Close search on tap outside
+document.addEventListener('touchstart', (e) => {
+    if (!e.target.closest('.search-box')) searchDrop.classList.remove('visible');
+}, { passive: true });
+
+// ═══════════════════════════════════════
+// SAVED SEARCHES
+// ═══════════════════════════════════════
+function saveSearch(batter) {
+    const idx = STATE.savedSearches.findIndex(s => s.batter === batter.batter);
+    if (idx >= 0) STATE.savedSearches.splice(idx, 1);
+    STATE.savedSearches.unshift({ batter: batter.batter, batter_name: batter.batter_name, total_PA: batter.total_PA });
+    if (STATE.savedSearches.length > 10) STATE.savedSearches = STATE.savedSearches.slice(0, 10);
+    localStorage.setItem('pfx_saved', JSON.stringify(STATE.savedSearches));
+}
+
+// ═══════════════════════════════════════
+// FILTER CONTROLS
+// ═══════════════════════════════════════
+document.getElementById('filter-toggle').addEventListener('click', () => {
+    const bar = document.getElementById('filter-bar');
+    const btn = document.getElementById('filter-toggle');
+    bar.classList.toggle('visible');
+    btn.classList.toggle('active', bar.classList.contains('visible'));
+});
+
+// Metric pills
+document.getElementById('filter-bar').addEventListener('click', (e) => {
+    const pill = e.target.closest('.pill');
+    if (!pill) return;
+
+    if (pill.dataset.stat) {
+        document.querySelectorAll('.pill[data-stat]').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        STATE.selectedStat = pill.dataset.stat;
+        refreshData(); buildArchetypeList(); render();
+    }
+    if (pill.dataset.filter) {
+        document.querySelectorAll('.pill[data-filter]').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        const filter = pill.dataset.filter;
+        Object.keys(DATA.clusters).forEach(id => {
+            const c = DATA.clusters[id];
+            const show = filter === 'all' || c.hand === filter;
+            if (show) STATE.visibleClusters.add(id); else STATE.visibleClusters.delete(id);
+        });
+        render(); refreshData(); buildArchetypeList();
+    }
+});
+
+document.getElementById('year-select').addEventListener('change', (e) => {
+    STATE.selectedYear = e.target.value; refreshData(); buildArchetypeList(); render();
+});
+
+const paSlider = document.getElementById('pa-slider'), paVal = document.getElementById('pa-val');
+paSlider.addEventListener('input', () => {
+    STATE.minPA = parseInt(paSlider.value); paVal.textContent = STATE.minPA;
+    refreshData(); buildArchetypeList(); render();
+});
+
+// ═══════════════════════════════════════
+// TAB BAR
+// ═══════════════════════════════════════
+document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const action = tab.dataset.tab;
+        if (action === 'chart') {
+            closeSheet();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else if (action === 'list') {
+            closeSheet();
+            const list = document.getElementById('archetype-list');
+            list.scrollIntoView({ behavior: 'smooth' });
+        } else if (action === 'dock') {
+            showDockSheet();
+        } else if (action === 'sim') {
+            showSimSheet();
+        } else if (action === 'more') {
+            showMoreSheet();
+        }
+    });
+});
+
+function showDockSheet() {
+    let html = '<div class="stat-header">Dock</div>';
+    // Saved searches
+    html += '<div class="section-hdr">Search History</div>';
+    if (STATE.savedSearches.length === 0) {
+        html += '<div style="font-size:11px;color:#666;font-family:var(--font-tech);padding:12px 0;text-align:center;">No search history yet</div>';
+    } else {
+        STATE.savedSearches.forEach(s => {
+            html += '<div class="profile-row" style="cursor:pointer;padding:8px 0;" data-bid="'+s.batter+'"><span style="color:#eee;font-weight:700;">'+fmtName(s.batter_name)+'</span><span class="pval" style="color:#888;">'+(s.total_PA||0).toLocaleString()+' PA</span></div>';
+        });
+    }
+
+    // Best/Worst matchups
+    if (STATE.activeBatters.length > 0) {
+        const batter = STATE.activeBatters[STATE.activeBatters.length - 1];
+        const matchups = getMatchupData(batter);
+        const valid = matchups.filter(m => (m.PA||0) >= STATE.minPA);
+        const sorted = [...valid].sort((a,b) => (b.wOBA||0) - (a.wOBA||0));
+        if (sorted.length > 0) {
+            html += '<div class="section-hdr">Best Matchups for '+fmtName(batter.batter_name)+'</div>';
+            sorted.slice(0,3).forEach(m => {
+                const cl = DATA.clusters[m.cluster];
+                html += '<div class="profile-row"><span style="color:'+(cl?.color||'#888')+';font-weight:700;">'+(cl?.short_name||m.cluster)+'</span><span class="pval" style="color:var(--green);">'+(m.wOBA||0).toFixed(3)+' wOBA \u00b7 '+m.PA+' PA</span></div>';
+            });
+            html += '<div class="section-hdr">Worst Matchups</div>';
+            sorted.slice(-3).reverse().forEach(m => {
+                const cl = DATA.clusters[m.cluster];
+                html += '<div class="profile-row"><span style="color:'+(cl?.color||'#888')+';font-weight:700;">'+(cl?.short_name||m.cluster)+'</span><span class="pval" style="color:var(--red);">'+(m.wOBA||0).toFixed(3)+' wOBA \u00b7 '+m.PA+' PA</span></div>';
+            });
+        }
+    }
+
+    sheetContent.innerHTML = html;
+    openSheet('full');
+
+    // Bind saved search clicks
+    sheetContent.querySelectorAll('[data-bid]').forEach(el => {
+        el.addEventListener('click', () => {
+            const b = DATA.batters.find(x => x.batter === parseInt(el.dataset.bid));
+            if (b) { addBatter(b); closeSheet(); }
+        });
+    });
+}
+
+function showSimSheet() {
+    let html = '<div class="stat-header" style="color:var(--accent);">\u26A1 SIM LAB</div>';
+    html += '<div style="font-size:11px;color:#888;font-family:var(--font-tech);margin:8px 0 16px;">Weekly hitter projection tool. For the full SIM LAB experience, open on desktop.</div>';
+    html += '<div style="font-size:12px;color:#666;text-align:center;padding:40px 0;">SIM LAB is optimized for desktop.<br>Visit on a larger screen for full projections.</div>';
+    sheetContent.innerHTML = html;
+    openSheet('full');
+}
+
+function showMoreSheet() {
+    const total = DATA.pitcherSeasons.length;
+    const clusters = Object.keys(DATA.clusters).length;
+    let html = '<div class="stat-header">PITCH.FX // CLUSTER</div>';
+    html += '<div style="font-size:11px;color:#888;font-family:var(--font-tech);margin:8px 0 16px;">MLB Pitcher Archetype Explorer</div>';
+    html += '<div class="section-hdr">Data Summary</div>';
+    html += '<div class="profile-row"><span>Archetypes</span><span class="pval">'+clusters+'</span></div>';
+    html += '<div class="profile-row"><span>Pitcher Seasons</span><span class="pval">'+total.toLocaleString()+'</span></div>';
+    html += '<div class="profile-row"><span>Batters</span><span class="pval">'+DATA.batters.length.toLocaleString()+'</span></div>';
+    html += '<div class="section-hdr">Navigation</div>';
+    html += '<div style="font-size:11px;color:#aaa;font-family:var(--font-tech);line-height:1.8;padding:4px 0;">';
+    html += '\u2022 Tap a centroid circle to view archetype details<br>';
+    html += '\u2022 Tap a dot to view individual pitcher stats<br>';
+    html += '\u2022 Pinch to zoom, drag to pan<br>';
+    html += '\u2022 Double-tap to reset zoom<br>';
+    html += '\u2022 Search a batter to see matchup lines<br>';
+    html += '\u2022 Use filters to change metric, hand, or year';
+    html += '</div>';
+    html += '<div style="margin-top:24px;text-align:center;"><a href="cosmos.html" style="color:var(--accent);font-size:11px;font-family:var(--font-tech);font-weight:700;text-decoration:none;">SWITCH TO DESKTOP VERSION \u2192</a></div>';
+    sheetContent.innerHTML = html;
+    openSheet('full');
+}
+
+// ═══════════════════════════════════════
+// RESIZE
+// ═══════════════════════════════════════
+window.addEventListener('resize', resizeCanvas);
+
+// ═══════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════
+async function boot() {
+    try {
+        await loadAllData();
+        resizeCanvas();
+        buildArchetypeList();
+        initSearch();
+        setTimeout(() => {
+            const loader = document.getElementById('loader');
+            loader.style.opacity = '0';
+            setTimeout(() => loader.remove(), 800);
+        }, 400);
+    } catch (err) {
+        console.error('Boot failed:', err);
+        document.getElementById('loader-status').textContent = 'ERROR: ' + err.message;
+    }
+}
+boot();
+})();
+</script>
+</body>
+</html>
