@@ -660,25 +660,27 @@
         // ARCHETYPE IDENTITY MAP
         // ═══════════════════════════════════════
         const ARCHETYPE_MAP = {
-            'R_0': { name: 'Firestarter',    emoji: '\u{1F525}' },
-            'R_1': { name: 'Triple Threat',  emoji: '\u2694\uFE0F' },
-            'R_2': { name: 'Earthworm',      emoji: '\u{1FAB1}' },
-            'R_3': { name: 'Cut & Curved',   emoji: '\u2702\uFE0F' },
-            'R_4': { name: 'Ghost Ball',     emoji: '\u{1F47B}' },
-            'R_5': { name: 'Not Straight',   emoji: '\u{1F40D}' },
-            'R_6': { name: 'Side-Sweeper',   emoji: '\u{1F9F9}' },
-            'R_7': { name: 'Big Hooker',     emoji: '\u{1FA9D}' },
-            'R_8': { name: 'Splitter Demon', emoji: '\u{1F479}' },
-            'R_9': { name: 'Boomerang',      emoji: '\u{1FA83}' },
-            'L_0': { name: 'Firestarter',    emoji: '\u{1F525}' },
-            'L_1': { name: 'Triple Threat',  emoji: '\u2694\uFE0F' },
-            'L_2': { name: 'Earthworm',      emoji: '\u{1FAB1}' },
-            'L_3': { name: 'Side-Sweeper',   emoji: '\u{1F9F9}' },
-            'L_4': { name: 'Big Hooker',     emoji: '\u{1FA9D}' },
-            'L_5': { name: 'Craftsman',      emoji: '\u{1FAB5}' },
-            'L_6': { name: 'Undertow',       emoji: '\u{1F30A}' },
-            'L_7': { name: 'Boomerang',      emoji: '\u{1FA83}' },
-            'L_8': { name: 'Splitter Demon', emoji: '\u{1F479}' },
+            // RHP
+            'R_0': { name: 'Cut & Curved',   emoji: '\u2702\uFE0F' },    // FF:34% CU:20% FC:18%
+            'R_1': { name: 'Boomerang',      emoji: '\u{1FA83}' },       // SV:20% SI:24% FF:28%
+            'R_2': { name: 'Ghost Baller',   emoji: '\u{1F47B}' },       // FF:39% CH:29% — changeup dominant
+            'R_3': { name: 'Triple Threat',  emoji: '\u2694\uFE0F' },    // FF:42% SL:20% CU:14%
+            'R_4': { name: 'Earthworm',      emoji: '\u{1FAB1}' },       // SI:44% SL:25% 50%GB
+            'R_5': { name: 'Side-Sweeper',   emoji: '\u{1F9F9}' },       // ST:31% FF:29% SI:18%
+            'R_6': { name: 'Firestarter',    emoji: '\u{1F525}' },       // FF:49% SL:35% 94.9mph
+            'R_7': { name: 'Big Hooker',     emoji: '\u{1FA9D}' },       // FF:39% KC:27%
+            'R_8': { name: 'Snakey',         emoji: '\u{1F40D}' },       // SI:38% FC:22% SL:18% — no 4-seam
+            'R_9': { name: 'Splitter Demon', emoji: '\u{1F479}' },       // FF:39% FS:28%
+            // LHP
+            'L_0': { name: 'Undertow',       emoji: '\u{1F30A}' },       // SI:55% — pure sinker
+            'L_1': { name: 'Craftsman',      emoji: '\u{1FAB5}' },       // FF:32% FC:26% CH:17% — cutter finesse
+            'L_2': { name: 'Firestarter',    emoji: '\u{1F525}' },       // FF:48% SL:32% — gas+slider
+            'L_3': { name: 'Big Hooker',     emoji: '\u{1FA9D}' },       // FF:34% KC:25% 89mph
+            'L_4': { name: 'Earthworm',      emoji: '\u{1FAB1}' },       // SI:46% SL:19% 54%GB
+            'L_5': { name: 'Uncle Charlie',  emoji: '\u{1F3B2}' },       // FF:43% CU:19% CH:13%
+            'L_6': { name: 'Splitter Demon', emoji: '\u{1F479}' },       // FF:43% FS:29%
+            'L_7': { name: 'Boomerang',      emoji: '\u{1FA83}' },       // SV:25% FF:43%
+            'L_8': { name: 'Side-Sweeper',   emoji: '\u{1F9F9}' },       // ST:32% FF:31%
         };
         function archName(id)  { const a = ARCHETYPE_MAP[id]; return a ? a.emoji + ' ' + a.name : id; }
         function archEmoji(id) { return ARCHETYPE_MAP[id]?.emoji || ''; }
