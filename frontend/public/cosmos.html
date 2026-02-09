@@ -421,6 +421,7 @@
         }
         .saved-item:hover { color: var(--accent-orange); }
         .saved-item .s-pa { color: var(--text-label); }
+        #dock-saved-content { max-height: 70px; overflow-y: auto; }
 
         .dock-controls { flex: 0 0 auto; min-width: 140px; }
 
@@ -573,6 +574,7 @@
         <div class="header-controls">
             <div class="key key-dark" id="simlab-toggle" style="height:30px;padding:0 14px;font-size:10px;letter-spacing:1px;font-weight:700;background:linear-gradient(135deg,#ff4400,#cc2200);color:#fff;border:none;cursor:pointer;border-radius:4px;box-shadow:0 0 8px rgba(255,68,0,0.4),0 0 20px rgba(255,68,0,0.15);animation:simGlow 2s ease-in-out infinite;display:flex;align-items:center;gap:6px;"><span style="font-size:13px;">⚡</span> SIM LAB</div>
             <div class="key key-dark" id="history-toggle" style="height:28px;padding:0 10px;font-size:9px;letter-spacing:0.5px;">HISTORY</div>
+            <a href="cosmos-mobile.html" class="key key-dark" style="height:28px;padding:0 10px;font-size:9px;letter-spacing:0.5px;text-decoration:none;display:flex;align-items:center;gap:4px;">📱 Mobile</a>
             <div class="led active" id="led-data"></div>
             <div class="led" id="led-batter"></div>
             <div class="led" id="led-scan"></div>
@@ -646,11 +648,11 @@
         </div>
         <div class="dock-module" id="dock-worst">
             <div class="dock-title">Worst Matchups</div>
-            <div id="dock-worst-content" style="font-size:9px;color:var(--text-label);">&mdash;</div>
+            <div id="dock-worst-content" style="font-size:9px;color:var(--text-label);">Search a batter</div>
         </div>
-        <div class="dock-module" id="dock-kings">
-            <div class="dock-title">Archetype Kings</div>
-            <div id="dock-kings-content" style="font-size:9px;color:var(--text-label);">&mdash;</div>
+        <div class="dock-module" id="dock-nightmare">
+            <div class="dock-title">🛌 Nightmare List</div>
+            <div id="dock-nightmare-content" style="font-size:9px;color:var(--text-label);">Search a batter</div>
         </div>
         <div class="dock-module" id="dock-saved">
             <div class="dock-title">Saved Searches</div>
@@ -662,7 +664,6 @@
             <div class="dock-row"><span class="d-name" style="color:#888;">Scroll to zoom</span></div>
             <div class="dock-row"><span class="d-name" style="color:#888;">Drag to pan</span></div>
             <div class="dock-row"><span class="d-name" style="color:#888;">Click dot → pitcher</span></div>
-            <a href="cosmos-mobile.html" style="font-size:9px;color:#666;font-family:var(--font-tech);text-decoration:none;margin-top:2px;display:inline-block;">📱 Mobile</a>
         </div>
     </footer>
 
@@ -1120,6 +1121,14 @@
         function fmtStatVal(stat, val) {
             return (stat==='K_pct'||stat==='BB_pct') ? (val*100).toFixed(1)+'%' : val.toFixed(3);
         }
+        function hvpStat(m, ss) {
+            if (ss === 'wOBA') return m.w || 0;
+            if (ss === 'BA') return m.ba || 0;
+            if (ss === 'SLG') return m.ba || 0;
+            if (ss === 'K_pct') return m.pa > 0 ? m.k / m.pa : 0;
+            if (ss === 'BB_pct') return m.pa > 0 ? m.bb / m.pa : 0;
+            return m.w || 0;
+        }
 
         function drawBatterLines() {
             if (STATE.activeBatters.length === 0) return;
@@ -1356,6 +1365,9 @@
             document.getElementById('batter-badge').classList.remove('visible');
             document.getElementById('led-batter').classList.remove('active');
             document.getElementById('stat-panel').classList.remove('visible');
+            document.getElementById('dock-best-content').innerHTML = '<span style="color:var(--text-label)">Search a batter</span>';
+            document.getElementById('dock-worst-content').innerHTML = '<span style="color:var(--text-label)">Search a batter</span>';
+            document.getElementById('dock-nightmare-content').innerHTML = '<span style="color:var(--text-label)">Search a batter</span>';
             render();
         }
 
@@ -1788,7 +1800,7 @@
 
             const bestEl = document.getElementById('dock-best-content');
             const worstEl = document.getElementById('dock-worst-content');
-            const kingsEl = document.getElementById('dock-kings-content');
+            const nightmareEl = document.getElementById('dock-nightmare-content');
 
             if (sorted.length > 0) {
                 bestEl.innerHTML = sorted.slice(0,3).map(m => {
@@ -1804,19 +1816,29 @@
                 worstEl.innerHTML = '<span style="color:var(--text-label)">Not enough PA</span>';
             }
 
-            // Kings — prioritize highlighted cluster from sidebar, fall back to top performer
-            let kingsClusterId = null;
-            if (STATE.highlightedCluster && DATA.clusters[STATE.highlightedCluster]) {
-                kingsClusterId = STATE.highlightedCluster;
-            } else if (sorted.length > 0) {
-                kingsClusterId = sorted[0].cluster;
-            }
-            if (kingsClusterId) {
-                const kings = DATA.archetypeKings[kingsClusterId] || [];
-                const cl = DATA.clusters[kingsClusterId];
-                kingsEl.innerHTML = kings.length > 0
-                    ? '<div style="font-size:8px;color:'+(cl?.color)+';font-weight:700;margin-bottom:2px;">'+archName(kingsClusterId)+' KINGS</div>' + kings.slice(0,5).map(k => '<div class="dock-row"><span class="d-name">'+k.name+'</span><span class="d-stat" style="width:20px;">'+k.seasons+'yr</span></div>').join('')
-                    : '<span style="color:var(--text-label)">\u2014</span>';
+            // 🛌 Nightmare List — individual pitchers who own this batter
+            if (batter && DATA._hvpIndex && DATA._hvpIndex[batter.batter]) {
+                const allMatchups = [];
+                Object.values(DATA._hvpIndex[batter.batter]).forEach(arr => {
+                    arr.forEach(m => { if ((m.pa || 0) >= 5) allMatchups.push(m); });
+                });
+                const isHigherWorse = (ss === 'K_pct');
+                allMatchups.sort((a, b) => {
+                    const va = hvpStat(a, ss), vb = hvpStat(b, ss);
+                    return isHigherWorse ? (vb - va) : (va - vb);
+                });
+                if (allMatchups.length > 0) {
+                    nightmareEl.innerHTML = allMatchups.slice(0, 5).map(m => {
+                        const val = hvpStat(m, ss);
+                        return '<div class="dock-row"><span class="d-name">' + fmtName(m.pn) + '</span>'
+                            + '<span class="d-stat">' + m.pa + 'PA</span>'
+                            + '<span class="d-stat bad">' + fmtStatVal(ss, val) + '</span></div>';
+                    }).join('');
+                } else {
+                    nightmareEl.innerHTML = '<span style="color:var(--text-label)">Not enough PA</span>';
+                }
+            } else {
+                nightmareEl.innerHTML = '<span style="color:var(--text-label)">Search a batter</span>';
             }
         }
 
