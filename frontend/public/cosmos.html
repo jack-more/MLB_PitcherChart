@@ -810,13 +810,20 @@
 
         // Team filter: cached Set of pitcher MLBAM IDs for the active team
         let _teamPitcherIds = null;
+        let _teamClusterIds = null; // Set of cluster IDs that have at least 1 team pitcher
 
         function updateTeamFilter(abbr) {
             STATE.teamFilter = abbr;
             if (abbr && DATA.teamRosters.rosters && DATA.teamRosters.rosters[abbr]) {
                 _teamPitcherIds = new Set(DATA.teamRosters.rosters[abbr]);
+                // Build set of clusters that have at least one team pitcher
+                _teamClusterIds = new Set();
+                DATA.pitcherSeasons.forEach(ps => {
+                    if (_teamPitcherIds.has(ps.pitcher)) _teamClusterIds.add(ps.cluster);
+                });
             } else {
                 _teamPitcherIds = null;
+                _teamClusterIds = null;
             }
             render(); refreshData(); buildArchetypeList();
         }
@@ -1208,6 +1215,7 @@
 
             Object.entries(DATA.clusters).forEach(([cid, cluster]) => {
                 if (!STATE.visibleClusters.has(cid)) return;
+                if (_teamClusterIds && !_teamClusterIds.has(cid)) return;
                 const cent = cluster.centroid || {};
                 const moveIn = (cent.pfx_x_avg || 0) * 12;
                 const velo = cent.avg_velo_FF;
@@ -1393,6 +1401,7 @@
         function getMatchupData(batter) {
             let rows = DATA.hitterVsCluster.filter(r => r.batter === batter.batter);
             if (STATE.selectedYear !== 'all') rows = rows.filter(r => r.game_year === parseInt(STATE.selectedYear));
+            if (_teamClusterIds) rows = rows.filter(r => _teamClusterIds.has(r.cluster));
             if (STATE.selectedYear === 'all' && rows.length > 0) {
                 const grouped = {};
                 rows.forEach(r => {
@@ -1908,7 +1917,11 @@
             if (batter && DATA._hvpIndex && DATA._hvpIndex[batter.batter]) {
                 const allMatchups = [];
                 Object.values(DATA._hvpIndex[batter.batter]).forEach(arr => {
-                    arr.forEach(m => { if ((m.pa || 0) >= 5) allMatchups.push(m); });
+                    arr.forEach(m => {
+                        if ((m.pa || 0) < 5) return;
+                        if (_teamPitcherIds && !_teamPitcherIds.has(m.p)) return;
+                        allMatchups.push(m);
+                    });
                 });
                 // Nightmare: pitchers where batter struggles most (low wOBA/BA/SLG or high K%)
                 // Filter to only bad matchups, then weight by PA (every 3 ABs = 1 unit of importance)
