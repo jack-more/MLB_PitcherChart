@@ -266,6 +266,12 @@
         .dna-bar { flex:1;height:6px;background:#1a1a1a;border-radius:2px;overflow:hidden; }
         .dna-fill { height:100%;border-radius:2px;transition:width 0.4s; }
         .dna-pct { width:28px;text-align:right;font-weight:800;font-size:11px; }
+        .tweener-badge {
+            display: inline-block; font-size: 9px; padding: 1px 5px;
+            border: 1px solid #8b5cf6; border-radius: 3px; color: #8b5cf6;
+            font-weight: 800; letter-spacing: 0.3px; margin-left: 6px;
+            font-family: var(--font-tech); vertical-align: middle;
+        }
 
         /* Range slider */
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
@@ -728,7 +734,7 @@
             });
             if (!distances.length) return [];
             const sorted = [...distances].sort((a,b) => a.dist - b.dist);
-            const sigma = (sorted[0].dist + (sorted[1]?.dist || sorted[0].dist)) / 2 || 0.5;
+            const sigma = sorted[0].dist * 0.75 || 0.5;
             distances.forEach(d => { d.sim = Math.exp(-(d.dist*d.dist)/(2*sigma*sigma)); });
             const total = distances.reduce((s,d) => s+d.sim, 0);
             distances.forEach(d => { d.pct = total > 0 ? (d.sim/total)*100 : 0; });
@@ -736,6 +742,13 @@
             const own = distances.findIndex(d => d.cid === ps.cluster);
             if (own > 0) { const [item] = distances.splice(own,1); distances.unshift(item); }
             return distances.slice(0,5);
+        }
+
+        function isTweener(ps) {
+            const dna = calcArchetypeDNA(ps);
+            if (!dna.length) return false;
+            const own = dna.find(d => d.cid === ps.cluster);
+            return own ? own.pct < 45 : false;
         }
 
         const STATE = {
@@ -1218,7 +1231,8 @@
             if (closestDot) {
                 const ps = closestDot.ps;
                 const cl = DATA.clusters[ps.cluster];
-                tooltipEl.innerHTML = '<b>'+fmtName(ps.player_name)+'</b> ('+ps.game_year+')<br><span style="color:'+(cl?.color||'#888')+'">'+archName(ps.cluster)+'</span> \u00b7 '+(ps.avg_velo_FF||0).toFixed(1)+' mph';
+                const tw = isTweener(ps) ? ' <span style="color:#8b5cf6;font-size:9px;">\u{1F9EC}+</span>' : '';
+                tooltipEl.innerHTML = '<b>'+fmtName(ps.player_name)+'</b> ('+ps.game_year+')<br><span style="color:'+(cl?.color||'#888')+'">'+archName(ps.cluster)+'</span>'+tw+' \u00b7 '+(ps.avg_velo_FF||0).toFixed(1)+' mph';
                 tooltipEl.style.left = (e.clientX - screenEl.getBoundingClientRect().left + 12) + 'px';
                 tooltipEl.style.top = (e.clientY - screenEl.getBoundingClientRect().top - 10) + 'px';
                 tooltipEl.classList.add('visible');
@@ -1516,7 +1530,8 @@
 
             let html = '';
             html += '<div class="stat-header">'+fmtName(ps.player_name)+'</div>';
-            html += '<div class="stat-sub" style="color:'+cluster.color+'">'+ps.game_year+' // '+archName(ps.cluster)+'</div>';
+            const tweener = isTweener(ps) ? ' <span class="tweener-badge">\u{1F9EC}+ TWEENER</span>' : '';
+            html += '<div class="stat-sub" style="color:'+cluster.color+'">'+ps.game_year+' // '+archName(ps.cluster)+tweener+'</div>';
 
             // Pitcher profile stats
             html += '<div class="section-hdr">Pitcher Profile</div>';
@@ -1579,7 +1594,7 @@
             html += '<div class="section-hdr">Archetype</div>';
             html += '<div class="arch-link" data-cluster="'+ps.cluster+'" style="cursor:pointer;padding:6px 8px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:3px;display:flex;align-items:center;gap:6px;transition:border-color 0.15s;">';
             html += '<span style="width:8px;height:8px;border-radius:50%;background:'+cluster.color+';flex-shrink:0;"></span>';
-            html += '<span style="font-size:11px;font-weight:700;color:#eee;font-family:var(--font-tech);">'+archName(ps.cluster)+'</span>';
+            html += '<span style="font-size:11px;font-weight:700;color:#eee;font-family:var(--font-tech);">'+archName(ps.cluster)+tweener+'</span>';
             html += '<span style="font-size:9px;color:#888;margin-left:auto;">'+cluster.hand+' '+role+' \u2022 '+cluster.pitcher_count+' pitchers \u2192</span>';
             html += '</div>';
 
