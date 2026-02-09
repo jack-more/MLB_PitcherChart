@@ -643,6 +643,7 @@
                 <span class="label">PAN</span>
             </div>
         </div>
+        <a href="cosmos-mobile.html" style="display:block;text-align:center;font-size:9px;color:#666;font-family:var(--font-tech);padding:4px 0;text-decoration:none;margin-top:4px;">📱 Mobile Version</a>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
@@ -654,6 +655,34 @@
         // DATA & STATE
         // ═══════════════════════════════════════
         const DATA = { clusters: {}, batters: [], pitcherSeasons: [], hitterVsCluster: [], hitterVsPitcher: [], archetypeKings: {} };
+
+        // ═══════════════════════════════════════
+        // ARCHETYPE IDENTITY MAP
+        // ═══════════════════════════════════════
+        const ARCHETYPE_MAP = {
+            'R_0': { name: 'Firestarter',    emoji: '\u{1F525}' },
+            'R_1': { name: 'Triple Threat',  emoji: '\u2694\uFE0F' },
+            'R_2': { name: 'Earthworm',      emoji: '\u{1FAB1}' },
+            'R_3': { name: 'Cut & Curved',   emoji: '\u2702\uFE0F' },
+            'R_4': { name: 'Ghost Ball',     emoji: '\u{1F47B}' },
+            'R_5': { name: 'Not Straight',   emoji: '\u{1F40D}' },
+            'R_6': { name: 'Side-Sweeper',   emoji: '\u{1F9F9}' },
+            'R_7': { name: 'Big Hooker',     emoji: '\u{1FA9D}' },
+            'R_8': { name: 'Splitter Demon', emoji: '\u{1F479}' },
+            'R_9': { name: 'Boomerang',      emoji: '\u{1FA83}' },
+            'L_0': { name: 'Firestarter',    emoji: '\u{1F525}' },
+            'L_1': { name: 'Triple Threat',  emoji: '\u2694\uFE0F' },
+            'L_2': { name: 'Earthworm',      emoji: '\u{1FAB1}' },
+            'L_3': { name: 'Side-Sweeper',   emoji: '\u{1F9F9}' },
+            'L_4': { name: 'Big Hooker',     emoji: '\u{1FA9D}' },
+            'L_5': { name: 'Craftsman',      emoji: '\u{1FAB5}' },
+            'L_6': { name: 'Undertow',       emoji: '\u{1F30A}' },
+            'L_7': { name: 'Boomerang',      emoji: '\u{1FA83}' },
+            'L_8': { name: 'Splitter Demon', emoji: '\u{1F479}' },
+        };
+        function archName(id)  { const a = ARCHETYPE_MAP[id]; return a ? a.emoji + ' ' + a.name : id; }
+        function archEmoji(id) { return ARCHETYPE_MAP[id]?.emoji || ''; }
+        function archNameOnly(id) { return ARCHETYPE_MAP[id]?.name || id; }
 
         const STATE = {
             activeBatters: [],
@@ -936,7 +965,7 @@
 
                     // Text background pill for readability
                     ctx.font = 'bold 12px -apple-system, sans-serif';
-                    const nameW = ctx.measureText(cluster.short_name).width;
+                    const nameW = ctx.measureText(archName(id)).width;
                     ctx.font = '9px "Courier New", monospace';
                     const roleW = ctx.measureText(cluster.hand + ' ' + role).width;
                     const pillW = Math.max(nameW, roleW) + 10;
@@ -960,7 +989,7 @@
                     ctx.font = 'bold 12px -apple-system, sans-serif';
                     ctx.fillStyle = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + (alpha * 0.95) + ')';
                     ctx.textAlign = 'center';
-                    ctx.fillText(cluster.short_name, pos.x, pos.y + outerR + 16);
+                    ctx.fillText(archName(id), pos.x, pos.y + outerR + 16);
 
                     ctx.font = '9px "Courier New", monospace';
                     ctx.fillStyle = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',0.55)';
@@ -1113,7 +1142,7 @@
             if (found) {
                 const c = found.cl.centroid;
                 const role = c.is_sp > 0.5 ? 'SP' : 'RP';
-                tooltipEl.innerHTML = '<b style="color:'+found.cl.color+'">'+found.cl.short_name+'</b><br>'+found.cl.hand+' '+role+' \u00b7 '+found.cl.pitcher_count+' pitchers<br>Velo: '+(c.avg_velo_FF||0).toFixed(1)+' \u00b7 Whiff: '+((c.whiff_rate||0)*100).toFixed(0)+'%';
+                tooltipEl.innerHTML = '<b style="color:'+found.cl.color+'">'+archName(found.id)+'</b><br>'+found.cl.hand+' '+role+' \u00b7 '+found.cl.pitcher_count+' pitchers<br>Velo: '+(c.avg_velo_FF||0).toFixed(1)+' \u00b7 Whiff: '+((c.whiff_rate||0)*100).toFixed(0)+'%';
                 tooltipEl.style.left = (e.clientX - screenEl.getBoundingClientRect().left + 12) + 'px';
                 tooltipEl.style.top = (e.clientY - screenEl.getBoundingClientRect().top - 10) + 'px';
                 tooltipEl.classList.add('visible');
@@ -1135,7 +1164,7 @@
             if (closestDot) {
                 const ps = closestDot.ps;
                 const cl = DATA.clusters[ps.cluster];
-                tooltipEl.innerHTML = '<b>'+fmtName(ps.player_name)+'</b> ('+ps.game_year+')<br><span style="color:'+(cl?.color||'#888')+'">'+( cl?.short_name||'')+'</span> \u00b7 '+(ps.avg_velo_FF||0).toFixed(1)+' mph';
+                tooltipEl.innerHTML = '<b>'+fmtName(ps.player_name)+'</b> ('+ps.game_year+')<br><span style="color:'+(cl?.color||'#888')+'">'+archName(ps.cluster)+'</span> \u00b7 '+(ps.avg_velo_FF||0).toFixed(1)+' mph';
                 tooltipEl.style.left = (e.clientX - screenEl.getBoundingClientRect().left + 12) + 'px';
                 tooltipEl.style.top = (e.clientY - screenEl.getBoundingClientRect().top - 10) + 'px';
                 tooltipEl.classList.add('visible');
@@ -1297,7 +1326,7 @@
                 const bbp = tot.PA>0?((tot.BB/tot.PA)*100).toFixed(1)+'%':'0%';
 
                 html += '<div class="stat-header">'+fmtName(batterObj.batter_name)+'</div>';
-                html += '<div class="stat-sub" style="color:'+cluster.color+'">vs '+cluster.short_name+' ('+cluster.hand+' '+role+')</div>';
+                html += '<div class="stat-sub" style="color:'+cluster.color+'">vs '+archName(clusterId)+' ('+cluster.hand+' '+role+')</div>';
                 html += '<div class="stat-grid">';
                 html += statCell('PA',tot.PA)+statCell('BA',ba)+statCell('OBP',obp);
                 html += statCell('SLG',slg)+statCell('HR',tot.HR)+statCell('K%',kp);
@@ -1347,7 +1376,7 @@
                     html += '<div class="roster-empty">No individual matchup data</div>';
                 }
             } else {
-                html += '<div class="stat-header" style="color:'+cluster.color+'">'+cluster.short_name+'</div>';
+                html += '<div class="stat-header" style="color:'+cluster.color+'">'+archName(clusterId)+'</div>';
                 html += '<div class="stat-sub" style="color:'+cluster.color+'">'+cluster.hand+' '+role+' \u2014 '+cluster.pitcher_count+' pitchers</div>';
                 html += '<div class="section-hdr">Cluster Profile</div>';
                 if (cent.avg_velo_FF>0) html += '<div class="profile-row"><span>Avg Fastball</span><span class="pval">'+(cent.avg_velo_FF).toFixed(1)+' mph</span></div>';
@@ -1390,7 +1419,7 @@
             // Kings
             const kings = DATA.archetypeKings[clusterId] || [];
             if (kings.length > 0) {
-                html += '<div class="section-hdr">Kings of '+cluster.short_name+'</div>';
+                html += '<div class="section-hdr">Kings of '+archName(clusterId)+'</div>';
                 kings.slice(0,8).forEach(k => {
                     html += '<div class="king-row"><span class="k-name">'+k.name+'</span><span class="k-stat" style="width:24px;">'+k.seasons+'yr</span><span class="k-stat" style="color:var(--perf-green);">'+(k.avg_velo>0?k.avg_velo.toFixed(0):'\u2014')+'</span><span class="k-stat" style="color:var(--perf-red);">'+((k.avg_whiff||0)*100).toFixed(0)+'%</span></div>';
                 });
@@ -1425,7 +1454,7 @@
 
             let html = '';
             html += '<div class="stat-header">'+fmtName(ps.player_name)+'</div>';
-            html += '<div class="stat-sub" style="color:'+cluster.color+'">'+ps.game_year+' // '+cluster.short_name+'</div>';
+            html += '<div class="stat-sub" style="color:'+cluster.color+'">'+ps.game_year+' // '+archName(ps.cluster)+'</div>';
 
             // Pitcher profile stats
             html += '<div class="section-hdr">Pitcher Profile</div>';
@@ -1473,7 +1502,7 @@
             html += '<div class="section-hdr">Archetype</div>';
             html += '<div class="arch-link" data-cluster="'+ps.cluster+'" style="cursor:pointer;padding:6px 8px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:3px;display:flex;align-items:center;gap:6px;transition:border-color 0.15s;">';
             html += '<span style="width:8px;height:8px;border-radius:50%;background:'+cluster.color+';flex-shrink:0;"></span>';
-            html += '<span style="font-size:11px;font-weight:700;color:#eee;font-family:var(--font-tech);">'+cluster.short_name+'</span>';
+            html += '<span style="font-size:11px;font-weight:700;color:#eee;font-family:var(--font-tech);">'+archName(ps.cluster)+'</span>';
             html += '<span style="font-size:9px;color:#888;margin-left:auto;">'+cluster.hand+' '+role+' \u2022 '+cluster.pitcher_count+' pitchers \u2192</span>';
             html += '</div>';
 
@@ -1580,7 +1609,7 @@
 
                     html += '<div class="'+cls+'" data-cluster="'+id+'">';
                     html += '<div class="arch-dot" style="background:'+dotColor+';"></div>';
-                    html += '<span class="arch-name" style="color:'+(vis ? rowColor : '#aaa')+';">'+c.short_name+'</span>';
+                    html += '<span class="arch-name" style="color:'+(vis ? rowColor : '#aaa')+';">'+archName(id)+'</span>';
                     html += '<span class="arch-role" style="color:'+rowColor+';border-color:'+rowColor+';">'+role+'</span>';
 
                     if (hasBatters) {
@@ -1661,11 +1690,11 @@
             if (sorted.length > 0) {
                 bestEl.innerHTML = sorted.slice(0,3).map(m => {
                     const cl = DATA.clusters[m.cluster];
-                    return '<div class="dock-row"><span class="d-name" style="color:'+(cl?.color||'#333')+'">'+( cl?.short_name||m.cluster)+'</span><span class="d-stat">'+m.PA+'PA</span><span class="d-stat good">'+fmtStatVal(ss,m[ss]||0)+'</span></div>';
+                    return '<div class="dock-row"><span class="d-name" style="color:'+(cl?.color||'#333')+'">'+archName(m.cluster)+'</span><span class="d-stat">'+m.PA+'PA</span><span class="d-stat good">'+fmtStatVal(ss,m[ss]||0)+'</span></div>';
                 }).join('');
                 worstEl.innerHTML = sorted.slice(-3).reverse().map(m => {
                     const cl = DATA.clusters[m.cluster];
-                    return '<div class="dock-row"><span class="d-name" style="color:'+(cl?.color||'#333')+'">'+( cl?.short_name||m.cluster)+'</span><span class="d-stat">'+m.PA+'PA</span><span class="d-stat bad">'+fmtStatVal(ss,m[ss]||0)+'</span></div>';
+                    return '<div class="dock-row"><span class="d-name" style="color:'+(cl?.color||'#333')+'">'+archName(m.cluster)+'</span><span class="d-stat">'+m.PA+'PA</span><span class="d-stat bad">'+fmtStatVal(ss,m[ss]||0)+'</span></div>';
                 }).join('');
             } else {
                 bestEl.innerHTML = '<span style="color:var(--text-label)">Not enough PA</span>';
@@ -1683,7 +1712,7 @@
                 const kings = DATA.archetypeKings[kingsClusterId] || [];
                 const cl = DATA.clusters[kingsClusterId];
                 kingsEl.innerHTML = kings.length > 0
-                    ? '<div style="font-size:8px;color:'+(cl?.color)+';font-weight:700;margin-bottom:2px;">'+(cl?.short_name)+' KINGS</div>' + kings.slice(0,5).map(k => '<div class="dock-row"><span class="d-name">'+k.name+'</span><span class="d-stat" style="width:20px;">'+k.seasons+'yr</span></div>').join('')
+                    ? '<div style="font-size:8px;color:'+(cl?.color)+';font-weight:700;margin-bottom:2px;">'+archName(kingsClusterId)+' KINGS</div>' + kings.slice(0,5).map(k => '<div class="dock-row"><span class="d-name">'+k.name+'</span><span class="d-stat" style="width:20px;">'+k.seasons+'yr</span></div>').join('')
                     : '<span style="color:var(--text-label)">\u2014</span>';
             }
         }
@@ -2277,7 +2306,7 @@ function buildGameCard(game, day){
             cent=cluster?cluster.centroid||{}:{};
         }
     }
-    const clusterName=cluster?cluster.short_name:'Unknown';
+    const clusterName=cluster?archName(ps.cluster):'Unknown';
     const clusterColor=cluster?cluster.color:'#666';
     const clusterCode=ps?ps.cluster:'';
     const pitcherName=game.pitcher?game.pitcher.name:'TBD';

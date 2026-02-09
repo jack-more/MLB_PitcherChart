@@ -120,8 +120,8 @@ body {
 
 /* ═══ CANVAS ═══ */
 .canvas-wrap {
-    width: 100%; height: 52vh; position: relative; background: var(--bg);
-    touch-action: none; overflow: hidden;
+    width: 100%; height: 120px; position: relative; background: var(--bg);
+    touch-action: auto; overflow: hidden;
 }
 .canvas-wrap canvas { display: block; width: 100%; height: 100%; }
 .batter-badge {
@@ -140,20 +140,26 @@ body {
     font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
     padding: 12px 16px 4px; color: var(--text-dim); border-top: 1px solid #1a1a1a;
 }
-.arch-row {
-    display: flex; align-items: center; gap: 8px; padding: 12px 16px;
-    border-bottom: 1px solid #1a1a1a; min-height: 48px; cursor: pointer;
-    transition: background 0.1s;
+
+/* ═══ ARCHETYPE CARDS ═══ */
+.arch-card {
+    padding: 12px 16px; background: var(--panel); border-left: 3px solid #666;
+    margin: 4px 8px; border-radius: 6px; cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
 }
-.arch-row:active { background: rgba(255,255,255,0.03); }
-.arch-row.selected { background: rgba(255,68,0,0.06); border-left: 3px solid var(--accent); padding-left: 13px; }
-.arch-row.dimmed { opacity: 0.2; }
-.arch-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-.arch-name { flex: 1; font-weight: 700; font-size: 13px; color: var(--text); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.arch-role {
-    font-size: 9px; padding: 2px 5px; font-weight: 800; letter-spacing: 0.5px;
-    border: 1px solid; border-radius: 3px; flex-shrink: 0;
-}
+.arch-card:active { background: rgba(255,255,255,0.03); }
+.arch-card.selected { background: #1a1a1a; border-left-color: var(--accent) !important; }
+.arch-card.dimmed { opacity: 0.2; }
+.card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.card-name { font-weight: 800; font-size: 14px; }
+.card-count { font-size: 11px; color: var(--text-label); font-family: var(--font-tech); font-weight: 700; }
+.card-profile { font-size: 11px; color: var(--text-label); font-family: var(--font-tech); margin-bottom: 2px; }
+.card-matchup { font-size: 12px; font-family: var(--font-tech); font-weight: 800; margin-bottom: 2px; }
+.card-roles { display: flex; gap: 8px; margin-top: 4px; }
+.role-tag { font-size: 10px; font-family: var(--font-tech); font-weight: 700; color: var(--text-label); }
+.role-tag.sp { color: #f4a261; }
+.role-tag.rp { color: #a8dadc; }
+
 .arch-stat {
     font-size: 12px; font-weight: 800; font-family: var(--font-tech);
     width: 48px; text-align: center; flex-shrink: 0; padding: 2px 4px; border-radius: 3px;
@@ -165,6 +171,22 @@ body {
 .arch-stat.perf-bad { background: rgba(230,57,70,0.15); color: var(--red); }
 .arch-stat.empty { color: var(--text-muted); font-weight: 400; }
 .arch-count { font-size: 11px; color: var(--text-label); font-family: var(--font-tech); font-weight: 700; }
+
+/* ═══ ARCHETYPE KEY ═══ */
+.key-item { padding: 10px 0; border-bottom: 1px solid #1a1a1a; }
+.key-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.key-emoji { font-size: 20px; }
+.key-name { font-size: 13px; font-weight: 800; letter-spacing: 0.5px; }
+.key-desc { font-size: 11px; color: #999; font-family: var(--font-tech); line-height: 1.4; padding-left: 28px; }
+.key-clusters { font-size: 10px; font-family: var(--font-tech); padding-left: 28px; margin-top: 2px; }
+
+/* ═══ HUNT FEED ═══ */
+.hunt-row { display: flex; align-items: baseline; gap: 8px; padding: 8px 0; border-bottom: 1px solid #1a1a1a; }
+.hunt-ba { font-size: 18px; font-weight: 800; font-family: var(--font-tech); width: 50px; flex-shrink: 0; }
+.hunt-arch { font-size: 12px; font-weight: 700; flex: 1; }
+.hunt-meta { font-size: 10px; color: #888; font-family: var(--font-tech); white-space: nowrap; }
+
+.tags-placeholder { opacity: 0.5; }
 
 /* ═══ BOTTOM SHEET ═══ */
 .sheet-backdrop {
@@ -357,9 +379,9 @@ body {
 
 <!-- TAB BAR -->
 <div class="tabbar">
-    <div class="tab active" data-tab="chart"><div class="tab-icon">◉</div>Chart</div>
-    <div class="tab" data-tab="list"><div class="tab-icon">☰</div>List</div>
-    <div class="tab" data-tab="dock"><div class="tab-icon">⚓</div>Dock</div>
+    <div class="tab active" data-tab="home"><div class="tab-icon">◉</div>Home</div>
+    <div class="tab" data-tab="key"><div class="tab-icon">🔑</div>Key</div>
+    <div class="tab" data-tab="hunt"><div class="tab-icon">🎯</div>Hunt</div>
     <div class="tab" data-tab="sim"><div class="tab-icon">⚡</div>SIM</div>
     <div class="tab" data-tab="more"><div class="tab-icon">⋯</div>More</div>
 </div>
@@ -373,6 +395,46 @@ body {
 // DATA & STATE
 // ═══════════════════════════════════════
 const DATA = { clusters: {}, batters: [], pitcherSeasons: [], hitterVsCluster: [], hitterVsPitcher: [], archetypeKings: {} };
+
+const ARCHETYPE_MAP = {
+    'R_0': { name: 'Firestarter',    emoji: '\u{1F525}' },
+    'R_1': { name: 'Triple Threat',  emoji: '\u2694\uFE0F' },
+    'R_2': { name: 'Earthworm',      emoji: '\u{1FAB1}' },
+    'R_3': { name: 'Cut & Curved',   emoji: '\u2702\uFE0F' },
+    'R_4': { name: 'Ghost Ball',     emoji: '\u{1F47B}' },
+    'R_5': { name: 'Not Straight',   emoji: '\u{1F40D}' },
+    'R_6': { name: 'Side-Sweeper',   emoji: '\u{1F9F9}' },
+    'R_7': { name: 'Big Hooker',     emoji: '\u{1FA9D}' },
+    'R_8': { name: 'Splitter Demon', emoji: '\u{1F479}' },
+    'R_9': { name: 'Boomerang',      emoji: '\u{1FA83}' },
+    'L_0': { name: 'Firestarter',    emoji: '\u{1F525}' },
+    'L_1': { name: 'Triple Threat',  emoji: '\u2694\uFE0F' },
+    'L_2': { name: 'Earthworm',      emoji: '\u{1FAB1}' },
+    'L_3': { name: 'Side-Sweeper',   emoji: '\u{1F9F9}' },
+    'L_4': { name: 'Big Hooker',     emoji: '\u{1FA9D}' },
+    'L_5': { name: 'Craftsman',      emoji: '\u{1FAB5}' },
+    'L_6': { name: 'Undertow',       emoji: '\u{1F30A}' },
+    'L_7': { name: 'Boomerang',      emoji: '\u{1FA83}' },
+    'L_8': { name: 'Splitter Demon', emoji: '\u{1F479}' },
+};
+function archName(id)  { const a = ARCHETYPE_MAP[id]; return a ? a.emoji + ' ' + a.name : id; }
+function archEmoji(id) { return ARCHETYPE_MAP[id]?.emoji || ''; }
+function archNameOnly(id) { return ARCHETYPE_MAP[id]?.name || id; }
+
+const ARCHETYPE_DESC = {
+    'Firestarter':    'High-velo, fastball-dominant power arm',
+    'Triple Threat':  'Velocity + breaking ball + offspeed arsenal',
+    'Earthworm':      'Heavy sinker/ground ball specialists',
+    'Cut & Curved':   'Cutter-curveball combination pitch mix',
+    'Ghost Ball':     'Deceptive ride, swings-and-misses up in zone',
+    'Not Straight':   'Breaking-ball heavy, rarely throws straight',
+    'Side-Sweeper':   'Extreme horizontal sweep on breaking pitches',
+    'Big Hooker':     'Power curveball as primary weapon',
+    'Splitter Demon': 'Splitter/forkball tunneled off fastball',
+    'Craftsman':      'LHP finesse, command and deception over velo',
+    'Undertow':       'LHP sinker/changeup with heavy sink action',
+    'Boomerang':      'Sweeping curve that wraps back across the zone',
+};
 
 const STATE = {
     activeBatters: [],
@@ -583,16 +645,16 @@ function drawCentroids() {
         ctx.fillStyle = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + alpha + ')'; ctx.fill();
 
         if (!dim) {
-            const role = cent.is_sp > 0.5 ? 'SP' : 'RP';
+            const label = archNameOnly(id);
             ctx.font = 'bold 10px -apple-system, sans-serif';
-            const nameW = ctx.measureText(cluster.short_name).width;
+            const nameW = ctx.measureText(label).width;
             const pillW = nameW + 8;
             ctx.fillStyle = 'rgba(10,10,10,0.75)';
             const pillX = pos.x - pillW/2, pillY = pos.y + outerR + 2, pillH = 16;
             ctx.fillRect(pillX, pillY, pillW, pillH);
             ctx.fillStyle = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + (alpha * 0.95) + ')';
             ctx.textAlign = 'center';
-            ctx.fillText(cluster.short_name, pos.x, pos.y + outerR + 14);
+            ctx.fillText(label, pos.x, pos.y + outerR + 14);
 
             if (STATE.activeBatters.length > 0) {
                 const batter = STATE.activeBatters[STATE.activeBatters.length - 1];
@@ -730,7 +792,7 @@ function spawnBatter(batter) {
     document.getElementById('badge-stat').textContent = fmtStatVal(stat, avgStat) + ' ' + statLabel(stat) + ' \u00b7 ' + totalPA.toLocaleString() + ' PA';
     document.getElementById('batter-badge').classList.add('visible');
     saveSearch(batter);
-    buildArchetypeList();
+    buildArchetypeCards();
     render();
 }
 
@@ -802,8 +864,8 @@ function closeSheet() {
     backdrop.classList.remove('visible');
 }
 
-backdrop.addEventListener('click', () => { STATE.highlightedCluster = null; closeSheet(); render(); buildArchetypeList(); });
-document.getElementById('sheet-close').addEventListener('click', () => { STATE.highlightedCluster = null; closeSheet(); render(); buildArchetypeList(); });
+backdrop.addEventListener('click', () => { STATE.highlightedCluster = null; closeSheet(); render(); buildArchetypeCards(); });
+document.getElementById('sheet-close').addEventListener('click', () => { STATE.highlightedCluster = null; closeSheet(); render(); buildArchetypeCards(); });
 
 // Sheet drag
 const sheetHandle = document.getElementById('sheet-handle');
@@ -838,7 +900,7 @@ function showStatPanel(batterObj, clusterId) {
         const bbp = tot.PA>0?((tot.BB/tot.PA)*100).toFixed(1)+'%':'0%';
 
         html += '<div class="stat-header">'+fmtName(batterObj.batter_name)+'</div>';
-        html += '<div class="stat-sub" style="color:'+cluster.color+'">vs '+cluster.short_name+' ('+cluster.hand+' '+role+')</div>';
+        html += '<div class="stat-sub" style="color:'+cluster.color+'">vs '+archName(clusterId)+' ('+cluster.hand+' '+role+')</div>';
         html += '<div class="stat-grid">';
         html += statCell('PA',tot.PA)+statCell('BA',ba)+statCell('OBP',obp);
         html += statCell('SLG',slg)+statCell('HR',tot.HR)+statCell('K%',kp);
@@ -854,6 +916,9 @@ function showStatPanel(batterObj, clusterId) {
                 html += '<div class="matchup-bar"><span class="yr">'+r.game_year+'</span><div class="bar-track"><div class="bar-fill" style="width:'+bw+'%;background:'+statBarColor(ss,v)+';"></div></div><span class="woba-val">'+fmtStatVal(ss,v)+'</span><span class="pa-val">'+r.PA+' PA</span></div>';
             });
         }
+
+        // TAGS placeholder
+        html += '<div style="font-size:10px;color:#555;font-style:italic;font-family:var(--font-tech);padding:6px 0;margin-top:8px;border-top:1px solid #1a1a1a;">\u{1F3F7}\uFE0F TAGGED: Coming Soon</div>';
 
         // Pitcher roster
         const pitcherMatchups = (DATA._hvpIndex[batterObj.batter] || {})[clusterId] || [];
@@ -881,7 +946,7 @@ function showStatPanel(batterObj, clusterId) {
             html += '<div class="roster-empty">No individual matchup data</div>';
         }
     } else {
-        html += '<div class="stat-header" style="color:'+cluster.color+'">'+cluster.short_name+'</div>';
+        html += '<div class="stat-header" style="color:'+cluster.color+'">'+archName(clusterId)+'</div>';
         html += '<div class="stat-sub" style="color:'+cluster.color+'">'+cluster.hand+' '+role+' \u2014 '+cluster.pitcher_count+' pitchers</div>';
         html += '<div class="section-hdr">Cluster Profile</div>';
         if (cent.avg_velo_FF>0) html += '<div class="profile-row"><span>Avg Fastball</span><span class="pval">'+(cent.avg_velo_FF).toFixed(1)+' mph</span></div>';
@@ -914,7 +979,7 @@ function showStatPanel(batterObj, clusterId) {
     // Kings
     const kings = DATA.archetypeKings[clusterId] || [];
     if (kings.length > 0) {
-        html += '<div class="section-hdr">Kings of '+cluster.short_name+'</div>';
+        html += '<div class="section-hdr">Kings of '+archName(clusterId)+'</div>';
         kings.slice(0,8).forEach(k => {
             html += '<div class="king-row"><span class="k-name">'+k.name+'</span><span class="k-stat" style="width:24px;">'+k.seasons+'yr</span><span class="k-stat" style="color:var(--green);">'+(k.avg_velo>0?k.avg_velo.toFixed(0):'\u2014')+'</span><span class="k-stat" style="color:var(--red);">'+((k.avg_whiff||0)*100).toFixed(0)+'%</span></div>';
         });
@@ -929,7 +994,7 @@ function showStatPanel(batterObj, clusterId) {
     STATE.highlightedCluster = clusterId;
     openSheet('full');
     render();
-    buildArchetypeList();
+    buildArchetypeCards();
 
     // Sort button handlers
     sheetContent.querySelectorAll('.sort-btn').forEach(btn => {
@@ -964,7 +1029,7 @@ function showPitcherStatPanel(ps, batterObj) {
     const role = ps.is_sp ? 'SP' : 'RP';
     let html = '';
     html += '<div class="stat-header">'+fmtName(ps.player_name)+'</div>';
-    html += '<div class="stat-sub" style="color:'+cluster.color+'">'+ps.game_year+' // '+cluster.short_name+'</div>';
+    html += '<div class="stat-sub" style="color:'+cluster.color+'">'+ps.game_year+' // '+archName(ps.cluster)+'</div>';
     html += '<div class="section-hdr">Pitcher Profile</div>';
     html += '<div class="stat-grid">';
     html += statCell('VELO', (ps.avg_velo_FF||0).toFixed(1));
@@ -997,6 +1062,8 @@ function showPitcherStatPanel(ps, batterObj) {
             html += statCell('K', matchup.k||0);
             html += statCell('BB', matchup.bb||0);
             html += '</div>';
+            // TAGS placeholder
+            html += '<div style="font-size:10px;color:#555;font-style:italic;font-family:var(--font-tech);padding:6px 0;margin-top:8px;border-top:1px solid #1a1a1a;">\u{1F3F7}\uFE0F TAGGED: Coming Soon</div>';
         } else {
             html += '<div class="section-hdr">vs '+fmtName(batterObj.batter_name)+'</div>';
             html += '<div style="font-size:11px;color:#666;font-family:var(--font-tech);padding:4px 0;">No direct matchup data</div>';
@@ -1007,14 +1074,14 @@ function showPitcherStatPanel(ps, batterObj) {
     html += '<div class="section-hdr">Archetype</div>';
     html += '<div class="arch-link" data-cluster="'+ps.cluster+'">';
     html += '<span style="width:8px;height:8px;border-radius:50%;background:'+cluster.color+';flex-shrink:0;"></span>';
-    html += '<span style="font-size:11px;font-weight:700;color:#eee;font-family:var(--font-tech);">'+cluster.short_name+'</span>';
+    html += '<span style="font-size:11px;font-weight:700;color:#eee;font-family:var(--font-tech);">'+archName(ps.cluster)+'</span>';
     html += '<span style="font-size:9px;color:#888;margin-left:auto;">'+cluster.hand+' '+role+' \u2022 '+cluster.pitcher_count+' pitchers \u2192</span>';
     html += '</div>';
 
     sheetContent.innerHTML = html;
     STATE.highlightedCluster = ps.cluster;
     openSheet('full');
-    render(); buildArchetypeList();
+    render(); buildArchetypeCards();
 
     const archLink = sheetContent.querySelector('.arch-link');
     if (archLink) {
@@ -1025,9 +1092,9 @@ function showPitcherStatPanel(ps, batterObj) {
 }
 
 // ═══════════════════════════════════════
-// ARCHETYPE LIST
+// ARCHETYPE CARDS
 // ═══════════════════════════════════════
-function buildArchetypeList() {
+function buildArchetypeCards() {
     const dir = document.getElementById('archetype-list');
     const ids = Object.keys(DATA.clusters);
     const rhp = ids.filter(id => DATA.clusters[id].hand === 'RHP').sort();
@@ -1038,59 +1105,67 @@ function buildArchetypeList() {
     let html = '';
 
     const renderGroup = (group, label) => {
-        html += '<div class="arch-group-hdr">'+label+' ('+group.length+')</div>';
+        html += '<div class="arch-group-hdr">' + label + '</div>';
         group.forEach(id => {
             const c = DATA.clusters[id];
             const cent = c.centroid || {};
-            const role = cent.is_sp > 0.5 ? 'SP' : 'RP';
             const vis = STATE.visibleClusters.has(id);
             const sel = STATE.highlightedCluster === id;
-            const cls = 'arch-row' + (sel ? ' selected' : '') + (!vis ? ' dimmed' : '');
+            const cls = 'arch-card' + (sel ? ' selected' : '') + (!vis ? ' dimmed' : '');
 
-            let rowColor = c.color, dotColor = c.color;
-            if (hasBatters) {
-                const lastMatchups = allMatchups[allMatchups.length - 1];
-                const lm = lastMatchups.find(x => String(x.cluster) === id);
-                if (lm && lm.PA >= STATE.minPA) {
-                    rowColor = perfHex(STATE.selectedStat, lm[STATE.selectedStat] || 0);
-                    dotColor = rowColor;
-                } else { rowColor = '#666'; dotColor = '#666'; }
-            }
+            // Count SPs and RPs in this cluster
+            const clusterPitchers = DATA.pitcherSeasons.filter(p => p.cluster === id);
+            const spCount = clusterPitchers.filter(p => p.is_sp).length;
+            const rpCount = clusterPitchers.length - spCount;
 
-            html += '<div class="'+cls+'" data-cluster="'+id+'">';
-            html += '<div class="arch-dot" style="background:'+dotColor+';"></div>';
-            html += '<span class="arch-name" style="color:'+(vis ? rowColor : '#666')+';">'+c.short_name+'</span>';
-            html += '<span class="arch-role" style="color:'+rowColor+';border-color:'+rowColor+';">'+role+'</span>';
+            html += '<div class="' + cls + '" data-cluster="' + id + '" style="border-left-color:' + c.color + ';">';
+            html += '<div class="card-top">';
+            html += '<span class="card-name" style="color:' + (vis ? c.color : '#666') + ';">' + archName(id) + '</span>';
+            html += '<span class="card-count">' + c.pitcher_count + ' P</span>';
+            html += '</div>';
 
+            // Profile stats line
+            const velo = (cent.avg_velo_FF || 0).toFixed(1);
+            const whiff = ((cent.whiff_rate || 0) * 100).toFixed(0);
+            html += '<div class="card-profile">' + velo + ' mph \u00b7 ' + whiff + '% Whiff</div>';
+
+            // Batter matchup line (if active)
             if (hasBatters) {
                 const matchups = allMatchups[allMatchups.length - 1];
                 const m = matchups.find(x => String(x.cluster) === id);
                 if (m && m.PA >= STATE.minPA) {
                     const val = m[STATE.selectedStat] || 0;
                     const display = (STATE.selectedStat === 'K_pct' || STATE.selectedStat === 'BB_pct')
-                        ? (val*100).toFixed(0)+'%' : val.toFixed(3);
-                    const pClass = perfClass(STATE.selectedStat, val);
-                    html += '<span class="arch-stat '+pClass+'">'+display+'</span>';
+                        ? (val * 100).toFixed(0) + '%' : val.toFixed(3);
+                    html += '<div class="card-matchup" style="color:' + perfHex(STATE.selectedStat, val) + ';">' + display + ' ' + statLabel(STATE.selectedStat) + ' vs ' + fmtName(STATE.activeBatters[STATE.activeBatters.length-1].batter_name) + '</div>';
                 } else {
-                    html += '<span class="arch-stat empty">\u2014</span>';
+                    html += '<div class="card-matchup" style="color:#444;">\u2014 no data</div>';
                 }
-            } else {
-                html += '<span class="arch-count">'+c.pitcher_count+'</span>';
             }
+
+            // Role tags
+            if (spCount > 0 || rpCount > 0) {
+                html += '<div class="card-roles">';
+                if (spCount > 0) html += '<span class="role-tag sp">\u2B50 ' + spCount + ' SP</span>';
+                if (rpCount > 0) html += '<span class="role-tag rp">\u{1F6E1}\uFE0F ' + rpCount + ' RP</span>';
+                html += '</div>';
+            }
+
             html += '</div>';
         });
     };
-    renderGroup(rhp, 'Right-Handed');
-    renderGroup(lhp, 'Left-Handed');
+    renderGroup(rhp, 'RIGHT-HANDED PITCHERS');
+    renderGroup(lhp, 'LEFT-HANDED PITCHERS');
     dir.innerHTML = html;
 
-    dir.querySelectorAll('.arch-row').forEach(el => {
+    // Bind click handlers
+    dir.querySelectorAll('.arch-card').forEach(el => {
         el.addEventListener('click', () => {
             const id = el.dataset.cluster;
             if (STATE.highlightedCluster === id) {
                 STATE.highlightedCluster = null;
                 closeSheet();
-                render(); buildArchetypeList();
+                render(); buildArchetypeCards();
                 return;
             }
             const ab = STATE.activeBatters.length > 0 ? STATE.activeBatters[STATE.activeBatters.length-1] : null;
@@ -1100,121 +1175,143 @@ function buildArchetypeList() {
 }
 
 // ═══════════════════════════════════════
-// TOUCH INTERACTIONS ON CANVAS
+// ARCHETYPE KEY
 // ═══════════════════════════════════════
-let touchState = {
-    startX: 0, startY: 0, startTime: 0,
-    lastPanX: 0, lastPanY: 0,
-    lastDist: 0, isPanning: false, isPinching: false,
-    moved: false, lastTap: 0,
-};
+function buildArchetypeKey() {
+    let html = '<div class="stat-header">\u{1F511} Archetype Key</div>';
+    html += '<div style="font-size:11px;color:#888;font-family:var(--font-tech);margin:4px 0 12px;">12 distinct pitcher identities across 19 clusters</div>';
 
-canvas.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    if (e.touches.length === 1) {
-        touchState.startX = e.touches[0].clientX;
-        touchState.startY = e.touches[0].clientY;
-        touchState.lastPanX = viewOffset.x;
-        touchState.lastPanY = viewOffset.y;
-        touchState.startTime = Date.now();
-        touchState.moved = false;
-        touchState.isPanning = false;
-        touchState.isPinching = false;
-    } else if (e.touches.length === 2) {
-        touchState.isPinching = true;
-        touchState.isPanning = false;
-        const dx = e.touches[0].clientX - e.touches[1].clientX;
-        const dy = e.touches[0].clientY - e.touches[1].clientY;
-        touchState.lastDist = Math.sqrt(dx*dx + dy*dy);
-    }
-}, { passive: false });
+    // Shared archetypes (both hands)
+    const shared = [
+        { name: 'Firestarter', ids: ['R_0', 'L_0'] },
+        { name: 'Triple Threat', ids: ['R_1', 'L_1'] },
+        { name: 'Earthworm', ids: ['R_2', 'L_2'] },
+        { name: 'Side-Sweeper', ids: ['R_6', 'L_3'] },
+        { name: 'Big Hooker', ids: ['R_7', 'L_4'] },
+        { name: 'Splitter Demon', ids: ['R_8', 'L_8'] },
+        { name: 'Boomerang', ids: ['R_9', 'L_7'] },
+    ];
 
-canvas.addEventListener('touchmove', (e) => {
-    e.preventDefault();
-    if (e.touches.length === 1 && !touchState.isPinching) {
-        const dx = e.touches[0].clientX - touchState.startX;
-        const dy = e.touches[0].clientY - touchState.startY;
-        if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-            touchState.moved = true;
-            touchState.isPanning = true;
-        }
-        if (touchState.isPanning) {
-            viewOffset.x = touchState.lastPanX + dx;
-            viewOffset.y = touchState.lastPanY + dy;
-            render();
-        }
-    } else if (e.touches.length === 2 && touchState.isPinching) {
-        const dx = e.touches[0].clientX - e.touches[1].clientX;
-        const dy = e.touches[0].clientY - e.touches[1].clientY;
-        const dist = Math.sqrt(dx*dx + dy*dy);
-        if (touchState.lastDist > 0) {
-            const scale = dist / touchState.lastDist;
-            viewZoom = Math.max(0.5, Math.min(5, viewZoom * scale));
-            render();
-        }
-        touchState.lastDist = dist;
-    }
-}, { passive: false });
+    const rhpOnly = [
+        { name: 'Cut & Curved', ids: ['R_3'] },
+        { name: 'Ghost Ball', ids: ['R_4'] },
+        { name: 'Not Straight', ids: ['R_5'] },
+    ];
 
-canvas.addEventListener('touchend', (e) => {
-    e.preventDefault();
-    if (touchState.isPinching) { touchState.isPinching = false; return; }
-    if (touchState.moved) { touchState.isPanning = false; return; }
+    const lhpOnly = [
+        { name: 'Craftsman', ids: ['L_5'] },
+        { name: 'Undertow', ids: ['L_6'] },
+    ];
 
-    // It's a tap — do hit testing
-    const now = Date.now();
-    const rect = canvas.getBoundingClientRect();
-    const mx = touchState.startX - rect.left;
-    const my = touchState.startY - rect.top;
+    const renderSection = (title, items) => {
+        html += '<div class="section-hdr">' + title + '</div>';
+        items.forEach(item => {
+            const a = ARCHETYPE_MAP[item.ids[0]];
+            const desc = ARCHETYPE_DESC[item.name] || '';
+            const clusterColors = item.ids.map(id => DATA.clusters[id]?.color || '#666');
+            html += '<div class="key-item">';
+            html += '<div class="key-top">';
+            html += '<span class="key-emoji">' + (a?.emoji || '') + '</span>';
+            html += '<span class="key-name" style="color:' + clusterColors[0] + ';">' + item.name.toUpperCase() + '</span>';
+            html += '</div>';
+            html += '<div class="key-desc">' + desc + '</div>';
+            html += '<div class="key-clusters">' + item.ids.map(id => {
+                const cl = DATA.clusters[id];
+                return cl ? '<span style="color:' + cl.color + ';">' + cl.hand + ': ' + id + '</span>' : '';
+            }).join(' \u00b7 ') + '</div>';
+            html += '</div>';
+        });
+    };
 
-    // Double tap detection — reset zoom
-    if (now - touchState.lastTap < 300) {
-        viewZoom = 1.0; viewOffset = { x: 0, y: 0 }; render();
-        touchState.lastTap = 0;
+    renderSection('SHARED (Both Hands)', shared);
+    renderSection('RHP ONLY', rhpOnly);
+    renderSection('LHP ONLY', lhpOnly);
+
+    // Role key
+    html += '<div class="section-hdr">ROLES (Per Pitcher)</div>';
+    html += '<div class="key-item"><div class="key-top"><span class="key-emoji">\u2B50</span><span class="key-name" style="color:#f4a261;">SP \u2014 STARTER</span></div><div class="key-desc">Primary rotation pitcher, 5+ innings per start</div></div>';
+    html += '<div class="key-item"><div class="key-top"><span class="key-emoji">\u{1F6E1}\uFE0F</span><span class="key-name" style="color:#a8dadc;">RP \u2014 RELIEVER</span></div><div class="key-desc">Bullpen pitcher, 1-3 innings per appearance</div></div>';
+    html += '<div class="key-item"><div class="key-top"><span class="key-emoji">\u{1F504}</span><span class="key-name" style="color:#e76f51;">SW \u2014 SWINGMAN</span></div><div class="key-desc">Flexible role, starts and relieves</div></div>';
+
+    // TAGS placeholder
+    html += '<div class="section-hdr">STATS</div>';
+    html += '<div class="key-item tags-placeholder">';
+    html += '<div class="key-top"><span class="key-emoji">\u{1F3F7}\uFE0F</span><span class="key-name" style="color:#555;">TAGGED</span></div>';
+    html += '<div class="key-desc" style="color:#555;font-style:italic;">When a pitcher retires the same batter 2+ times in a single game. Tracks pitcher dominance in individual games.<br><span style="color:#444;">(Pipeline update required \u2014 Coming Soon)</span></div>';
+    html += '</div>';
+
+    sheetContent.innerHTML = html;
+    openSheet('full');
+}
+
+// ═══════════════════════════════════════
+// HUNT FEED
+// ═══════════════════════════════════════
+function buildHuntFeed() {
+    let html = '<div class="stat-header">\u{1F3AF} Hunt Feed</div>';
+
+    if (STATE.activeBatters.length === 0) {
+        html += '<div style="font-size:12px;color:#666;text-align:center;padding:40px 0;font-family:var(--font-tech);">Search a batter to see<br>matchup edges</div>';
+        sheetContent.innerHTML = html;
+        openSheet('full');
         return;
     }
-    touchState.lastTap = now;
 
-    // Centroid hit test (28px radius for touch)
-    let centroidHit = false;
-    Object.entries(DATA.clusters).forEach(([id, cl]) => {
-        if (centroidHit) return;
-        if (!STATE.visibleClusters.has(id)) return;
-        const c = cl.centroid || {};
-        if (!c.avg_velo_FF) return;
-        const pos = d2c((c.pfx_x_avg||0)*12, c.avg_velo_FF);
-        if (Math.sqrt((mx-pos.x)**2+(my-pos.y)**2) < 28) {
-            centroidHit = true;
-            if (STATE.highlightedCluster === id) {
-                STATE.highlightedCluster = null;
-                closeSheet();
-                render(); buildArchetypeList();
-            } else {
-                const ab = STATE.activeBatters.length > 0 ? STATE.activeBatters[STATE.activeBatters.length-1] : null;
-                showStatPanel(ab, id);
-            }
-        }
+    const batter = STATE.activeBatters[STATE.activeBatters.length - 1];
+    html += '<div style="font-size:11px;color:#888;font-family:var(--font-tech);margin:4px 0 12px;">' + fmtName(batter.batter_name) + ' matchup edges</div>';
+
+    const matchups = getMatchupData(batter);
+
+    // Compute BA for each matchup
+    const withBA = matchups.filter(m => (m.PA || 0) >= Math.max(STATE.minPA, 9) && m.AB > 0).map(m => {
+        const ba = m.H / m.AB;
+        return { ...m, ba_calc: ba };
     });
-    if (centroidHit) return;
 
-    // Pitcher dot hit test (16px radius for touch)
-    let closestDot = null, closestDist = 16;
-    for (let i = 0; i < DATA.pitcherSeasons.length; i++) {
-        const ps = DATA.pitcherSeasons[i];
-        if (!STATE.visibleClusters.has(ps.cluster) || !ps.avg_velo_FF) continue;
-        const pos = d2c((ps.pfx_x_avg||0)*12, ps.avg_velo_FF);
-        const dist = Math.sqrt((mx-pos.x)**2+(my-pos.y)**2);
-        if (dist < closestDist) { closestDist = dist; closestDot = ps; }
+    // CRUSH ZONE: BA >= .350
+    const crush = withBA.filter(m => m.ba_calc >= 0.350).sort((a, b) => b.ba_calc - a.ba_calc);
+    // DANGER ZONE: BA <= .150
+    const danger = withBA.filter(m => m.ba_calc <= 0.150).sort((a, b) => a.ba_calc - b.ba_calc);
+
+    if (crush.length > 0) {
+        html += '<div class="section-hdr">\u{1F7E2} CRUSH ZONE</div>';
+        crush.slice(0, 5).forEach(m => {
+            const cl = DATA.clusters[m.cluster];
+            const color = cl?.color || '#888';
+            html += '<div class="hunt-row">';
+            html += '<span class="hunt-ba" style="color:var(--green);">' + m.ba_calc.toFixed(3) + '</span>';
+            html += '<span class="hunt-arch" style="color:' + color + ';">vs ' + archName(m.cluster) + '</span>';
+            html += '<span class="hunt-meta">' + m.PA + ' PA \u00b7 ' + fmtStatVal('wOBA', m.wOBA || 0) + ' wOBA</span>';
+            html += '</div>';
+        });
+    } else {
+        html += '<div class="section-hdr">\u{1F7E2} CRUSH ZONE</div>';
+        html += '<div style="font-size:11px;color:#444;font-family:var(--font-tech);padding:8px 0;text-align:center;">No extreme high-BA matchups found</div>';
     }
-    if (closestDot) {
-        const ab = STATE.activeBatters.length > 0 ? STATE.activeBatters[STATE.activeBatters.length-1] : null;
-        showPitcherStatPanel(closestDot, ab);
-    } else if (STATE.highlightedCluster) {
-        STATE.highlightedCluster = null;
-        closeSheet();
-        render(); buildArchetypeList();
+
+    if (danger.length > 0) {
+        html += '<div class="section-hdr">\u{1F534} DANGER ZONE</div>';
+        danger.slice(0, 5).forEach(m => {
+            const cl = DATA.clusters[m.cluster];
+            const color = cl?.color || '#888';
+            html += '<div class="hunt-row">';
+            html += '<span class="hunt-ba" style="color:var(--red);">' + m.ba_calc.toFixed(3) + '</span>';
+            html += '<span class="hunt-arch" style="color:' + color + ';">vs ' + archName(m.cluster) + '</span>';
+            html += '<span class="hunt-meta">' + m.PA + ' PA \u00b7 ' + fmtStatVal('wOBA', m.wOBA || 0) + ' wOBA</span>';
+            html += '</div>';
+        });
+    } else {
+        html += '<div class="section-hdr">\u{1F534} DANGER ZONE</div>';
+        html += '<div style="font-size:11px;color:#444;font-family:var(--font-tech);padding:8px 0;text-align:center;">No extreme low-BA matchups found</div>';
     }
-}, { passive: false });
+
+    // TAGS placeholder in hunt feed too
+    html += '<div class="section-hdr">\u{1F3F7}\uFE0F TAGGED</div>';
+    html += '<div style="font-size:11px;color:#555;font-style:italic;font-family:var(--font-tech);padding:8px 0;">Coming soon \u2014 tracks when a pitcher retires the same batter 2+ times in a single game</div>';
+
+    sheetContent.innerHTML = html;
+    openSheet('full');
+}
 
 // ═══════════════════════════════════════
 // SEARCH
@@ -1274,7 +1371,7 @@ function removeBatter(id) {
     STATE.activeBatters = STATE.activeBatters.filter(b => b.batter !== id);
     renderBatterChips();
     if (STATE.activeBatters.length > 0) spawnBatter(STATE.activeBatters[STATE.activeBatters.length-1]);
-    else { clearBatter(); buildArchetypeList(); }
+    else { clearBatter(); buildArchetypeCards(); }
 }
 
 function renderBatterChips() {
@@ -1324,7 +1421,7 @@ document.getElementById('filter-bar').addEventListener('click', (e) => {
         document.querySelectorAll('.pill[data-stat]').forEach(p => p.classList.remove('active'));
         pill.classList.add('active');
         STATE.selectedStat = pill.dataset.stat;
-        refreshData(); buildArchetypeList(); render();
+        refreshData(); buildArchetypeCards(); render();
         // Re-render stat panel if open
         if (STATE.highlightedCluster && STATE.sheetState !== 'hidden') {
             const ab = STATE.activeBatters.length > 0 ? STATE.activeBatters[STATE.activeBatters.length-1] : null;
@@ -1340,18 +1437,18 @@ document.getElementById('filter-bar').addEventListener('click', (e) => {
             const show = filter === 'all' || c.hand === filter;
             if (show) STATE.visibleClusters.add(id); else STATE.visibleClusters.delete(id);
         });
-        render(); refreshData(); buildArchetypeList();
+        render(); refreshData(); buildArchetypeCards();
     }
 });
 
 document.getElementById('year-select').addEventListener('change', (e) => {
-    STATE.selectedYear = e.target.value; refreshData(); buildArchetypeList(); render();
+    STATE.selectedYear = e.target.value; refreshData(); buildArchetypeCards(); render();
 });
 
 const paSlider = document.getElementById('pa-slider'), paVal = document.getElementById('pa-val');
 paSlider.addEventListener('input', () => {
     STATE.minPA = parseInt(paSlider.value); paVal.textContent = STATE.minPA;
-    refreshData(); buildArchetypeList(); render();
+    refreshData(); buildArchetypeCards(); render();
 });
 
 // ═══════════════════════════════════════
@@ -1362,15 +1459,13 @@ document.querySelectorAll('.tab').forEach(tab => {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
         const action = tab.dataset.tab;
-        if (action === 'chart') {
+        if (action === 'home') {
             closeSheet();
             window.scrollTo({ top: 0, behavior: 'smooth' });
-        } else if (action === 'list') {
-            closeSheet();
-            const list = document.getElementById('archetype-list');
-            list.scrollIntoView({ behavior: 'smooth' });
-        } else if (action === 'dock') {
-            showDockSheet();
+        } else if (action === 'key') {
+            buildArchetypeKey();
+        } else if (action === 'hunt') {
+            buildHuntFeed();
         } else if (action === 'sim') {
             showSimSheet();
         } else if (action === 'more') {
@@ -1378,52 +1473,6 @@ document.querySelectorAll('.tab').forEach(tab => {
         }
     });
 });
-
-function showDockSheet() {
-    let html = '<div class="stat-header">Dock</div>';
-    // Saved searches
-    html += '<div class="section-hdr">Search History</div>';
-    if (STATE.savedSearches.length === 0) {
-        html += '<div style="font-size:11px;color:#666;font-family:var(--font-tech);padding:12px 0;text-align:center;">No search history yet</div>';
-    } else {
-        STATE.savedSearches.forEach(s => {
-            html += '<div class="profile-row" style="cursor:pointer;padding:8px 0;" data-bid="'+s.batter+'"><span style="color:#eee;font-weight:700;">'+fmtName(s.batter_name)+'</span><span class="pval" style="color:#888;">'+(s.total_PA||0).toLocaleString()+' PA</span></div>';
-        });
-    }
-
-    // Best/Worst matchups
-    if (STATE.activeBatters.length > 0) {
-        const batter = STATE.activeBatters[STATE.activeBatters.length - 1];
-        const matchups = getMatchupData(batter);
-        const valid = matchups.filter(m => (m.PA||0) >= STATE.minPA);
-        const ss = STATE.selectedStat;
-        const isLowerBetter = ss === 'K_pct';
-        const sorted = [...valid].sort((a,b) => isLowerBetter ? (a[ss]||0)-(b[ss]||0) : (b[ss]||0)-(a[ss]||0));
-        if (sorted.length > 0) {
-            html += '<div class="section-hdr">Best Matchups for '+fmtName(batter.batter_name)+'</div>';
-            sorted.slice(0,3).forEach(m => {
-                const cl = DATA.clusters[m.cluster];
-                html += '<div class="profile-row"><span style="color:'+(cl?.color||'#888')+';font-weight:700;">'+(cl?.short_name||m.cluster)+'</span><span class="pval" style="color:var(--green);">'+fmtStatVal(ss,m[ss]||0)+' '+statLabel(ss)+' \u00b7 '+m.PA+' PA</span></div>';
-            });
-            html += '<div class="section-hdr">Worst Matchups</div>';
-            sorted.slice(-3).reverse().forEach(m => {
-                const cl = DATA.clusters[m.cluster];
-                html += '<div class="profile-row"><span style="color:'+(cl?.color||'#888')+';font-weight:700;">'+(cl?.short_name||m.cluster)+'</span><span class="pval" style="color:var(--red);">'+fmtStatVal(ss,m[ss]||0)+' '+statLabel(ss)+' \u00b7 '+m.PA+' PA</span></div>';
-            });
-        }
-    }
-
-    sheetContent.innerHTML = html;
-    openSheet('full');
-
-    // Bind saved search clicks
-    sheetContent.querySelectorAll('[data-bid]').forEach(el => {
-        el.addEventListener('click', () => {
-            const b = DATA.batters.find(x => x.batter === parseInt(el.dataset.bid));
-            if (b) { addBatter(b); closeSheet(); }
-        });
-    });
-}
 
 function showSimSheet() {
     let html = '<div class="stat-header" style="color:var(--accent);">\u26A1 SIM LAB</div>';
@@ -1444,16 +1493,31 @@ function showMoreSheet() {
     html += '<div class="profile-row"><span>Batters</span><span class="pval">'+DATA.batters.length.toLocaleString()+'</span></div>';
     html += '<div class="section-hdr">Navigation</div>';
     html += '<div style="font-size:11px;color:#aaa;font-family:var(--font-tech);line-height:1.8;padding:4px 0;">';
-    html += '\u2022 Tap a centroid circle to view archetype details<br>';
-    html += '\u2022 Tap a dot to view individual pitcher stats<br>';
-    html += '\u2022 Pinch to zoom, drag to pan<br>';
-    html += '\u2022 Double-tap to reset zoom<br>';
+    html += '\u2022 Tap an archetype card to view details<br>';
     html += '\u2022 Search a batter to see matchup lines<br>';
-    html += '\u2022 Use filters to change metric, hand, or year';
+    html += '\u2022 Use filters to change metric, hand, or year<br>';
+    html += '\u2022 Key tab shows all 12 archetypes<br>';
+    html += '\u2022 Hunt tab shows batter matchup edges';
     html += '</div>';
+    html += '<div class="section-hdr">Search History</div>';
+    if (STATE.savedSearches.length === 0) {
+        html += '<div style="font-size:11px;color:#666;font-family:var(--font-tech);padding:12px 0;text-align:center;">No search history yet</div>';
+    } else {
+        STATE.savedSearches.forEach(s => {
+            html += '<div class="profile-row" style="cursor:pointer;padding:8px 0;" data-bid="'+s.batter+'"><span style="color:#eee;font-weight:700;">'+fmtName(s.batter_name)+'</span><span class="pval" style="color:#888;">'+(s.total_PA||0).toLocaleString()+' PA</span></div>';
+        });
+    }
     html += '<div style="margin-top:24px;text-align:center;"><a href="cosmos.html" style="color:var(--accent);font-size:11px;font-family:var(--font-tech);font-weight:700;text-decoration:none;">SWITCH TO DESKTOP VERSION \u2192</a></div>';
     sheetContent.innerHTML = html;
     openSheet('full');
+
+    // Bind saved search clicks
+    sheetContent.querySelectorAll('[data-bid]').forEach(el => {
+        el.addEventListener('click', () => {
+            const b = DATA.batters.find(x => x.batter === parseInt(el.dataset.bid));
+            if (b) { addBatter(b); closeSheet(); }
+        });
+    });
 }
 
 // ═══════════════════════════════════════
@@ -1468,7 +1532,7 @@ async function boot() {
     try {
         await loadAllData();
         resizeCanvas();
-        buildArchetypeList();
+        buildArchetypeCards();
         initSearch();
         setTimeout(() => {
             const loader = document.getElementById('loader');
