@@ -1822,13 +1822,35 @@
                 Object.values(DATA._hvpIndex[batter.batter]).forEach(arr => {
                     arr.forEach(m => { if ((m.pa || 0) >= 5) allMatchups.push(m); });
                 });
+                // Nightmare: pitchers where batter struggles most (low wOBA/BA/SLG or high K%)
+                // Filter to only bad matchups, then weight by PA (every 3 ABs = 1 unit of importance)
                 const isHigherWorse = (ss === 'K_pct');
-                allMatchups.sort((a, b) => {
-                    const va = hvpStat(a, ss), vb = hvpStat(b, ss);
-                    return isHigherWorse ? (vb - va) : (va - vb);
+                // Compute batter's overall average for this stat across all matchups
+                let totalStatPA = 0, totalStatVal = 0;
+                allMatchups.forEach(m => {
+                    const pa = m.pa || 0;
+                    totalStatPA += pa;
+                    totalStatVal += hvpStat(m, ss) * pa;
                 });
-                if (allMatchups.length > 0) {
-                    nightmareEl.innerHTML = allMatchups.slice(0, 5).map(m => {
+                const batterAvg = totalStatPA > 0 ? totalStatVal / totalStatPA : 0;
+                // Keep only matchups where batter is BELOW average (nightmare territory)
+                const nightmares = allMatchups.filter(m => {
+                    const val = hvpStat(m, ss);
+                    return isHigherWorse ? (val > batterAvg) : (val < batterAvg);
+                });
+                // Sort: primary = PA descending (every 3 ABs adds weight), secondary = how bad the stat is
+                nightmares.sort((a, b) => {
+                    const va = hvpStat(a, ss), vb = hvpStat(b, ss);
+                    const paA = a.pa || 0, paB = b.pa || 0;
+                    // Nightmare score: PA weight × deviation from average
+                    const devA = isHigherWorse ? (va - batterAvg) : (batterAvg - va);
+                    const devB = isHigherWorse ? (vb - batterAvg) : (batterAvg - vb);
+                    const scoreA = (paA / 3) * devA;
+                    const scoreB = (paB / 3) * devB;
+                    return scoreB - scoreA;
+                });
+                if (nightmares.length > 0) {
+                    nightmareEl.innerHTML = nightmares.slice(0, 5).map(m => {
                         const val = hvpStat(m, ss);
                         return '<div class="dock-row"><span class="d-name">' + fmtName(m.pn) + '</span>'
                             + '<span class="d-stat">' + m.pa + 'PA</span>'
