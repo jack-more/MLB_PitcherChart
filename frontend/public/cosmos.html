@@ -1502,7 +1502,8 @@
                 }
 
                 // ── Pitcher Roster vs This Batter ──
-                const pitcherMatchups = (DATA._hvpIndex[batterObj.batter] || {})[clusterId] || [];
+                let pitcherMatchups = (DATA._hvpIndex[batterObj.batter] || {})[clusterId] || [];
+                if (_teamPitcherIds) pitcherMatchups = pitcherMatchups.filter(m => _teamPitcherIds.has(m.p));
                 if (pitcherMatchups.length > 0) {
                     html += '<div class="roster-header">';
                     html += '<span class="section-hdr">Pitchers in Group ('+pitcherMatchups.length+')</span>';
@@ -2336,7 +2337,8 @@
             sortBtn.parentElement.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
             sortBtn.classList.add('active');
 
-            const pitcherMatchups = (DATA._hvpIndex[batterId] || {})[clusterId] || [];
+            let pitcherMatchups = (DATA._hvpIndex[batterId] || {})[clusterId] || [];
+            if (_teamPitcherIds) pitcherMatchups = pitcherMatchups.filter(m => _teamPitcherIds.has(m.p));
             let sorted;
             if (sortKey === 'pa') sorted = [...pitcherMatchups].sort((a,b) => (b.pa||0) - (a.pa||0));
             else if (sortKey === 'ba') sorted = [...pitcherMatchups].sort((a,b) => (b.ba||0) - (a.ba||0));
