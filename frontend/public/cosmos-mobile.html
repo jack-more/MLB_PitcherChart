@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>PITCH.FX // CLUSTER</title>
+<title>ARCHETYPE//ATLAS.MLB</title>
 <style>
 :root {
     --bg: #0a0a0a;
@@ -141,36 +141,40 @@ body {
 }
 .spread-label {
     font-size: 8px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 1px; color: #555; font-family: var(--font-tech);
-    margin-bottom: 4px; padding-left: 2px;
-    display: flex; justify-content: space-between;
+    letter-spacing: 1.5px; color: #555; font-family: var(--font-tech);
+    margin-bottom: 2px; text-align: center;
 }
 .spread-row {
     display: flex; gap: 2px; margin-bottom: 2px;
 }
-.spread-row.lhp-row {
-    padding-left: 17px;
+.spread-row.stagger-row {
+    padding-left: 37px;
+}
+.spread-hand-label {
+    font-size: 7px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.5px; color: #444; font-family: var(--font-tech);
+    margin: 4px 0 2px 2px;
 }
 .spread-chip {
-    width: 34px; height: 44px; border-radius: 6px;
+    width: 74px; height: 62px; border-radius: 8px;
     background: rgba(255,255,255,0.04); border: 1px solid transparent;
     border-bottom: 3px solid #666;
     display: flex; flex-direction: column; align-items: center;
-    justify-content: center; gap: 1px; cursor: pointer;
+    justify-content: center; gap: 2px; cursor: pointer;
     transition: background 0.15s, transform 0.1s, border-color 0.15s;
     flex-shrink: 0;
 }
 .spread-chip:active { transform: scale(0.92); }
 .spread-chip.selected { border-color: var(--accent); background: rgba(255,68,0,0.08); }
 .spread-chip.dimmed { opacity: 0.2; }
-.spread-chip .chip-emoji { font-size: 14px; line-height: 1; }
+.spread-chip .chip-emoji { font-size: 36px; line-height: 1; }
 .spread-chip .chip-label {
-    font-size: 7px; font-weight: 700; color: #888;
+    font-size: 9px; font-weight: 800; color: #bbb;
     font-family: var(--font-tech); text-transform: uppercase;
-    letter-spacing: -0.02em; line-height: 1;
+    letter-spacing: 0; line-height: 1;
 }
 .spread-chip .chip-stat {
-    font-size: 8px; font-weight: 800; font-family: var(--font-tech);
+    font-size: 10px; font-weight: 800; font-family: var(--font-tech);
     line-height: 1;
 }
 
@@ -220,6 +224,7 @@ body {
 .key-name { font-size: 13px; font-weight: 800; letter-spacing: 0.5px; }
 .key-desc { font-size: 11px; color: #999; font-family: var(--font-tech); line-height: 1.4; padding-left: 28px; }
 .key-clusters { font-size: 10px; font-family: var(--font-tech); padding-left: 28px; margin-top: 2px; }
+.key-examples { font-size: 10px; color: #666; font-family: var(--font-tech); padding-left: 28px; margin-top: 2px; font-style: italic; }
 
 /* ═══ HUNT FEED ═══ */
 .hunt-row { display: flex; align-items: baseline; gap: 8px; padding: 8px 0; border-bottom: 1px solid #1a1a1a; }
@@ -364,13 +369,13 @@ body {
 <body>
 
 <div id="loader">
-    <div class="loader-brand"><div class="loader-icon"></div>PITCH.FX // CLUSTER</div>
+    <div class="loader-brand"><div class="loader-icon"></div>ARCHETYPE//ATLAS.MLB</div>
     <div class="loader-status" id="loader-status">INITIALIZING...</div>
 </div>
 
 <!-- TOPBAR -->
 <div class="topbar">
-    <div class="logo">PFX</div>
+    <div class="logo">A//A</div>
     <div class="search-box">
         <input type="text" id="batter-search" placeholder="SEARCH BATTER..." autocomplete="off">
         <div class="search-dropdown" id="search-dropdown"></div>
@@ -473,10 +478,10 @@ const ARCHETYPE_SPREAD_ORDER = {
 };
 
 const ARCHETYPE_ABBREV = {
-    'R_0':'C&C','R_1':'BOO','R_2':'GHO','R_3':'TRI','R_4':'WRM',
-    'R_5':'SID','R_6':'FIR','R_7':'HOO','R_8':'SNK','R_9':'SPL',
-    'L_0':'UND','L_1':'CRF','L_2':'FIR','L_3':'HOO','L_4':'WRM',
-    'L_5':'UNC','L_6':'SPL','L_7':'BOO','L_8':'SID'
+    'R_0':'C&C','R_1':'BOOM','R_2':'GHST','R_3':'TRIP','R_4':'WORM',
+    'R_5':'SIDE','R_6':'FIRE','R_7':'HOOK','R_8':'SNKY','R_9':'SPLT',
+    'L_0':'UNDR','L_1':'CRFT','L_2':'FIRE','L_3':'HOOK','L_4':'WORM',
+    'L_5':'UNCL','L_6':'SPLT','L_7':'BOOM','L_8':'SIDE'
 };
 
 const ARCHETYPE_DESC = {
@@ -1192,9 +1197,16 @@ function buildArchetypeSpread() {
         return html;
     };
 
-    let html = '<div class="spread-label"><span>\u2190 RHP</span><span>ARCHETYPE SPREAD</span><span>LHP \u2192</span></div>';
-    html += renderRow(ARCHETYPE_SPREAD_ORDER.rhp, 'rhp-row');
-    html += renderRow(ARCHETYPE_SPREAD_ORDER.lhp, 'lhp-row');
+    const rhp = ARCHETYPE_SPREAD_ORDER.rhp;
+    const lhp = ARCHETYPE_SPREAD_ORDER.lhp;
+
+    let html = '<div class="spread-label"><span>ARCHETYPE SPREAD</span></div>';
+    html += '<div class="spread-hand-label">▸ RHP</div>';
+    html += renderRow(rhp.slice(0, 5), '');
+    html += renderRow(rhp.slice(5), 'stagger-row');
+    html += '<div class="spread-hand-label">▸ LHP</div>';
+    html += renderRow(lhp.slice(0, 5), '');
+    html += renderRow(lhp.slice(5), 'stagger-row');
     el.innerHTML = html;
 
     // Bind tap handlers
@@ -1342,6 +1354,11 @@ function buildArchetypeKey() {
                 const cl = DATA.clusters[id];
                 return cl ? '<span style="color:' + cl.color + ';">' + cl.hand + ': ' + id + '</span>' : '';
             }).join(' \u00b7 ') + '</div>';
+            const kings = DATA.archetypeKings[item.ids[0]] || [];
+            if (kings.length > 0) {
+                const names = kings.slice(0, 3).map(k => k.name).join(', ');
+                html += '<div class="key-examples">' + names + '</div>';
+            }
             html += '</div>';
         });
     };
