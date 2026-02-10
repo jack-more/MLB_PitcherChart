@@ -693,17 +693,31 @@ function drawGrid(w, h) {
     ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 0.8;
     ctx.beginPath(); ctx.moveTo(h0a.x, h0a.y); ctx.lineTo(h0b.x, h0b.y); ctx.stroke();
 
-    // Axis label
+    // X-axis tick marks
+    ctx.font = '7px "Courier New", monospace'; ctx.fillStyle = '#2a2a2a'; ctx.textAlign = 'center';
+    for (let x = -12; x <= 10; x += 4) {
+        const p = d2c(x, PCA_Y_MIN);
+        ctx.fillText(x, p.x, p.y + 12);
+    }
+    // Y-axis tick marks
+    ctx.textAlign = 'right';
+    for (let y = -6; y <= 6; y += 2) {
+        if (y === 0) continue;
+        const p = d2c(PCA_X_MIN, y);
+        ctx.fillText(y, p.x - 3, p.y + 3);
+    }
+
+    // Chart title
     ctx.fillStyle = '#444'; ctx.font = 'bold 9px -apple-system, sans-serif'; ctx.textAlign = 'center';
     const mb = d2c((PCA_X_MIN + PCA_X_MAX) / 2, PCA_Y_MIN);
-    ctx.fillText('\u2190 LHP        ARCHETYPE SPACE        RHP \u2192', mb.x, mb.y + 20);
+    ctx.fillText('PREDICTIVE PITCHER ATLAS', mb.x, mb.y + 22);
 
     // Zone labels
-    ctx.font = 'bold 10px -apple-system, sans-serif'; ctx.fillStyle = '#333';
+    ctx.font = 'bold 9px -apple-system, sans-serif'; ctx.fillStyle = '#2a2a2a';
     ctx.textAlign = 'left';
-    const tl = d2c(PCA_X_MIN, PCA_Y_MAX); ctx.fillText('LHP', tl.x + 4, tl.y + 14);
+    const tl = d2c(PCA_X_MIN, PCA_Y_MAX); ctx.fillText('LHP', tl.x + 4, tl.y + 12);
     ctx.textAlign = 'right';
-    const tr = d2c(PCA_X_MAX, PCA_Y_MAX); ctx.fillText('RHP', tr.x - 4, tr.y + 14);
+    const tr = d2c(PCA_X_MAX, PCA_Y_MAX); ctx.fillText('RHP', tr.x - 4, tr.y + 12);
 
     // Year watermark
     if (STATE.selectedYear !== 'all') {
@@ -739,6 +753,8 @@ function drawDots() {
         const cluster = DATA.clusters[ps.cluster];
         if (!cluster || !STATE.visibleClusters.has(ps.cluster)) continue;
         if (_teamPitcherIds && !_teamPitcherIds.has(ps.pitcher)) continue;
+        const _velo = ps.avg_velo_FF || 0;
+        if (_velo > 0 && _velo < 80) continue;
         if (yearFilter && ps.game_year !== yearFilter) continue;
         if (!passesPitcherFilters(ps)) continue;
         const px = ps.pca_x, py = ps.pca_y;

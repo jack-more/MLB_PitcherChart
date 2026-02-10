@@ -884,6 +884,9 @@
         function isPitcherVisible(ps) {
             if (!STATE.visibleClusters.has(ps.cluster)) return false;
             if (_teamPitcherIds && !_teamPitcherIds.has(ps.pitcher)) return false;
+            // Filter out position players (sub-80 mph lobbers)
+            const velo = ps.avg_velo_FF || 0;
+            if (velo > 0 && velo < 80) return false;
             return true;
         }
 
@@ -1050,16 +1053,32 @@
             ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 0.8;
             ctx.beginPath(); ctx.moveTo(h0a.x, h0a.y); ctx.lineTo(h0b.x, h0b.y); ctx.stroke();
 
-            // Axis title — bottom
+            // X-axis tick marks (PCA range values)
+            ctx.font = '8px "Courier New", monospace';
+            ctx.fillStyle = '#333';
+            ctx.textAlign = 'center';
+            for (let x = -12; x <= 10; x += 4) {
+                const p = d2c(x, PCA_Y_MIN);
+                ctx.fillText(x, p.x, p.y + 14);
+            }
+            // Y-axis tick marks
+            ctx.textAlign = 'right';
+            for (let y = -6; y <= 6; y += 2) {
+                if (y === 0) continue;
+                const p = d2c(PCA_X_MIN, y);
+                ctx.fillText(y, p.x - 4, p.y + 3);
+            }
+
+            // Chart title — bottom center
             ctx.fillStyle = '#555';
             ctx.font = 'bold 11px -apple-system, sans-serif';
             ctx.textAlign = 'center';
             const mb = d2c((PCA_X_MIN + PCA_X_MAX) / 2, PCA_Y_MIN);
-            ctx.fillText('\u2190 LHP            ARCHETYPE SPACE            RHP \u2192', mb.x, mb.y + 28);
+            ctx.fillText('PREDICTIVE PITCHER ATLAS', mb.x, mb.y + 30);
 
             // Zone labels — top corners
-            ctx.font = 'bold 12px -apple-system, sans-serif';
-            ctx.fillStyle = '#444';
+            ctx.font = 'bold 11px -apple-system, sans-serif';
+            ctx.fillStyle = '#333';
             ctx.textAlign = 'left';
             const tl = d2c(PCA_X_MIN, PCA_Y_MAX);
             ctx.fillText('LHP', tl.x + 8, tl.y + 18);
