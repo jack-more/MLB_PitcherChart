@@ -1408,9 +1408,32 @@
         }
 
         function getMatchupData(batter) {
+            // When team filter active, aggregate from individual pitcher matchups
+            if (_teamPitcherIds && DATA._hvpIndex && DATA._hvpIndex[batter.batter]) {
+                const hvp = DATA._hvpIndex[batter.batter];
+                const grouped = {};
+                Object.entries(hvp).forEach(([cid, arr]) => {
+                    arr.forEach(m => {
+                        if (!_teamPitcherIds.has(m.p)) return;
+                        if (!grouped[cid]) grouped[cid] = { cluster: cid, PA: 0, H: 0, HR: 0, K: 0, BB: 0, woba_sum: 0 };
+                        const g = grouped[cid];
+                        const pa = m.pa || 0;
+                        g.PA += pa; g.H += m.h || 0; g.HR += m.hr || 0;
+                        g.K += m.k || 0; g.BB += m.bb || 0;
+                        g.woba_sum += (m.w || 0) * pa;
+                    });
+                });
+                return Object.values(grouped).map(g => {
+                    g.AB = g.PA - g.BB; g.HBP = 0;
+                    g.singles = g.H - g.HR; g.doubles = 0; g.triples = 0;
+                    g.wOBA = g.PA > 0 ? g.woba_sum / g.PA : 0;
+                    return deriveStats(g);
+                });
+            }
+
+            // Default: cluster-level data (no team filter)
             let rows = DATA.hitterVsCluster.filter(r => r.batter === batter.batter);
             if (STATE.selectedYear !== 'all') rows = rows.filter(r => r.game_year === parseInt(STATE.selectedYear));
-            if (_teamClusterIds) rows = rows.filter(r => _teamClusterIds.has(r.cluster));
             if (STATE.selectedYear === 'all' && rows.length > 0) {
                 const grouped = {};
                 rows.forEach(r => {
@@ -1426,28 +1449,13 @@
             return rows.map(r => deriveStats({...r}));
         }
 
-        // Compute batter badge stats — pitcher-level when team filter active, cluster-level otherwise
+        // Compute batter badge stats (uses getMatchupData which handles team filter)
         function getFilteredBatterStats(batter) {
-            if (!_teamPitcherIds) {
-                const matchups = getMatchupData(batter);
-                const totalPA = matchups.reduce((s,r) => s+(r.PA||0), 0);
-                const stat = STATE.selectedStat;
-                const totalStatWeighted = matchups.reduce((s,r) => s+(r[stat]||0)*(r.PA||0), 0);
-                return { pa: totalPA, avg: totalPA > 0 ? totalStatWeighted/totalPA : 0 };
-            }
-            // Team filter active: use individual pitcher matchups from _hvpIndex
-            const hvp = DATA._hvpIndex ? DATA._hvpIndex[batter.batter] : null;
-            if (!hvp) return { pa: 0, avg: 0 };
-            let totalPA = 0, totalStat = 0;
-            Object.values(hvp).forEach(arr => {
-                arr.forEach(m => {
-                    if (!_teamPitcherIds.has(m.p)) return;
-                    const pa = m.pa || 0;
-                    totalPA += pa;
-                    totalStat += hvpStat(m, STATE.selectedStat) * pa;
-                });
-            });
-            return { pa: totalPA, avg: totalPA > 0 ? totalStat/totalPA : 0 };
+            const matchups = getMatchupData(batter);
+            const totalPA = matchups.reduce((s,r) => s+(r.PA||0), 0);
+            const stat = STATE.selectedStat;
+            const totalStatWeighted = matchups.reduce((s,r) => s+(r[stat]||0)*(r.PA||0), 0);
+            return { pa: totalPA, avg: totalPA > 0 ? totalStatWeighted/totalPA : 0 };
         }
 
         function spawnBatter(batter) {
