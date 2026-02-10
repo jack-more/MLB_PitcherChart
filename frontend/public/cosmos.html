@@ -696,6 +696,26 @@
                     <option value="all">ALL YEARS</option>
                 </select>
             </div>
+            <div style="border-top:1px solid #222;padding-top:6px;margin-top:4px;">
+                <div class="label-line"><span class="label">Pitcher Filters</span></div>
+                <div style="display:flex;align-items:center;gap:6px;margin-top:3px;">
+                    <span class="label" style="margin:0;min-width:28px;">Velo</span>
+                    <input type="range" min="82" max="103" value="82" id="pf-velo-min" style="flex:1;accent-color:#f4a261;">
+                    <input type="range" min="82" max="103" value="103" id="pf-velo-max" style="flex:1;accent-color:#f4a261;">
+                    <span id="pf-velo-display" style="font-size:8px;color:#888;min-width:52px;text-align:right;">82-103</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;margin-top:3px;">
+                    <span class="label" style="margin:0;min-width:28px;">Move</span>
+                    <input type="range" min="-18" max="18" value="-18" id="pf-hbreak-min" style="flex:1;accent-color:#2a9d8f;">
+                    <input type="range" min="-18" max="18" value="18" id="pf-hbreak-max" style="flex:1;accent-color:#2a9d8f;">
+                    <span id="pf-hbreak-display" style="font-size:8px;color:#888;min-width:52px;text-align:right;">-18 to 18</span>
+                </div>
+                <div class="key-row" id="role-keys" style="margin-top:4px;">
+                    <div class="key key-orange" data-role="all">ALL</div>
+                    <div class="key key-dark" data-role="SP">SP</div>
+                    <div class="key key-dark" data-role="RP">RP</div>
+                </div>
+            </div>
         </div>
 
         <div class="archetype-list" id="archetype-list"></div>
@@ -837,6 +857,7 @@
             highlightedCluster: null,
             savedSearches: JSON.parse(localStorage.getItem('pfx_saved') || '[]'),
             teamFilter: null,
+            pitcherFilters: { veloMin: null, veloMax: null, hBreakMin: null, hBreakMax: null, roleFilter: null },
         };
 
         // Team filter: cached Set of pitcher MLBAM IDs for the active team
@@ -933,11 +954,11 @@
         const ctx = canvas.getContext('2d');
         const screenEl = document.getElementById('screen');
 
-        // Data is in FEET — convert to inches for display (×12)
-        // pfx_x_avg range: ~-1.5 to +1.5 feet → -18" to +18"
-        // We'll use inches for the axis but read feet from data
-        const MOVE_MIN = -18, MOVE_MAX = 18;    // inches
-        const VELO_MIN = 82, VELO_MAX = 103;     // mph
+        // PCA axes — the true archetype space
+        // pca_x: RHP positive (~-5 to +10), LHP negative (~-12 to -1.5)
+        // pca_y: PC2 (~-7 to +6)
+        const PCA_X_MIN = -14, PCA_X_MAX = 12;
+        const PCA_Y_MIN = -8,  PCA_Y_MAX = 8;
 
         const MARGIN = { top: 40, right: 24, bottom: 40, left: 48 };
 
@@ -956,11 +977,11 @@
             };
         }
 
-        // Data → CSS-pixel coords on canvas
-        function d2c(moveInches, velo) {
+        // Data → CSS-pixel coords on canvas (PCA space)
+        function d2c(pcaX, pcaY) {
             const p = plotArea();
-            const nx = (moveInches - MOVE_MIN) / (MOVE_MAX - MOVE_MIN);
-            const ny = 1 - (velo - VELO_MIN) / (VELO_MAX - VELO_MIN);
+            const nx = (pcaX - PCA_X_MIN) / (PCA_X_MAX - PCA_X_MIN);
+            const ny = 1 - (pcaY - PCA_Y_MIN) / (PCA_Y_MAX - PCA_Y_MIN);
             const cx = p.x + nx * p.w;
             const cy = p.y + ny * p.h;
             const cw = cssW(), ch = cssH();
@@ -977,7 +998,7 @@
             const p = plotArea();
             const nx = (ux - p.x) / p.w;
             const ny = (uy - p.y) / p.h;
-            return { moveInches: MOVE_MIN + nx * (MOVE_MAX - MOVE_MIN), velo: VELO_MAX - ny * (VELO_MAX - VELO_MIN) };
+            return { pcaX: PCA_X_MIN + nx * (PCA_X_MAX - PCA_X_MIN), pcaY: PCA_Y_MAX - ny * (PCA_Y_MAX - PCA_Y_MIN) };
         }
 
         function resizeCanvas() {
@@ -1005,61 +1026,55 @@
             ctx.fillStyle = '#0a0a0a';
             ctx.fillRect(0, 0, w, h);
 
-            ctx.strokeStyle = '#1e1e1e';
-            ctx.lineWidth = 0.7;
+            ctx.strokeStyle = '#151515';
+            ctx.lineWidth = 0.5;
 
-            // Vertical grid every 3 inches
-            for (let m = -18; m <= 18; m += 3) {
-                const a = d2c(m, VELO_MIN), b = d2c(m, VELO_MAX);
+            // Vertical gridlines every 2 PCA units
+            for (let x = -14; x <= 12; x += 2) {
+                const a = d2c(x, PCA_Y_MIN), b = d2c(x, PCA_Y_MAX);
                 ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
             }
-            // Horizontal grid every 2 mph
-            for (let v = 84; v <= 102; v += 2) {
-                const a = d2c(MOVE_MIN, v), b = d2c(MOVE_MAX, v);
+            // Horizontal gridlines every 2 PCA units
+            for (let y = -8; y <= 8; y += 2) {
+                const a = d2c(PCA_X_MIN, y), b = d2c(PCA_X_MAX, y);
                 ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
             }
 
-            // Center divider (x=0)
-            const c0a = d2c(0, VELO_MIN), c0b = d2c(0, VELO_MAX);
+            // Center divider at x=0 (RHP/LHP boundary)
+            const c0a = d2c(0, PCA_Y_MIN), c0b = d2c(0, PCA_Y_MAX);
             ctx.strokeStyle = '#2a2a2a'; ctx.lineWidth = 1.5;
             ctx.beginPath(); ctx.moveTo(c0a.x, c0a.y); ctx.lineTo(c0b.x, c0b.y); ctx.stroke();
 
-            // Tick labels
-            ctx.font = 'bold 11px "Courier New", monospace';
-            ctx.fillStyle = '#aaa';
+            // Horizontal center at y=0
+            const h0a = d2c(PCA_X_MIN, 0), h0b = d2c(PCA_X_MAX, 0);
+            ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 0.8;
+            ctx.beginPath(); ctx.moveTo(h0a.x, h0a.y); ctx.lineTo(h0b.x, h0b.y); ctx.stroke();
+
+            // Axis title — bottom
+            ctx.fillStyle = '#555';
+            ctx.font = 'bold 11px -apple-system, sans-serif';
             ctx.textAlign = 'center';
-            for (let m = -15; m <= 15; m += 6) {
-                const p = d2c(m, VELO_MIN);
-                ctx.fillText(m + '"', p.x, p.y + 14);
-            }
+            const mb = d2c((PCA_X_MIN + PCA_X_MAX) / 2, PCA_Y_MIN);
+            ctx.fillText('\u2190 LHP            ARCHETYPE SPACE            RHP \u2192', mb.x, mb.y + 28);
+
+            // Zone labels — top corners
+            ctx.font = 'bold 12px -apple-system, sans-serif';
+            ctx.fillStyle = '#444';
+            ctx.textAlign = 'left';
+            const tl = d2c(PCA_X_MIN, PCA_Y_MAX);
+            ctx.fillText('LHP', tl.x + 8, tl.y + 18);
             ctx.textAlign = 'right';
-            for (let v = 84; v <= 102; v += 2) {
-                const p = d2c(MOVE_MIN, v);
-                ctx.fillText(v + '', p.x - 6, p.y + 3);
+            const tr = d2c(PCA_X_MAX, PCA_Y_MAX);
+            ctx.fillText('RHP', tr.x - 8, tr.y + 18);
+
+            // Year indicator when filtering
+            if (STATE.selectedYear !== 'all') {
+                ctx.font = 'bold 48px -apple-system, sans-serif';
+                ctx.fillStyle = 'rgba(255,255,255,0.04)';
+                ctx.textAlign = 'center';
+                const center = d2c((PCA_X_MIN + PCA_X_MAX) / 2, (PCA_Y_MIN + PCA_Y_MAX) / 2);
+                ctx.fillText(STATE.selectedYear, center.x, center.y + 16);
             }
-
-            // Axis titles
-            ctx.fillStyle = '#ccc';
-            ctx.font = 'bold 13px -apple-system, sans-serif';
-            ctx.textAlign = 'center';
-            const mb = d2c(0, VELO_MIN);
-            ctx.fillText('HORIZONTAL BREAK (IN)', mb.x, mb.y + 32);
-
-            ctx.save();
-            const ml = d2c(MOVE_MIN, (VELO_MIN + VELO_MAX) / 2);
-            ctx.translate(ml.x - 36, ml.y);
-            ctx.rotate(-Math.PI / 2);
-            ctx.fillText('FASTBALL VELOCITY (MPH)', 0, 0);
-            ctx.restore();
-
-            // Zone labels
-            ctx.font = 'bold 13px -apple-system, sans-serif';
-            ctx.fillStyle = '#bbb';
-            ctx.textAlign = 'center';
-            const lp = d2c(-9, VELO_MAX);
-            const rp = d2c(9, VELO_MAX);
-            ctx.fillText('\u{1F4AA} \u2190 RHP', lp.x, lp.y - 6);
-            ctx.fillText('LHP \u2192 \u{1F933}', rp.x, rp.y - 6);
         }
 
         function hexRgb(hex) {
@@ -1067,25 +1082,38 @@
             return { r: parseInt(hex.substring(0,2),16), g: parseInt(hex.substring(2,4),16), b: parseInt(hex.substring(4,6),16) };
         }
 
+        function passesPitcherFilters(ps) {
+            const f = STATE.pitcherFilters;
+            if (f.veloMin != null && (ps.avg_velo_FF || 0) < f.veloMin) return false;
+            if (f.veloMax != null && (ps.avg_velo_FF || 0) > f.veloMax) return false;
+            if (f.hBreakMin != null && ((ps.pfx_x_avg || 0) * 12) < f.hBreakMin) return false;
+            if (f.hBreakMax != null && ((ps.pfx_x_avg || 0) * 12) > f.hBreakMax) return false;
+            if (f.roleFilter === 'SP' && !ps.is_sp) return false;
+            if (f.roleFilter === 'RP' && ps.is_sp) return false;
+            return true;
+        }
+
         function drawDots() {
             const hl = STATE.highlightedCluster;
             const seasons = DATA.pitcherSeasons;
+            const yearFilter = STATE.selectedYear !== 'all' ? parseInt(STATE.selectedYear) : null;
             for (let i = 0; i < seasons.length; i++) {
                 const ps = seasons[i];
                 const cluster = DATA.clusters[ps.cluster];
                 if (!cluster) continue;
                 if (!isPitcherVisible(ps)) continue;
-                const moveIn = (ps.pfx_x_avg || 0) * 12; // feet → inches
-                const velo = ps.avg_velo_FF;
-                if (!velo || velo === 0) continue;
+                if (yearFilter && ps.game_year !== yearFilter) continue;
+                if (!passesPitcherFilters(ps)) continue;
+                const px = ps.pca_x, py = ps.pca_y;
+                if (px == null || py == null) continue;
 
-                const pos = d2c(moveIn, velo);
+                const pos = d2c(px, py);
                 const rgb = hexRgb(cluster.color);
-                let alpha = 0.35, radius = 2;
+                let alpha = 0.45, radius = 2.5;
 
                 if (hl) {
-                    if (ps.cluster === hl) { alpha = 0.85; radius = 3; }
-                    else { alpha = 0.04; radius = 1.5; }
+                    if (ps.cluster === hl) { alpha = 0.9; radius = 3.5; }
+                    else { alpha = 0.05; radius = 1.5; }
                 }
 
                 ctx.beginPath();
@@ -1095,15 +1123,45 @@
             }
         }
 
+        // Compute per-year centroid positions from visible dots
+        function computeYearCentroids(year) {
+            const sums = {};
+            const yearInt = parseInt(year);
+            DATA.pitcherSeasons.forEach(ps => {
+                if (ps.game_year !== yearInt) return;
+                if (!isPitcherVisible(ps)) return;
+                if (!passesPitcherFilters(ps)) return;
+                if (ps.pca_x == null || ps.pca_y == null) return;
+                if (!sums[ps.cluster]) sums[ps.cluster] = { sx: 0, sy: 0, n: 0 };
+                sums[ps.cluster].sx += ps.pca_x;
+                sums[ps.cluster].sy += ps.pca_y;
+                sums[ps.cluster].n++;
+            });
+            const result = {};
+            Object.entries(sums).forEach(([cid, s]) => {
+                if (s.n >= 1) result[cid] = { x: s.sx / s.n, y: s.sy / s.n, n: s.n };
+            });
+            return result;
+        }
+
         function drawCentroids() {
+            const yearFilter = STATE.selectedYear !== 'all' ? STATE.selectedYear : null;
+            const yearCentroids = yearFilter ? computeYearCentroids(yearFilter) : null;
+
             Object.entries(DATA.clusters).forEach(([id, cluster]) => {
                 if (!STATE.visibleClusters.has(id)) return;
-                const cent = cluster.centroid || {};
-                const moveIn = (cent.pfx_x_avg || 0) * 12;
-                const velo = cent.avg_velo_FF;
-                if (!velo || velo === 0) return;
 
-                const pos = d2c(moveIn, velo);
+                let px, py, yearCount = null;
+                if (yearCentroids) {
+                    const yc = yearCentroids[id];
+                    if (!yc) return; // no pitchers this year
+                    px = yc.x; py = yc.y; yearCount = yc.n;
+                } else {
+                    px = cluster.pca_x; py = cluster.pca_y;
+                    if (px == null || py == null) return;
+                }
+
+                const pos = d2c(px, py);
                 const hl = STATE.highlightedCluster;
                 const isHl = hl === id;
                 const dim = hl && !isHl;
@@ -1135,19 +1193,21 @@
                 ctx.fill();
 
                 if (!dim) {
+                    const cent = cluster.centroid || {};
                     const role = cent.is_sp > 0.5 ? 'SP' : 'RP';
+                    const countLabel = yearCount != null ? yearCount + ' pitchers' : cluster.pitcher_count + ' pitchers';
 
                     // Text background pill for readability
                     ctx.font = 'bold 12px -apple-system, sans-serif';
                     const nameW = ctx.measureText(archName(id)).width;
                     ctx.font = '9px "Courier New", monospace';
-                    const roleW = ctx.measureText(cluster.hand + ' ' + role).width;
+                    const roleW = Math.max(ctx.measureText(cluster.hand + ' ' + role).width, ctx.measureText(countLabel).width);
                     const pillW = Math.max(nameW, roleW) + 10;
                     ctx.fillStyle = 'rgba(10,10,10,0.75)';
                     ctx.beginPath();
                     const pillX = pos.x - pillW/2;
                     const pillY = pos.y + outerR + 3;
-                    const pillH = 26;
+                    const pillH = 36;
                     const pillR = 4;
                     ctx.moveTo(pillX + pillR, pillY);
                     ctx.lineTo(pillX + pillW - pillR, pillY);
@@ -1167,7 +1227,7 @@
 
                     ctx.font = '9px "Courier New", monospace';
                     ctx.fillStyle = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',0.55)';
-                    ctx.fillText(cluster.hand + ' ' + role, pos.x, pos.y + outerR + 26);
+                    ctx.fillText(cluster.hand + ' ' + role + ' \u00b7 ' + countLabel, pos.x, pos.y + outerR + 26);
 
                     // Stat chip when batter active
                     if (STATE.activeBatters.length > 0) {
@@ -1245,18 +1305,27 @@
             const bx = bRect.left + bRect.width / 2 - cRect.left;
             const by = bRect.bottom - cRect.top + 2;
 
+            const yearFilter = STATE.selectedYear !== 'all' ? STATE.selectedYear : null;
+            const yearCentroids = yearFilter ? computeYearCentroids(yearFilter) : null;
+
             Object.entries(DATA.clusters).forEach(([cid, cluster]) => {
                 if (!STATE.visibleClusters.has(cid)) return;
                 if (_teamClusterIds && !_teamClusterIds.has(cid)) return;
-                const cent = cluster.centroid || {};
-                const moveIn = (cent.pfx_x_avg || 0) * 12;
-                const velo = cent.avg_velo_FF;
-                if (!velo || velo === 0) return;
+
+                let cpx, cpy;
+                if (yearCentroids) {
+                    const yc = yearCentroids[cid];
+                    if (!yc) return;
+                    cpx = yc.x; cpy = yc.y;
+                } else {
+                    cpx = cluster.pca_x; cpy = cluster.pca_y;
+                    if (cpx == null || cpy == null) return;
+                }
 
                 const hl = STATE.highlightedCluster;
                 if (hl && cid !== hl) return;
 
-                const pos = d2c(moveIn, velo);
+                const pos = d2c(cpx, cpy);
                 const m = matchups.find(x => String(x.cluster) === cid);
                 const pa = m ? m.PA || 0 : 0;
                 const statVal = m ? (m[STATE.selectedStat] || 0) : 0;
@@ -1313,19 +1382,29 @@
             const mx = e.clientX - rect.left, my = e.clientY - rect.top;
 
             // Hover: centroids
+            const hoverYearFilter = STATE.selectedYear !== 'all' ? STATE.selectedYear : null;
+            const hoverYearCentroids = hoverYearFilter ? computeYearCentroids(hoverYearFilter) : null;
             let found = null;
             Object.entries(DATA.clusters).forEach(([id, cl]) => {
                 if (!STATE.visibleClusters.has(id)) return;
-                const c = cl.centroid || {};
-                if (!c.avg_velo_FF) return;
-                const pos = d2c((c.pfx_x_avg||0)*12, c.avg_velo_FF);
-                if (Math.sqrt((mx-pos.x)**2+(my-pos.y)**2) < 22) found = { id, cl, pos };
+                let hpx, hpy;
+                if (hoverYearCentroids) {
+                    const yc = hoverYearCentroids[id];
+                    if (!yc) return;
+                    hpx = yc.x; hpy = yc.y;
+                } else {
+                    hpx = cl.pca_x; hpy = cl.pca_y;
+                    if (hpx == null || hpy == null) return;
+                }
+                const pos = d2c(hpx, hpy);
+                if (Math.sqrt((mx-pos.x)**2+(my-pos.y)**2) < 22) found = { id, cl, pos, yearCent: hoverYearCentroids ? hoverYearCentroids[id] : null };
             });
 
             if (found) {
-                const c = found.cl.centroid;
+                const c = found.cl.centroid || {};
                 const role = c.is_sp > 0.5 ? 'SP' : 'RP';
-                tooltipEl.innerHTML = '<b style="color:'+found.cl.color+'">'+archName(found.id)+'</b><br>'+found.cl.hand+' '+role+' \u00b7 '+found.cl.pitcher_count+' pitchers<br>Velo: '+(c.avg_velo_FF||0).toFixed(1)+' \u00b7 Whiff: '+((c.whiff_rate||0)*100).toFixed(0)+'%';
+                const countStr = found.yearCent ? found.yearCent.n + ' pitchers' : found.cl.pitcher_count + ' pitchers';
+                tooltipEl.innerHTML = '<b style="color:'+found.cl.color+'">'+archName(found.id)+'</b><br>'+found.cl.hand+' '+role+' \u00b7 '+countStr+'<br>Velo: '+(c.avg_velo_FF||0).toFixed(1)+' \u00b7 Whiff: '+((c.whiff_rate||0)*100).toFixed(0)+'%';
                 tooltipEl.style.left = (e.clientX - screenEl.getBoundingClientRect().left + 12) + 'px';
                 tooltipEl.style.top = (e.clientY - screenEl.getBoundingClientRect().top - 10) + 'px';
                 tooltipEl.classList.add('visible');
@@ -1334,12 +1413,15 @@
             }
 
             // Hover: pitcher dots
+            const dotYearFilter = STATE.selectedYear !== 'all' ? parseInt(STATE.selectedYear) : null;
             let closestDot = null, closestDist = 8;
             for (let i = 0; i < DATA.pitcherSeasons.length; i++) {
                 const ps = DATA.pitcherSeasons[i];
                 if (!isPitcherVisible(ps)) continue;
-                if (!ps.avg_velo_FF) continue;
-                const pos = d2c((ps.pfx_x_avg||0)*12, ps.avg_velo_FF);
+                if (dotYearFilter && ps.game_year !== dotYearFilter) continue;
+                if (!passesPitcherFilters(ps)) continue;
+                if (ps.pca_x == null || ps.pca_y == null) continue;
+                const pos = d2c(ps.pca_x, ps.pca_y);
                 const dist = Math.sqrt((mx-pos.x)**2+(my-pos.y)**2);
                 if (dist < closestDist) { closestDist = dist; closestDot = { ps, pos }; }
             }
@@ -1368,13 +1450,22 @@
             const mx = e.clientX - rect.left, my = e.clientY - rect.top;
 
             // Priority 1: cluster centroid clicks
+            const clickYearFilter = STATE.selectedYear !== 'all' ? STATE.selectedYear : null;
+            const clickYearCentroids = clickYearFilter ? computeYearCentroids(clickYearFilter) : null;
             let centroidHit = false;
             Object.entries(DATA.clusters).forEach(([id, cl]) => {
                 if (centroidHit) return;
                 if (!STATE.visibleClusters.has(id)) return;
-                const c = cl.centroid || {};
-                if (!c.avg_velo_FF) return;
-                const pos = d2c((c.pfx_x_avg||0)*12, c.avg_velo_FF);
+                let cpx, cpy;
+                if (clickYearCentroids) {
+                    const yc = clickYearCentroids[id];
+                    if (!yc) return;
+                    cpx = yc.x; cpy = yc.y;
+                } else {
+                    cpx = cl.pca_x; cpy = cl.pca_y;
+                    if (cpx == null || cpy == null) return;
+                }
+                const pos = d2c(cpx, cpy);
                 if (Math.sqrt((mx-pos.x)**2+(my-pos.y)**2) < 22) {
                     centroidHit = true;
                     if (STATE.highlightedCluster === id) {
@@ -1395,12 +1486,15 @@
             if (centroidHit) return;
 
             // Priority 2: individual pitcher dot clicks
+            const clickDotYearFilter = STATE.selectedYear !== 'all' ? parseInt(STATE.selectedYear) : null;
             let closestDot = null, closestDist = 12;
             for (let i = 0; i < DATA.pitcherSeasons.length; i++) {
                 const ps = DATA.pitcherSeasons[i];
                 if (!isPitcherVisible(ps)) continue;
-                if (!ps.avg_velo_FF) continue;
-                const pos = d2c((ps.pfx_x_avg||0)*12, ps.avg_velo_FF);
+                if (clickDotYearFilter && ps.game_year !== clickDotYearFilter) continue;
+                if (!passesPitcherFilters(ps)) continue;
+                if (ps.pca_x == null || ps.pca_y == null) continue;
+                const pos = d2c(ps.pca_x, ps.pca_y);
                 const dist = Math.sqrt((mx-pos.x)**2+(my-pos.y)**2);
                 if (dist < closestDist) { closestDist = dist; closestDot = ps; }
             }
@@ -2298,6 +2392,46 @@
 
         document.getElementById('year-select').addEventListener('change', (e) => {
             STATE.selectedYear = e.target.value; refreshData(); buildArchetypeList(); render();
+        });
+
+        // ═══ PITCHER FILTERS ═══
+        function updatePitcherFilterDisplay() {
+            const f = STATE.pitcherFilters;
+            const veloD = document.getElementById('pf-velo-display');
+            const hbD = document.getElementById('pf-hbreak-display');
+            if (veloD) veloD.textContent = (f.veloMin || 82) + '-' + (f.veloMax || 103);
+            if (hbD) hbD.textContent = (f.hBreakMin || -18) + ' to ' + (f.hBreakMax || 18);
+        }
+        ['pf-velo-min', 'pf-velo-max'].forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('input', () => {
+                const mn = parseInt(document.getElementById('pf-velo-min').value);
+                const mx = parseInt(document.getElementById('pf-velo-max').value);
+                STATE.pitcherFilters.veloMin = mn <= 82 ? null : mn;
+                STATE.pitcherFilters.veloMax = mx >= 103 ? null : mx;
+                updatePitcherFilterDisplay(); render();
+            });
+        });
+        ['pf-hbreak-min', 'pf-hbreak-max'].forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('input', () => {
+                const mn = parseInt(document.getElementById('pf-hbreak-min').value);
+                const mx = parseInt(document.getElementById('pf-hbreak-max').value);
+                STATE.pitcherFilters.hBreakMin = mn <= -18 ? null : mn;
+                STATE.pitcherFilters.hBreakMax = mx >= 18 ? null : mx;
+                updatePitcherFilterDisplay(); render();
+            });
+        });
+        document.getElementById('role-keys').addEventListener('click', (e) => {
+            const key = e.target.closest('.key');
+            if (!key || !key.dataset.role) return;
+            document.querySelectorAll('#role-keys .key').forEach(k => { k.className = 'key key-dark'; });
+            key.className = 'key key-orange';
+            const role = key.dataset.role;
+            STATE.pitcherFilters.roleFilter = role === 'all' ? null : role;
+            render();
         });
 
         // ═══ TEAM FILTER ═══
