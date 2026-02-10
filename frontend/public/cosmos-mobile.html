@@ -134,6 +134,46 @@ body {
 }
 .batter-badge.visible { opacity: 1; }
 
+/* ═══ ARCHETYPE SPREAD ═══ */
+.archetype-spread {
+    padding: 8px 8px 4px; background: var(--bg);
+    border-bottom: 1px solid #222;
+}
+.spread-label {
+    font-size: 8px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: #555; font-family: var(--font-tech);
+    margin-bottom: 4px; padding-left: 2px;
+    display: flex; justify-content: space-between;
+}
+.spread-row {
+    display: flex; gap: 2px; margin-bottom: 2px;
+}
+.spread-row.lhp-row {
+    padding-left: 17px;
+}
+.spread-chip {
+    width: 34px; height: 44px; border-radius: 6px;
+    background: rgba(255,255,255,0.04); border: 1px solid transparent;
+    border-bottom: 3px solid #666;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 1px; cursor: pointer;
+    transition: background 0.15s, transform 0.1s, border-color 0.15s;
+    flex-shrink: 0;
+}
+.spread-chip:active { transform: scale(0.92); }
+.spread-chip.selected { border-color: var(--accent); background: rgba(255,68,0,0.08); }
+.spread-chip.dimmed { opacity: 0.2; }
+.spread-chip .chip-emoji { font-size: 14px; line-height: 1; }
+.spread-chip .chip-label {
+    font-size: 7px; font-weight: 700; color: #888;
+    font-family: var(--font-tech); text-transform: uppercase;
+    letter-spacing: -0.02em; line-height: 1;
+}
+.spread-chip .chip-stat {
+    font-size: 8px; font-weight: 800; font-family: var(--font-tech);
+    line-height: 1;
+}
+
 /* ═══ ARCHETYPE LIST ═══ */
 .arch-list { background: var(--bg); }
 .arch-group-hdr {
@@ -368,6 +408,9 @@ body {
     </div>
 </div>
 
+<!-- ARCHETYPE SPREAD -->
+<div class="archetype-spread" id="archetype-spread"></div>
+
 <!-- ARCHETYPE LIST -->
 <div class="arch-list" id="archetype-list"></div>
 
@@ -423,6 +466,18 @@ const ARCHETYPE_MAP = {
 function archName(id)  { const a = ARCHETYPE_MAP[id]; return a ? a.emoji + ' ' + a.name : id; }
 function archEmoji(id) { return ARCHETYPE_MAP[id]?.emoji || ''; }
 function archNameOnly(id) { return ARCHETYPE_MAP[id]?.name || id; }
+
+const ARCHETYPE_SPREAD_ORDER = {
+    rhp: ['R_4','R_8','R_1','R_5','R_0','R_3','R_2','R_9','R_7','R_6'],
+    lhp: ['L_2','L_3','L_6','L_5','L_1','L_7','L_8','L_4','L_0']
+};
+
+const ARCHETYPE_ABBREV = {
+    'R_0':'C&C','R_1':'BOO','R_2':'GHO','R_3':'TRI','R_4':'WRM',
+    'R_5':'SID','R_6':'FIR','R_7':'HOO','R_8':'SNK','R_9':'SPL',
+    'L_0':'UND','L_1':'CRF','L_2':'FIR','L_3':'HOO','L_4':'WRM',
+    'L_5':'UNC','L_6':'SPL','L_7':'BOO','L_8':'SID'
+};
 
 const ARCHETYPE_DESC = {
     'Firestarter':    'Fastball-slider gas combo, high velo power arm',
@@ -796,7 +851,7 @@ function spawnBatter(batter) {
     document.getElementById('badge-stat').textContent = fmtStatVal(stat, avgStat) + ' ' + statLabel(stat) + ' \u00b7 ' + totalPA.toLocaleString() + ' PA';
     document.getElementById('batter-badge').classList.add('visible');
     saveSearch(batter);
-    buildArchetypeCards();
+    buildArchetypeCards(); buildArchetypeSpread();
     render();
 }
 
@@ -868,8 +923,8 @@ function closeSheet() {
     backdrop.classList.remove('visible');
 }
 
-backdrop.addEventListener('click', () => { STATE.highlightedCluster = null; closeSheet(); render(); buildArchetypeCards(); });
-document.getElementById('sheet-close').addEventListener('click', () => { STATE.highlightedCluster = null; closeSheet(); render(); buildArchetypeCards(); });
+backdrop.addEventListener('click', () => { STATE.highlightedCluster = null; closeSheet(); render(); buildArchetypeCards(); buildArchetypeSpread(); });
+document.getElementById('sheet-close').addEventListener('click', () => { STATE.highlightedCluster = null; closeSheet(); render(); buildArchetypeCards(); buildArchetypeSpread(); });
 
 // Sheet drag
 const sheetHandle = document.getElementById('sheet-handle');
@@ -998,7 +1053,7 @@ function showStatPanel(batterObj, clusterId) {
     STATE.highlightedCluster = clusterId;
     openSheet('full');
     render();
-    buildArchetypeCards();
+    buildArchetypeCards(); buildArchetypeSpread();
 
     // Sort button handlers
     sheetContent.querySelectorAll('.sort-btn').forEach(btn => {
@@ -1085,7 +1140,7 @@ function showPitcherStatPanel(ps, batterObj) {
     sheetContent.innerHTML = html;
     STATE.highlightedCluster = ps.cluster;
     openSheet('full');
-    render(); buildArchetypeCards();
+    render(); buildArchetypeCards(); buildArchetypeSpread();
 
     const archLink = sheetContent.querySelector('.arch-link');
     if (archLink) {
@@ -1093,6 +1148,69 @@ function showPitcherStatPanel(ps, batterObj) {
             showStatPanel(batterObj, ps.cluster);
         });
     }
+}
+
+// ═══════════════════════════════════════
+// ARCHETYPE SPREAD
+// ═══════════════════════════════════════
+function buildArchetypeSpread() {
+    const el = document.getElementById('archetype-spread');
+    if (!el) return;
+    const batters = STATE.activeBatters;
+    const hasBatters = batters.length > 0;
+    const matchups = hasBatters ? getMatchupData(batters[batters.length - 1]) : [];
+
+    const renderRow = (ids, cssClass) => {
+        let html = '<div class="spread-row ' + cssClass + '">';
+        ids.forEach(id => {
+            const c = DATA.clusters[id];
+            if (!c) return;
+            const vis = STATE.visibleClusters.has(id);
+            const sel = STATE.highlightedCluster === id;
+            const m = matchups.find(x => String(x.cluster) === id);
+            const hasStat = hasBatters && m && (m.PA || 0) >= STATE.minPA;
+            const dimmed = !vis || (hasBatters && !hasStat);
+
+            let cls = 'spread-chip';
+            if (sel) cls += ' selected';
+            if (dimmed && hasBatters) cls += ' dimmed';
+
+            html += '<div class="' + cls + '" data-cluster="' + id + '" style="border-bottom-color:' + c.color + ';">';
+            html += '<span class="chip-emoji">' + archEmoji(id) + '</span>';
+
+            if (hasStat) {
+                const val = m[STATE.selectedStat] || 0;
+                const display = (STATE.selectedStat === 'K_pct' || STATE.selectedStat === 'BB_pct')
+                    ? (val * 100).toFixed(0) + '%' : val.toFixed(3).slice(1);
+                html += '<span class="chip-stat" style="color:' + perfHex(STATE.selectedStat, val) + ';">' + display + '</span>';
+            } else {
+                html += '<span class="chip-label">' + ARCHETYPE_ABBREV[id] + '</span>';
+            }
+            html += '</div>';
+        });
+        html += '</div>';
+        return html;
+    };
+
+    let html = '<div class="spread-label"><span>\u2190 RHP</span><span>ARCHETYPE SPREAD</span><span>LHP \u2192</span></div>';
+    html += renderRow(ARCHETYPE_SPREAD_ORDER.rhp, 'rhp-row');
+    html += renderRow(ARCHETYPE_SPREAD_ORDER.lhp, 'lhp-row');
+    el.innerHTML = html;
+
+    // Bind tap handlers
+    el.querySelectorAll('.spread-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const id = chip.dataset.cluster;
+            if (STATE.highlightedCluster === id) {
+                STATE.highlightedCluster = null;
+                closeSheet();
+                buildArchetypeSpread(); buildArchetypeCards();
+                return;
+            }
+            const ab = batters.length > 0 ? batters[batters.length - 1] : null;
+            showStatPanel(ab, id);
+        });
+    });
 }
 
 // ═══════════════════════════════════════
@@ -1169,7 +1287,7 @@ function buildArchetypeCards() {
             if (STATE.highlightedCluster === id) {
                 STATE.highlightedCluster = null;
                 closeSheet();
-                render(); buildArchetypeCards();
+                render(); buildArchetypeCards(); buildArchetypeSpread();
                 return;
             }
             const ab = STATE.activeBatters.length > 0 ? STATE.activeBatters[STATE.activeBatters.length-1] : null;
@@ -1376,7 +1494,7 @@ function removeBatter(id) {
     STATE.activeBatters = STATE.activeBatters.filter(b => b.batter !== id);
     renderBatterChips();
     if (STATE.activeBatters.length > 0) spawnBatter(STATE.activeBatters[STATE.activeBatters.length-1]);
-    else { clearBatter(); buildArchetypeCards(); }
+    else { clearBatter(); buildArchetypeCards(); buildArchetypeSpread(); }
 }
 
 function renderBatterChips() {
@@ -1426,7 +1544,7 @@ document.getElementById('filter-bar').addEventListener('click', (e) => {
         document.querySelectorAll('.pill[data-stat]').forEach(p => p.classList.remove('active'));
         pill.classList.add('active');
         STATE.selectedStat = pill.dataset.stat;
-        refreshData(); buildArchetypeCards(); render();
+        refreshData(); buildArchetypeCards(); buildArchetypeSpread(); render();
         // Re-render stat panel if open
         if (STATE.highlightedCluster && STATE.sheetState !== 'hidden') {
             const ab = STATE.activeBatters.length > 0 ? STATE.activeBatters[STATE.activeBatters.length-1] : null;
@@ -1442,18 +1560,18 @@ document.getElementById('filter-bar').addEventListener('click', (e) => {
             const show = filter === 'all' || c.hand === filter;
             if (show) STATE.visibleClusters.add(id); else STATE.visibleClusters.delete(id);
         });
-        render(); refreshData(); buildArchetypeCards();
+        render(); refreshData(); buildArchetypeCards(); buildArchetypeSpread();
     }
 });
 
 document.getElementById('year-select').addEventListener('change', (e) => {
-    STATE.selectedYear = e.target.value; refreshData(); buildArchetypeCards(); render();
+    STATE.selectedYear = e.target.value; refreshData(); buildArchetypeCards(); buildArchetypeSpread(); render();
 });
 
 const paSlider = document.getElementById('pa-slider'), paVal = document.getElementById('pa-val');
 paSlider.addEventListener('input', () => {
     STATE.minPA = parseInt(paSlider.value); paVal.textContent = STATE.minPA;
-    refreshData(); buildArchetypeCards(); render();
+    refreshData(); buildArchetypeCards(); buildArchetypeSpread(); render();
 });
 
 // ═══════════════════════════════════════
@@ -1537,7 +1655,7 @@ async function boot() {
     try {
         await loadAllData();
         resizeCanvas();
-        buildArchetypeCards();
+        buildArchetypeCards(); buildArchetypeSpread();
         initSearch();
         setTimeout(() => {
             const loader = document.getElementById('loader');
