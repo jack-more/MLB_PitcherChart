@@ -204,6 +204,17 @@
             cursor: pointer; opacity: 0.4; font-size: 11px; margin-left: 2px;
         }
         .batter-chip .remove:hover { opacity: 1; color: var(--accent-orange); }
+        .filter-chip {
+            background: var(--key-dark); border: 1px solid #555;
+            color: #ccc; padding: 4px 10px; font-size: 10px;
+            font-family: var(--font-tech); border-radius: 3px;
+            display: flex; align-items: center; gap: 4px; white-space: nowrap;
+            font-weight: 600; letter-spacing: 0.5px;
+        }
+        .filter-chip .remove { cursor: pointer; opacity: 0.4; font-size: 11px; margin-left: 2px; }
+        .filter-chip .remove:hover { opacity: 1; color: var(--accent-orange); }
+        .hand-chip { border-left: 3px solid var(--accent-orange); }
+        .team-chip { border-left: 3px solid #33cc33; }
 
         .header-controls {
             display: flex; align-items: center; gap: 8px; margin-left: auto;
@@ -458,7 +469,6 @@
         .saved-item .s-pa { color: var(--text-label); }
         #dock-saved-content { max-height: 70px; overflow-y: auto; }
 
-        .dock-controls { flex: 0 0 auto; min-width: 140px; }
 
         /* ═══ LOADER ═══ */
         #loader {
@@ -697,17 +707,15 @@
             <div class="dock-title">🛌 Nightmare List</div>
             <div id="dock-nightmare-content" style="font-size:9px;color:var(--text-label);">Search a batter</div>
         </div>
+        <div class="dock-module" id="dock-dream">
+            <div class="dock-title">💭 Dream List</div>
+            <div id="dock-dream-content" style="font-size:9px;color:var(--text-label);">Search a batter</div>
+        </div>
         <div class="dock-module" id="dock-saved">
             <div class="dock-title">Saved Searches</div>
             <div id="dock-saved-content" style="font-size:9px;color:var(--text-label);">No saved searches</div>
         </div>
 
-        <div class="dock-module dock-controls">
-            <div class="dock-title">Controls</div>
-            <div class="dock-row"><span class="d-name" style="color:#888;">Scroll to zoom</span></div>
-            <div class="dock-row"><span class="d-name" style="color:#888;">Drag to pan</span></div>
-            <div class="dock-row"><span class="d-name" style="color:#888;">Click dot → pitcher</span></div>
-        </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
@@ -826,6 +834,7 @@
                 _teamClusterIds = null;
             }
             render(); refreshData(); buildArchetypeList();
+            if (typeof renderBatterStack === 'function') renderBatterStack();
         }
 
         function isPitcherVisible(ps) {
@@ -1417,15 +1426,36 @@
             return rows.map(r => deriveStats({...r}));
         }
 
+        // Compute batter badge stats — pitcher-level when team filter active, cluster-level otherwise
+        function getFilteredBatterStats(batter) {
+            if (!_teamPitcherIds) {
+                const matchups = getMatchupData(batter);
+                const totalPA = matchups.reduce((s,r) => s+(r.PA||0), 0);
+                const stat = STATE.selectedStat;
+                const totalStatWeighted = matchups.reduce((s,r) => s+(r[stat]||0)*(r.PA||0), 0);
+                return { pa: totalPA, avg: totalPA > 0 ? totalStatWeighted/totalPA : 0 };
+            }
+            // Team filter active: use individual pitcher matchups from _hvpIndex
+            const hvp = DATA._hvpIndex ? DATA._hvpIndex[batter.batter] : null;
+            if (!hvp) return { pa: 0, avg: 0 };
+            let totalPA = 0, totalStat = 0;
+            Object.values(hvp).forEach(arr => {
+                arr.forEach(m => {
+                    if (!_teamPitcherIds.has(m.p)) return;
+                    const pa = m.pa || 0;
+                    totalPA += pa;
+                    totalStat += hvpStat(m, STATE.selectedStat) * pa;
+                });
+            });
+            return { pa: totalPA, avg: totalPA > 0 ? totalStat/totalPA : 0 };
+        }
+
         function spawnBatter(batter) {
             const matchups = getMatchupData(batter);
-            const totalPA = matchups.reduce((s,r)=>s+(r.PA||0),0);
-            const stat = STATE.selectedStat;
-            const totalStatWeighted = matchups.reduce((s,r)=>s+(r[stat]||0)*(r.PA||0),0);
-            const avgStat = totalPA > 0 ? totalStatWeighted/totalPA : 0;
+            const stats = getFilteredBatterStats(batter);
 
             document.getElementById('badge-name').textContent = fmtName(batter.batter_name);
-            document.getElementById('badge-stat').textContent = fmtStatVal(stat, avgStat) + ' ' + statLabel(stat) + ' \u00b7 ' + totalPA.toLocaleString() + ' PA';
+            document.getElementById('badge-stat').textContent = fmtStatVal(STATE.selectedStat, stats.avg) + ' ' + statLabel(STATE.selectedStat) + ' \u00b7 ' + stats.pa.toLocaleString() + ' PA';
             document.getElementById('batter-badge').classList.add('visible');
             document.getElementById('led-batter').classList.add('active');
 
@@ -1442,6 +1472,7 @@
             document.getElementById('dock-best-content').innerHTML = '<span style="color:var(--text-label)">Search a batter</span>';
             document.getElementById('dock-worst-content').innerHTML = '<span style="color:var(--text-label)">Search a batter</span>';
             document.getElementById('dock-nightmare-content').innerHTML = '<span style="color:var(--text-label)">Search a batter</span>';
+            document.getElementById('dock-dream-content').innerHTML = '<span style="color:var(--text-label)">Search a batter</span>';
             render();
         }
 
@@ -1450,12 +1481,9 @@
             const b = STATE.activeBatters[STATE.activeBatters.length-1];
             const matchups = getMatchupData(b);
             updateDock(b, matchups);
-            // Update badge to reflect current stat
-            const totalPA = matchups.reduce((s,r)=>s+(r.PA||0),0);
-            const stat = STATE.selectedStat;
-            const totalStatWeighted = matchups.reduce((s,r)=>s+(r[stat]||0)*(r.PA||0),0);
-            const avgStat = totalPA > 0 ? totalStatWeighted/totalPA : 0;
-            document.getElementById('badge-stat').textContent = fmtStatVal(stat, avgStat) + ' ' + statLabel(stat) + ' \u00b7 ' + totalPA.toLocaleString() + ' PA';
+            // Update badge — use pitcher-level stats when team filter active
+            const stats = getFilteredBatterStats(b);
+            document.getElementById('badge-stat').textContent = fmtStatVal(STATE.selectedStat, stats.avg) + ' ' + statLabel(STATE.selectedStat) + ' \u00b7 ' + stats.pa.toLocaleString() + ' PA';
             render();
         }
 
@@ -1899,6 +1927,7 @@
             const bestEl = document.getElementById('dock-best-content');
             const worstEl = document.getElementById('dock-worst-content');
             const nightmareEl = document.getElementById('dock-nightmare-content');
+            const dreamEl = document.getElementById('dock-dream-content');
 
             if (sorted.length > 0) {
                 bestEl.innerHTML = sorted.slice(0,3).map(m => {
@@ -1963,6 +1992,53 @@
                 }
             } else {
                 nightmareEl.innerHTML = '<span style="color:var(--text-label)">Search a batter</span>';
+            }
+
+            // 💭 Dream List — individual pitchers this batter mashes
+            if (batter && DATA._hvpIndex && DATA._hvpIndex[batter.batter]) {
+                const allMatchups = [];
+                Object.values(DATA._hvpIndex[batter.batter]).forEach(arr => {
+                    arr.forEach(m => {
+                        if ((m.pa || 0) < 5) return;
+                        if (_teamPitcherIds && !_teamPitcherIds.has(m.p)) return;
+                        allMatchups.push(m);
+                    });
+                });
+                const isHigherWorse = (ss === 'K_pct');
+                let totalStatPA = 0, totalStatVal = 0;
+                allMatchups.forEach(m => {
+                    const pa = m.pa || 0;
+                    totalStatPA += pa;
+                    totalStatVal += hvpStat(m, ss) * pa;
+                });
+                const batterAvg = totalStatPA > 0 ? totalStatVal / totalStatPA : 0;
+                // Keep only matchups where batter is ABOVE average (dream territory)
+                const dreams = allMatchups.filter(m => {
+                    const val = hvpStat(m, ss);
+                    return isHigherWorse ? (val < batterAvg) : (val > batterAvg);
+                });
+                // Sort: dream score = (PA/3) × deviation above average
+                dreams.sort((a, b) => {
+                    const va = hvpStat(a, ss), vb = hvpStat(b, ss);
+                    const paA = a.pa || 0, paB = b.pa || 0;
+                    const devA = isHigherWorse ? (batterAvg - va) : (va - batterAvg);
+                    const devB = isHigherWorse ? (batterAvg - vb) : (vb - batterAvg);
+                    const scoreA = (paA / 3) * devA;
+                    const scoreB = (paB / 3) * devB;
+                    return scoreB - scoreA;
+                });
+                if (dreams.length > 0) {
+                    dreamEl.innerHTML = dreams.slice(0, 5).map(m => {
+                        const val = hvpStat(m, ss);
+                        return '<div class="dock-row"><span class="d-name">' + fmtName(m.pn) + '</span>'
+                            + '<span class="d-stat">' + m.pa + 'PA</span>'
+                            + '<span class="d-stat good">' + fmtStatVal(ss, val) + '</span></div>';
+                    }).join('');
+                } else {
+                    dreamEl.innerHTML = '<span style="color:var(--text-label)">Not enough PA</span>';
+                }
+            } else {
+                dreamEl.innerHTML = '<span style="color:var(--text-label)">Search a batter</span>';
             }
         }
 
@@ -2062,11 +2138,55 @@
 
         function renderBatterStack() {
             const el = document.getElementById('batter-stack');
-            el.innerHTML = STATE.activeBatters.map(b =>
+            let html = '';
+
+            // Hand filter chip
+            if (STATE.visibleClusters.size > 0) {
+                const allR = [...STATE.visibleClusters].every(c => c.startsWith('R_'));
+                const allL = [...STATE.visibleClusters].every(c => c.startsWith('L_'));
+                if (allR) html += '<div class="filter-chip hand-chip">RHP<span class="remove" data-filter="hand">\u2715</span></div>';
+                else if (allL) html += '<div class="filter-chip hand-chip">LHP<span class="remove" data-filter="hand">\u2715</span></div>';
+            }
+
+            // Team filter chip
+            if (STATE.teamFilter) {
+                const team = DATA.teamRosters.teams ? DATA.teamRosters.teams[STATE.teamFilter] : null;
+                const label = STATE.teamFilter + (team ? ' \u2014 ' + team.name : '');
+                html += '<div class="filter-chip team-chip">' + label + '<span class="remove" data-filter="team">\u2715</span></div>';
+            }
+
+            // Batter chips
+            html += STATE.activeBatters.map(b =>
                 '<div class="batter-chip" data-id="'+b.batter+'">'+fmtName(b.batter_name)+'<span class="remove" data-id="'+b.batter+'">\u2715</span></div>'
             ).join('');
-            el.querySelectorAll('.remove').forEach(r => {
+
+            el.innerHTML = html;
+
+            // Wire up batter remove buttons
+            el.querySelectorAll('.batter-chip .remove').forEach(r => {
                 r.addEventListener('click', (e) => { e.stopPropagation(); removeBatter(parseInt(r.dataset.id)); });
+            });
+
+            // Wire up filter chip remove buttons
+            el.querySelectorAll('.filter-chip .remove').forEach(r => {
+                r.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const f = r.dataset.filter;
+                    if (f === 'hand') {
+                        // Reset to ALL
+                        document.querySelectorAll('#filter-keys .key').forEach(k => { k.className = 'key key-dark'; });
+                        document.querySelector('#filter-keys .key[data-filter="all"]').className = 'key key-orange';
+                        Object.keys(DATA.clusters).forEach(id => STATE.visibleClusters.add(id));
+                        render(); refreshData(); buildArchetypeList(); renderBatterStack();
+                    } else if (f === 'team') {
+                        // Clear team filter
+                        document.getElementById('team-search').value = '';
+                        document.getElementById('team-search').placeholder = 'ALL TEAMS';
+                        document.getElementById('team-clear').style.display = 'none';
+                        updateTeamFilter(null);
+                        renderBatterStack();
+                    }
+                });
             });
         }
 
@@ -2106,7 +2226,7 @@
                 const show = filter === 'all' || c.hand === filter;
                 if (show) STATE.visibleClusters.add(id); else STATE.visibleClusters.delete(id);
             });
-            render(); refreshData(); buildArchetypeList();
+            render(); refreshData(); buildArchetypeList(); renderBatterStack();
         });
 
         document.getElementById('year-select').addEventListener('change', (e) => {
