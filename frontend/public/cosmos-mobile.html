@@ -1418,9 +1418,10 @@ function buildHuntFeed() {
         crush.slice(0, 5).forEach(m => {
             const cl = DATA.clusters[m.cluster];
             const color = cl?.color || '#888';
-            html += '<div class="hunt-row">';
+            const hand = m.cluster[0];
+            html += '<div class="hunt-row" data-cluster="' + m.cluster + '" style="cursor:pointer;">';
             html += '<span class="hunt-ba" style="color:var(--green);">' + m.ba_calc.toFixed(3) + '</span>';
-            html += '<span class="hunt-arch" style="color:' + color + ';">vs ' + archName(m.cluster) + '</span>';
+            html += '<span class="hunt-arch" style="color:' + color + ';"><span style="color:#666;font-size:9px;font-weight:800;margin-right:3px;">' + hand + '</span>vs ' + archName(m.cluster) + '</span>';
             html += '<span class="hunt-meta">' + m.PA + ' PA \u00b7 ' + fmtStatVal('wOBA', m.wOBA || 0) + ' wOBA</span>';
             html += '</div>';
         });
@@ -1434,9 +1435,10 @@ function buildHuntFeed() {
         danger.slice(0, 5).forEach(m => {
             const cl = DATA.clusters[m.cluster];
             const color = cl?.color || '#888';
-            html += '<div class="hunt-row">';
+            const hand = m.cluster[0];
+            html += '<div class="hunt-row" data-cluster="' + m.cluster + '" style="cursor:pointer;">';
             html += '<span class="hunt-ba" style="color:var(--red);">' + m.ba_calc.toFixed(3) + '</span>';
-            html += '<span class="hunt-arch" style="color:' + color + ';">vs ' + archName(m.cluster) + '</span>';
+            html += '<span class="hunt-arch" style="color:' + color + ';"><span style="color:#666;font-size:9px;font-weight:800;margin-right:3px;">' + hand + '</span>vs ' + archName(m.cluster) + '</span>';
             html += '<span class="hunt-meta">' + m.PA + ' PA \u00b7 ' + fmtStatVal('wOBA', m.wOBA || 0) + ' wOBA</span>';
             html += '</div>';
         });
@@ -1451,6 +1453,13 @@ function buildHuntFeed() {
 
     sheetContent.innerHTML = html;
     openSheet('full');
+
+    // Wire click handlers for hunt rows → open stat panel
+    sheetContent.querySelectorAll('.hunt-row[data-cluster]').forEach(row => {
+        row.addEventListener('click', () => {
+            showStatPanel(batter, row.dataset.cluster);
+        });
+    });
 }
 
 // ═══════════════════════════════════════

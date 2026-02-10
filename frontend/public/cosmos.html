@@ -473,7 +473,10 @@
             display: flex; justify-content: space-between; align-items: center;
             padding: 3px 0; font-size: 11px; font-family: var(--font-tech);
             border-bottom: 1px solid rgba(0,0,0,0.05); font-weight: 600;
+            cursor: pointer; transition: background 0.15s;
         }
+        .dock-row:hover { background: rgba(255,255,255,0.03); }
+        .dock-row .d-hand { font-size: 9px; font-weight: 800; color: #666; margin-right: 4px; letter-spacing: 0.5px; }
         .dock-row .d-name { flex: 1; color: var(--key-dark); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
         .dock-row .d-stat { width: 40px; text-align: right; font-weight: 800; }
         .dock-row .d-stat.good { color: var(--perf-green); }
@@ -1960,12 +1963,23 @@
             if (sorted.length > 0) {
                 bestEl.innerHTML = sorted.slice(0,3).map(m => {
                     const cl = DATA.clusters[m.cluster];
-                    return '<div class="dock-row"><span class="d-name" style="color:'+(cl?.color||'#333')+'">'+archName(m.cluster)+'</span><span class="d-stat">'+m.PA+'PA</span><span class="d-stat good">'+fmtStatVal(ss,m[ss]||0)+'</span></div>';
+                    const hand = m.cluster[0];
+                    return '<div class="dock-row" data-cluster="'+m.cluster+'"><span class="d-hand">'+hand+'</span><span class="d-name" style="color:'+(cl?.color||'#333')+'">'+archName(m.cluster)+'</span><span class="d-stat">'+m.PA+'PA</span><span class="d-stat good">'+fmtStatVal(ss,m[ss]||0)+'</span></div>';
                 }).join('');
                 worstEl.innerHTML = sorted.slice(-3).reverse().map(m => {
                     const cl = DATA.clusters[m.cluster];
-                    return '<div class="dock-row"><span class="d-name" style="color:'+(cl?.color||'#333')+'">'+archName(m.cluster)+'</span><span class="d-stat">'+m.PA+'PA</span><span class="d-stat bad">'+fmtStatVal(ss,m[ss]||0)+'</span></div>';
+                    const hand = m.cluster[0];
+                    return '<div class="dock-row" data-cluster="'+m.cluster+'"><span class="d-hand">'+hand+'</span><span class="d-name" style="color:'+(cl?.color||'#333')+'">'+archName(m.cluster)+'</span><span class="d-stat">'+m.PA+'PA</span><span class="d-stat bad">'+fmtStatVal(ss,m[ss]||0)+'</span></div>';
                 }).join('');
+
+                // Wire click handlers for best/worst matchup rows
+                [bestEl, worstEl].forEach(el => {
+                    el.querySelectorAll('.dock-row[data-cluster]').forEach(row => {
+                        row.addEventListener('click', () => {
+                            showStatPanel(batter, row.dataset.cluster);
+                        });
+                    });
+                });
             } else {
                 bestEl.innerHTML = '<span style="color:var(--text-label)">Not enough PA</span>';
                 worstEl.innerHTML = '<span style="color:var(--text-label)">Not enough PA</span>';
