@@ -396,6 +396,7 @@ body {
     <div class="pill" data-filter="RHP">RHP</div>
     <div class="pill" data-filter="LHP">LHP</div>
     <div class="pill-sep"></div>
+    <select id="team-select"><option value="">ALL TEAMS</option></select>
     <select id="year-select"><option value="all">ALL YEARS</option></select>
     <div class="pa-wrap">
         <span>PA:<span id="pa-val">10</span></span>
@@ -441,7 +442,7 @@ body {
 // ═══════════════════════════════════════
 // DATA & STATE
 // ═══════════════════════════════════════
-const DATA = { clusters: {}, batters: [], pitcherSeasons: [], hitterVsCluster: [], hitterVsPitcher: [], archetypeKings: {} };
+const DATA = { clusters: {}, batters: [], pitcherSeasons: [], hitterVsCluster: [], hitterVsPitcher: [], archetypeKings: {}, teamRosters: {} };
 
 const ARCHETYPE_MAP = {
     // RHP
@@ -507,7 +508,11 @@ const STATE = {
     highlightedCluster: null,
     savedSearches: JSON.parse(localStorage.getItem('pfx_saved') || '[]'),
     sheetState: 'hidden', // hidden, peek, full
+    teamFilter: null,
 };
+
+let _teamPitcherIds = null;
+let _teamClusterIds = null;
 
 // ═══════════════════════════════════════
 // DATA LOADING (identical to desktop)
@@ -531,6 +536,8 @@ async function loadAllData() {
     catch(e) { DATA.hitterVsPitcher = []; }
     try { DATA.archetypeKings = await loadJSON('archetype_kings.json', 'archetype kings', setStatus); }
     catch(e) { DATA.archetypeKings = {}; }
+    try { DATA.teamRosters = await loadJSON('teams_2026.json', 'team rosters', setStatus); }
+    catch(e) { DATA.teamRosters = { teams: {}, rosters: {} }; }
 
     // Fix centroids with missing velo
     Object.entries(DATA.clusters).forEach(([cid, cluster]) => {
@@ -558,6 +565,45 @@ async function loadAllData() {
     const years = [...new Set(DATA.hitterVsCluster.map(r => r.game_year))].sort();
     const sel = document.getElementById('year-select');
     years.forEach(y => { const o = document.createElement('option'); o.value = y; o.textContent = y; sel.appendChild(o); });
+
+    // Populate team dropdown
+    const teamSel = document.getElementById('team-select');
+    const DIV_ORDER = [
+        { label: 'AL East', teams: ['BAL','BOS','NYY','TB','TOR'] },
+        { label: 'AL Central', teams: ['CLE','CWS','DET','KC','MIN'] },
+        { label: 'AL West', teams: ['HOU','LAA','OAK','SEA','TEX'] },
+        { label: 'NL East', teams: ['ATL','MIA','NYM','PHI','WSH'] },
+        { label: 'NL Central', teams: ['CHC','CIN','MIL','PIT','STL'] },
+        { label: 'NL West', teams: ['ARI','COL','LAD','SD','SF'] },
+    ];
+    DIV_ORDER.forEach(div => {
+        const grp = document.createElement('optgroup');
+        grp.label = div.label;
+        div.teams.forEach(abbr => {
+            const t = DATA.teamRosters.teams?.[abbr];
+            if (!t) return;
+            const o = document.createElement('option');
+            o.value = abbr;
+            o.textContent = abbr;
+            grp.appendChild(o);
+        });
+        teamSel.appendChild(grp);
+    });
+    // WBC teams
+    if (DATA.teamRosters.teams) {
+        const wbc = Object.keys(DATA.teamRosters.teams).filter(k => !DIV_ORDER.some(d => d.teams.includes(k)));
+        if (wbc.length > 0) {
+            const grp = document.createElement('optgroup');
+            grp.label = 'WBC';
+            wbc.forEach(abbr => {
+                const o = document.createElement('option');
+                o.value = abbr;
+                o.textContent = abbr + ' — ' + DATA.teamRosters.teams[abbr].name;
+                grp.appendChild(o);
+            });
+            teamSel.appendChild(grp);
+        }
+    }
 }
 
 // ═══════════════════════════════════════
@@ -664,6 +710,7 @@ function drawDots() {
         const ps = DATA.pitcherSeasons[i];
         const cluster = DATA.clusters[ps.cluster];
         if (!cluster || !STATE.visibleClusters.has(ps.cluster)) continue;
+        if (_teamPitcherIds && !_teamPitcherIds.has(ps.pitcher)) continue;
         const moveIn = (ps.pfx_x_avg || 0) * 12;
         const velo = ps.avg_velo_FF;
         if (!velo || velo === 0) continue;
@@ -826,7 +873,46 @@ function deriveStats(r) {
     return r;
 }
 
+function updateTeamFilter(abbr) {
+    STATE.teamFilter = abbr;
+    if (abbr && DATA.teamRosters.rosters && DATA.teamRosters.rosters[abbr]) {
+        _teamPitcherIds = new Set(DATA.teamRosters.rosters[abbr]);
+        _teamClusterIds = new Set();
+        DATA.pitcherSeasons.forEach(ps => {
+            if (_teamPitcherIds.has(ps.pitcher)) _teamClusterIds.add(ps.cluster);
+        });
+    } else {
+        _teamPitcherIds = null;
+        _teamClusterIds = null;
+    }
+    render(); refreshData(); buildArchetypeCards(); buildArchetypeSpread();
+}
+
 function getMatchupData(batter) {
+    // When team filter active, aggregate from individual pitcher matchups
+    if (_teamPitcherIds && DATA._hvpIndex && DATA._hvpIndex[batter.batter]) {
+        const hvp = DATA._hvpIndex[batter.batter];
+        const grouped = {};
+        Object.entries(hvp).forEach(([cid, arr]) => {
+            arr.forEach(m => {
+                if (!_teamPitcherIds.has(m.p)) return;
+                if (!grouped[cid]) grouped[cid] = { cluster: cid, PA: 0, H: 0, HR: 0, K: 0, BB: 0, woba_sum: 0 };
+                const g = grouped[cid];
+                const pa = m.pa || 0;
+                g.PA += pa; g.H += m.h || 0; g.HR += m.hr || 0;
+                g.K += m.k || 0; g.BB += m.bb || 0;
+                g.woba_sum += (m.w || 0) * pa;
+            });
+        });
+        return Object.values(grouped).map(g => {
+            g.AB = g.PA - g.BB; g.HBP = 0;
+            g.singles = g.H - g.HR; g.doubles = 0; g.triples = 0;
+            g.wOBA = g.PA > 0 ? g.woba_sum / g.PA : 0;
+            return deriveStats(g);
+        });
+    }
+
+    // Default: cluster-level data (no team filter)
     let rows = DATA.hitterVsCluster.filter(r => r.batter === batter.batter);
     if (STATE.selectedYear !== 'all') rows = rows.filter(r => r.game_year === parseInt(STATE.selectedYear));
     if (STATE.selectedYear === 'all' && rows.length > 0) {
@@ -983,7 +1069,8 @@ function showStatPanel(batterObj, clusterId) {
         html += '<div style="font-size:10px;color:#555;font-style:italic;font-family:var(--font-tech);padding:6px 0;margin-top:8px;border-top:1px solid #1a1a1a;">\u{1F3F7}\uFE0F TAGGED: Coming Soon</div>';
 
         // Pitcher roster
-        const pitcherMatchups = (DATA._hvpIndex[batterObj.batter] || {})[clusterId] || [];
+        let pitcherMatchups = (DATA._hvpIndex[batterObj.batter] || {})[clusterId] || [];
+        if (_teamPitcherIds) pitcherMatchups = pitcherMatchups.filter(m => _teamPitcherIds.has(m.p));
         if (pitcherMatchups.length > 0) {
             html += '<div style="display:flex;align-items:center;justify-content:space-between;margin:14px 0 6px;padding-bottom:4px;border-bottom:1px solid #222;">';
             html += '<span class="section-hdr" style="margin:0;border:0;padding:0;">Pitchers ('+pitcherMatchups.length+')</span>';
@@ -1022,7 +1109,7 @@ function showStatPanel(batterObj, clusterId) {
         html += '<div class="profile-row"><span>Top Pitches</span><span class="pval">'+pitches.map(x=>x.p+' '+((x.v)*100).toFixed(0)+'%').join(', ')+'</span></div>';
 
         // Pitcher roster (no batter)
-        const members = DATA.pitcherSeasons.filter(p => p.cluster === clusterId);
+        const members = DATA.pitcherSeasons.filter(p => p.cluster === clusterId && (!_teamPitcherIds || _teamPitcherIds.has(p.pitcher)));
         const seen = {};
         members.forEach(p => { if (!seen[p.pitcher] || p.game_year > seen[p.pitcher].game_year) seen[p.pitcher] = p; });
         const uniquePitchers = Object.values(seen).sort((a,b) => (b.avg_velo_FF||0) - (a.avg_velo_FF||0));
@@ -1236,6 +1323,17 @@ function buildArchetypeCards() {
     const allMatchups = batters.map(b => getMatchupData(b));
     let html = '';
 
+    // Pre-compute team pitcher counts
+    let _teamCounts = null;
+    if (_teamPitcherIds) {
+        _teamCounts = {};
+        DATA.pitcherSeasons.forEach(ps => {
+            if (!_teamPitcherIds.has(ps.pitcher)) return;
+            if (!_teamCounts[ps.cluster]) _teamCounts[ps.cluster] = new Set();
+            _teamCounts[ps.cluster].add(ps.pitcher);
+        });
+    }
+
     const renderGroup = (group, label) => {
         html += '<div class="arch-group-hdr">' + label + '</div>';
         group.forEach(id => {
@@ -1246,14 +1344,15 @@ function buildArchetypeCards() {
             const cls = 'arch-card' + (sel ? ' selected' : '') + (!vis ? ' dimmed' : '');
 
             // Count SPs and RPs in this cluster
-            const clusterPitchers = DATA.pitcherSeasons.filter(p => p.cluster === id);
+            const clusterPitchers = DATA.pitcherSeasons.filter(p => p.cluster === id && (!_teamPitcherIds || _teamPitcherIds.has(p.pitcher)));
             const spCount = clusterPitchers.filter(p => p.is_sp).length;
             const rpCount = clusterPitchers.length - spCount;
+            const displayCount = _teamCounts ? (_teamCounts[id] ? _teamCounts[id].size : 0) : c.pitcher_count;
 
             html += '<div class="' + cls + '" data-cluster="' + id + '" style="border-left-color:' + c.color + ';">';
             html += '<div class="card-top">';
             html += '<span class="card-name" style="color:' + (vis ? c.color : '#666') + ';">' + archName(id) + '</span>';
-            html += '<span class="card-count">' + c.pitcher_count + ' P</span>';
+            html += '<span class="card-count">' + displayCount + ' P</span>';
             html += '</div>';
 
             // Profile stats line
@@ -1583,6 +1682,10 @@ document.getElementById('filter-bar').addEventListener('click', (e) => {
 
 document.getElementById('year-select').addEventListener('change', (e) => {
     STATE.selectedYear = e.target.value; refreshData(); buildArchetypeCards(); buildArchetypeSpread(); render();
+});
+
+document.getElementById('team-select').addEventListener('change', (e) => {
+    updateTeamFilter(e.target.value || null);
 });
 
 const paSlider = document.getElementById('pa-slider'), paVal = document.getElementById('pa-val');
