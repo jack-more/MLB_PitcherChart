@@ -87,11 +87,10 @@ body {
 
 /* ═══ FILTER BAR ═══ */
 .filter-bar {
-    display: none; padding: 8px 12px; overflow-x: auto; white-space: nowrap;
+    display: flex; padding: 8px 12px; overflow-x: auto; white-space: nowrap;
     gap: 6px; background: var(--bg); border-bottom: 1px solid #1a1a1a;
     -webkit-overflow-scrolling: touch;
 }
-.filter-bar.visible { display: flex; }
 .pill {
     display: inline-flex; align-items: center; justify-content: center;
     height: 32px; padding: 0 12px; background: var(--card); border: 1px solid var(--border-lt);
@@ -380,7 +379,6 @@ body {
         <input type="text" id="batter-search" placeholder="SEARCH BATTER..." autocomplete="off">
         <div class="search-dropdown" id="search-dropdown"></div>
     </div>
-    <div class="filter-toggle" id="filter-toggle">☰</div>
 </div>
 
 <!-- BATTER CHIPS -->
@@ -1554,13 +1552,6 @@ function saveSearch(batter) {
 // ═══════════════════════════════════════
 // FILTER CONTROLS
 // ═══════════════════════════════════════
-document.getElementById('filter-toggle').addEventListener('click', () => {
-    const bar = document.getElementById('filter-bar');
-    const btn = document.getElementById('filter-toggle');
-    bar.classList.toggle('visible');
-    btn.classList.toggle('active', bar.classList.contains('visible'));
-});
-
 // Metric pills
 document.getElementById('filter-bar').addEventListener('click', (e) => {
     const pill = e.target.closest('.pill');
