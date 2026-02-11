@@ -80,6 +80,20 @@ def _score_traits(row: pd.Series) -> dict:
         "is_sp": row.get("is_sp", 0),
         "spin": row.get("spin_overall", 0),
         "ext": row.get("avg_extension", 0),
+        # Zone location traits
+        "ss_up": row.get("ss_up_rate", 0.5),
+        "ss_arm": row.get("ss_arm_side", 0.5),
+        "ss_heart": row.get("ss_heart_rate", 0.08),
+        "ss_edge": row.get("ss_edge_rate", 0.5),
+        "os_up": row.get("os_up_rate", 0.5),
+        "os_arm": row.get("os_arm_side", 0.5),
+        "os_heart": row.get("os_heart_rate", 0.08),
+        "os_edge": row.get("os_edge_rate", 0.5),
+        "platoon_lat": row.get("platoon_lateral_shift", 0),
+        "platoon_ht": row.get("platoon_height_shift", 0),
+        "ss_entropy": row.get("ss_location_entropy", 3.0),
+        "os_entropy": row.get("os_location_entropy", 3.0),
+        "entropy_shift": row.get("entropy_shift", 0),
     }
 
 
@@ -133,6 +147,32 @@ def generate_full_name(row: pd.Series) -> str:
     else:
         parts.append("Kitchen Sink Illusionist")
 
+    # --- Zone location modifier (only when distinctive) ---
+    avg_up = (t["ss_up"] + t["os_up"]) / 2
+    avg_arm = (t["ss_arm"] + t["os_arm"]) / 2
+    avg_heart = (t["ss_heart"] + t["os_heart"]) / 2
+    avg_entropy = (t["ss_entropy"] + t["os_entropy"]) / 2
+
+    if avg_up > 0.55 and avg_arm > 0.55:
+        parts.append("Up-and-In")
+    elif avg_up > 0.55 and avg_arm < 0.45:
+        parts.append("Up-and-Away")
+    elif avg_up > 0.55:
+        parts.append("High-Zone")
+    elif avg_up < 0.35:
+        parts.append("Low-Zone")
+
+    if avg_heart > 0.12:
+        parts.append("Heart-Attacker")
+    elif avg_heart < 0.06:
+        parts.append("Nibbler")
+
+    if t["platoon_lat"] > 0.25:
+        parts.append("Platoon-Shifter")
+
+    if avg_entropy < 2.6:
+        parts.append("One-Track")
+
     # --- Secondary modifier: outcome profile ---
     if t["whiff"] > 0.26:
         parts.append("Swing-and-Miss Machine")
@@ -150,52 +190,74 @@ def generate_full_name(row: pd.Series) -> str:
     return " ".join(parts)
 
 
+def _zone_prefix(t: dict) -> str:
+    """Return a short zone location prefix for the short name, or empty string."""
+    avg_up = (t["ss_up"] + t["os_up"]) / 2
+    avg_arm = (t["ss_arm"] + t["os_arm"]) / 2
+    avg_heart = (t["ss_heart"] + t["os_heart"]) / 2
+
+    if avg_up > 0.55 and avg_arm > 0.55:
+        return "Up-In "
+    elif avg_up > 0.55 and avg_arm < 0.45:
+        return "Up-Away "
+    elif avg_up > 0.55:
+        return "High "
+    elif avg_up < 0.35:
+        return "Low "
+    elif avg_heart > 0.12:
+        return "Heart "
+    elif avg_heart < 0.06:
+        return "Nibbler "
+    return ""
+
+
 def generate_short_name(row: pd.Series, full_name: str) -> str:
     """Create a punchy 2-4 word label. Every cluster MUST get a unique name."""
     t = _score_traits(row)
     role = _role_short(t["is_sp"])
+    zp = _zone_prefix(t)
 
     # Ordered by most exotic/distinctive pitch trait first
     if t["sv"] > 0.10:
-        return f"Screwball Unicorn {role}"
+        return f"{zp}Screwball Unicorn {role}"
     if t["kn"] > 0.10:
-        return f"Knuckleball Wizard {role}"
+        return f"{zp}Knuckleball Wizard {role}"
     if t["fs"] > 0.15:
-        return f"Splitter Assassin {role}"
+        return f"{zp}Splitter Assassin {role}"
     if t["kc"] > 0.15:
-        return f"Knuckle-Curve Sorcerer {role}"
+        return f"{zp}Knuckle-Curve Sorcerer {role}"
     if t["st"] > 0.20:
-        return f"Sweeper Merchant {role}"
+        return f"{zp}Sweeper Merchant {role}"
     if t["ch"] > 0.20:
-        return f"Circle-Change Phantom {role}"
+        return f"{zp}Circle-Change Phantom {role}"
     if t["si"] > 0.40 and t["ff"] < 0.05:
-        return f"Sinker Ghost {role}"
+        return f"{zp}Sinker Ghost {role}"
     if t["si"] > 0.35 and t["fc"] > 0.15:
-        return f"Sinker-Cutter {role}"
+        return f"{zp}Sinker-Cutter {role}"
     if t["si"] > 0.35 and t["sl"] > 0.18:
-        return f"Earthworm {role}"
+        return f"{zp}Earthworm {role}"
     if t["si"] > 0.35:
-        return f"Sinker Savant {role}"
+        return f"{zp}Sinker Savant {role}"
     if t["ff"] > 0.45 and t["sl"] > 0.30:
-        return f"Gas & Snap {role}"
+        return f"{zp}Gas & Snap {role}"
     if t["ff"] > 0.40 and t["sl"] > 0.15 and t["cu"] > 0.10:
-        return f"Triple Threat {role}"
+        return f"{zp}Triple Threat {role}"
     if t["cu"] > 0.15 and t["fc"] > 0.12:
-        return f"Cutter-Curve Craftsman {role}"
+        return f"{zp}Cutter-Curve Craftsman {role}"
     if t["cu"] > 0.12 and t["is_sp"] > 0.55:
-        return f"Uncle Charlie {role}"
+        return f"{zp}Uncle Charlie {role}"
     if t["cu"] > 0.12:
-        return f"Yakker {role}"
+        return f"{zp}Yakker {role}"
     if t["fc"] > 0.15:
-        return f"Cutter Carver {role}"
+        return f"{zp}Cutter Carver {role}"
     if t["ff"] + t["si"] > 0.55 and t["whiff"] > 0.25:
-        return f"Flamethrower {role}"
+        return f"{zp}Flamethrower {role}"
     if t["ff"] + t["si"] > 0.55:
-        return f"Heater-Heavy {role}"
+        return f"{zp}Heater-Heavy {role}"
     if t["ch"] + t["fs"] > 0.15:
-        return f"Offspeed Wizard {role}"
+        return f"{zp}Offspeed Wizard {role}"
 
-    return f"Kitchen Sink {role}"
+    return f"{zp}Kitchen Sink {role}"
 
 
 def find_nearest_pitchers(

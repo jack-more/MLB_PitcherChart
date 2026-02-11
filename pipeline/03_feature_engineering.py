@@ -18,10 +18,13 @@ import pandas as pd
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from scipy.stats import entropy as sp_entropy
+
 from config import (
     SEASONS, RAW_DATA_DIR, PROCESSED_DATA_DIR,
     PITCH_TYPES, MIN_PITCHES, MIN_PITCH_TYPE_PCT,
     SHOULDER_HEIGHT_APPROX, SWING_DESCRIPTIONS, WHIFF_DESCRIPTIONS,
+    MIN_PITCHES_PER_SIDE,
 )
 
 
@@ -180,6 +183,161 @@ def compute_movement(df: pd.DataFrame) -> pd.DataFrame:
     return result
 
 
+def compute_zone_location(df: pd.DataFrame) -> pd.DataFrame:
+    """Compute pitch location zone features per pitcher-season.
+
+    Three layers:
+      Layer 1: WHERE they locate (split by same-side vs opposite-side batters)
+      Layer 2: Platoon shifts (how much they change by batter side)
+      Layer 3: Location entropy (how predictable their pattern is)
+
+    Returns DataFrame keyed on [pitcher, game_year] with 13 zone columns.
+    """
+    # Filter to pitches with valid location data
+    loc = df.dropna(subset=["plate_x", "plate_z", "stand", "sz_top", "sz_bot"]).copy()
+    if len(loc) == 0:
+        return pd.DataFrame(columns=["pitcher", "game_year"])
+
+    # Determine same-side vs opposite-side
+    loc["is_same_side"] = (loc["stand"] == loc["p_throws"])
+
+    # Normalize vertical position to batter's zone (0 = bottom, 1 = top)
+    zone_span = (loc["sz_top"] - loc["sz_bot"]).clip(lower=0.1)
+    loc["zone_height"] = (loc["plate_z"] - loc["sz_bot"]) / zone_span
+
+    # Arm-side x: positive = arm side for both RHP and LHP
+    loc["arm_side_x"] = np.where(
+        loc["p_throws"] == "R",
+        loc["plate_x"],
+        -loc["plate_x"],
+    )
+
+    # Boolean classification flags (vectorized)
+    loc["is_upper"] = (loc["zone_height"] > 0.5).astype(np.int8)
+    loc["is_arm_side"] = (loc["arm_side_x"] > 0).astype(np.int8)
+    loc["is_heart"] = (
+        (loc["plate_x"].abs() < 0.3) &
+        (loc["zone_height"].between(0.3, 0.7))
+    ).astype(np.int8)
+    loc["is_edge"] = (
+        ~loc["is_heart"].astype(bool) &
+        (loc["plate_x"].abs() < 1.2) &
+        (loc["zone_height"].between(-0.2, 1.2))
+    ).astype(np.int8)
+
+    # 9-quadrant grid for entropy (3 lateral x 3 vertical, vectorized)
+    loc["lat_bin"] = np.select(
+        [loc["arm_side_x"] > 0.28, loc["arm_side_x"] < -0.28],
+        [0, 2], default=1,
+    )
+    loc["vert_bin"] = np.select(
+        [loc["zone_height"] > 0.67, loc["zone_height"] < 0.33],
+        [0, 2], default=1,
+    )
+    loc["quadrant"] = loc["lat_bin"] * 3 + loc["vert_bin"]  # 0-8
+
+    # --- Aggregate per pitcher-season-side ---
+    def _side_features(group):
+        n = len(group)
+        if n == 0:
+            return pd.Series({
+                "up_rate": np.nan, "arm_side": np.nan,
+                "heart_rate": np.nan, "edge_rate": np.nan,
+                "location_entropy": np.nan, "n_loc": 0,
+            })
+
+        up_rate = group["is_upper"].mean()
+        arm_side = group["is_arm_side"].mean()
+        heart_rate = group["is_heart"].mean()
+        edge_rate = group["is_edge"].mean()
+
+        # Shannon entropy of 9-quadrant distribution
+        quad_counts = group["quadrant"].value_counts()
+        quad_probs = np.zeros(9)
+        for q, cnt in quad_counts.items():
+            quad_probs[int(q)] = cnt
+        total = quad_probs.sum()
+        if total > 0:
+            quad_probs = quad_probs / total
+        loc_entropy = float(sp_entropy(quad_probs, base=2))
+
+        return pd.Series({
+            "up_rate": up_rate,
+            "arm_side": arm_side,
+            "heart_rate": heart_rate,
+            "edge_rate": edge_rate,
+            "location_entropy": loc_entropy,
+            "n_loc": n,
+        })
+
+    print("    Computing zone location features...")
+    side_stats = loc.groupby(
+        ["pitcher", "game_year", "is_same_side"]
+    ).apply(_side_features).reset_index()
+
+    # Split into same-side and opposite-side
+    ss = side_stats[side_stats["is_same_side"] == True].copy()
+    os_ = side_stats[side_stats["is_same_side"] == False].copy()
+
+    ss = ss.rename(columns={
+        "up_rate": "ss_up_rate", "arm_side": "ss_arm_side",
+        "heart_rate": "ss_heart_rate", "edge_rate": "ss_edge_rate",
+        "location_entropy": "ss_location_entropy", "n_loc": "ss_n",
+    }).drop(columns=["is_same_side"])
+
+    os_ = os_.rename(columns={
+        "up_rate": "os_up_rate", "arm_side": "os_arm_side",
+        "heart_rate": "os_heart_rate", "edge_rate": "os_edge_rate",
+        "location_entropy": "os_location_entropy", "n_loc": "os_n",
+    }).drop(columns=["is_same_side"])
+
+    # Merge same-side and opposite-side
+    result = ss.merge(os_, on=["pitcher", "game_year"], how="outer")
+
+    # Compute overall stats as fallback for thin splits
+    overall = loc.groupby(["pitcher", "game_year"]).apply(_side_features).reset_index()
+    overall = overall.rename(columns={
+        "up_rate": "_ov_up", "arm_side": "_ov_arm",
+        "heart_rate": "_ov_heart", "edge_rate": "_ov_edge",
+        "location_entropy": "_ov_entropy",
+    })
+
+    result = result.merge(
+        overall[["pitcher", "game_year", "_ov_up", "_ov_arm", "_ov_heart", "_ov_edge", "_ov_entropy"]],
+        on=["pitcher", "game_year"], how="left",
+    )
+
+    # Apply fallback for same-side (< MIN_PITCHES_PER_SIDE)
+    ss_mask = result["ss_n"].fillna(0) < MIN_PITCHES_PER_SIDE
+    for feat, ov in [("ss_up_rate", "_ov_up"), ("ss_arm_side", "_ov_arm"),
+                     ("ss_heart_rate", "_ov_heart"), ("ss_edge_rate", "_ov_edge"),
+                     ("ss_location_entropy", "_ov_entropy")]:
+        result.loc[ss_mask, feat] = result.loc[ss_mask, ov]
+
+    # Apply fallback for opposite-side
+    os_mask = result["os_n"].fillna(0) < MIN_PITCHES_PER_SIDE
+    for feat, ov in [("os_up_rate", "_ov_up"), ("os_arm_side", "_ov_arm"),
+                     ("os_heart_rate", "_ov_heart"), ("os_edge_rate", "_ov_edge"),
+                     ("os_location_entropy", "_ov_entropy")]:
+        result.loc[os_mask, feat] = result.loc[os_mask, ov]
+
+    # Layer 2: Platoon shifts
+    result["platoon_lateral_shift"] = (result["ss_arm_side"] - result["os_arm_side"]).abs()
+    result["platoon_height_shift"] = (result["ss_up_rate"] - result["os_up_rate"]).abs()
+
+    # Layer 3: Entropy shift (positive = LESS predictable vs opposite-side)
+    result["entropy_shift"] = result["os_location_entropy"] - result["ss_location_entropy"]
+
+    # Keep only the 13 output columns
+    keep = ["pitcher", "game_year",
+            "ss_up_rate", "ss_arm_side", "ss_heart_rate", "ss_edge_rate",
+            "os_up_rate", "os_arm_side", "os_heart_rate", "os_edge_rate",
+            "platoon_lateral_shift", "platoon_height_shift",
+            "ss_location_entropy", "os_location_entropy", "entropy_shift"]
+
+    return result[keep]
+
+
 def compute_pitcher_names(df: pd.DataFrame) -> pd.DataFrame:
     """Extract the most common player_name per pitcher ID."""
     names = df.groupby("pitcher")["player_name"].agg(
@@ -216,11 +374,12 @@ def process_season(year: int) -> pd.DataFrame:
     hand = compute_handedness(df)
     extras = compute_velo_and_extras(df)
     movement = compute_movement(df)
+    zone_loc = compute_zone_location(df)
     names = compute_pitcher_names(df)
 
     # Merge everything on pitcher + game_year
     features = usage
-    for feat_df in [spin, arm, whiff, hand, extras, movement]:
+    for feat_df in [spin, arm, whiff, hand, extras, movement, zone_loc]:
         features = features.merge(feat_df, on=["pitcher", "game_year"], how="left")
 
     # Add names (pitcher-level, no game_year)
@@ -284,9 +443,24 @@ def main():
     # Fill remaining NaNs with 0 for clustering features
     fill_cols = [c for c in pitcher_seasons.columns if c.startswith(("pct_", "spin_", "avg_"))]
     fill_cols += ["arm_angle", "whiff_rate", "zone_rate", "groundball_rate", "avg_extension", "pfx_x_avg", "pfx_z_avg"]
+    # Zone location features
+    fill_cols += [
+        "ss_up_rate", "ss_arm_side", "ss_heart_rate", "ss_edge_rate",
+        "os_up_rate", "os_arm_side", "os_heart_rate", "os_edge_rate",
+        "platoon_lateral_shift", "platoon_height_shift",
+        "ss_location_entropy", "os_location_entropy", "entropy_shift",
+    ]
     for col in fill_cols:
         if col in pitcher_seasons.columns:
             pitcher_seasons[col] = pitcher_seasons[col].fillna(0)
+
+    # Remove position players (non-pitchers who occasionally pitch)
+    pre_filter = len(pitcher_seasons)
+    pos_mask = (pitcher_seasons["avg_velo_FF"] > 0) & (pitcher_seasons["avg_velo_FF"] < 80)
+    pitcher_seasons = pitcher_seasons[~pos_mask].copy()
+    removed = pre_filter - len(pitcher_seasons)
+    if removed > 0:
+        print(f"\n  Removed {removed} position-player pitcher-seasons (avg_velo_FF < 80 mph)")
 
     out_path = os.path.join(PROCESSED_DATA_DIR, "pitcher_seasons.parquet")
     pitcher_seasons.to_parquet(out_path, engine="pyarrow", compression="snappy")
@@ -313,6 +487,13 @@ def main():
         for col in fill_cols:
             if col in sub_df.columns:
                 sub_df[col] = sub_df[col].fillna(0)
+
+        # Remove position players from sub-threshold too
+        sub_pos_mask = (sub_df["avg_velo_FF"] > 0) & (sub_df["avg_velo_FF"] < 80)
+        sub_removed = sub_pos_mask.sum()
+        sub_df = sub_df[~sub_pos_mask].copy()
+        if sub_removed > 0:
+            print(f"  Removed {sub_removed} position-player sub-threshold entries")
 
         sub_path = os.path.join(PROCESSED_DATA_DIR, "pitcher_seasons_sub_threshold.parquet")
         sub_df.to_parquet(sub_path, engine="pyarrow", compression="snappy")
