@@ -31,7 +31,7 @@ body{
     border-left:1px solid rgba(0,0,0,0.2);border-right:1px solid rgba(0,0,0,0.2);box-shadow:0 0 50px rgba(0,0,0,0.5)}
 
 /* ═══ TOP BAR ═══ */
-.top-bar{display:grid;grid-template-columns:220px 1fr auto;gap:1.5rem;padding:1rem 1.5rem;
+.top-bar{display:grid;grid-template-columns:280px 1fr auto;gap:1.5rem;padding:1rem 1.5rem;
     border-bottom:var(--dashed-border);align-items:center;background:rgba(43,58,140,0.9);
     backdrop-filter:blur(5px);z-index:100}
 .brand-block{display:flex;align-items:center;gap:1rem}
@@ -43,7 +43,7 @@ body{
     font-family:var(--font-stack);font-size:0.7rem;padding:3px 10px;cursor:pointer;transition:all 0.15s;letter-spacing:0.5px}
 .mode-btn:first-child{border-right:none}
 .mode-btn.active{background:var(--accent);border-color:var(--accent);color:#000;font-weight:700}
-.control-cluster{display:flex;gap:1.5rem;align-items:center}
+.control-cluster{display:flex;gap:1.5rem;align-items:center;padding-left:0.5rem}
 .search-wrap{position:relative;flex:0 0 300px}
 .hitter-search{background:transparent;border:none;border-bottom:var(--dashed-border);color:var(--text-main);
     font-family:var(--font-stack);font-size:1rem;width:100%;padding:4px 0;text-transform:uppercase}
@@ -56,11 +56,36 @@ body{
     font-size:12px;color:#eee;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.05)}
 .s-item:hover,.s-item.hl{background:var(--bg-light)}
 .s-item .pa{color:var(--text-muted);font-size:10px}
-.date-wrap{display:flex;align-items:center;gap:6px}
-.date-wrap label{font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;font-weight:700}
-.date-wrap input[type=date]{background:transparent;border:none;border-bottom:var(--dashed-border);
-    color:var(--text-main);font-family:var(--font-stack);font-size:0.8rem;padding:2px 0;outline:none}
-.date-wrap input[type=date]:focus{border-bottom:1px solid var(--accent)}
+
+/* ═══ CALENDAR ═══ */
+.cal-wrap{position:relative}
+.cal-dropdown{display:none;position:absolute;top:100%;right:0;z-index:300;
+    background:var(--bg-deep);border:1px solid rgba(255,255,255,0.2);padding:12px;
+    width:280px;box-shadow:8px 8px 0px rgba(0,0,0,0.3)}
+.cal-dropdown.visible{display:block}
+.cal-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;
+    font-size:0.75rem;letter-spacing:1px;text-transform:uppercase}
+.cal-arrow{cursor:pointer;color:var(--text-muted);padding:4px 8px;user-select:none}
+.cal-arrow:hover{color:var(--accent)}
+.cal-month{font-weight:700;color:var(--text-main)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal-dow{font-size:0.55rem;color:var(--text-muted);text-align:center;padding:4px 0;
+    letter-spacing:1px;font-weight:700}
+.cal-day{text-align:center;padding:6px 0;font-size:0.7rem;cursor:pointer;
+    border:1px solid transparent;transition:all 0.1s;font-family:var(--font-stack)}
+.cal-day:hover{border-color:var(--accent)}
+.cal-day.other-month{color:rgba(255,255,255,0.15);cursor:default}
+.cal-day.other-month:hover{border-color:transparent}
+.cal-day.today{border:1px dashed var(--text-muted)}
+.cal-day.selected{background:var(--accent);color:#000;font-weight:700}
+.cal-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;min-height:20px}
+.cal-chip{background:rgba(255,68,0,0.2);border:1px solid var(--accent);color:var(--accent);
+    font-size:0.6rem;padding:2px 8px;font-family:var(--font-stack);display:flex;align-items:center;gap:4px}
+.cal-chip .chip-x{cursor:pointer;font-weight:700}
+.cal-chip .chip-x:hover{color:var(--text-main)}
+.cal-actions{display:flex;gap:6px;justify-content:flex-end;margin-top:8px;padding-top:8px;
+    border-top:var(--dashed-border)}
+
 .action-area{display:flex;align-items:center;gap:1rem}
 .btn{background:transparent;border:1px solid var(--text-main);color:var(--text-main);padding:0.6rem 1.2rem;
     font-family:var(--font-stack);text-transform:uppercase;cursor:pointer;transition:all 0.2s;font-size:0.8rem}
@@ -110,7 +135,7 @@ body{
 .card-spine .opp-team{margin-top:8px;color:var(--text-muted);font-size:0.8rem}
 .spine-mark{display:block;width:100%;border-top:1px dashed rgba(255,255,255,0.2);margin:4px 0}
 .card-content{padding:1.2rem}
-.matchup-header{display:flex;justify-content:space-between;margin-bottom:0.8rem;font-size:0.9rem}
+.matchup-header{display:flex;justify-content:space-between;margin-bottom:0.8rem;font-size:0.9rem;align-items:center}
 .pitcher-info{color:var(--text-muted);font-size:0.8rem;margin-bottom:0.8rem;padding-bottom:0.8rem;border-bottom:1px dashed rgba(255,255,255,0.2)}
 .gc-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px}
 .gc-section{font-size:0.6rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);font-weight:700;margin-bottom:6px}
@@ -146,6 +171,23 @@ body{
 .line-item .edge{font-size:0.65rem;margin-top:2px;font-weight:700}
 .line-item .edge.over{color:var(--green)}.line-item .edge.under{color:var(--red)}.line-item .edge.neutral{color:var(--text-muted)}
 
+/* ═══ PITCHER OVERRIDE ═══ */
+.pitcher-name-wrap{display:inline-flex;align-items:center;gap:6px}
+.pitcher-edit-icon{font-size:0.7rem;color:var(--text-muted);cursor:pointer;opacity:0.5;transition:all 0.15s}
+.pitcher-edit-icon:hover{color:var(--accent);opacity:1}
+.pitcher-override-badge{display:flex;justify-content:space-between;align-items:center;
+    background:rgba(255,68,0,0.1);border:1px dashed var(--accent);padding:3px 8px;margin-bottom:6px;
+    font-size:0.55rem;letter-spacing:1px;color:var(--accent);text-transform:uppercase}
+.pitcher-reset{cursor:pointer;font-weight:700}
+.pitcher-reset:hover{color:var(--text-main)}
+.pitcher-override-search{position:relative;margin-bottom:8px}
+.po-search-input{width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.2);
+    color:var(--text-main);font-family:var(--font-stack);font-size:0.75rem;padding:6px 8px;outline:none}
+.po-search-input:focus{border-color:var(--accent)}
+.po-drop{position:absolute;top:100%;left:0;width:100%;max-height:180px;overflow-y:auto;
+    background:var(--bg-deep);border:1px solid rgba(255,255,255,0.2);border-top:none;display:none;z-index:200}
+.po-drop.visible{display:block}
+
 /* Totals */
 .totals-box{background:var(--bg-deep);border:2px solid var(--accent);padding:16px;margin-top:20px}
 .totals-title{font-size:0.7rem;text-transform:uppercase;letter-spacing:2px;color:var(--accent);font-weight:800;margin-bottom:12px}
@@ -158,9 +200,11 @@ body{
     grid-template-rows:auto 1fr auto;overflow:hidden}
 .research-panel{padding:1.2rem;border-bottom:var(--dashed-border)}
 .research-panel .hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.csv-table{width:100%;border-collapse:collapse;font-size:0.7rem;margin-top:8px}
-.csv-table th{text-align:left;color:var(--text-muted);padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.1);font-size:0.6rem}
-.csv-table td{padding:6px 0;border-bottom:1px dashed rgba(255,255,255,0.1)}
+.csv-table{width:100%;border-collapse:collapse;font-size:0.65rem;margin-top:8px}
+.csv-table th{text-align:center;color:var(--text-muted);padding:4px 3px;border-bottom:1px solid rgba(255,255,255,0.1);font-size:0.55rem;letter-spacing:0.5px}
+.csv-table th:first-child{text-align:left}
+.csv-table td{padding:4px 3px;border-bottom:1px dashed rgba(255,255,255,0.1);text-align:center;font-size:0.65rem}
+.csv-table td:first-child{text-align:left;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .csv-table .del{color:var(--text-muted);cursor:pointer;font-size:0.8rem}.csv-table .del:hover{color:var(--red)}
 .empty-msg{text-align:center;color:var(--text-muted);font-size:0.75rem;padding:20px 0}
 .notes-area{width:100%;height:100%;background:transparent;border:none;color:var(--text-main);
@@ -217,9 +261,23 @@ body{
         <input type="text" class="hitter-search" id="search" placeholder="SEARCH HITTER..." autocomplete="off">
         <div class="s-drop" id="s-drop"></div>
       </div>
-      <div class="date-wrap">
-        <label>From</label>
-        <input type="date" id="week-date">
+      <div class="cal-wrap" id="cal-wrap">
+        <button class="btn btn-sm" id="cal-trigger">
+          <span id="cal-trigger-label">SELECT DATES</span>
+        </button>
+        <div class="cal-dropdown" id="cal-dropdown">
+          <div class="cal-nav">
+            <span class="cal-arrow" id="cal-prev">&larr;</span>
+            <span class="cal-month" id="cal-month-label"></span>
+            <span class="cal-arrow" id="cal-next">&rarr;</span>
+          </div>
+          <div class="cal-grid" id="cal-grid"></div>
+          <div class="cal-chips" id="cal-chips"></div>
+          <div class="cal-actions">
+            <button class="btn btn-sm" id="cal-clear">CLEAR</button>
+            <button class="btn btn-sm btn-primary" id="cal-done">DONE</button>
+          </div>
+        </div>
       </div>
     </div>
     <div class="action-area">
@@ -268,7 +326,7 @@ body{
           </div>
         </div>
         <table class="csv-table">
-          <thead><tr><th>PLAYER</th><th>WK</th><th>PA</th><th>wOBA</th><th></th></tr></thead>
+          <thead><tr><th>PLAYER</th><th>DATES</th><th>H</th><th>HR</th><th>K</th><th>TB</th><th></th></tr></thead>
           <tbody id="saved-rows"></tbody>
         </table>
         <div class="empty-msg" id="empty-msg">No saved projections yet.</div>
@@ -280,7 +338,7 @@ body{
         <button class="pad-btn" id="pad-clear">Clear</button>
       </div>
       <div class="totals-dock" id="totals-dock" style="display:none">
-        <div class="section-label">WEEK AGGREGATE</div>
+        <div class="section-label">SLATE AGGREGATE</div>
         <div id="dock-stats"></div>
         <button class="btn" style="width:100%;margin-top:10px" id="btn-save-dock">SAVE PROJECTION</button>
       </div>
@@ -300,6 +358,8 @@ let selectedPitcher = null;
 let teamId = null;
 let schedule = [];
 let projections = [];
+let selectedDates = [];
+let calViewYear, calViewMonth;
 
 // ═══ LOAD DATA ═══
 async function loadData() {
@@ -330,7 +390,6 @@ function baColor(v){return v>=0.300?'good':v<=0.180?'bad':''}
 function wobaColor(v){return v>=0.370?'good':v<=0.250?'bad':''}
 function nextMonday(){const d=new Date();const day=d.getDay();const diff=day===0?1:(8-day);d.setDate(d.getDate()+diff);return d.toISOString().split('T')[0]}
 function fmtDate(s){const d=new Date(s+'T12:00:00');return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}).toUpperCase()}
-function endOfWeek(start){const d=new Date(start+'T12:00:00');d.setDate(d.getDate()+6);return d.toISOString().split('T')[0]}
 function archName(clusterId){const c=DATA.clusters[clusterId];return c?(c.short_name||c.full_name||clusterId):clusterId}
 function archEmoji(clusterId){const c=DATA.clusters[clusterId];return c&&c.emoji?c.emoji:''}
 function sc(label,val){return '<div class="sc"><div class="sl">'+label+'</div><div class="sv">'+val+'</div></div>'}
@@ -343,6 +402,52 @@ function edgeLabel(proj, line) {
     if (diff > 0) return '<span class="edge over">OVER +' + pct.toFixed(0) + '%</span>';
     if (diff < 0) return '<span class="edge under">UNDER ' + pct.toFixed(0) + '%</span>';
     return '<span class="edge neutral">PUSH</span>';
+}
+
+// ═══ CALENDAR ═══
+function renderCalendar() {
+    const monthNames = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+    document.getElementById('cal-month-label').textContent = monthNames[calViewMonth] + ' ' + calViewYear;
+    const firstDay = new Date(calViewYear, calViewMonth, 1).getDay();
+    const daysInMonth = new Date(calViewYear, calViewMonth + 1, 0).getDate();
+    const todayStr = new Date().toISOString().split('T')[0];
+    let html = '<div class="cal-dow">SU</div><div class="cal-dow">MO</div><div class="cal-dow">TU</div><div class="cal-dow">WE</div><div class="cal-dow">TH</div><div class="cal-dow">FR</div><div class="cal-dow">SA</div>';
+    for (let i = 0; i < firstDay; i++) html += '<div class="cal-day other-month"></div>';
+    for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = calViewYear + '-' + String(calViewMonth + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+        let cls = 'cal-day';
+        if (dateStr === todayStr) cls += ' today';
+        if (selectedDates.includes(dateStr)) cls += ' selected';
+        html += '<div class="' + cls + '" data-date="' + dateStr + '">' + d + '</div>';
+    }
+    const totalCells = firstDay + daysInMonth;
+    const trailing = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+    for (let i = 0; i < trailing; i++) html += '<div class="cal-day other-month"></div>';
+    document.getElementById('cal-grid').innerHTML = html;
+    renderCalChips();
+    updateCalTriggerLabel();
+}
+
+function renderCalChips() {
+    const container = document.getElementById('cal-chips');
+    if (selectedDates.length === 0) {
+        container.innerHTML = '<span style="font-size:0.6rem;color:var(--text-muted)">Click dates to select</span>';
+        return;
+    }
+    const sorted = [...selectedDates].sort();
+    container.innerHTML = sorted.map(d => {
+        const label = fmtDate(d);
+        return '<span class="cal-chip">' + label + '<span class="chip-x" data-date="' + d + '">&times;</span></span>';
+    }).join('');
+}
+
+function updateCalTriggerLabel() {
+    const label = document.getElementById('cal-trigger-label');
+    if (selectedDates.length === 0) {
+        label.textContent = 'SELECT DATES';
+    } else {
+        label.textContent = selectedDates.length + ' DATE' + (selectedDates.length > 1 ? 'S' : '') + ' SELECTED';
+    }
 }
 
 // ═══ BOOT ═══
@@ -554,8 +659,47 @@ function edgeLabel(proj, line) {
         hideBanner();
     });
 
-    // ═══ WEEK DATE ═══
-    document.getElementById('week-date').value = nextMonday();
+    // ═══ CALENDAR INIT ═══
+    selectedDates = [nextMonday()];
+    const initDate = new Date(nextMonday() + 'T12:00:00');
+    calViewMonth = initDate.getMonth();
+    calViewYear = initDate.getFullYear();
+
+    document.getElementById('cal-trigger').addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.getElementById('cal-dropdown').classList.toggle('visible');
+        renderCalendar();
+    });
+    document.getElementById('cal-prev').addEventListener('click', () => {
+        calViewMonth--;
+        if (calViewMonth < 0) { calViewMonth = 11; calViewYear--; }
+        renderCalendar();
+    });
+    document.getElementById('cal-next').addEventListener('click', () => {
+        calViewMonth++;
+        if (calViewMonth > 11) { calViewMonth = 0; calViewYear++; }
+        renderCalendar();
+    });
+    document.getElementById('cal-grid').addEventListener('click', (e) => {
+        const cell = e.target.closest('.cal-day');
+        if (!cell || cell.classList.contains('other-month') || !cell.dataset.date) return;
+        const dateStr = cell.dataset.date;
+        const idx = selectedDates.indexOf(dateStr);
+        if (idx >= 0) { selectedDates.splice(idx, 1); } else { selectedDates.push(dateStr); }
+        renderCalendar();
+    });
+    document.getElementById('cal-chips').addEventListener('click', (e) => {
+        const chip = e.target.closest('.chip-x');
+        if (!chip) return;
+        selectedDates = selectedDates.filter(d => d !== chip.dataset.date);
+        renderCalendar();
+    });
+    document.getElementById('cal-clear').addEventListener('click', () => { selectedDates = []; renderCalendar(); });
+    document.getElementById('cal-done').addEventListener('click', () => { document.getElementById('cal-dropdown').classList.remove('visible'); });
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('#cal-wrap')) document.getElementById('cal-dropdown').classList.remove('visible');
+    });
+    updateCalTriggerLabel();
 
     // ═══ RUN SLATE ═══
     document.getElementById('btn-run').addEventListener('click', runSlate);
@@ -563,21 +707,23 @@ function edgeLabel(proj, line) {
     async function runSlate() {
         if (currentMode === 'hitter' && !selectedBatter) return;
         if (currentMode === 'pitcher' && !selectedPitcher) return;
+        if (selectedDates.length === 0) { showBanner('Select at least one date.'); return; }
 
-        const startDate = document.getElementById('week-date').value;
-        const endDate = endOfWeek(startDate);
+        const sorted = [...selectedDates].sort();
+        const startDate = sorted[0];
+        const endDate = sorted[sorted.length - 1];
         hideBanner();
         schedule = [];
 
         if (currentMode === 'hitter') {
-            await runHitterSlate(startDate, endDate);
+            await runHitterSlate(startDate, endDate, sorted);
         } else {
-            await runPitcherSlate(startDate, endDate);
+            await runPitcherSlate(startDate, endDate, sorted);
         }
     }
 
-    // ═══ HITTER SLATE (existing logic) ═══
-    async function runHitterSlate(startDate, endDate) {
+    // ═══ HITTER SLATE ═══
+    async function runHitterSlate(startDate, endDate, filterDates) {
         if (teamId) {
             try {
                 const res = await fetch('https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=' + teamId + '&startDate=' + startDate + '&endDate=' + endDate + '&hydrate=probablePitcher');
@@ -591,7 +737,9 @@ function edgeLabel(proj, line) {
                             schedule.push({
                                 date: game.officialDate || dateObj.date,
                                 oppTeam: opp.team.abbreviation || opp.team.name,
-                                pitcher: oppPitcher ? { id: oppPitcher.id, name: oppPitcher.fullName } : null
+                                pitcher: oppPitcher ? { id: oppPitcher.id, name: oppPitcher.fullName } : null,
+                                originalPitcher: oppPitcher ? { id: oppPitcher.id, name: oppPitcher.fullName } : null,
+                                overridden: false
                             });
                         });
                     });
@@ -604,19 +752,15 @@ function edgeLabel(proj, line) {
         const slateEl = document.getElementById('slate');
         let html = '';
         projections = [];
-        const days = [];
-        for (let i = 0; i < 7; i++) {
-            const d = new Date(startDate + 'T12:00:00');
-            d.setDate(d.getDate() + i);
-            days.push(d.toISOString().split('T')[0]);
-        }
+        const days = filterDates;
 
         days.forEach(day => {
             const games = schedule.filter(g => g.date === day);
             html += '<div class="day-hdr">' + fmtDate(day) + '</div>';
             if (games.length === 0) { html += '<div class="off-day">OFF DAY</div>'; return; }
             games.forEach(game => {
-                const proj = buildGameCard(game, day);
+                const schedIdx = schedule.indexOf(game);
+                const proj = buildGameCard(game, day, schedIdx);
                 html += proj.html;
                 projections.push(proj.data);
             });
@@ -629,10 +773,11 @@ function edgeLabel(proj, line) {
         slateEl.innerHTML = html;
         bindPAEdits();
         bindLinePanels();
+        bindPitcherOverrides();
     }
 
     // ═══ PITCHER SLATE ═══
-    async function runPitcherSlate(startDate, endDate) {
+    async function runPitcherSlate(startDate, endDate, filterDates) {
         if (teamId) {
             try {
                 const res = await fetch('https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=' + teamId + '&startDate=' + startDate + '&endDate=' + endDate + '&hydrate=probablePitcher');
@@ -642,7 +787,6 @@ function edgeLabel(proj, line) {
                         dateObj.games.forEach(game => {
                             const isHome = game.teams.home.team.id === teamId;
                             const opp = isHome ? game.teams.away : game.teams.home;
-                            // Check if our pitcher is the probable pitcher
                             const myTeam = isHome ? game.teams.home : game.teams.away;
                             const myPP = myTeam.probablePitcher || null;
                             if (myPP && myPP.id === selectedPitcher.pitcher) {
@@ -662,14 +806,17 @@ function edgeLabel(proj, line) {
         let html = '';
         projections = [];
 
-        if (schedule.length === 0) {
-            html = '<div class="off-day">No scheduled starts found for this pitcher in the selected week.</div>';
+        // Filter to only selected dates
+        const filteredSchedule = schedule.filter(g => filterDates.includes(g.date));
+
+        if (filteredSchedule.length === 0) {
+            html = '<div class="off-day">No scheduled starts found for this pitcher on selected dates.</div>';
             slateEl.innerHTML = html;
             return;
         }
 
         // For each game, find opposing batters from our data
-        for (const game of schedule) {
+        for (const game of filteredSchedule) {
             html += '<div class="day-hdr">' + fmtDate(game.date) + ' vs ' + game.oppTeam + '</div>';
 
             // Find batters who have faced this pitcher
@@ -720,7 +867,7 @@ function edgeLabel(proj, line) {
             const kRate = totalPA > 0 ? (totalK / totalPA) : 0;
             const hRate = totalPA > 0 ? (totalH / totalPA) : 0;
             projections.push({
-                pa: totalPA, k: totalK, h: totalH, hr: totalHR,
+                pa: totalPA, k: totalK, h: totalH, hr: totalHR, tb: totalH + totalHR * 3,
                 k_rate: kRate, h_rate: hRate,
                 pitcher: fmtName(selectedPitcher.player_name),
                 opp: game.oppTeam
@@ -731,7 +878,7 @@ function edgeLabel(proj, line) {
     }
 
     // ═══ HITTER GAME CARD BUILDER ═══
-    function buildGameCard(game, day) {
+    function buildGameCard(game, day, scheduleIdx) {
         let ps = null, cluster = null, cent = null;
         if (game.pitcher) {
             const allSeasons = DATA.pitcherSeasons.filter(p => p.pitcher === game.pitcher.id);
@@ -756,21 +903,26 @@ function edgeLabel(proj, line) {
         if (ps && selectedBatter) {
             const archRows = DATA.hitterVsCluster.filter(r => r.batter === selectedBatter.batter && String(r.cluster) === ps.cluster);
             if (archRows.length > 0) {
-                const tot = { PA: 0, AB: 0, H: 0, HR: 0, BB: 0, K: 0, HBP: 0, woba_sum: 0 };
-                archRows.forEach(r => { tot.PA += r.PA || 0; tot.AB += r.AB || 0; tot.H += r.H || 0; tot.HR += r.HR || 0; tot.BB += r.BB || 0; tot.K += r.K || 0; tot.HBP += r.HBP || 0; tot.woba_sum += (r.wOBA || 0) * (r.PA || 0) });
-                archMatch = { PA: tot.PA, BA: tot.AB > 0 ? tot.H / tot.AB : 0, wOBA: tot.PA > 0 ? tot.woba_sum / tot.PA : 0, HR: tot.HR, K: tot.K, BB: tot.BB, K_pct: tot.PA > 0 ? tot.K / tot.PA : 0, BB_pct: tot.PA > 0 ? tot.BB / tot.PA : 0 };
+                const tot = { PA: 0, AB: 0, H: 0, HR: 0, BB: 0, K: 0, HBP: 0, woba_sum: 0, singles: 0, doubles: 0, triples: 0 };
+                archRows.forEach(r => { tot.PA += r.PA || 0; tot.AB += r.AB || 0; tot.H += r.H || 0; tot.HR += r.HR || 0; tot.BB += r.BB || 0; tot.K += r.K || 0; tot.HBP += r.HBP || 0; tot.woba_sum += (r.wOBA || 0) * (r.PA || 0); tot.singles += r.singles || 0; tot.doubles += r.doubles || 0; tot.triples += r.triples || 0 });
+                const tb = tot.singles + (tot.doubles * 2) + (tot.triples * 3) + (tot.HR * 4);
+                archMatch = { PA: tot.PA, BA: tot.AB > 0 ? tot.H / tot.AB : 0, wOBA: tot.PA > 0 ? tot.woba_sum / tot.PA : 0, HR: tot.HR, K: tot.K, BB: tot.BB, K_pct: tot.PA > 0 ? tot.K / tot.PA : 0, BB_pct: tot.PA > 0 ? tot.BB / tot.PA : 0, TB: tb, TB_rate: tot.PA > 0 ? tb / tot.PA : 0 };
             }
         }
 
         const assumedPA = role === 'SP' ? 4 : 1.5;
-        let projBA = 0, projWOBA = 0, projHRrate = 0, projKrate = 0, projBBrate = 0, projSource = '';
+        let projBA = 0, projWOBA = 0, projHRrate = 0, projKrate = 0, projBBrate = 0, projTBrate = 0, projSource = '';
         if (h2h && h2h.pa >= 10) {
             projBA = h2h.ba || 0; projWOBA = h2h.w || 0; projHRrate = h2h.pa > 0 ? (h2h.hr || 0) / h2h.pa : 0;
             projKrate = h2h.pa > 0 ? (h2h.k || 0) / h2h.pa : 0; projBBrate = h2h.pa > 0 ? (h2h.bb || 0) / h2h.pa : 0;
+            // h2h: estimate TB = H + HR*3 (conservative, assumes non-HR hits are singles)
+            const estH = (h2h.ba || 0) * (h2h.pa - (h2h.bb || 0));
+            projTBrate = h2h.pa > 0 ? (estH + (h2h.hr || 0) * 3) / h2h.pa : 0;
             projSource = 'head-to-head (' + h2h.pa + ' PA)';
         } else if (archMatch && archMatch.PA >= 5) {
             projBA = archMatch.BA; projWOBA = archMatch.wOBA; projHRrate = archMatch.PA > 0 ? archMatch.HR / archMatch.PA : 0;
             projKrate = archMatch.K_pct; projBBrate = archMatch.BB_pct;
+            projTBrate = archMatch.TB_rate; // exact TB from singles/doubles/triples/HR
             projSource = h2h ? 'archetype avg (<10 PA direct)' : 'archetype avg (no direct history)';
         } else {
             projSource = 'insufficient data';
@@ -780,14 +932,32 @@ function edgeLabel(proj, line) {
         const projHR = assumedPA * projHRrate;
         const projK = assumedPA * projKrate;
         const projBB = assumedPA * projBBrate;
-        const gameData = { pa: assumedPA, ab: projAB, h: projH, hr: projHR, k: projK, bb: projBB, ba: projBA, woba: projWOBA, pitcher: pitcherName, cluster: ps ? ps.cluster : '', source: projSource };
+        const projTB = assumedPA * projTBrate;
+        const gameData = { pa: assumedPA, ab: projAB, h: projH, hr: projHR, k: projK, bb: projBB, tb: projTB, ba: projBA, woba: projWOBA, pitcher: pitcherName, cluster: ps ? ps.cluster : '', source: projSource, scheduleIdx: scheduleIdx };
 
         const idx = projections.length;
         let card = '<div class="game-card">';
         card += '<div class="card-spine"><div class="vs-label">VS</div><div class="opp-team">' + game.oppTeam + '</div>';
         card += '<div class="spine-mark"></div></div>';
         card += '<div class="card-content">';
-        card += '<div class="matchup-header"><span>' + pitcherName + '</span><span style="color:' + clusterColor + '">' + clusterName + '</span></div>';
+
+        // Matchup header with pitcher override
+        card += '<div class="matchup-header">';
+        card += '<span class="pitcher-name-wrap"><span class="pitcher-name-text" id="pname-' + idx + '">' + pitcherName + '</span>';
+        card += ' <span class="pitcher-edit-icon" data-idx="' + idx + '" title="Change pitcher">&#9998;</span></span>';
+        card += '<span style="color:' + clusterColor + '" id="pcluster-' + idx + '">' + clusterName + '</span>';
+        card += '</div>';
+
+        // Override badge
+        if (game.overridden) {
+            card += '<div class="pitcher-override-badge"><span>MANUAL OVERRIDE</span><span class="pitcher-reset" data-idx="' + idx + '">RESET</span></div>';
+        }
+
+        // Override search (hidden)
+        card += '<div class="pitcher-override-search" id="poverride-' + idx + '" style="display:none">';
+        card += '<input type="text" class="po-search-input" id="psearch-' + idx + '" placeholder="SEARCH PITCHER..." autocomplete="off">';
+        card += '<div class="po-drop" id="pdrop-' + idx + '"></div>';
+        card += '</div>';
 
         // Pitcher info
         card += '<div class="pitcher-info">';
@@ -817,9 +987,9 @@ function edgeLabel(proj, line) {
         card += '<div><div class="gc-section" style="color:var(--accent)">Projection</div>';
         card += '<div class="stat-chips">';
         card += '<div class="sc"><div class="sl">PA</div><div class="sv"><input class="pa-edit" type="number" value="' + assumedPA + '" min="1" max="9" step="0.5" data-idx="' + idx + '"></div></div>';
-        card += scC('wOBA', projWOBA > 0 ? projWOBA.toFixed(3) : '\u2014', wobaColor(projWOBA));
+        card += sc('H', projH.toFixed(2));
         card += sc('HR', projHR.toFixed(2));
-        card += sc('K', projK.toFixed(2));
+        card += sc('TB', projTB.toFixed(2));
         card += '</div></div></div>';
 
         // Lines panel
@@ -829,7 +999,7 @@ function edgeLabel(proj, line) {
         card += '<div class="line-item"><label>O/U HITS</label><input class="line-input" data-idx="' + idx + '" data-stat="h" placeholder="1.5"><div class="edge-display" id="edge-h-' + idx + '"></div></div>';
         card += '<div class="line-item"><label>O/U HR</label><input class="line-input" data-idx="' + idx + '" data-stat="hr" placeholder="0.5"><div class="edge-display" id="edge-hr-' + idx + '"></div></div>';
         card += '<div class="line-item"><label>O/U K</label><input class="line-input" data-idx="' + idx + '" data-stat="k" placeholder="1.5"><div class="edge-display" id="edge-k-' + idx + '"></div></div>';
-        card += '<div class="line-item"><label>O/U BB</label><input class="line-input" data-idx="' + idx + '" data-stat="bb" placeholder="0.5"><div class="edge-display" id="edge-bb-' + idx + '"></div></div>';
+        card += '<div class="line-item"><label>O/U TB</label><input class="line-input" data-idx="' + idx + '" data-stat="tb" placeholder="1.5"><div class="edge-display" id="edge-tb-' + idx + '"></div></div>';
         card += '</div></div>';
 
         card += '</div></div>';
@@ -869,6 +1039,90 @@ function edgeLabel(proj, line) {
         });
     }
 
+    // ═══ PITCHER OVERRIDE ═══
+    function bindPitcherOverrides() {
+        document.querySelectorAll('.pitcher-edit-icon').forEach(el => {
+            el.addEventListener('click', () => {
+                const idx = parseInt(el.dataset.idx);
+                const searchPanel = document.getElementById('poverride-' + idx);
+                searchPanel.style.display = searchPanel.style.display === 'none' ? 'block' : 'none';
+                if (searchPanel.style.display === 'block') {
+                    document.getElementById('psearch-' + idx).focus();
+                }
+            });
+        });
+
+        document.querySelectorAll('.pitcher-reset').forEach(el => {
+            el.addEventListener('click', () => {
+                const idx = parseInt(el.dataset.idx);
+                const p = projections[idx];
+                if (!p) return;
+                const schedIdx = p.scheduleIdx;
+                const game = schedule[schedIdx];
+                if (!game) return;
+                game.pitcher = game.originalPitcher ? { ...game.originalPitcher } : null;
+                game.overridden = false;
+                rebuildSingleCard(idx, schedIdx);
+            });
+        });
+
+        document.querySelectorAll('.po-search-input').forEach(el => {
+            const idx = parseInt(el.id.replace('psearch-', ''));
+            const drop = document.getElementById('pdrop-' + idx);
+            let results = [];
+
+            el.addEventListener('input', () => {
+                const q = el.value.trim();
+                if (q.length < 2) { drop.classList.remove('visible'); return; }
+                results = fusePitchers.search(q).slice(0, 6).map(r => r.item);
+                drop.innerHTML = results.map((item, i) => {
+                    const cl = DATA.clusters[item.cluster] || {};
+                    return '<div class="s-item" data-pidx="' + i + '"><span>' + fmtName(item.player_name) + '</span><span class="pa" style="color:' + (cl.color || '#888') + '">' + archName(item.cluster) + '</span></div>';
+                }).join('');
+                drop.classList.add('visible');
+            });
+
+            drop.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                const item = e.target.closest('.s-item');
+                if (!item) return;
+                const pitcherSeason = results[parseInt(item.dataset.pidx)];
+                applyPitcherOverride(idx, pitcherSeason);
+                drop.classList.remove('visible');
+                el.value = '';
+                document.getElementById('poverride-' + idx).style.display = 'none';
+            });
+
+            el.addEventListener('blur', () => { setTimeout(() => drop.classList.remove('visible'), 150); });
+        });
+    }
+
+    function applyPitcherOverride(cardIdx, pitcherSeason) {
+        const p = projections[cardIdx];
+        if (!p) return;
+        const schedIdx = p.scheduleIdx;
+        schedule[schedIdx].pitcher = { id: pitcherSeason.pitcher, name: pitcherSeason.player_name };
+        schedule[schedIdx].overridden = true;
+        rebuildSingleCard(cardIdx, schedIdx);
+    }
+
+    function rebuildSingleCard(cardIdx, schedIdx) {
+        const game = schedule[schedIdx];
+        const day = game.date;
+        const proj = buildGameCard(game, day, schedIdx);
+        projections[cardIdx] = proj.data;
+
+        const cards = document.querySelectorAll('.game-card');
+        if (cards[cardIdx]) {
+            cards[cardIdx].outerHTML = proj.html;
+        }
+
+        bindPAEdits();
+        bindLinePanels();
+        bindPitcherOverrides();
+        updateTotalsDock();
+    }
+
     function recalcGame(idx, newPA) {
         const p = projections[idx];
         if (!p) return;
@@ -879,6 +1133,7 @@ function edgeLabel(proj, line) {
         p.hr = newPA * (oldPA > 0 ? p.hr / oldPA : 0);
         p.k = newPA * (oldPA > 0 ? p.k / oldPA : 0);
         p.bb = newPA * (oldPA > 0 ? p.bb / oldPA : 0);
+        p.tb = newPA * (oldPA > 0 ? p.tb / oldPA : 0);
         updateTotalsDock();
     }
 
@@ -886,17 +1141,15 @@ function edgeLabel(proj, line) {
         const dock = document.getElementById('totals-dock');
         if (projections.length === 0) { dock.style.display = 'none'; return; }
         dock.style.display = 'block';
-        let tPA = 0, tAB = 0, tH = 0, tHR = 0, tK = 0, tBB = 0, tWS = 0;
-        projections.forEach(p => { tPA += p.pa; tAB += p.ab || 0; tH += p.h || 0; tHR += p.hr || 0; tK += p.k || 0; tBB += p.bb || 0; tWS += (p.woba || 0) * p.pa });
-        const tBA = tAB > 0 ? tH / tAB : 0;
-        const tWOBA = tPA > 0 ? tWS / tPA : 0;
+        let tPA = 0, tH = 0, tHR = 0, tK = 0, tBB = 0, tTB = 0;
+        projections.forEach(p => { tPA += p.pa; tH += p.h || 0; tHR += p.hr || 0; tK += p.k || 0; tBB += p.bb || 0; tTB += p.tb || 0 });
 
         document.getElementById('dock-stats').innerHTML =
-            '<div class="stat-row"><span>TOTAL PA</span><span class="val mono">' + tPA.toFixed(0) + '</span></div>' +
-            '<div class="stat-row"><span>EXP HR</span><span class="val mono">' + tHR.toFixed(1) + '</span></div>' +
-            '<div class="stat-row"><span>EXP K</span><span class="val mono">' + tK.toFixed(1) + '</span></div>' +
-            '<div class="stat-row"><span>BA</span><span class="val mono ' + baColor(tBA) + '">' + tBA.toFixed(3) + '</span></div>' +
-            '<div class="stat-row"><span>wOBA</span><span class="val mono text-accent" style="font-size:1.1rem">' + tWOBA.toFixed(3) + '</span></div>';
+            '<div class="stat-row"><span>PA</span><span class="val mono">' + tPA.toFixed(0) + '</span></div>' +
+            '<div class="stat-row"><span>HITS</span><span class="val mono">' + tH.toFixed(1) + '</span></div>' +
+            '<div class="stat-row"><span>HR</span><span class="val mono">' + tHR.toFixed(1) + '</span></div>' +
+            '<div class="stat-row"><span>K</span><span class="val mono">' + tK.toFixed(1) + '</span></div>' +
+            '<div class="stat-row"><span>TB</span><span class="val mono text-accent" style="font-size:1.1rem">' + tTB.toFixed(1) + '</span></div>';
     }
 
     // ═══ SAVE/LOAD PROJECTIONS ═══
@@ -910,14 +1163,16 @@ function edgeLabel(proj, line) {
         const playerName = currentMode === 'hitter'
             ? (selectedBatter ? selectedBatter.batter_name : 'Unknown')
             : (selectedPitcher ? selectedPitcher.player_name : 'Unknown');
-        let tPA = 0, tAB = 0, tH = 0, tHR = 0, tK = 0, tBB = 0, tWS = 0;
-        projections.forEach(p => { tPA += p.pa; tAB += p.ab || 0; tH += p.h || 0; tHR += p.hr || 0; tK += p.k || 0; tBB += p.bb || 0; tWS += (p.woba || 0) * p.pa });
+        let tPA = 0, tAB = 0, tH = 0, tHR = 0, tK = 0, tBB = 0, tTB = 0, tWS = 0;
+        projections.forEach(p => { tPA += p.pa; tAB += p.ab || 0; tH += p.h || 0; tHR += p.hr || 0; tK += p.k || 0; tBB += p.bb || 0; tTB += p.tb || 0; tWS += (p.woba || 0) * p.pa });
         savedProjections.push({
             hitter_name: playerName, hitter_id: selectedBatter ? selectedBatter.batter : (selectedPitcher ? selectedPitcher.pitcher : 0),
             mode: currentMode,
-            week_start: document.getElementById('week-date').value,
+            selected_dates: [...selectedDates].sort(),
+            week_start: [...selectedDates].sort()[0],
             pa: +tPA.toFixed(0), ab: +tAB.toFixed(0), h: +tH.toFixed(1),
             hr: +tHR.toFixed(1), k: +tK.toFixed(1), bb: +tBB.toFixed(1),
+            tb: +tTB.toFixed(1),
             ba: tAB > 0 ? +(tH / tAB).toFixed(3) : 0, woba: tPA > 0 ? +(tWS / tPA).toFixed(3) : 0,
             timestamp: Date.now()
         });
@@ -931,9 +1186,17 @@ function edgeLabel(proj, line) {
         if (!savedProjections.length) { rows.innerHTML = ''; empty.style.display = 'block'; return }
         empty.style.display = 'none';
         rows.innerHTML = savedProjections.map((s, i) => {
-            const wk = new Date(s.week_start + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            return '<tr><td>' + fmtName(s.hitter_name) + '</td><td>' + wk + '</td><td>' + s.pa + '</td>' +
-                '<td style="color:' + (s.woba >= 0.370 ? 'var(--green)' : s.woba <= 0.280 ? 'var(--red)' : 'inherit') + '">' + s.woba.toFixed(3) + '</td>' +
+            const dates = s.selected_dates
+                ? s.selected_dates.length + 'd'
+                : new Date(s.week_start + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const tb = s.tb != null ? s.tb : ((s.h || 0) + (s.hr || 0) * 3);
+            const lastName = fmtName(s.hitter_name).split(' ').pop();
+            return '<tr><td title="' + fmtName(s.hitter_name) + '">' + lastName + '</td>' +
+                '<td>' + dates + '</td>' +
+                '<td>' + (s.h || 0).toFixed(1) + '</td>' +
+                '<td>' + (s.hr || 0).toFixed(1) + '</td>' +
+                '<td>' + (s.k || 0).toFixed(1) + '</td>' +
+                '<td style="color:var(--accent);font-weight:700">' + (+tb).toFixed(1) + '</td>' +
                 '<td class="del" data-del="' + i + '">\u00d7</td></tr>';
         }).join('');
     }
@@ -950,8 +1213,12 @@ function edgeLabel(proj, line) {
     });
     document.getElementById('btn-export').addEventListener('click', () => {
         if (!savedProjections.length) return;
-        let csv = 'Player,Mode,Week,PA,AB,H,HR,K,BB,BA,wOBA\n';
-        savedProjections.forEach(s => { csv += fmtName(s.hitter_name) + ',' + (s.mode || 'hitter') + ',' + s.week_start + ',' + s.pa + ',' + s.ab + ',' + s.h + ',' + s.hr + ',' + s.k + ',' + s.bb + ',' + s.ba + ',' + s.woba + '\n' });
+        let csv = 'Player,Mode,Dates,PA,AB,H,HR,K,BB,TB,BA,wOBA\n';
+        savedProjections.forEach(s => {
+            const dates = s.selected_dates ? s.selected_dates.join(';') : s.week_start;
+            const tb = s.tb != null ? s.tb : ((s.h || 0) + (s.hr || 0) * 3);
+            csv += fmtName(s.hitter_name) + ',' + (s.mode || 'hitter') + ',' + dates + ',' + s.pa + ',' + s.ab + ',' + s.h + ',' + s.hr + ',' + s.k + ',' + s.bb + ',' + (+tb).toFixed(1) + ',' + s.ba + ',' + s.woba + '\n';
+        });
         const blob = new Blob([csv], { type: 'text/csv' });
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'projections_' + new Date().toISOString().split('T')[0] + '.csv'; a.click();
     });
