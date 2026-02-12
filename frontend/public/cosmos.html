@@ -339,13 +339,56 @@
             font-family: var(--font-tech); vertical-align: middle;
         }
 
-        /* Range slider */
-        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
-        input[type=range]::-webkit-slider-thumb {
+        /* Dual-range slider */
+        .range-slider { position: relative; height: 24px; display: flex; align-items: center; }
+        .range-slider input[type="range"] {
+            position: absolute; width: 100%; pointer-events: none; margin: 0;
+            -webkit-appearance: none; appearance: none;
+            height: 4px; background: transparent; outline: none; z-index: 1;
+        }
+        .range-slider input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            height: 14px; width: 14px; border-radius: 50%;
+            background: var(--accent-color, #f4a261);
+            cursor: pointer; pointer-events: all;
+            border: 2px solid #0a0a0a; position: relative; z-index: 2;
+        }
+        .range-slider input[type="range"]::-moz-range-thumb {
+            height: 14px; width: 14px; border-radius: 50%;
+            background: var(--accent-color, #f4a261);
+            cursor: pointer; pointer-events: all;
+            border: 2px solid #0a0a0a;
+        }
+        .range-slider .range-track {
+            position: absolute; height: 4px; background: #333;
+            border-radius: 2px; width: 100%; pointer-events: none;
+        }
+        .range-slider .range-fill {
+            position: absolute; height: 4px; border-radius: 2px;
+            pointer-events: none;
+        }
+        /* Legacy single range slider (PA, etc) */
+        input[type=range]:not(.range-slider input) { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]:not(.range-slider input)::-webkit-slider-thumb {
             -webkit-appearance: none; height: 14px; width: 6px;
             background: var(--key-dark); cursor: pointer; margin-top: -6px; border-radius: 2px;
         }
-        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 2px; background: #444; }
+        input[type=range]:not(.range-slider input)::-webkit-slider-runnable-track { width: 100%; height: 2px; background: #444; }
+
+        /* Career Timeline */
+        .dna-timeline { margin-top: 4px; }
+        .dna-yr-row {
+            display: flex; align-items: center; gap: 6px;
+            padding: 5px 8px; border-radius: 3px; cursor: pointer;
+            border-left: 3px solid transparent;
+            transition: background 0.15s;
+        }
+        .dna-yr-row:hover { background: #1a1a1a; }
+        .dna-yr-row.active { background: #1e1e1e; border-left-color: var(--accent); }
+        .dna-yr-year { font-size: 10px; color: #888; font-family: var(--font-tech); min-width: 32px; font-weight: 700; }
+        .dna-yr-arch { font-size: 11px; font-weight: 600; font-family: var(--font-tech); flex: 1; }
+        .dna-yr-velo { font-size: 9px; color: #666; font-family: var(--font-tech); min-width: 40px; text-align: right; }
+        .dna-yr-mutt { font-size: 8px; color: #888; }
 
         /* ═══ SCREEN (canvas area) ═══ */
         #screen {
@@ -700,14 +743,22 @@
                 <div class="label-line"><span class="label">Pitcher Filters</span></div>
                 <div style="display:flex;align-items:center;gap:6px;margin-top:3px;">
                     <span class="label" style="margin:0;min-width:28px;">Velo</span>
-                    <input type="range" min="82" max="103" value="82" id="pf-velo-min" style="flex:1;accent-color:#f4a261;">
-                    <input type="range" min="82" max="103" value="103" id="pf-velo-max" style="flex:1;accent-color:#f4a261;">
+                    <div class="range-slider" style="flex:1;--accent-color:#f4a261;">
+                        <div class="range-track"></div>
+                        <div class="range-fill" id="pf-velo-fill" style="background:#f4a261;left:0;width:100%;"></div>
+                        <input type="range" min="82" max="103" value="82" id="pf-velo-min">
+                        <input type="range" min="82" max="103" value="103" id="pf-velo-max">
+                    </div>
                     <span id="pf-velo-display" style="font-size:8px;color:#888;min-width:52px;text-align:right;">82-103</span>
                 </div>
                 <div style="display:flex;align-items:center;gap:6px;margin-top:3px;">
                     <span class="label" style="margin:0;min-width:28px;">Move</span>
-                    <input type="range" min="-18" max="18" value="-18" id="pf-hbreak-min" style="flex:1;accent-color:#2a9d8f;">
-                    <input type="range" min="-18" max="18" value="18" id="pf-hbreak-max" style="flex:1;accent-color:#2a9d8f;">
+                    <div class="range-slider" style="flex:1;--accent-color:#2a9d8f;">
+                        <div class="range-track"></div>
+                        <div class="range-fill" id="pf-hbreak-fill" style="background:#2a9d8f;left:0;width:100%;"></div>
+                        <input type="range" min="-18" max="18" value="-18" id="pf-hbreak-min">
+                        <input type="range" min="-18" max="18" value="18" id="pf-hbreak-max">
+                    </div>
                     <span id="pf-hbreak-display" style="font-size:8px;color:#888;min-width:52px;text-align:right;">-18 to 18</span>
                 </div>
                 <div class="key-row" id="role-keys" style="margin-top:4px;">
@@ -1817,6 +1868,30 @@
                 });
             }
 
+            // Career Timeline — show all years for this pitcher
+            const _allSeasons = DATA.pitcherSeasons
+                .filter(p => p.pitcher === ps.pitcher)
+                .sort((a, b) => b.game_year - a.game_year);
+            if (_allSeasons.length > 1) {
+                html += '<div class="section-hdr">Career Timeline</div>';
+                html += '<div class="dna-timeline">';
+                _allSeasons.forEach(s => {
+                    const cl = DATA.clusters[s.cluster];
+                    const color = cl?.color || '#666';
+                    const isActive = s.game_year === ps.game_year;
+                    const velo = (s.avg_velo_FF || 0).toFixed(1);
+                    const dnaStr = s.archetype_dna || s.archetype || '';
+                    const hasMutt = dnaStr.includes('\u{1F9EC}');
+                    html += '<div class="dna-yr-row' + (isActive ? ' active' : '') + '" data-pid="' + s.pitcher + '" data-year="' + s.game_year + '">';
+                    html += '<span class="dna-yr-year">' + s.game_year + '</span>';
+                    html += '<span class="dna-yr-arch" style="color:' + color + ';">' + archEmoji(s.cluster) + ' ' + (s.archetype || '\u2014') + '</span>';
+                    html += '<span class="dna-yr-velo">' + velo + '</span>';
+                    if (hasMutt) html += '<span class="dna-yr-mutt">\u{1F9EC}</span>';
+                    html += '</div>';
+                });
+                html += '</div>';
+            }
+
             // Head-to-head matchup if batter is active
             if (batterObj) {
                 const hvpData = (DATA._hvpIndex[batterObj.batter] || {})[ps.cluster] || [];
@@ -1873,6 +1948,16 @@
                 archLink.addEventListener('mouseenter', () => { archLink.style.borderColor = cluster.color; });
                 archLink.addEventListener('mouseleave', () => { archLink.style.borderColor = '#2a2a2a'; });
             }
+
+            // Click handlers for career timeline rows
+            content.querySelectorAll('.dna-yr-row').forEach(row => {
+                row.addEventListener('click', () => {
+                    const pid = parseInt(row.dataset.pid);
+                    const year = parseInt(row.dataset.year);
+                    const targetPS = DATA.pitcherSeasons.find(p => p.pitcher === pid && p.game_year === year);
+                    if (targetPS) showPitcherStatPanel(targetPS, batterObj);
+                });
+            });
 
             render();
             buildArchetypeList();
@@ -2407,7 +2492,15 @@
             STATE.selectedYear = e.target.value; refreshData(); buildArchetypeList(); render();
         });
 
-        // ═══ PITCHER FILTERS ═══
+        // ═══ PITCHER FILTERS (dual-range sliders) ═══
+        function updateRangeFill(minEl, maxEl, fillEl) {
+            const lo = parseFloat(minEl.value), hi = parseFloat(maxEl.value);
+            const mn = parseFloat(minEl.min), mx = parseFloat(minEl.max);
+            const range = mx - mn;
+            if (range <= 0 || !fillEl) return;
+            fillEl.style.left = ((lo - mn) / range * 100) + '%';
+            fillEl.style.width = ((hi - lo) / range * 100) + '%';
+        }
         function updatePitcherFilterDisplay() {
             const f = STATE.pitcherFilters;
             const veloD = document.getElementById('pf-velo-display');
@@ -2415,27 +2508,35 @@
             if (veloD) veloD.textContent = (f.veloMin || 82) + '-' + (f.veloMax || 103);
             if (hbD) hbD.textContent = (f.hBreakMin || -18) + ' to ' + (f.hBreakMax || 18);
         }
-        ['pf-velo-min', 'pf-velo-max'].forEach(id => {
-            const el = document.getElementById(id);
-            if (!el) return;
-            el.addEventListener('input', () => {
-                const mn = parseInt(document.getElementById('pf-velo-min').value);
-                const mx = parseInt(document.getElementById('pf-velo-max').value);
-                STATE.pitcherFilters.veloMin = mn <= 82 ? null : mn;
-                STATE.pitcherFilters.veloMax = mx >= 103 ? null : mx;
-                updatePitcherFilterDisplay(); render();
+        function setupDualRange(minId, maxId, fillId, minBound, maxBound, setFilters) {
+            [minId, maxId].forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.addEventListener('input', () => {
+                    const minEl = document.getElementById(minId);
+                    const maxEl = document.getElementById(maxId);
+                    // Constrain: min can't exceed max
+                    if (parseInt(minEl.value) > parseInt(maxEl.value)) {
+                        if (id === minId) minEl.value = maxEl.value;
+                        else maxEl.value = minEl.value;
+                    }
+                    setFilters(parseInt(minEl.value), parseInt(maxEl.value));
+                    updateRangeFill(minEl, maxEl, document.getElementById(fillId));
+                    updatePitcherFilterDisplay(); render();
+                });
             });
+            // Init fill
+            const minEl = document.getElementById(minId);
+            const maxEl = document.getElementById(maxId);
+            if (minEl && maxEl) updateRangeFill(minEl, maxEl, document.getElementById(fillId));
+        }
+        setupDualRange('pf-velo-min', 'pf-velo-max', 'pf-velo-fill', 82, 103, (mn, mx) => {
+            STATE.pitcherFilters.veloMin = mn <= 82 ? null : mn;
+            STATE.pitcherFilters.veloMax = mx >= 103 ? null : mx;
         });
-        ['pf-hbreak-min', 'pf-hbreak-max'].forEach(id => {
-            const el = document.getElementById(id);
-            if (!el) return;
-            el.addEventListener('input', () => {
-                const mn = parseInt(document.getElementById('pf-hbreak-min').value);
-                const mx = parseInt(document.getElementById('pf-hbreak-max').value);
-                STATE.pitcherFilters.hBreakMin = mn <= -18 ? null : mn;
-                STATE.pitcherFilters.hBreakMax = mx >= 18 ? null : mx;
-                updatePitcherFilterDisplay(); render();
-            });
+        setupDualRange('pf-hbreak-min', 'pf-hbreak-max', 'pf-hbreak-fill', -18, 18, (mn, mx) => {
+            STATE.pitcherFilters.hBreakMin = mn <= -18 ? null : mn;
+            STATE.pitcherFilters.hBreakMax = mx >= 18 ? null : mx;
         });
         document.getElementById('role-keys').addEventListener('click', (e) => {
             const key = e.target.closest('.key');
