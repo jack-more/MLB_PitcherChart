@@ -28,6 +28,82 @@ from config import (
 )
 
 
+def build_sv_mapping(raw_data_dir: str, seasons: list) -> dict:
+    """Build per-pitcher SV reclassification mapping.
+
+    For each pitcher who throws SV, compute their career-average SV speed and
+    vertical break (pfx_z). Classify their SV as CU, SL, or ST based on:
+      - pfx_z < -0.50  → CU (curveball drop)
+      - speed > 84 mph → SL (slider velocity)
+      - else           → ST (sweeper)
+
+    Returns dict: {pitcher_id: "CU"/"SL"/"ST"}
+    """
+    all_sv = []
+    for year in seasons:
+        path = os.path.join(raw_data_dir, f"statcast_{year}.parquet")
+        if not os.path.exists(path):
+            continue
+        df = pd.read_parquet(path, columns=["pitcher", "pitch_type", "release_speed", "pfx_z"])
+        sv = df[df["pitch_type"] == "SV"].dropna(subset=["release_speed", "pfx_z"])
+        if len(sv) > 0:
+            all_sv.append(sv)
+
+    if not all_sv:
+        return {}
+
+    sv_all = pd.concat(all_sv, ignore_index=True)
+    agg = sv_all.groupby("pitcher").agg(
+        avg_speed=("release_speed", "mean"),
+        avg_pfx_z=("pfx_z", "mean"),
+        count=("pitcher", "count"),
+    ).reset_index()
+
+    sv_map = {}
+    for _, row in agg.iterrows():
+        pid = int(row["pitcher"])
+        if row["avg_pfx_z"] < -0.50:
+            sv_map[pid] = "CU"
+        elif row["avg_speed"] > 84:
+            sv_map[pid] = "SL"
+        else:
+            sv_map[pid] = "ST"
+
+    # Summary
+    from collections import Counter
+    counts = Counter(sv_map.values())
+    print(f"  SV reclassification mapping: {len(sv_map)} pitchers")
+    print(f"    → CU: {counts.get('CU', 0)}, SL: {counts.get('SL', 0)}, ST: {counts.get('ST', 0)}")
+
+    return sv_map
+
+
+def reclassify_sv(df: pd.DataFrame, sv_map: dict) -> pd.DataFrame:
+    """Reclassify SV pitches based on per-pitcher mapping."""
+    sv_mask = df["pitch_type"] == "SV"
+    n_sv = sv_mask.sum()
+    if n_sv == 0:
+        return df
+
+    df = df.copy()
+    reclassified = 0
+    for pid, new_type in sv_map.items():
+        mask = sv_mask & (df["pitcher"] == pid)
+        count = mask.sum()
+        if count > 0:
+            df.loc[mask, "pitch_type"] = new_type
+            reclassified += count
+
+    # Any remaining SV pitches from pitchers not in the map → default to ST
+    remaining = (df["pitch_type"] == "SV").sum()
+    if remaining > 0:
+        df.loc[df["pitch_type"] == "SV", "pitch_type"] = "ST"
+        reclassified += remaining
+
+    print(f"    Reclassified {reclassified:,} SV pitches (of {n_sv:,})")
+    return df
+
+
 def compute_pitch_usage(df: pd.DataFrame) -> pd.DataFrame:
     """Compute pitch type usage rates per pitcher-season."""
     total = df.groupby(["pitcher", "game_year"]).size().reset_index(name="total_pitches")
@@ -133,10 +209,30 @@ def compute_handedness(df: pd.DataFrame) -> pd.DataFrame:
 
 def compute_velo_and_extras(df: pd.DataFrame) -> pd.DataFrame:
     """Compute average fastball velo, extension, zone rate, groundball rate."""
-    # Fastball velocity (FF only)
+    # Fastball velocity (FF preferred, fallback to fastest pitch)
     ff = df[df["pitch_type"] == "FF"]
-    velo = ff.groupby(["pitcher", "game_year"])["release_speed"].mean().reset_index()
-    velo.columns = ["pitcher", "game_year", "avg_velo_FF"]
+    velo_ff = ff.groupby(["pitcher", "game_year"])["release_speed"].mean().reset_index()
+    velo_ff.columns = ["pitcher", "game_year", "avg_velo_FF"]
+
+    # Fallback for pitchers with no FF: use their fastest pitch type's avg velo
+    all_velo = (
+        df.dropna(subset=["release_speed"])
+        .groupby(["pitcher", "game_year", "pitch_type"])["release_speed"]
+        .mean()
+        .reset_index()
+    )
+    fastest = (
+        all_velo.sort_values("release_speed", ascending=False)
+        .drop_duplicates(subset=["pitcher", "game_year"], keep="first")
+        [["pitcher", "game_year", "release_speed"]]
+        .rename(columns={"release_speed": "avg_velo_FF"})
+    )
+    # Merge: use FF velo where available, fallback to fastest pitch
+    velo = velo_ff.merge(
+        fastest, on=["pitcher", "game_year"], how="outer", suffixes=("", "_fallback")
+    )
+    velo["avg_velo_FF"] = velo["avg_velo_FF"].fillna(velo["avg_velo_FF_fallback"])
+    velo = velo[["pitcher", "game_year", "avg_velo_FF"]]
 
     # Release extension
     ext = df.groupby(["pitcher", "game_year"])["release_extension"].mean().reset_index()
@@ -347,7 +443,7 @@ def compute_pitcher_names(df: pd.DataFrame) -> pd.DataFrame:
     return names
 
 
-def process_season(year: int) -> pd.DataFrame:
+def process_season(year: int, sv_map: dict = None) -> pd.DataFrame:
     """Process a single season into pitcher-season features."""
     path = os.path.join(RAW_DATA_DIR, f"statcast_{year}.parquet")
     if not os.path.exists(path):
@@ -365,6 +461,10 @@ def process_season(year: int) -> pd.DataFrame:
     df = df[df["pitch_type"].notna() & (df["pitch_type"] != "")].copy()
 
     print(f"  {len(df):,} pitches loaded")
+
+    # Reclassify SV pitches per pitcher mapping
+    if sv_map:
+        df = reclassify_sv(df, sv_map)
 
     # Compute all feature groups
     usage = compute_pitch_usage(df)
@@ -399,6 +499,17 @@ def process_season(year: int) -> pd.DataFrame:
 def main():
     os.makedirs(PROCESSED_DATA_DIR, exist_ok=True)
 
+    # Build per-pitcher SV reclassification mapping (scan all years once)
+    print("Building SV reclassification mapping...")
+    sv_map = build_sv_mapping(RAW_DATA_DIR, SEASONS)
+
+    # Save mapping for reproducibility
+    import json
+    sv_map_path = os.path.join(PROCESSED_DATA_DIR, "sv_reclassification.json")
+    with open(sv_map_path, "w") as f:
+        json.dump({str(k): v for k, v in sv_map.items()}, f, indent=2)
+    print(f"  Saved mapping to {sv_map_path}")
+
     all_features = []
     all_sub_threshold = []
     for year in SEASONS:
@@ -406,7 +517,7 @@ def main():
         print(f"Processing {year}")
         print(f"{'='*50}")
 
-        result = process_season(year)
+        result = process_season(year, sv_map=sv_map)
         if isinstance(result, tuple):
             qualified, sub_thresh = result
         else:

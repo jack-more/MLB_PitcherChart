@@ -1,11 +1,13 @@
-import React from 'react'
+import React, { useState } from 'react'
 
 export default function ControlBar({ clusters, visibleClusters, onToggleCluster }) {
+  const [expanded, setExpanded] = useState(false)
   const clusterIds = Object.keys(clusters)
-  const rhpIds = clusterIds.filter(id => clusters[id]?.hand === 'RHP')
-  const lhpIds = clusterIds.filter(id => clusters[id]?.hand === 'LHP')
+  const rhpIds = clusterIds.filter(id => clusters[id]?.hand === 'RHP').sort()
+  const lhpIds = clusterIds.filter(id => clusters[id]?.hand === 'LHP').sort()
 
   const showAll = () => clusterIds.forEach(id => { if (!visibleClusters.has(id)) onToggleCluster(id) })
+  const hideAll = () => clusterIds.forEach(id => { if (visibleClusters.has(id)) onToggleCluster(id) })
   const rhpOnly = () => clusterIds.forEach(id => {
     const want = clusters[id]?.hand === 'RHP'
     if (want !== visibleClusters.has(id)) onToggleCluster(id)
@@ -23,62 +25,116 @@ export default function ControlBar({ clusters, visibleClusters, onToggleCluster 
     if (isRP !== visibleClusters.has(id)) onToggleCluster(id)
   })
 
+  const visibleCount = clusterIds.filter(id => visibleClusters.has(id)).length
+
   return (
     <div style={{
-      display: 'flex', alignItems: 'center', gap: 10, padding: '8px 16px',
-      background: 'rgba(16,20,32,0.9)', borderTop: '1px solid #252a3a', flexWrap: 'wrap',
+      background: 'rgba(16,20,32,0.95)', borderTop: '1px solid #252a3a',
       backdropFilter: 'blur(8px)',
     }}>
-      <span style={{ fontSize: 10, color: '#555', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-        Archetypes
-      </span>
+      {/* Collapsed bar — always visible */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 8, padding: '6px 16px',
+        cursor: 'pointer',
+      }} onClick={() => setExpanded(!expanded)}>
+        <span style={{ fontSize: 10, color: '#555', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          Archetypes
+        </span>
+        <span style={{ fontSize: 10, color: '#444' }}>
+          {visibleCount}/{clusterIds.length}
+        </span>
 
-      <button onClick={showAll} style={btnStyle}>All</button>
-      <button onClick={rhpOnly} style={btnStyle}>RHP</button>
-      <button onClick={lhpOnly} style={btnStyle}>LHP</button>
-      <button onClick={spOnly} style={btnStyle}>SP</button>
-      <button onClick={rpOnly} style={btnStyle}>RP</button>
+        <div style={{ display: 'flex', gap: 4, marginLeft: 4 }}>
+          <button onClick={e => { e.stopPropagation(); showAll() }} style={btnStyle}>All</button>
+          <button onClick={e => { e.stopPropagation(); hideAll() }} style={btnStyle}>None</button>
+          <button onClick={e => { e.stopPropagation(); rhpOnly() }} style={btnStyle}>RHP</button>
+          <button onClick={e => { e.stopPropagation(); lhpOnly() }} style={btnStyle}>LHP</button>
+          <button onClick={e => { e.stopPropagation(); spOnly() }} style={btnStyle}>SP</button>
+          <button onClick={e => { e.stopPropagation(); rpOnly() }} style={btnStyle}>RP</button>
+        </div>
 
-      <div style={{ width: 1, height: 16, background: '#333', margin: '0 2px' }} />
+        <span style={{ marginLeft: 'auto', fontSize: 12, color: '#555' }}>
+          {expanded ? '▼' : '▲'}
+        </span>
+      </div>
 
-      {/* RHP clusters */}
-      {rhpIds.length > 0 && (
-        <>
-          <span style={{ fontSize: 9, color: '#e07840', fontWeight: 600 }}>RHP</span>
-          {rhpIds.map(id => <ClusterToggle key={id} id={id} cluster={clusters[id]} visible={visibleClusters.has(id)} onToggle={onToggleCluster} />)}
-          <div style={{ width: 1, height: 16, background: '#333', margin: '0 2px' }} />
-        </>
-      )}
+      {/* Expanded panel */}
+      {expanded && (
+        <div style={{
+          display: 'flex', gap: 24, padding: '0 16px 12px',
+          overflowX: 'auto',
+        }}>
+          {/* RHP column */}
+          <div style={{ minWidth: 200 }}>
+            <div style={sectionHeader}>
+              Right-Handed ({rhpIds.length})
+            </div>
+            {rhpIds.map(id => (
+              <ClusterRow
+                key={id} id={id} cluster={clusters[id]}
+                visible={visibleClusters.has(id)}
+                onToggle={onToggleCluster}
+              />
+            ))}
+          </div>
 
-      {/* LHP clusters */}
-      {lhpIds.length > 0 && (
-        <>
-          <span style={{ fontSize: 9, color: '#457b9d', fontWeight: 600 }}>LHP</span>
-          {lhpIds.map(id => <ClusterToggle key={id} id={id} cluster={clusters[id]} visible={visibleClusters.has(id)} onToggle={onToggleCluster} />)}
-        </>
+          {/* LHP column */}
+          <div style={{ minWidth: 200 }}>
+            <div style={sectionHeader}>
+              Left-Handed ({lhpIds.length})
+            </div>
+            {lhpIds.map(id => (
+              <ClusterRow
+                key={id} id={id} cluster={clusters[id]}
+                visible={visibleClusters.has(id)}
+                onToggle={onToggleCluster}
+              />
+            ))}
+          </div>
+        </div>
       )}
     </div>
   )
 }
 
-function ClusterToggle({ id, cluster, visible, onToggle }) {
+function ClusterRow({ id, cluster, visible, onToggle }) {
+  const name = cluster?.short_name || id
+  const count = cluster?.pitcher_count || 0
   return (
-    <label style={{
-      display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer',
-      fontSize: 11, opacity: visible ? 1 : 0.3, transition: 'opacity 0.2s',
-    }}>
+    <div
+      onClick={() => onToggle(id)}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 8, padding: '4px 8px',
+        cursor: 'pointer', borderRadius: 6,
+        opacity: visible ? 1 : 0.35, transition: 'opacity 0.2s',
+        background: visible ? 'rgba(255,255,255,0.03)' : 'transparent',
+      }}
+    >
       <div style={{
-        width: 8, height: 8, borderRadius: '50%', background: cluster?.color || '#888',
-        border: visible ? `2px solid ${cluster?.color}` : '2px solid #444',
-        boxShadow: visible ? `0 0 4px ${cluster?.color}44` : 'none',
+        width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
+        background: cluster?.color || '#888',
+        boxShadow: visible ? `0 0 6px ${cluster?.color}44` : 'none',
       }} />
-      <input type="checkbox" checked={visible} onChange={() => onToggle(id)} style={{ display: 'none' }} />
-      <span style={{ color: visible ? '#ccc' : '#555' }}>{cluster?.short_name}</span>
-    </label>
+      <span style={{
+        flex: 1, fontSize: 13, fontWeight: 500,
+        color: visible ? cluster?.color || '#ccc' : '#555',
+      }}>
+        {name}
+      </span>
+      <span style={{ fontSize: 11, color: '#555', fontWeight: 500, minWidth: 30, textAlign: 'right' }}>
+        {count}
+      </span>
+    </div>
   )
+}
+
+const sectionHeader = {
+  fontSize: 10, color: '#666', fontWeight: 700, textTransform: 'uppercase',
+  letterSpacing: '0.08em', padding: '8px 8px 4px', borderBottom: '1px solid #252a3a',
+  marginBottom: 4,
 }
 
 const btnStyle = {
   background: 'rgba(255,255,255,0.06)', color: '#888', border: '1px solid #333',
-  borderRadius: 6, padding: '3px 10px', fontSize: 11, cursor: 'pointer',
+  borderRadius: 6, padding: '2px 8px', fontSize: 10, cursor: 'pointer',
 }

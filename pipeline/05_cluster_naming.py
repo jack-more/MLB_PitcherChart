@@ -71,7 +71,6 @@ def _score_traits(row: pd.Series) -> dict:
         "fc": row.get("pct_FC", 0),
         "st": row.get("pct_ST", 0),
         "kc": row.get("pct_KC", 0),
-        "sv": row.get("pct_SV", 0),
         "kn": row.get("pct_KN", 0),
         "whiff": row.get("whiff_rate", 0),
         "gb": row.get("groundball_rate", 0),
@@ -80,24 +79,10 @@ def _score_traits(row: pd.Series) -> dict:
         "is_sp": row.get("is_sp", 0),
         "spin": row.get("spin_overall", 0),
         "ext": row.get("avg_extension", 0),
-        # Zone location traits
-        "ss_up": row.get("ss_up_rate", 0.5),
-        "ss_arm": row.get("ss_arm_side", 0.5),
-        "ss_heart": row.get("ss_heart_rate", 0.08),
-        "ss_edge": row.get("ss_edge_rate", 0.5),
-        "os_up": row.get("os_up_rate", 0.5),
-        "os_arm": row.get("os_arm_side", 0.5),
-        "os_heart": row.get("os_heart_rate", 0.08),
-        "os_edge": row.get("os_edge_rate", 0.5),
-        "platoon_lat": row.get("platoon_lateral_shift", 0),
-        "platoon_ht": row.get("platoon_height_shift", 0),
-        "ss_entropy": row.get("ss_location_entropy", 3.0),
-        "os_entropy": row.get("os_location_entropy", 3.0),
-        "entropy_shift": row.get("entropy_shift", 0),
     }
 
 
-def generate_full_name(row: pd.Series) -> str:
+def generate_full_name(row: pd.Series, hand: str = "RHP") -> str:
     """Generate a descriptive archetype name from centroid feature values.
 
     Uses a layered approach: primary identity (most distinctive pitch trait),
@@ -108,30 +93,32 @@ def generate_full_name(row: pd.Series) -> str:
     parts = ["The"]
 
     # --- Primary identity: what makes this cluster's PITCH MIX unique ---
-    if t["sv"] > 0.10:
-        parts.append("Screwball Unicorn")
-    elif t["kn"] > 0.10:
+    if t["kn"] > 0.10:
         parts.append("Knuckleball Wizard")
     elif t["fs"] > 0.15:
-        parts.append("Splitter Assassin")
+        parts.append("Split Demon")
     elif t["kc"] > 0.15:
-        parts.append("Knuckle-Curve Sorcerer")
+        parts.append("Uncle Charlie Knuckle-Curve")
+    # Undertow BEFORE Boomerang — no-FF sinker identity takes priority
+    elif t["si"] > 0.35 and t["ff"] < 0.05:
+        parts.append("Undertow Pure Sinker")
     elif t["st"] > 0.20:
-        parts.append("Sweeper Merchant")
+        parts.append("Boomerang Sweeper")
     elif t["ch"] > 0.20:
-        parts.append("Circle-Change Phantom")
-    elif t["si"] > 0.40 and t["ff"] < 0.05:
-        parts.append("Pure Sinker Ghost")
+        parts.append("Ghost Changeup")
     elif t["si"] > 0.35 and t["fc"] > 0.15:
         parts.append("Sinker-Cutter Hybrid")
     elif t["si"] > 0.35 and t["sl"] > 0.18:
-        parts.append("Sinker-Slider Earthworm")
+        if hand == "LHP":
+            parts.append("Gardener Sinker-Slider")
+        else:
+            parts.append("Snake Sinker-Slider")
     elif t["si"] > 0.35:
-        parts.append("Sinker Savant")
+        parts.append("Wormburner Sinker")
     elif t["ff"] > 0.45 and t["sl"] > 0.30:
-        parts.append("Gas-and-Snap Two-Pitch Demon")
+        parts.append("Barnburner Two-Pitch Demon")
     elif t["ff"] > 0.40 and t["sl"] > 0.15 and t["cu"] > 0.10:
-        parts.append("Fastball-Curve-Slider Triple Threat")
+        parts.append("Triple Threat")
     elif t["cu"] > 0.15 and t["fc"] > 0.12:
         parts.append("Cutter-Curve Craftsman")
     elif t["cu"] > 0.12 and t["is_sp"] > 0.55:
@@ -139,39 +126,13 @@ def generate_full_name(row: pd.Series) -> str:
     elif t["cu"] > 0.12:
         parts.append("Yakker Specialist")
     elif t["fc"] > 0.15:
-        parts.append("Cutter Carver")
+        parts.append("Cutman Specialist")
     elif t["ff"] + t["si"] > 0.55 and t["whiff"] > 0.25:
-        parts.append("Heater-Heavy Flamethrower")
+        parts.append("Barnburner Flamethrower")
     elif t["ff"] + t["si"] > 0.55:
         parts.append("Heater-Heavy")
     else:
         parts.append("Kitchen Sink Illusionist")
-
-    # --- Zone location modifier (only when distinctive) ---
-    avg_up = (t["ss_up"] + t["os_up"]) / 2
-    avg_arm = (t["ss_arm"] + t["os_arm"]) / 2
-    avg_heart = (t["ss_heart"] + t["os_heart"]) / 2
-    avg_entropy = (t["ss_entropy"] + t["os_entropy"]) / 2
-
-    if avg_up > 0.55 and avg_arm > 0.55:
-        parts.append("Up-and-In")
-    elif avg_up > 0.55 and avg_arm < 0.45:
-        parts.append("Up-and-Away")
-    elif avg_up > 0.55:
-        parts.append("High-Zone")
-    elif avg_up < 0.35:
-        parts.append("Low-Zone")
-
-    if avg_heart > 0.12:
-        parts.append("Heart-Attacker")
-    elif avg_heart < 0.06:
-        parts.append("Nibbler")
-
-    if t["platoon_lat"] > 0.25:
-        parts.append("Platoon-Shifter")
-
-    if avg_entropy < 2.6:
-        parts.append("One-Track")
 
     # --- Secondary modifier: outcome profile ---
     if t["whiff"] > 0.26:
@@ -190,74 +151,53 @@ def generate_full_name(row: pd.Series) -> str:
     return " ".join(parts)
 
 
-def _zone_prefix(t: dict) -> str:
-    """Return a short zone location prefix for the short name, or empty string."""
-    avg_up = (t["ss_up"] + t["os_up"]) / 2
-    avg_arm = (t["ss_arm"] + t["os_arm"]) / 2
-    avg_heart = (t["ss_heart"] + t["os_heart"]) / 2
-
-    if avg_up > 0.55 and avg_arm > 0.55:
-        return "Up-In "
-    elif avg_up > 0.55 and avg_arm < 0.45:
-        return "Up-Away "
-    elif avg_up > 0.55:
-        return "High "
-    elif avg_up < 0.35:
-        return "Low "
-    elif avg_heart > 0.12:
-        return "Heart "
-    elif avg_heart < 0.06:
-        return "Nibbler "
-    return ""
-
-
-def generate_short_name(row: pd.Series, full_name: str) -> str:
+def generate_short_name(row: pd.Series, full_name: str, hand: str = "RHP") -> str:
     """Create a punchy 2-4 word label. Every cluster MUST get a unique name."""
     t = _score_traits(row)
     role = _role_short(t["is_sp"])
-    zp = _zone_prefix(t)
 
     # Ordered by most exotic/distinctive pitch trait first
-    if t["sv"] > 0.10:
-        return f"{zp}Screwball Unicorn {role}"
     if t["kn"] > 0.10:
-        return f"{zp}Knuckleball Wizard {role}"
+        return f"Knuckleball Wizard {role}"
     if t["fs"] > 0.15:
-        return f"{zp}Splitter Assassin {role}"
+        return f"Split Demon {role}"
     if t["kc"] > 0.15:
-        return f"{zp}Knuckle-Curve Sorcerer {role}"
+        return f"Uncle Charlie {role}"
+    # Undertow BEFORE Boomerang — no-FF sinker identity takes priority
+    if t["si"] > 0.35 and t["ff"] < 0.05:
+        return f"Undertow {role}"
     if t["st"] > 0.20:
-        return f"{zp}Sweeper Merchant {role}"
+        return f"Boomerang {role}"
     if t["ch"] > 0.20:
-        return f"{zp}Circle-Change Phantom {role}"
-    if t["si"] > 0.40 and t["ff"] < 0.05:
-        return f"{zp}Sinker Ghost {role}"
+        return f"Ghost {role}"
     if t["si"] > 0.35 and t["fc"] > 0.15:
-        return f"{zp}Sinker-Cutter {role}"
+        return f"Sinker-Cutter {role}"
     if t["si"] > 0.35 and t["sl"] > 0.18:
-        return f"{zp}Earthworm {role}"
+        if hand == "LHP":
+            return f"Gardener {role}"
+        return f"Snake {role}"
     if t["si"] > 0.35:
-        return f"{zp}Sinker Savant {role}"
+        return f"Wormburner {role}"
     if t["ff"] > 0.45 and t["sl"] > 0.30:
-        return f"{zp}Gas & Snap {role}"
+        return f"Barnburner {role}"
     if t["ff"] > 0.40 and t["sl"] > 0.15 and t["cu"] > 0.10:
-        return f"{zp}Triple Threat {role}"
+        return f"Triple Threat {role}"
     if t["cu"] > 0.15 and t["fc"] > 0.12:
-        return f"{zp}Cutter-Curve Craftsman {role}"
+        return f"Cutter-Curve Craftsman {role}"
     if t["cu"] > 0.12 and t["is_sp"] > 0.55:
-        return f"{zp}Uncle Charlie {role}"
+        return f"Uncle Charlie {role}"
     if t["cu"] > 0.12:
-        return f"{zp}Yakker {role}"
+        return f"Yakker {role}"
     if t["fc"] > 0.15:
-        return f"{zp}Cutter Carver {role}"
+        return f"Cutman {role}"
     if t["ff"] + t["si"] > 0.55 and t["whiff"] > 0.25:
-        return f"{zp}Flamethrower {role}"
+        return f"Barnburner {role}"
     if t["ff"] + t["si"] > 0.55:
-        return f"{zp}Heater-Heavy {role}"
+        return f"Heater-Heavy {role}"
     if t["ch"] + t["fs"] > 0.15:
-        return f"{zp}Offspeed Wizard {role}"
+        return f"Ghost {role}"
 
-    return f"{zp}Kitchen Sink {role}"
+    return f"Kitchen Sink {role}"
 
 
 def find_nearest_pitchers(
@@ -309,6 +249,14 @@ def main():
     centroids_csv = os.path.join(MODELS_DIR, "centroids.csv")
     centroid_df = pd.read_csv(centroids_csv, index_col=0)
 
+    # Enrich centroids with is_sp (not a clustering feature, but needed for naming)
+    if "is_sp" not in centroid_df.columns and "is_sp" in pitcher_seasons.columns:
+        centroid_df["is_sp"] = [
+            pitcher_seasons.loc[pitcher_seasons["cluster"] == cid, "is_sp"].mean()
+            if (pitcher_seasons["cluster"] == cid).sum() > 0 else 0.0
+            for cid in centroid_df.index
+        ]
+
     centroid_pca_path = os.path.join(MODELS_DIR, "centroid_pca.csv")
     centroid_pca = pd.read_csv(centroid_pca_path, index_col=0) if os.path.exists(centroid_pca_path) else None
 
@@ -338,10 +286,18 @@ def main():
             color = LHP_COLORS[lhp_idx % len(LHP_COLORS)]
             lhp_idx += 1
 
-        full_name = generate_full_name(row)
-        short_name = generate_short_name(row, full_name)
+        full_name = generate_full_name(row, hand)
+        short_name = generate_short_name(row, full_name, hand)
         examples = find_nearest_pitchers(pitcher_seasons, cid, n=3)
         count = int((pitcher_seasons["cluster"] == cid).sum())
+
+        # Detect position-player junk clusters (avg < 100 pitches per season)
+        cluster_members = pitcher_seasons[pitcher_seasons["cluster"] == cid]
+        avg_pitches = cluster_members["total_pitches"].mean() if len(cluster_members) > 0 else 0
+        if avg_pitches < 100:
+            role = _role_short(row.get("is_sp", 0))
+            short_name = f"Eephus Lobber {role}"
+            full_name = f"The Eephus Lobber (Position Player) {_role_str(row.get('is_sp', 0))}"
 
         # PCA centroid position
         pca_pos = {}

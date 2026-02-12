@@ -448,68 +448,50 @@ body {
 // ═══════════════════════════════════════
 const DATA = { clusters: {}, batters: [], pitcherSeasons: [], hitterVsCluster: [], hitterVsPitcher: [], archetypeKings: {}, teamRosters: {} };
 
-const ARCHETYPE_MAP = {
-    // RHP (11)
-    'R_0':  { name: 'Low Offspeed Wizard', emoji: '\u{1F9D9}' },  // SI:31% SL:20% FF:20% CH:14%
-    'R_1':  { name: 'Offspeed Wizard',     emoji: '\u{1FA84}' },  // FF:46% CH:19% SL:16%
-    'R_2':  { name: 'Knuckle-Curve Sorcerer', emoji: '\u{1FA9D}' }, // FF:37% KC:29%
-    'R_3':  { name: 'Kitchen Sink',        emoji: '\u2694\uFE0F' }, // FF:42% SL:33%
-    'R_4':  { name: 'Cutter-Curve Craftsman', emoji: '\u2702\uFE0F' }, // FF:34% CU:20% FC:16%
-    'R_5':  { name: 'Splitter Assassin',   emoji: '\u{1F5E1}\uFE0F' }, // FF:38% FS:31%
-    'R_6':  { name: 'Earthworm',           emoji: '\u{1FAB1}' },  // SI:38% SL:23% FF:19%
-    'R_7':  { name: 'Sinker-Cutter',       emoji: '\u{1F40D}' },  // SI:38% FC:22% SL:18%
-    'R_8':  { name: 'Screwball Unicorn',   emoji: '\u{1F984}' },  // FF:28% SI:24% SV:20%
-    'R_9':  { name: 'Sweeper Merchant',    emoji: '\u{1F9F9}' },  // ST:32% FF:29% SI:18%
-    'R_10': { name: 'Heater-Heavy',        emoji: '\u{1F525}' },  // FF:50% SL:22% 94.6mph
-    // LHP (12)
-    'L_0':  { name: 'Earthworm',           emoji: '\u{1FAB1}' },  // SI:46% SL:18%
-    'L_1':  { name: 'Sinker Ghost',        emoji: '\u{1F47B}' },  // SI:54% SL:13% CH:13%
-    'L_2':  { name: 'Offspeed Wizard',     emoji: '\u{1FA84}' },  // FF:42% CH:16% FC:15%
-    'L_3':  { name: 'Low Kitchen Sink',    emoji: '\u{1F52A}' },  // SL:34% FF:34% SI:15%
-    'L_4':  { name: 'Uncle Charlie',       emoji: '\u{1F3B2}' },  // FF:45% CU:18% CH:12%
-    'L_5':  { name: 'Low Sinker Savant',   emoji: '\u{1F30A}' },  // SI:50% CH:19% SL:15%
-    'L_6':  { name: 'Sweeper Merchant',    emoji: '\u{1F9F9}' },  // ST:32% FF:29% SI:18%
-    'L_7':  { name: 'Flamethrower',        emoji: '\u{1F525}' },  // FF:53% SL:29% 93.8mph
-    'L_8':  { name: 'Knuckle-Curve Sorcerer', emoji: '\u{1FA9D}' }, // FF:34% KC:25%
-    'L_9':  { name: 'Splitter Assassin',   emoji: '\u{1F5E1}\uFE0F' }, // FF:42% FS:31%
-    'L_10': { name: 'Screwball Unicorn',   emoji: '\u{1F984}' },  // FF:43% SV:25%
-    'L_11': { name: 'Circle-Change Phantom', emoji: '\u{1F47B}' }, // FF:31% CH:23% SI:17% CU:11%
-};
+// Dynamic ARCHETYPE_MAP — populated from clusters.json data after load
+const ARCHETYPE_MAP = {};
+const ARCHETYPE_ABBREV = {};
+let ARCHETYPE_SPREAD_ORDER = { rhp: [], lhp: [] };
+
+function _initArchetypeMap() {
+    Object.entries(DATA.clusters).forEach(([id, c]) => {
+        const sn = c.short_name || id;
+        const parts = sn.split(' ');
+        const emoji = parts[0] || '';
+        const role = parts[parts.length - 1];
+        const name = parts.slice(1, -1).join(' ') || id;
+        ARCHETYPE_MAP[id] = { name, emoji };
+        // Build abbreviation from first 4 chars of name
+        ARCHETYPE_ABBREV[id] = name.replace(/\s/g,'').slice(0,4).toUpperCase();
+    });
+    // Build spread order from cluster keys
+    const rhp = Object.keys(DATA.clusters).filter(id => DATA.clusters[id].hand === 'RHP').sort();
+    const lhp = Object.keys(DATA.clusters).filter(id => DATA.clusters[id].hand === 'LHP').sort();
+    ARCHETYPE_SPREAD_ORDER = { rhp, lhp };
+}
+
 function archName(id)  { const a = ARCHETYPE_MAP[id]; return a ? a.emoji + ' ' + a.name : id; }
 function archEmoji(id) { return ARCHETYPE_MAP[id]?.emoji || ''; }
 function archNameOnly(id) { return ARCHETYPE_MAP[id]?.name || id; }
 
-const ARCHETYPE_SPREAD_ORDER = {
-    rhp: ['R_6','R_7','R_0','R_8','R_4','R_1','R_2','R_5','R_9','R_3','R_10'],
-    lhp: ['L_0','L_1','L_5','L_11','L_2','L_4','L_8','L_3','L_10','L_9','L_6','L_7']
-};
-
-const ARCHETYPE_ABBREV = {
-    'R_0':'LWIZ','R_1':'WIZ','R_2':'HOOK','R_3':'SINK','R_4':'C&C',
-    'R_5':'SPLT','R_6':'WORM','R_7':'SNKY','R_8':'SCRW','R_9':'SWPR','R_10':'HEAT',
-    'L_0':'WORM','L_1':'GHST','L_2':'WIZ','L_3':'LKIT','L_4':'UNCL',
-    'L_5':'LSNK','L_6':'SWPR','L_7':'FIRE','L_8':'HOOK','L_9':'SPLT',
-    'L_10':'SCRW','L_11':'PHNT'
-};
-
 const ARCHETYPE_DESC = {
-    'Heater-Heavy':          'High-velo power arm, lives on heat + slider',
-    'Flamethrower':          'Pure gas LHP, fastball-slider fire combo',
-    'Earthworm':             'Ground ball machine, sinker-heavy contact manager',
-    'Splitter Assassin':     'Strikeout artist, tunnels splitter off fastball',
-    'Sweeper Merchant':      'Sweeper-first pitcher, extreme horizontal break',
-    'Knuckle-Curve Sorcerer':'Breaking ball artist, hooks hitters with the curve',
-    'Cutter-Curve Craftsman':'Cutter-curveball combo, pitch mix craftsman',
-    'Offspeed Wizard':       'Changeup-led mix, big platoon shifts in location',
-    'Low Offspeed Wizard':   'Low-zone kitchen sink with changeup deception',
-    'Kitchen Sink':          'Fastball-slider power, balanced arsenal',
-    'Low Kitchen Sink':      'Low-zone slider+heater combo, lives down',
-    'Sinker-Cutter':         'Movement pitcher, sinker-cutter with no four-seam',
-    'Sinker Ghost':          'Pure sinker vanisher, extreme ground ball lean',
-    'Low Sinker Savant':     'Basement sinker-change, lives at the bottom',
-    'Uncle Charlie':         'Old-school lefty, curveball-anchored pitch mix',
-    'Screwball Unicorn':     'Rare sweeping pitch specialist, unique movement',
-    'Circle-Change Phantom': 'Changeup-dominant LHP, pitch disappears on hitters',
+    'Barnburner':          'High-velo power arm, lives on heat + slider',
+    'Heavy Duty':          'Fastball-dominant workhorse, FF+SI > 50% of arsenal',
+    'Earthworm':           'Ground ball machine, sinker-heavy contact manager',
+    'Split Demon':         'Strikeout artist, tunnels splitter off fastball',
+    'Boomerang':           'Sweeper-first pitcher, extreme horizontal break',
+    'Uncle Charlie':       'Breaking ball artist, curveball-anchored pitch mix',
+    'CutCraft':            'Cutter-curveball combo, pitch mix craftsman',
+    'Ghost':               'Changeup-led mix, disappearing offspeed deception',
+    'Kitchen Sink':        'Balanced arsenal, no single dominant pitch',
+    'Snake':               'Sinker-cutter movement pitcher, no four-seam',
+    'Gardener':            'Sinker-slider groundball specialist',
+    'Undertow':            'Pure sinker artist, heavy sink without four-seam',
+    'Yakker':              'Curveball-heavy pitcher, old-school hooks',
+    'Cutman':              'Cutter-first pitcher, late cutting action',
+    'Swordfighter':        'Slider-first pitcher, dominant breaking ball',
+    'Triple Threat':       'Three-pitch mix: fastball, slider, curveball',
+    'Knuckleball Wizard':  'Rare knuckleball specialist, unpredictable movement',
 };
 
 const STATE = {
@@ -531,7 +513,7 @@ let _teamClusterIds = null;
 // ═══════════════════════════════════════
 // DATA LOADING (identical to desktop)
 // ═══════════════════════════════════════
-const DATA_VERSION = 'v21';
+const DATA_VERSION = 'v22';
 async function loadJSON(url, label, setStatus) {
     setStatus('Loading ' + label + '...');
     const cacheBust = url + (url.includes('?') ? '&' : '?') + '_v=' + DATA_VERSION;
@@ -555,16 +537,18 @@ async function loadAllData() {
     try { DATA.teamRosters = await loadJSON('teams_2026.json', 'team rosters', setStatus); }
     catch(e) { DATA.teamRosters = { teams: {}, rosters: {} }; }
 
-    // Fix centroids with missing velo
+    // Init dynamic archetype map from clusters.json
+    _initArchetypeMap();
+
+    // Fix clusters with missing velo (top-level fields, no centroid)
     Object.entries(DATA.clusters).forEach(([cid, cluster]) => {
-        const cent = cluster.centroid || {};
-        if (!cent.avg_velo_FF || cent.avg_velo_FF === 0) {
+        if (!cluster.avg_velo_FF || cluster.avg_velo_FF === 0) {
             const members = DATA.pitcherSeasons.filter(p => p.cluster === cid && p.avg_velo_FF > 0);
-            if (members.length > 0) cent.avg_velo_FF = members.reduce((s, p) => s + p.avg_velo_FF, 0) / members.length;
+            if (members.length > 0) cluster.avg_velo_FF = members.reduce((s, p) => s + p.avg_velo_FF, 0) / members.length;
         }
-        if (cent.pfx_x_avg == null) {
+        if (cluster.pfx_x_avg == null) {
             const members = DATA.pitcherSeasons.filter(p => p.cluster === cid && p.pfx_x_avg != null);
-            if (members.length > 0) cent.pfx_x_avg = members.reduce((s, p) => s + p.pfx_x_avg, 0) / members.length;
+            if (members.length > 0) cluster.pfx_x_avg = members.reduce((s, p) => s + p.pfx_x_avg, 0) / members.length;
         }
     });
 
@@ -1130,8 +1114,7 @@ sheetHandle.addEventListener('touchmove', (e) => {
 function showStatPanel(batterObj, clusterId) {
     const cluster = DATA.clusters[clusterId];
     if (!cluster) return;
-    const cent = cluster.centroid || {};
-    const role = cent.is_sp > 0.5 ? 'SP' : 'RP';
+    const role = cluster.is_sp > 0.5 ? 'SP' : 'RP';
     let html = '';
 
     if (batterObj) {
@@ -1195,15 +1178,10 @@ function showStatPanel(batterObj, clusterId) {
         html += '<div class="stat-header" style="color:'+cluster.color+'">'+archName(clusterId)+'</div>';
         html += '<div class="stat-sub" style="color:'+cluster.color+'">'+cluster.hand+' '+role+' \u2014 '+cluster.pitcher_count+' pitchers</div>';
         html += '<div class="section-hdr">Cluster Profile</div>';
-        if (cent.avg_velo_FF>0) html += '<div class="profile-row"><span>Avg Fastball</span><span class="pval">'+(cent.avg_velo_FF).toFixed(1)+' mph</span></div>';
-        html += '<div class="profile-row"><span>Whiff Rate</span><span class="pval">'+((cent.whiff_rate||0)*100).toFixed(1)+'%</span></div>';
-        html += '<div class="profile-row"><span>Zone Rate</span><span class="pval">'+((cent.zone_rate||0)*100).toFixed(1)+'%</span></div>';
-        html += '<div class="profile-row"><span>GB Rate</span><span class="pval">'+((cent.groundball_rate||0)*100).toFixed(1)+'%</span></div>';
-        html += '<div class="profile-row"><span>Arm Angle</span><span class="pval">'+(cent.arm_angle||0).toFixed(1)+'\u00b0</span></div>';
-        if (cent.pfx_x_avg!=null) html += '<div class="profile-row"><span>H-Break</span><span class="pval">'+((cent.pfx_x_avg)*12).toFixed(1)+'"</span></div>';
-        if (cent.pfx_z_avg!=null) html += '<div class="profile-row"><span>V-Break</span><span class="pval">'+((cent.pfx_z_avg)*12).toFixed(1)+'"</span></div>';
-        const pitches = ['FF','SI','FC','SL','CH','CU','FS','KC','ST','SV','KN'].map(p=>({p,v:cent['pct_'+p]||0})).filter(x=>x.v>0.05).sort((a,b)=>b.v-a.v);
-        html += '<div class="profile-row"><span>Top Pitches</span><span class="pval">'+pitches.map(x=>x.p+' '+((x.v)*100).toFixed(0)+'%').join(', ')+'</span></div>';
+        if (cluster.avg_velo_FF>0) html += '<div class="profile-row"><span>Avg Fastball</span><span class="pval">'+(cluster.avg_velo_FF).toFixed(1)+' mph</span></div>';
+        html += '<div class="profile-row"><span>Whiff Rate</span><span class="pval">'+((cluster.whiff_rate||0)*100).toFixed(1)+'%</span></div>';
+        html += '<div class="profile-row"><span>GB Rate</span><span class="pval">'+((cluster.groundball_rate||0)*100).toFixed(1)+'%</span></div>';
+        html += '<div class="profile-row"><span>Top Pitches</span><span class="pval">'+(cluster.top_pitches || '\u2014')+'</span></div>';
 
         // Pitcher roster (no batter)
         const members = DATA.pitcherSeasons.filter(p => p.cluster === clusterId && (!_teamPitcherIds || _teamPitcherIds.has(p.pitcher)));
@@ -1435,7 +1413,6 @@ function buildArchetypeCards() {
         html += '<div class="arch-group-hdr">' + label + '</div>';
         group.forEach(id => {
             const c = DATA.clusters[id];
-            const cent = c.centroid || {};
             const vis = STATE.visibleClusters.has(id);
             const sel = STATE.highlightedCluster === id;
             const cls = 'arch-card' + (sel ? ' selected' : '') + (!vis ? ' dimmed' : '');
@@ -1453,8 +1430,8 @@ function buildArchetypeCards() {
             html += '</div>';
 
             // Profile stats line
-            const velo = (cent.avg_velo_FF || 0).toFixed(1);
-            const whiff = ((cent.whiff_rate || 0) * 100).toFixed(0);
+            const velo = (c.avg_velo_FF || 0).toFixed(1);
+            const whiff = ((c.whiff_rate || 0) * 100).toFixed(0);
             html += '<div class="card-profile">' + velo + ' mph \u00b7 ' + whiff + '% Whiff</div>';
 
             // Batter matchup line (if active)
@@ -1507,47 +1484,42 @@ function buildArchetypeCards() {
 // ═══════════════════════════════════════
 function buildArchetypeKey() {
     let html = '<div class="stat-header">\u{1F511} Archetype Key</div>';
-    html += '<div style="font-size:11px;color:#888;font-family:var(--font-tech);margin:4px 0 12px;">13 distinct pitcher identities across 19 clusters</div>';
+    const archetypeNames = [...new Set(Object.values(ARCHETYPE_MAP).map(a => a.name))];
+    html += '<div style="font-size:11px;color:#888;font-family:var(--font-tech);margin:4px 0 12px;">' + archetypeNames.length + ' distinct pitcher archetypes</div>';
 
-    // Shared archetypes (both hands)
-    const shared = [
-        { name: 'Firestarter', ids: ['R_6', 'L_2'] },
-        { name: 'Earthworm', ids: ['R_4', 'L_4'] },
-        { name: 'Splitter Demon', ids: ['R_9', 'L_6'] },
-        { name: 'Boomerang', ids: ['R_1', 'L_7'] },
-        { name: 'Side-Sweeper', ids: ['R_5', 'L_8'] },
-        { name: 'Big Hooker', ids: ['R_7', 'L_3'] },
-    ];
+    // Group archetypes by name — find which hands each appears in
+    const byName = {};
+    Object.entries(DATA.clusters).forEach(([id, c]) => {
+        const a = ARCHETYPE_MAP[id];
+        if (!a) return;
+        if (!byName[a.name]) byName[a.name] = { name: a.name, emoji: a.emoji, ids: [], hands: new Set() };
+        byName[a.name].ids.push(id);
+        byName[a.name].hands.add(c.hand);
+    });
 
-    const rhpOnly = [
-        { name: 'Cut & Curved', ids: ['R_0'] },
-        { name: 'Ghost Baller', ids: ['R_2'] },
-        { name: 'Triple Threat', ids: ['R_3'] },
-        { name: 'Snakey', ids: ['R_8'] },
-    ];
-
-    const lhpOnly = [
-        { name: 'Undertow', ids: ['L_0'] },
-        { name: 'Craftsman', ids: ['L_1'] },
-        { name: 'Uncle Charlie', ids: ['L_5'] },
-    ];
+    const shared = [], rhpOnly = [], lhpOnly = [];
+    Object.values(byName).forEach(item => {
+        if (item.hands.has('RHP') && item.hands.has('LHP')) shared.push(item);
+        else if (item.hands.has('RHP')) rhpOnly.push(item);
+        else lhpOnly.push(item);
+    });
 
     const renderSection = (title, items) => {
+        if (items.length === 0) return;
         html += '<div class="section-hdr">' + title + '</div>';
         items.forEach(item => {
-            const a = ARCHETYPE_MAP[item.ids[0]];
             const desc = ARCHETYPE_DESC[item.name] || '';
-            const clusterColors = item.ids.map(id => DATA.clusters[id]?.color || '#666');
+            const color = DATA.clusters[item.ids[0]]?.color || '#666';
             html += '<div class="key-item">';
             html += '<div class="key-top">';
-            html += '<span class="key-emoji">' + (a?.emoji || '') + '</span>';
-            html += '<span class="key-name" style="color:' + clusterColors[0] + ';">' + item.name.toUpperCase() + '</span>';
+            html += '<span class="key-emoji">' + (item.emoji || '') + '</span>';
+            html += '<span class="key-name" style="color:' + color + ';">' + item.name.toUpperCase() + '</span>';
             html += '</div>';
             html += '<div class="key-desc">' + desc + '</div>';
-            html += '<div class="key-clusters">' + item.ids.map(id => {
-                const cl = DATA.clusters[id];
-                return cl ? '<span style="color:' + cl.color + ';">' + cl.hand + ': ' + id + '</span>' : '';
-            }).join(' \u00b7 ') + '</div>';
+            // Total pitcher count
+            const totalCount = item.ids.reduce((s, id) => s + (DATA.clusters[id]?.pitcher_count || 0), 0);
+            html += '<div class="key-clusters" style="color:#555;">' + totalCount + ' pitchers</div>';
+            // Example pitchers from kings
             const kings = DATA.archetypeKings[item.ids[0]] || [];
             if (kings.length > 0) {
                 const names = kings.slice(0, 3).map(k => k.name).join(', ');
@@ -1566,13 +1538,6 @@ function buildArchetypeKey() {
     html += '<div class="key-item"><div class="key-top"><span class="key-emoji">\u2B50</span><span class="key-name" style="color:#f4a261;">SP \u2014 STARTER</span></div><div class="key-desc">Primary rotation pitcher, 5+ innings per start</div></div>';
     html += '<div class="key-item"><div class="key-top"><span class="key-emoji">\u{1F6E1}\uFE0F</span><span class="key-name" style="color:#a8dadc;">RP \u2014 RELIEVER</span></div><div class="key-desc">Bullpen pitcher, 1-3 innings per appearance</div></div>';
     html += '<div class="key-item"><div class="key-top"><span class="key-emoji">\u{1F504}</span><span class="key-name" style="color:#e76f51;">SW \u2014 SWINGMAN</span></div><div class="key-desc">Flexible role, starts and relieves</div></div>';
-
-    // TAGS placeholder
-    html += '<div class="section-hdr">STATS</div>';
-    html += '<div class="key-item tags-placeholder">';
-    html += '<div class="key-top"><span class="key-emoji">\u{1F3F7}\uFE0F</span><span class="key-name" style="color:#555;">TAGGED</span></div>';
-    html += '<div class="key-desc" style="color:#555;font-style:italic;">When a pitcher retires the same batter 2+ times in a single game. Tracks pitcher dominance in individual games.<br><span style="color:#444;">(Pipeline update required \u2014 Coming Soon)</span></div>';
-    html += '</div>';
 
     sheetContent.innerHTML = html;
     openSheet('full');
