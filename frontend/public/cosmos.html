@@ -1151,6 +1151,15 @@
             return { r: parseInt(hex.substring(0,2),16), g: parseInt(hex.substring(2,4),16), b: parseInt(hex.substring(4,6),16) };
         }
 
+        function getFilteredClusterSet() {
+            const f = STATE.pitcherFilters;
+            const active = f.veloMin != null || f.veloMax != null || f.hBreakMin != null || f.hBreakMax != null || f.roleFilter != null;
+            if (!active) return null;
+            const set = new Set();
+            DATA.pitcherSeasons.forEach(ps => { if (isPitcherVisible(ps) && passesPitcherFilters(ps)) set.add(ps.cluster); });
+            return set;
+        }
+
         function passesPitcherFilters(ps) {
             const f = STATE.pitcherFilters;
             if (f.veloMin != null && (ps.avg_velo_FF || 0) < f.veloMin) return false;
@@ -1217,15 +1226,18 @@
             const yearFilter = STATE.selectedYear !== 'all' ? STATE.selectedYear : null;
             const yearCentroids = yearFilter ? computeYearCentroids(yearFilter) : null;
 
+            const filteredClusters = yearCentroids ? null : getFilteredClusterSet();
+
             Object.entries(DATA.clusters).forEach(([id, cluster]) => {
                 if (!STATE.visibleClusters.has(id)) return;
 
                 let px, py, yearCount = null;
                 if (yearCentroids) {
                     const yc = yearCentroids[id];
-                    if (!yc) return; // no pitchers this year
+                    if (!yc) return; // no pitchers this year/filter
                     px = yc.x; py = yc.y; yearCount = yc.n;
                 } else {
+                    if (filteredClusters && !filteredClusters.has(id)) return; // all pitchers filtered out
                     px = cluster.pca_x; py = cluster.pca_y;
                     if (px == null || py == null) return;
                 }
@@ -1377,9 +1389,12 @@
             const yearFilter = STATE.selectedYear !== 'all' ? STATE.selectedYear : null;
             const yearCentroids = yearFilter ? computeYearCentroids(yearFilter) : null;
 
+            const filteredClusters2 = yearCentroids ? null : getFilteredClusterSet();
+
             Object.entries(DATA.clusters).forEach(([cid, cluster]) => {
                 if (!STATE.visibleClusters.has(cid)) return;
                 if (_teamClusterIds && !_teamClusterIds.has(cid)) return;
+                if (filteredClusters2 && !filteredClusters2.has(cid)) return;
 
                 let cpx, cpy;
                 if (yearCentroids) {
@@ -1453,9 +1468,11 @@
             // Hover: centroids
             const hoverYearFilter = STATE.selectedYear !== 'all' ? STATE.selectedYear : null;
             const hoverYearCentroids = hoverYearFilter ? computeYearCentroids(hoverYearFilter) : null;
+            const hoverFilteredClusters = hoverYearCentroids ? null : getFilteredClusterSet();
             let found = null;
             Object.entries(DATA.clusters).forEach(([id, cl]) => {
                 if (!STATE.visibleClusters.has(id)) return;
+                if (hoverFilteredClusters && !hoverFilteredClusters.has(id)) return;
                 let hpx, hpy;
                 if (hoverYearCentroids) {
                     const yc = hoverYearCentroids[id];
@@ -1521,10 +1538,12 @@
             // Priority 1: cluster centroid clicks
             const clickYearFilter = STATE.selectedYear !== 'all' ? STATE.selectedYear : null;
             const clickYearCentroids = clickYearFilter ? computeYearCentroids(clickYearFilter) : null;
+            const clickFilteredClusters = clickYearCentroids ? null : getFilteredClusterSet();
             let centroidHit = false;
             Object.entries(DATA.clusters).forEach(([id, cl]) => {
                 if (centroidHit) return;
                 if (!STATE.visibleClusters.has(id)) return;
+                if (clickFilteredClusters && !clickFilteredClusters.has(id)) return;
                 let cpx, cpy;
                 if (clickYearCentroids) {
                     const yc = clickYearCentroids[id];
@@ -2031,6 +2050,7 @@
                 html += '</div>';
             }
 
+            const listFilteredClusters = getFilteredClusterSet();
             const renderGroup = (group, label) => {
                 html += '<div class="arch-group-header">'+label+' ('+group.length+')</div>';
                 group.forEach(id => {
@@ -2038,8 +2058,9 @@
                     const cent = c;
                     const role = cent.is_sp > 0.5 ? 'SP' : 'RP';
                     const vis = STATE.visibleClusters.has(id);
+                    const filteredOut = listFilteredClusters && !listFilteredClusters.has(id);
                     const sel = STATE.highlightedCluster === id;
-                    const cls = 'arch-item' + (sel ? ' selected' : '') + (!vis ? ' dimmed' : '');
+                    const cls = 'arch-item' + (sel ? ' selected' : '') + ((!vis || filteredOut) ? ' dimmed' : '');
 
                     // Determine row color from most recent batter's matchup
                     let rowColor = c.color;

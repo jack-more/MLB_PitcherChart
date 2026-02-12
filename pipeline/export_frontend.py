@@ -29,14 +29,16 @@ YEARS = range(2015, 2026)
 
 # Consistent colors per archetype name
 ARCHETYPE_COLORS = {
-    "Uncle Charlie":       "#c9a03e",  # Gold (H=46)
-    "Yakker":              "#bfb032",  # Yellow-Gold (H=54)
-    "Earthworm":           "#8a7e2f",  # Dark Olive (H=52)
+    "Earthworm":           "#a0584a",  # Terra Cotta (H=10)
+    "Eephus Lobber":       "#a86e3d",  # Brown (H=25)
+    "Uncle Charlie":       "#c9a03e",  # Gold (H=42)
+    "Yakker":              "#b8b230",  # Yellow (H=57)
     "Snake":               "#7db04a",  # Lime Green (H=80)
     "Gardener":            "#4da85e",  # Spring Green (H=96)
     "Kitchen Sink":        "#45a87e",  # Mint (H=120)
-    "Boomerang":           "#3aaf9f",  # Emerald (H=126)
+    "Boomerang":           "#3aaf9f",  # Emerald (H=166)
     "CutCraft":            "#3a8cc4",  # Azure Blue (H=207)
+    "Ghost":               "#8899aa",  # Cool Gray (H=210)
     "Undertow":            "#4178c9",  # Ocean Blue (H=218)
     "Cutman":              "#566acc",  # Indigo (H=230)
     "Heavy Duty":          "#6b5ecc",  # Deep Purple (H=245)
@@ -45,8 +47,6 @@ ARCHETYPE_COLORS = {
     "Triple Threat":       "#c43fa8",  # Magenta (H=295)
     "Swordfighter":        "#c94185",  # Hot Pink (H=315)
     "Barnburner":          "#cc4565",  # Rose (H=335)
-    "Ghost":               "#8899aa",  # Cool Gray (H=210)
-    "Eephus Lobber":       "#a86e3d",  # Brown (legacy)
 }
 
 EMOJI_MAP = {

@@ -792,6 +792,19 @@ function passesPitcherFilters(ps) {
     return true;
 }
 
+function getFilteredClusterSet() {
+    const f = STATE.pitcherFilters;
+    const active = f.veloMin != null || f.veloMax != null || f.hBreakMin != null || f.hBreakMax != null || f.roleFilter != null;
+    if (!active) return null;
+    const set = new Set();
+    DATA.pitcherSeasons.forEach(ps => {
+        if (!STATE.visibleClusters.has(ps.cluster)) return;
+        if (_teamPitcherIds && !_teamPitcherIds.has(ps.pitcher)) return;
+        if (passesPitcherFilters(ps)) set.add(ps.cluster);
+    });
+    return set;
+}
+
 function drawDots() {
     const hl = STATE.highlightedCluster;
     const yearFilter = STATE.selectedYear !== 'all' ? parseInt(STATE.selectedYear) : null;
@@ -843,9 +856,11 @@ function computeYearCentroids(year) {
 function drawCentroids() {
     const yearFilter = STATE.selectedYear !== 'all' ? STATE.selectedYear : null;
     const yearCentroids = yearFilter ? computeYearCentroids(yearFilter) : null;
+    const filteredClusters = yearCentroids ? null : getFilteredClusterSet();
 
     Object.entries(DATA.clusters).forEach(([id, cluster]) => {
         if (!STATE.visibleClusters.has(id)) return;
+        if (filteredClusters && !filteredClusters.has(id)) return;
 
         let px, py, yearCount = null;
         if (yearCentroids) {
@@ -957,8 +972,10 @@ function drawBatterLines() {
     const yearFilter = STATE.selectedYear !== 'all' ? STATE.selectedYear : null;
     const yearCentroids = yearFilter ? computeYearCentroids(yearFilter) : null;
 
+    const filteredClusters2 = yearCentroids ? null : getFilteredClusterSet();
     Object.entries(DATA.clusters).forEach(([cid, cluster]) => {
         if (!STATE.visibleClusters.has(cid)) return;
+        if (filteredClusters2 && !filteredClusters2.has(cid)) return;
 
         let cpx, cpy;
         if (yearCentroids) {
@@ -1411,16 +1428,18 @@ function buildArchetypeSpread() {
     const hasBatters = batters.length > 0;
     const matchups = hasBatters ? getMatchupData(batters[batters.length - 1]) : [];
 
+    const spreadFilteredClusters = getFilteredClusterSet();
     const renderRow = (ids, cssClass) => {
         let html = '<div class="spread-row ' + cssClass + '">';
         ids.forEach(id => {
             const c = DATA.clusters[id];
             if (!c) return;
             const vis = STATE.visibleClusters.has(id);
+            const filteredOut = spreadFilteredClusters && !spreadFilteredClusters.has(id);
             const sel = STATE.highlightedCluster === id;
             const m = matchups.find(x => String(x.cluster) === id);
             const hasStat = hasBatters && m && (m.PA || 0) >= STATE.minPA;
-            const dimmed = !vis || (hasBatters && !hasStat);
+            const dimmed = !vis || filteredOut || (hasBatters && !hasStat);
 
             let cls = 'spread-chip';
             if (sel) cls += ' selected';
@@ -1495,13 +1514,15 @@ function buildArchetypeCards() {
         });
     }
 
+    const cardsFilteredClusters = getFilteredClusterSet();
     const renderGroup = (group, label) => {
         html += '<div class="arch-group-hdr">' + label + '</div>';
         group.forEach(id => {
             const c = DATA.clusters[id];
             const vis = STATE.visibleClusters.has(id);
+            const filteredOut = cardsFilteredClusters && !cardsFilteredClusters.has(id);
             const sel = STATE.highlightedCluster === id;
-            const cls = 'arch-card' + (sel ? ' selected' : '') + (!vis ? ' dimmed' : '');
+            const cls = 'arch-card' + (sel ? ' selected' : '') + ((!vis || filteredOut) ? ' dimmed' : '');
 
             // Count SPs and RPs in this cluster
             const clusterPitchers = DATA.pitcherSeasons.filter(p => p.cluster === id && (!_teamPitcherIds || _teamPitcherIds.has(p.pitcher)));
