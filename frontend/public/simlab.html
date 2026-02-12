@@ -31,7 +31,7 @@ body{
     border-left:1px solid rgba(0,0,0,0.2);border-right:1px solid rgba(0,0,0,0.2);box-shadow:0 0 50px rgba(0,0,0,0.5)}
 
 /* ═══ TOP BAR ═══ */
-.top-bar{display:grid;grid-template-columns:280px 1fr auto;gap:1.5rem;padding:1rem 1.5rem;
+.top-bar{display:grid;grid-template-columns:320px 1fr auto;gap:1.5rem;padding:1rem 1.5rem;
     border-bottom:var(--dashed-border);align-items:center;background:rgba(43,58,140,0.9);
     backdrop-filter:blur(5px);z-index:100}
 .brand-block{display:flex;align-items:center;gap:1rem}
@@ -40,8 +40,8 @@ body{
 .logo{font-weight:700;letter-spacing:-0.5px;font-size:1.1rem;border:1px solid var(--text-main);padding:2px 6px}
 .mode-toggle{display:flex;gap:0;margin-left:8px}
 .mode-btn{background:transparent;border:1px solid rgba(255,255,255,0.3);color:var(--text-muted);
-    font-family:var(--font-stack);font-size:0.7rem;padding:3px 10px;cursor:pointer;transition:all 0.15s;letter-spacing:0.5px}
-.mode-btn:first-child{border-right:none}
+    font-family:var(--font-stack);font-size:0.65rem;padding:3px 8px;cursor:pointer;transition:all 0.15s;letter-spacing:0.5px;border-right:none}
+.mode-btn:last-child{border-right:1px solid rgba(255,255,255,0.3)}
 .mode-btn.active{background:var(--accent);border-color:var(--accent);color:#000;font-weight:700}
 .control-cluster{display:flex;gap:1.5rem;align-items:center;padding-left:0.5rem}
 .search-wrap{position:relative;flex:0 0 300px}
@@ -77,12 +77,11 @@ body{
 .cal-day.other-month{color:rgba(255,255,255,0.15);cursor:default}
 .cal-day.other-month:hover{border-color:transparent}
 .cal-day.today{border:1px dashed var(--text-muted)}
-.cal-day.selected{background:var(--accent);color:#000;font-weight:700}
-.cal-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;min-height:20px}
-.cal-chip{background:rgba(255,68,0,0.2);border:1px solid var(--accent);color:var(--accent);
-    font-size:0.6rem;padding:2px 8px;font-family:var(--font-stack);display:flex;align-items:center;gap:4px}
-.cal-chip .chip-x{cursor:pointer;font-weight:700}
-.cal-chip .chip-x:hover{color:var(--text-main)}
+.cal-day.range-start,.cal-day.range-end{background:var(--accent);color:#000;font-weight:700}
+.cal-day.in-range{background:rgba(255,68,0,0.25);color:var(--text-main)}
+.cal-range-label{font-size:0.6rem;color:var(--text-muted);margin-top:8px;min-height:20px;text-align:center;
+    padding:4px 0;letter-spacing:0.5px}
+.cal-range-label .range-accent{color:var(--accent);font-weight:700}
 .cal-actions{display:flex;gap:6px;justify-content:flex-end;margin-top:8px;padding-top:8px;
     border-top:var(--dashed-border)}
 
@@ -115,6 +114,12 @@ body{
     border:1px dashed rgba(255,255,255,0.3);font-size:0.75rem}
 .archetype-badge .dot{width:8px;height:8px;display:inline-block}
 .no-player{color:var(--text-muted);font-size:0.85rem;font-style:italic;padding:2rem 0}
+
+/* Game Mode Info */
+.game-mode-info{display:none}
+.game-mode-info p{color:var(--text-muted);font-size:0.75rem;margin-bottom:1rem;line-height:1.5}
+.game-mode-info .step-list .stat-row{font-size:0.7rem}
+.game-mode-info .step-list .val{font-size:0.65rem;color:var(--text-muted);text-align:right;max-width:160px}
 
 /* Center: Slate Column */
 .col-slate{padding:1.5rem;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--accent) transparent}
@@ -188,6 +193,47 @@ body{
     background:var(--bg-deep);border:1px solid rgba(255,255,255,0.2);border-top:none;display:none;z-index:200}
 .po-drop.visible{display:block}
 
+/* ═══ GAME TOTAL CARDS ═══ */
+.game-total-card{display:grid;grid-template-columns:80px 1fr;background:var(--bg-light);margin-bottom:1.5rem;
+    box-shadow:8px 8px 0px rgba(0,0,0,0.2);position:relative;transition:transform 0.2s}
+.game-total-card:hover{transform:translate(-2px,-2px);box-shadow:10px 10px 0px rgba(0,0,0,0.3)}
+.gt-spine{background:var(--bg-deep);padding:0.8rem;display:flex;flex-direction:column;
+    justify-content:center;align-items:center;text-align:center;border-right:1px solid rgba(255,255,255,0.05)}
+.gt-spine .gt-total{font-size:1.6rem;font-weight:900;color:var(--accent)}
+.gt-spine .gt-label{font-size:0.5rem;color:var(--text-muted);letter-spacing:1px;margin-top:4px}
+.gt-content{padding:1rem}
+.gt-matchup{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:0.85rem;font-weight:700}
+.gt-pitchers{font-size:0.7rem;color:var(--text-muted);margin-bottom:10px;padding-bottom:8px;border-bottom:1px dashed rgba(255,255,255,0.2)}
+.gt-pitchers .sp-name{color:var(--text-main)}
+.gt-sides{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px}
+.gt-side{text-align:center}
+.gt-side-label{font-size:0.55rem;color:var(--text-muted);letter-spacing:1px;margin-bottom:4px;font-weight:700}
+.gt-side-runs{font-size:1.4rem;font-weight:900;margin-bottom:6px}
+.gt-side-stats{display:flex;gap:4px;justify-content:center;flex-wrap:wrap}
+.gt-side-stats .mini-stat{font-size:0.55rem;color:var(--text-muted);background:rgba(0,0,0,0.2);padding:2px 6px}
+.gt-side-stats .mini-stat span{color:var(--text-main);font-weight:700}
+.gt-line-row{display:flex;align-items:center;gap:12px;padding-top:8px;border-top:1px dashed rgba(255,255,255,0.15)}
+.gt-line-row label{font-size:0.55rem;color:var(--text-muted);letter-spacing:1px;white-space:nowrap}
+.gt-line-row .line-input{width:60px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.15);
+    color:var(--text-main);font-family:var(--font-stack);font-size:0.85rem;text-align:center;padding:4px 0;outline:none}
+.gt-line-row .line-input:focus{border-color:var(--accent)}
+.gt-line-row .line-input::placeholder{color:rgba(255,255,255,0.2)}
+.gt-coverage{font-size:0.55rem;color:var(--text-muted);margin-top:6px;letter-spacing:0.5px}
+.gt-coverage .cov-good{color:var(--green)}.gt-coverage .cov-warn{color:#e76f51}
+.gt-lineup-toggle{font-size:0.55rem;color:var(--text-muted);cursor:pointer;margin-top:8px;
+    letter-spacing:1px;text-transform:uppercase}
+.gt-lineup-toggle:hover{color:var(--accent)}
+.gt-lineup-detail{display:none;margin-top:8px;padding-top:8px;border-top:1px dashed rgba(255,255,255,0.1)}
+.gt-lineup-detail.visible{display:block}
+.gt-lineup-section{font-size:0.55rem;color:var(--accent);font-weight:700;letter-spacing:1px;margin:6px 0 4px}
+.gt-batter-row{display:flex;justify-content:space-between;font-size:0.6rem;padding:2px 0;
+    border-bottom:1px solid rgba(255,255,255,0.05)}
+.gt-batter-row .batter-name{max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gt-batter-row .batter-stats{color:var(--text-muted)}
+.gt-batter-row .batter-stats span{color:var(--text-main);font-weight:700}
+.gt-batter-row .batter-src{font-size:0.5rem;color:var(--text-muted);font-style:italic}
+.gt-tbd{text-align:center;padding:16px 0;color:var(--text-muted);font-size:0.75rem;font-style:italic}
+
 /* Totals */
 .totals-box{background:var(--bg-deep);border:2px solid var(--accent);padding:16px;margin-top:20px}
 .totals-title{font-size:0.7rem;text-transform:uppercase;letter-spacing:2px;color:var(--accent);font-weight:800;margin-bottom:12px}
@@ -254,6 +300,7 @@ body{
       <div class="mode-toggle">
         <button class="mode-btn active" id="mode-hitter" data-mode="hitter">HITTER</button>
         <button class="mode-btn" id="mode-pitcher" data-mode="pitcher">PITCHER</button>
+        <button class="mode-btn" id="mode-game" data-mode="game">GAME</button>
       </div>
     </div>
     <div class="control-cluster">
@@ -272,7 +319,7 @@ body{
             <span class="cal-arrow" id="cal-next">&rarr;</span>
           </div>
           <div class="cal-grid" id="cal-grid"></div>
-          <div class="cal-chips" id="cal-chips"></div>
+          <div class="cal-range-label" id="cal-range-label"></div>
           <div class="cal-actions">
             <button class="btn btn-sm" id="cal-clear">CLEAR</button>
             <button class="btn btn-sm btn-primary" id="cal-done">DONE</button>
@@ -291,18 +338,34 @@ body{
     <aside class="col-context">
       <div id="player-context">
         <div class="no-player" id="no-player">Search a player to begin.</div>
-        <!-- Hitter hero (populated by JS) -->
+        <!-- Hitter hero -->
         <div class="hero" id="hitter-hero" style="display:none">
           <div class="hero-name" id="hero-name"></div>
           <div class="hero-meta" id="hero-meta"></div>
           <span class="hero-clear" id="hc-clear">&times; CLEAR</span>
         </div>
-        <!-- Pitcher hero (populated by JS) -->
+        <!-- Pitcher hero -->
         <div class="hero" id="pitcher-hero" style="display:none">
           <div class="hero-name" id="pitcher-hero-name"></div>
           <div class="hero-meta" id="pitcher-hero-meta"></div>
           <div id="pitcher-archetype-badge"></div>
           <span class="hero-clear" id="pc-clear">&times; CLEAR</span>
+        </div>
+        <!-- Game mode info -->
+        <div class="game-mode-info" id="game-mode-info">
+          <div class="section-label">GAME MODE</div>
+          <p>Select a date range and RUN SLATE to project game totals for all MLB games. Uses archetype matchup data to estimate team runs via BaseRuns model.</p>
+          <div class="section-label">HOW IT WORKS</div>
+          <div class="stat-block step-list">
+            <div class="stat-row"><span>1.</span><span class="val">Fetch lineups from MLB API</span></div>
+            <div class="stat-row"><span>2.</span><span class="val">Project each batter vs opposing SP archetype</span></div>
+            <div class="stat-row"><span>3.</span><span class="val">Sum team H/HR/BB/TB &rarr; BaseRuns</span></div>
+            <div class="stat-row"><span>4.</span><span class="val">Compare projected total to O/U line</span></div>
+          </div>
+          <div id="game-mode-summary" style="display:none">
+            <div class="section-label">SLATE SUMMARY</div>
+            <div id="game-summary-stats"></div>
+          </div>
         </div>
       </div>
       <div id="context-stats"></div>
@@ -358,7 +421,8 @@ let selectedPitcher = null;
 let teamId = null;
 let schedule = [];
 let projections = [];
-let selectedDates = [];
+let calRangeStart = null;
+let calRangeEnd = null;
 let calViewYear, calViewMonth;
 
 // ═══ LOAD DATA ═══
@@ -404,6 +468,26 @@ function edgeLabel(proj, line) {
     return '<span class="edge neutral">PUSH</span>';
 }
 
+function getSelectedDates() {
+    if (!calRangeStart) return [];
+    if (!calRangeEnd) return [calRangeStart];
+    const dates = [];
+    let d = new Date(calRangeStart + 'T12:00:00');
+    const end = new Date(calRangeEnd + 'T12:00:00');
+    while (d <= end) {
+        dates.push(d.toISOString().split('T')[0]);
+        d.setDate(d.getDate() + 1);
+    }
+    return dates;
+}
+
+function countDaysInRange() {
+    if (!calRangeStart || !calRangeEnd) return calRangeStart ? 1 : 0;
+    const s = new Date(calRangeStart + 'T12:00:00');
+    const e = new Date(calRangeEnd + 'T12:00:00');
+    return Math.round((e - s) / 86400000) + 1;
+}
+
 // ═══ CALENDAR ═══
 function renderCalendar() {
     const monthNames = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
@@ -417,37 +501,133 @@ function renderCalendar() {
         const dateStr = calViewYear + '-' + String(calViewMonth + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
         let cls = 'cal-day';
         if (dateStr === todayStr) cls += ' today';
-        if (selectedDates.includes(dateStr)) cls += ' selected';
+        if (dateStr === calRangeStart) cls += ' range-start';
+        else if (dateStr === calRangeEnd) cls += ' range-end';
+        else if (calRangeStart && calRangeEnd && dateStr > calRangeStart && dateStr < calRangeEnd) cls += ' in-range';
         html += '<div class="' + cls + '" data-date="' + dateStr + '">' + d + '</div>';
     }
     const totalCells = firstDay + daysInMonth;
     const trailing = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
     for (let i = 0; i < trailing; i++) html += '<div class="cal-day other-month"></div>';
     document.getElementById('cal-grid').innerHTML = html;
-    renderCalChips();
+    renderRangeLabel();
     updateCalTriggerLabel();
 }
 
-function renderCalChips() {
-    const container = document.getElementById('cal-chips');
-    if (selectedDates.length === 0) {
-        container.innerHTML = '<span style="font-size:0.6rem;color:var(--text-muted)">Click dates to select</span>';
+function renderRangeLabel() {
+    const container = document.getElementById('cal-range-label');
+    if (!calRangeStart) {
+        container.innerHTML = 'Click a start date';
         return;
     }
-    const sorted = [...selectedDates].sort();
-    container.innerHTML = sorted.map(d => {
-        const label = fmtDate(d);
-        return '<span class="cal-chip">' + label + '<span class="chip-x" data-date="' + d + '">&times;</span></span>';
-    }).join('');
+    if (!calRangeEnd) {
+        container.innerHTML = '<span class="range-accent">' + fmtDate(calRangeStart) + '</span> &rarr; <span style="opacity:0.5">click end date</span>';
+        return;
+    }
+    const days = countDaysInRange();
+    container.innerHTML = '<span class="range-accent">' + fmtDate(calRangeStart) + '</span> &rarr; <span class="range-accent">' + fmtDate(calRangeEnd) + '</span> (' + days + ' day' + (days > 1 ? 's' : '') + ')';
 }
 
 function updateCalTriggerLabel() {
     const label = document.getElementById('cal-trigger-label');
-    if (selectedDates.length === 0) {
+    if (!calRangeStart) {
         label.textContent = 'SELECT DATES';
+    } else if (!calRangeEnd) {
+        label.textContent = fmtDate(calRangeStart);
     } else {
-        label.textContent = selectedDates.length + ' DATE' + (selectedDates.length > 1 ? 'S' : '') + ' SELECTED';
+        label.textContent = fmtDate(calRangeStart) + ' \u2192 ' + fmtDate(calRangeEnd);
     }
+}
+
+// ═══ BASERUNS ═══
+function baseRuns(teamH, teamHR, teamBB, teamTB, teamPA) {
+    const A = teamH + teamBB - teamHR;
+    const B = 1.02 * (1.4 * teamTB - 0.6 * teamH + 0.1 * teamBB);
+    const C = (teamPA || 36) - teamH - teamBB;
+    const D = teamHR;
+    if (B + C === 0) return D;
+    return Math.max(0, A * B / (B + C) + D);
+}
+
+// ═══ PROJECT TEAM ═══
+function projectTeam(lineupIds, opposingPitcherId) {
+    const ps = DATA.pitcherSeasons
+        .filter(p => p.pitcher === opposingPitcherId)
+        .sort((a, b) => b.game_year - a.game_year)[0] || null;
+    const cluster = ps ? ps.cluster : null;
+
+    let teamH = 0, teamHR = 0, teamBB = 0, teamK = 0, teamTB = 0, teamPA = 0;
+    let coverage = 0;
+    const batterDetails = [];
+
+    lineupIds.forEach((batterId) => {
+        const assumedPA = 4;
+        let projH = 0, projHR = 0, projK = 0, projBB = 0, projTB = 0;
+        let source = 'none';
+        let batterName = 'Unknown';
+
+        // Find batter name
+        const batter = DATA.batters.find(b => b.batter === batterId);
+        if (batter) batterName = batter.batter_name;
+
+        // 1. Try head-to-head
+        if (opposingPitcherId && DATA._hvpIndex[batterId]) {
+            const allMatchups = Object.values(DATA._hvpIndex[batterId]).flat();
+            const h2h = allMatchups.find(m => m.p === opposingPitcherId);
+            if (h2h && h2h.pa >= 10) {
+                const ba = h2h.ba || 0;
+                const bbRate = h2h.pa > 0 ? (h2h.bb || 0) / h2h.pa : 0;
+                const kRate = h2h.pa > 0 ? (h2h.k || 0) / h2h.pa : 0;
+                const hrRate = h2h.pa > 0 ? (h2h.hr || 0) / h2h.pa : 0;
+                const estAB = assumedPA * (1 - bbRate);
+                projH = ba * estAB;
+                projHR = hrRate * assumedPA;
+                projK = kRate * assumedPA;
+                projBB = bbRate * assumedPA;
+                projTB = projH + projHR * 3;
+                source = 'h2h';
+                coverage++;
+            }
+        }
+
+        // 2. Try archetype match
+        if (source === 'none' && cluster !== null) {
+            const archRows = DATA.hitterVsCluster.filter(r =>
+                r.batter === batterId && String(r.cluster) === cluster
+            );
+            if (archRows.length > 0) {
+                const tot = { PA: 0, H: 0, HR: 0, BB: 0, K: 0, singles: 0, doubles: 0, triples: 0 };
+                archRows.forEach(r => {
+                    tot.PA += r.PA || 0; tot.H += r.H || 0; tot.HR += r.HR || 0;
+                    tot.BB += r.BB || 0; tot.K += r.K || 0;
+                    tot.singles += r.singles || 0; tot.doubles += r.doubles || 0; tot.triples += r.triples || 0;
+                });
+                if (tot.PA >= 5) {
+                    const baRate = (tot.PA - tot.BB) > 0 ? tot.H / (tot.PA - tot.BB) : 0;
+                    const bbRate = tot.PA > 0 ? tot.BB / tot.PA : 0;
+                    const kRate = tot.PA > 0 ? tot.K / tot.PA : 0;
+                    const hrRate = tot.PA > 0 ? tot.HR / tot.PA : 0;
+                    const tbTotal = tot.singles + (tot.doubles * 2) + (tot.triples * 3) + (tot.HR * 4);
+                    const tbRate = tot.PA > 0 ? tbTotal / tot.PA : 0;
+                    const estAB = assumedPA * (1 - bbRate);
+                    projH = baRate * estAB;
+                    projHR = hrRate * assumedPA;
+                    projK = kRate * assumedPA;
+                    projBB = bbRate * assumedPA;
+                    projTB = tbRate * assumedPA;
+                    source = 'archetype';
+                    coverage++;
+                }
+            }
+        }
+
+        teamH += projH; teamHR += projHR; teamBB += projBB; teamK += projK; teamTB += projTB;
+        teamPA += assumedPA;
+        batterDetails.push({ batterId, name: batterName, projH, projHR, projK, projBB, projTB, source });
+    });
+
+    const runs = baseRuns(teamH, teamHR, teamBB, teamTB, teamPA);
+    return { teamH, teamHR, teamBB, teamK, teamTB, teamPA, runs, coverage, total: lineupIds.length, batterDetails };
 }
 
 // ═══ BOOT ═══
@@ -463,26 +643,44 @@ function updateCalTriggerLabel() {
     // ═══ MODE TOGGLE ═══
     const modeHitter = document.getElementById('mode-hitter');
     const modePitcher = document.getElementById('mode-pitcher');
+    const modeGame = document.getElementById('mode-game');
     const searchInput = document.getElementById('search');
 
     function setMode(mode) {
         currentMode = mode;
         modeHitter.classList.toggle('active', mode === 'hitter');
         modePitcher.classList.toggle('active', mode === 'pitcher');
-        searchInput.placeholder = mode === 'hitter' ? 'SEARCH HITTER...' : 'SEARCH PITCHER...';
+        modeGame.classList.toggle('active', mode === 'game');
         searchInput.value = '';
         document.getElementById('s-drop').classList.remove('visible');
-        document.getElementById('slate-label').textContent = mode === 'hitter'
-            ? 'AVAILABLE MATCHUPS // EDITABLE PA'
-            : 'OPPOSING LINEUP // MATCHUP DATA';
+
+        if (mode === 'game') {
+            searchInput.placeholder = 'FILTER BY TEAM...';
+            document.getElementById('slate-label').textContent = 'GAME PROJECTIONS // O/U RUNS';
+            document.getElementById('hitter-hero').style.display = 'none';
+            document.getElementById('pitcher-hero').style.display = 'none';
+            document.getElementById('no-player').style.display = 'none';
+            document.getElementById('game-mode-info').style.display = 'block';
+            document.getElementById('context-stats').innerHTML = '';
+            document.getElementById('btn-run').disabled = false;
+        } else {
+            searchInput.placeholder = mode === 'hitter' ? 'SEARCH HITTER...' : 'SEARCH PITCHER...';
+            document.getElementById('slate-label').textContent = mode === 'hitter'
+                ? 'AVAILABLE MATCHUPS // EDITABLE PA'
+                : 'OPPOSING LINEUP // MATCHUP DATA';
+            document.getElementById('game-mode-info').style.display = 'none';
+            if (!selectedBatter && !selectedPitcher) {
+                document.getElementById('no-player').style.display = 'block';
+            }
+        }
     }
     modeHitter.addEventListener('click', () => setMode('hitter'));
     modePitcher.addEventListener('click', () => setMode('pitcher'));
+    modeGame.addEventListener('click', () => setMode('game'));
 
     // ═══ SEARCH ═══
     const fuseHitters = new Fuse(DATA.batters, { keys: ['batter_name'], threshold: 0.3 });
 
-    // Build unique pitcher list for search
     const pitcherMap = {};
     DATA.pitcherSeasons.forEach(ps => {
         if (!pitcherMap[ps.pitcher] || ps.game_year > pitcherMap[ps.pitcher].game_year) {
@@ -497,6 +695,7 @@ function updateCalTriggerLabel() {
 
     searchInput.addEventListener('input', () => {
         const q = searchInput.value.trim();
+        if (currentMode === 'game') { sDrop.classList.remove('visible'); return; } // team filter handled at runtime
         if (q.length < 2) { sDrop.classList.remove('visible'); sResults = []; return; }
         if (currentMode === 'hitter') {
             sResults = fuseHitters.search(q).slice(0, 8).map(r => r.item);
@@ -507,6 +706,7 @@ function updateCalTriggerLabel() {
         renderSearchResults();
     });
     searchInput.addEventListener('keydown', (e) => {
+        if (currentMode === 'game') return;
         if (e.key === 'ArrowDown') { e.preventDefault(); sHighlight = Math.min(sHighlight + 1, sResults.length - 1); renderSearchResults(); }
         if (e.key === 'ArrowUp') { e.preventDefault(); sHighlight = Math.max(sHighlight - 1, 0); renderSearchResults(); }
         if (e.key === 'Enter' && sResults[sHighlight]) {
@@ -557,7 +757,6 @@ function updateCalTriggerLabel() {
             ? nameParts.slice(-1)[0] + '<br>' + nameParts.slice(0, -1).join(' ')
             : nameParts[0];
 
-        // Try MLB API for team/pos
         try {
             const res = await fetch('https://statsapi.mlb.com/api/v1/people/' + batter.batter + '?hydrate=currentTeam');
             const data = await res.json();
@@ -573,7 +772,6 @@ function updateCalTriggerLabel() {
             }
         } catch (e) { console.warn('MLB API player lookup failed:', e); showBanner('Could not reach MLB API.'); }
 
-        // Context stats
         document.getElementById('context-stats').innerHTML =
             '<div class="section-label">CAREER BASELINE</div><div class="stat-block">' +
             '<div class="stat-row"><span>wOBA</span><span class="val mono">' + careerWoba + '</span></div>' +
@@ -603,7 +801,6 @@ function updateCalTriggerLabel() {
             ? nameParts.slice(-1)[0] + '<br>' + nameParts.slice(0, -1).join(' ')
             : nameParts[0];
 
-        // MLB API for team
         let teamAbbr = '', throwHand = ps.cluster.startsWith('RHP') ? 'RHP' : 'LHP';
         try {
             const res = await fetch('https://statsapi.mlb.com/api/v1/people/' + ps.pitcher + '?hydrate=currentTeam');
@@ -623,7 +820,6 @@ function updateCalTriggerLabel() {
             '<div class="archetype-badge"><span class="dot" style="background:' + color + '"></span>' +
             archEmoji(ps.cluster) + ' ' + archName(ps.cluster) + '</div>';
 
-        // Context stats
         document.getElementById('context-stats').innerHTML =
             '<div class="section-label">SEASON PROFILE</div><div class="stat-block">' +
             '<div class="stat-row"><span>VELO</span><span class="val mono">' + (ps.avg_velo_FF || 0).toFixed(1) + '</span></div>' +
@@ -660,7 +856,8 @@ function updateCalTriggerLabel() {
     });
 
     // ═══ CALENDAR INIT ═══
-    selectedDates = [nextMonday()];
+    calRangeStart = nextMonday();
+    calRangeEnd = null;
     const initDate = new Date(nextMonday() + 'T12:00:00');
     calViewMonth = initDate.getMonth();
     calViewYear = initDate.getFullYear();
@@ -684,17 +881,22 @@ function updateCalTriggerLabel() {
         const cell = e.target.closest('.cal-day');
         if (!cell || cell.classList.contains('other-month') || !cell.dataset.date) return;
         const dateStr = cell.dataset.date;
-        const idx = selectedDates.indexOf(dateStr);
-        if (idx >= 0) { selectedDates.splice(idx, 1); } else { selectedDates.push(dateStr); }
+        if (!calRangeStart || (calRangeStart && calRangeEnd)) {
+            calRangeStart = dateStr;
+            calRangeEnd = null;
+        } else {
+            if (dateStr < calRangeStart) {
+                calRangeEnd = calRangeStart;
+                calRangeStart = dateStr;
+            } else if (dateStr === calRangeStart) {
+                calRangeEnd = null;
+            } else {
+                calRangeEnd = dateStr;
+            }
+        }
         renderCalendar();
     });
-    document.getElementById('cal-chips').addEventListener('click', (e) => {
-        const chip = e.target.closest('.chip-x');
-        if (!chip) return;
-        selectedDates = selectedDates.filter(d => d !== chip.dataset.date);
-        renderCalendar();
-    });
-    document.getElementById('cal-clear').addEventListener('click', () => { selectedDates = []; renderCalendar(); });
+    document.getElementById('cal-clear').addEventListener('click', () => { calRangeStart = null; calRangeEnd = null; renderCalendar(); });
     document.getElementById('cal-done').addEventListener('click', () => { document.getElementById('cal-dropdown').classList.remove('visible'); });
     document.addEventListener('click', (e) => {
         if (!e.target.closest('#cal-wrap')) document.getElementById('cal-dropdown').classList.remove('visible');
@@ -705,9 +907,10 @@ function updateCalTriggerLabel() {
     document.getElementById('btn-run').addEventListener('click', runSlate);
 
     async function runSlate() {
+        const selectedDates = getSelectedDates();
+        if (selectedDates.length === 0) { showBanner('Select at least one date.'); return; }
         if (currentMode === 'hitter' && !selectedBatter) return;
         if (currentMode === 'pitcher' && !selectedPitcher) return;
-        if (selectedDates.length === 0) { showBanner('Select at least one date.'); return; }
 
         const sorted = [...selectedDates].sort();
         const startDate = sorted[0];
@@ -715,7 +918,9 @@ function updateCalTriggerLabel() {
         hideBanner();
         schedule = [];
 
-        if (currentMode === 'hitter') {
+        if (currentMode === 'game') {
+            await runGameSlate(startDate, endDate, sorted);
+        } else if (currentMode === 'hitter') {
             await runHitterSlate(startDate, endDate, sorted);
         } else {
             await runPitcherSlate(startDate, endDate, sorted);
@@ -806,7 +1011,6 @@ function updateCalTriggerLabel() {
         let html = '';
         projections = [];
 
-        // Filter to only selected dates
         const filteredSchedule = schedule.filter(g => filterDates.includes(g.date));
 
         if (filteredSchedule.length === 0) {
@@ -815,11 +1019,9 @@ function updateCalTriggerLabel() {
             return;
         }
 
-        // For each game, find opposing batters from our data
         for (const game of filteredSchedule) {
             html += '<div class="day-hdr">' + fmtDate(game.date) + ' vs ' + game.oppTeam + '</div>';
 
-            // Find batters who have faced this pitcher
             const matchedBatters = [];
             Object.entries(DATA._hvpIndex).forEach(([batterId, clusters]) => {
                 Object.values(clusters).flat().forEach(m => {
@@ -837,10 +1039,8 @@ function updateCalTriggerLabel() {
                 continue;
             }
 
-            // Sort by PA descending
             matchedBatters.sort((a, b) => (b.matchup.pa || 0) - (a.matchup.pa || 0));
 
-            // Show top batters as mini cards
             let totalK = 0, totalH = 0, totalHR = 0, totalPA = 0;
             matchedBatters.slice(0, 9).forEach(mb => {
                 const m = mb.matchup;
@@ -863,7 +1063,6 @@ function updateCalTriggerLabel() {
                 html += '</div></div></div>';
             });
 
-            // Summary
             const kRate = totalPA > 0 ? (totalK / totalPA) : 0;
             const hRate = totalPA > 0 ? (totalH / totalPA) : 0;
             projections.push({
@@ -875,6 +1074,258 @@ function updateCalTriggerLabel() {
         }
 
         slateEl.innerHTML = html;
+    }
+
+    // ═══ GAME SLATE ═══
+    async function runGameSlate(startDate, endDate, filterDates) {
+        const slateEl = document.getElementById('slate');
+        let html = '';
+        projections = [];
+        document.getElementById('totals-dock').style.display = 'none';
+
+        const url = 'https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=' + startDate + '&endDate=' + endDate + '&hydrate=probablePitcher,lineups';
+
+        let allGames = [];
+        try {
+            const data = await (await fetch(url)).json();
+            (data.dates || []).forEach(dateObj => {
+                dateObj.games.forEach(game => {
+                    if (filterDates.includes(game.officialDate || dateObj.date)) {
+                        allGames.push({ ...game, displayDate: game.officialDate || dateObj.date });
+                    }
+                });
+            });
+        } catch(e) { showBanner('Could not fetch MLB schedule.'); return; }
+
+        // Team filter from search bar
+        const teamFilter = searchInput.value.trim().toUpperCase();
+        if (teamFilter.length >= 2) {
+            allGames = allGames.filter(g =>
+                (g.teams.away.team.abbreviation || '').toUpperCase().includes(teamFilter) ||
+                (g.teams.home.team.abbreviation || '').toUpperCase().includes(teamFilter)
+            );
+        }
+
+        if (allGames.length === 0) {
+            html = '<div class="off-day">No games found for selected dates.</div>';
+            slateEl.innerHTML = html;
+            return;
+        }
+
+        // Group by date
+        const byDate = {};
+        allGames.forEach(g => {
+            const d = g.displayDate;
+            if (!byDate[d]) byDate[d] = [];
+            byDate[d].push(g);
+        });
+
+        let gameIdx = 0;
+        Object.keys(byDate).sort().forEach(day => {
+            html += '<div class="day-hdr">' + fmtDate(day) + ' \u2014 ' + byDate[day].length + ' GAME' + (byDate[day].length > 1 ? 'S' : '') + '</div>';
+            byDate[day].forEach(game => {
+                const result = buildGameTotalCard(game, day, gameIdx);
+                html += result.html;
+                projections.push(result.data);
+                gameIdx++;
+            });
+        });
+
+        slateEl.innerHTML = html;
+        bindGameLineInputs();
+        bindLineupToggles();
+        updateGameSummary();
+    }
+
+    // ═══ GAME TOTAL CARD BUILDER ═══
+    function buildGameTotalCard(game, day, idx) {
+        const awayTeam = game.teams.away.team.abbreviation || game.teams.away.team.name;
+        const homeTeam = game.teams.home.team.abbreviation || game.teams.home.team.name;
+        const awayPP = game.teams.away.probablePitcher || null;
+        const homePP = game.teams.home.probablePitcher || null;
+
+        // Get pitcher archetypes
+        const awayPS = awayPP ? DATA.pitcherSeasons.filter(p => p.pitcher === awayPP.id).sort((a, b) => b.game_year - a.game_year)[0] : null;
+        const homePS = homePP ? DATA.pitcherSeasons.filter(p => p.pitcher === homePP.id).sort((a, b) => b.game_year - a.game_year)[0] : null;
+        const awayCluster = awayPS ? (DATA.clusters[awayPS.cluster] || {}) : {};
+        const homeCluster = homePS ? (DATA.clusters[homePS.cluster] || {}) : {};
+
+        // Get lineups
+        const awayLineup = [];
+        const homeLineup = [];
+        if (game.lineups) {
+            if (game.lineups.awayPlayers) game.lineups.awayPlayers.forEach(p => { if (p.id) awayLineup.push(p.id); });
+            if (game.lineups.homePlayers) game.lineups.homePlayers.forEach(p => { if (p.id) homeLineup.push(p.id); });
+        }
+
+        const hasLineups = awayLineup.length > 0 && homeLineup.length > 0;
+
+        // Project teams
+        let awayProj = null, homeProj = null, totalRuns = 0;
+        if (hasLineups) {
+            awayProj = projectTeam(awayLineup, homePP ? homePP.id : null);
+            homeProj = projectTeam(homeLineup, awayPP ? awayPP.id : null);
+            totalRuns = awayProj.runs + homeProj.runs;
+        }
+
+        const gameData = {
+            awayTeam, homeTeam, totalRuns, hasLineups,
+            awayRuns: awayProj ? awayProj.runs : 0,
+            homeRuns: homeProj ? homeProj.runs : 0,
+            awayProj, homeProj,
+            awayPP: awayPP ? awayPP.fullName : 'TBD',
+            homePP: homePP ? homePP.fullName : 'TBD'
+        };
+
+        let card = '<div class="game-total-card">';
+
+        // Spine
+        card += '<div class="gt-spine">';
+        if (hasLineups) {
+            card += '<div class="gt-total">' + totalRuns.toFixed(1) + '</div>';
+            card += '<div class="gt-label">TOTAL<br>RUNS</div>';
+        } else {
+            card += '<div class="gt-total" style="font-size:1rem;color:var(--text-muted)">TBD</div>';
+            card += '<div class="gt-label">LINEUP<br>PENDING</div>';
+        }
+        card += '</div>';
+
+        // Content
+        card += '<div class="gt-content">';
+
+        // Matchup header
+        card += '<div class="gt-matchup"><span>' + awayTeam + ' @ ' + homeTeam + '</span><span style="font-size:0.6rem;color:var(--text-muted);font-weight:400">' + fmtDate(day) + '</span></div>';
+
+        // Pitchers
+        card += '<div class="gt-pitchers">';
+        const awayPName = awayPP ? awayPP.fullName : 'TBD';
+        const homePName = homePP ? homePP.fullName : 'TBD';
+        const awayArch = awayPS ? archName(awayPS.cluster) : '';
+        const homeArch = homePS ? archName(homePS.cluster) : '';
+        const awayColor = awayCluster.color || '#888';
+        const homeColor = homeCluster.color || '#888';
+        card += awayTeam + ' SP: <span class="sp-name">' + fmtName(awayPName) + '</span>';
+        if (awayArch) card += ' <span style="color:' + awayColor + ';font-size:0.6rem">(' + awayArch + ')</span>';
+        card += '<br>' + homeTeam + ' SP: <span class="sp-name">' + fmtName(homePName) + '</span>';
+        if (homeArch) card += ' <span style="color:' + homeColor + ';font-size:0.6rem">(' + homeArch + ')</span>';
+        card += '</div>';
+
+        if (hasLineups) {
+            // Side-by-side projections
+            card += '<div class="gt-sides">';
+
+            // Away offense
+            card += '<div class="gt-side">';
+            card += '<div class="gt-side-label">' + awayTeam + ' OFFENSE</div>';
+            card += '<div class="gt-side-runs">' + awayProj.runs.toFixed(1) + '</div>';
+            card += '<div class="gt-side-stats">';
+            card += '<div class="mini-stat">H <span>' + awayProj.teamH.toFixed(1) + '</span></div>';
+            card += '<div class="mini-stat">HR <span>' + awayProj.teamHR.toFixed(1) + '</span></div>';
+            card += '<div class="mini-stat">TB <span>' + awayProj.teamTB.toFixed(1) + '</span></div>';
+            card += '</div></div>';
+
+            // Home offense
+            card += '<div class="gt-side">';
+            card += '<div class="gt-side-label">' + homeTeam + ' OFFENSE</div>';
+            card += '<div class="gt-side-runs">' + homeProj.runs.toFixed(1) + '</div>';
+            card += '<div class="gt-side-stats">';
+            card += '<div class="mini-stat">H <span>' + homeProj.teamH.toFixed(1) + '</span></div>';
+            card += '<div class="mini-stat">HR <span>' + homeProj.teamHR.toFixed(1) + '</span></div>';
+            card += '<div class="mini-stat">TB <span>' + homeProj.teamTB.toFixed(1) + '</span></div>';
+            card += '</div></div>';
+
+            card += '</div>';
+
+            // O/U Line
+            card += '<div class="gt-line-row">';
+            card += '<label>O/U RUNS</label>';
+            card += '<input class="line-input game-ou-input" data-game-idx="' + idx + '" placeholder="8.5">';
+            card += '<div class="edge-display" id="game-edge-' + idx + '"></div>';
+            card += '</div>';
+
+            // Coverage
+            const awayCov = awayProj.coverage + '/' + awayProj.total;
+            const homeCov = homeProj.coverage + '/' + homeProj.total;
+            const awayPct = awayProj.total > 0 ? awayProj.coverage / awayProj.total : 0;
+            const homePct = homeProj.total > 0 ? homeProj.coverage / homeProj.total : 0;
+            const awayClass = awayPct >= 0.7 ? 'cov-good' : 'cov-warn';
+            const homeClass = homePct >= 0.7 ? 'cov-good' : 'cov-warn';
+            card += '<div class="gt-coverage">COVERAGE: <span class="' + awayClass + '">' + awayCov + '</span> ' + awayTeam + ' \u00b7 <span class="' + homeClass + '">' + homeCov + '</span> ' + homeTeam + '</div>';
+
+            // Lineup toggle
+            card += '<div class="gt-lineup-toggle" data-gidx="' + idx + '">\u25B6 LINEUP DETAILS</div>';
+            card += '<div class="gt-lineup-detail" id="lineup-detail-' + idx + '">';
+
+            // Away lineup
+            card += '<div class="gt-lineup-section">' + awayTeam + ' vs ' + (homeArch || 'Unknown') + '</div>';
+            awayProj.batterDetails.forEach((bd, i) => {
+                const lastName = fmtName(bd.name).split(' ').pop();
+                card += '<div class="gt-batter-row">';
+                card += '<span class="batter-name">' + (i + 1) + '. ' + lastName + '</span>';
+                card += '<span class="batter-stats">H <span>' + bd.projH.toFixed(2) + '</span> TB <span>' + bd.projTB.toFixed(2) + '</span></span>';
+                card += '<span class="batter-src">' + bd.source + '</span>';
+                card += '</div>';
+            });
+
+            // Home lineup
+            card += '<div class="gt-lineup-section">' + homeTeam + ' vs ' + (awayArch || 'Unknown') + '</div>';
+            homeProj.batterDetails.forEach((bd, i) => {
+                const lastName = fmtName(bd.name).split(' ').pop();
+                card += '<div class="gt-batter-row">';
+                card += '<span class="batter-name">' + (i + 1) + '. ' + lastName + '</span>';
+                card += '<span class="batter-stats">H <span>' + bd.projH.toFixed(2) + '</span> TB <span>' + bd.projTB.toFixed(2) + '</span></span>';
+                card += '<span class="batter-src">' + bd.source + '</span>';
+                card += '</div>';
+            });
+
+            card += '</div>';
+        } else {
+            card += '<div class="gt-tbd">LINEUPS TBD &mdash; RUN CLOSER TO GAME TIME</div>';
+        }
+
+        card += '</div></div>';
+
+        return { html: card, data: gameData };
+    }
+
+    function bindGameLineInputs() {
+        document.querySelectorAll('.game-ou-input').forEach(el => {
+            el.addEventListener('input', () => {
+                const idx = parseInt(el.dataset.gameIdx);
+                const line = el.value;
+                const proj = projections[idx];
+                if (!proj || !proj.hasLineups) return;
+                const display = document.getElementById('game-edge-' + idx);
+                if (display) display.innerHTML = edgeLabel(proj.totalRuns, line);
+            });
+        });
+    }
+
+    function bindLineupToggles() {
+        document.querySelectorAll('.gt-lineup-toggle').forEach(el => {
+            el.addEventListener('click', () => {
+                const idx = el.dataset.gidx;
+                const detail = document.getElementById('lineup-detail-' + idx);
+                detail.classList.toggle('visible');
+                el.textContent = detail.classList.contains('visible') ? '\u25BC LINEUP DETAILS' : '\u25B6 LINEUP DETAILS';
+            });
+        });
+    }
+
+    function updateGameSummary() {
+        const summary = document.getElementById('game-mode-summary');
+        const stats = document.getElementById('game-summary-stats');
+        if (projections.length === 0) { summary.style.display = 'none'; return; }
+
+        const gamesWithLineups = projections.filter(p => p.hasLineups);
+        const avgTotal = gamesWithLineups.length > 0
+            ? gamesWithLineups.reduce((s, p) => s + p.totalRuns, 0) / gamesWithLineups.length : 0;
+
+        summary.style.display = 'block';
+        stats.innerHTML =
+            '<div class="stat-row"><span>GAMES</span><span class="val mono">' + projections.length + '</span></div>' +
+            '<div class="stat-row"><span>W/ LINEUPS</span><span class="val mono">' + gamesWithLineups.length + '</span></div>' +
+            '<div class="stat-row"><span>AVG TOTAL</span><span class="val mono text-accent" style="font-size:1.1rem">' + avgTotal.toFixed(1) + '</span></div>';
     }
 
     // ═══ HITTER GAME CARD BUILDER ═══
@@ -915,14 +1366,13 @@ function updateCalTriggerLabel() {
         if (h2h && h2h.pa >= 10) {
             projBA = h2h.ba || 0; projWOBA = h2h.w || 0; projHRrate = h2h.pa > 0 ? (h2h.hr || 0) / h2h.pa : 0;
             projKrate = h2h.pa > 0 ? (h2h.k || 0) / h2h.pa : 0; projBBrate = h2h.pa > 0 ? (h2h.bb || 0) / h2h.pa : 0;
-            // h2h: estimate TB = H + HR*3 (conservative, assumes non-HR hits are singles)
             const estH = (h2h.ba || 0) * (h2h.pa - (h2h.bb || 0));
             projTBrate = h2h.pa > 0 ? (estH + (h2h.hr || 0) * 3) / h2h.pa : 0;
             projSource = 'head-to-head (' + h2h.pa + ' PA)';
         } else if (archMatch && archMatch.PA >= 5) {
             projBA = archMatch.BA; projWOBA = archMatch.wOBA; projHRrate = archMatch.PA > 0 ? archMatch.HR / archMatch.PA : 0;
             projKrate = archMatch.K_pct; projBBrate = archMatch.BB_pct;
-            projTBrate = archMatch.TB_rate; // exact TB from singles/doubles/triples/HR
+            projTBrate = archMatch.TB_rate;
             projSource = h2h ? 'archetype avg (<10 PA direct)' : 'archetype avg (no direct history)';
         } else {
             projSource = 'insufficient data';
@@ -941,32 +1391,27 @@ function updateCalTriggerLabel() {
         card += '<div class="spine-mark"></div></div>';
         card += '<div class="card-content">';
 
-        // Matchup header with pitcher override
         card += '<div class="matchup-header">';
         card += '<span class="pitcher-name-wrap"><span class="pitcher-name-text" id="pname-' + idx + '">' + pitcherName + '</span>';
         card += ' <span class="pitcher-edit-icon" data-idx="' + idx + '" title="Change pitcher">&#9998;</span></span>';
         card += '<span style="color:' + clusterColor + '" id="pcluster-' + idx + '">' + clusterName + '</span>';
         card += '</div>';
 
-        // Override badge
         if (game.overridden) {
             card += '<div class="pitcher-override-badge"><span>MANUAL OVERRIDE</span><span class="pitcher-reset" data-idx="' + idx + '">RESET</span></div>';
         }
 
-        // Override search (hidden)
         card += '<div class="pitcher-override-search" id="poverride-' + idx + '" style="display:none">';
         card += '<input type="text" class="po-search-input" id="psearch-' + idx + '" placeholder="SEARCH PITCHER..." autocomplete="off">';
         card += '<div class="po-drop" id="pdrop-' + idx + '"></div>';
         card += '</div>';
 
-        // Pitcher info
         card += '<div class="pitcher-info">';
         card += 'VELO: ' + (ps ? (ps.avg_velo_FF || 0).toFixed(1) : '\u2014') + ' \u00b7 ';
         card += 'WHIFF: ' + (ps ? ((ps.whiff_rate || 0) * 100).toFixed(0) + '%' : '\u2014') + ' \u00b7 ';
         card += role;
         card += '</div>';
 
-        // Matchup stats
         card += '<div class="gc-grid">';
         card += '<div><div class="gc-section">' + (h2h && h2h.pa >= 1 ? 'Head-to-Head (' + h2h.pa + ' PA)' : 'vs Archetype') + '</div>';
         card += '<div class="stat-chips">';
@@ -983,7 +1428,6 @@ function updateCalTriggerLabel() {
         }
         card += '</div></div>';
 
-        // Projection
         card += '<div><div class="gc-section" style="color:var(--accent)">Projection</div>';
         card += '<div class="stat-chips">';
         card += '<div class="sc"><div class="sl">PA</div><div class="sv"><input class="pa-edit" type="number" value="' + assumedPA + '" min="1" max="9" step="0.5" data-idx="' + idx + '"></div></div>';
@@ -992,7 +1436,6 @@ function updateCalTriggerLabel() {
         card += sc('TB', projTB.toFixed(2));
         card += '</div></div></div>';
 
-        // Lines panel
         card += '<div class="lines-toggle" data-idx="' + idx + '">\u25B6 LINES</div>';
         card += '<div class="lines-panel" id="lines-' + idx + '">';
         card += '<div class="lines-grid">';
@@ -1025,7 +1468,7 @@ function updateCalTriggerLabel() {
                 el.textContent = panel.classList.contains('visible') ? '\u25BC LINES' : '\u25B6 LINES';
             });
         });
-        document.querySelectorAll('.line-input').forEach(el => {
+        document.querySelectorAll('.line-input:not(.game-ou-input)').forEach(el => {
             el.addEventListener('input', () => {
                 const idx = parseInt(el.dataset.idx);
                 const stat = el.dataset.stat;
@@ -1139,7 +1582,7 @@ function updateCalTriggerLabel() {
 
     function updateTotalsDock() {
         const dock = document.getElementById('totals-dock');
-        if (projections.length === 0) { dock.style.display = 'none'; return; }
+        if (projections.length === 0 || currentMode === 'game') { dock.style.display = 'none'; return; }
         dock.style.display = 'block';
         let tPA = 0, tH = 0, tHR = 0, tK = 0, tBB = 0, tTB = 0;
         projections.forEach(p => { tPA += p.pa; tH += p.h || 0; tHR += p.hr || 0; tK += p.k || 0; tBB += p.bb || 0; tTB += p.tb || 0 });
@@ -1165,6 +1608,7 @@ function updateCalTriggerLabel() {
             : (selectedPitcher ? selectedPitcher.player_name : 'Unknown');
         let tPA = 0, tAB = 0, tH = 0, tHR = 0, tK = 0, tBB = 0, tTB = 0, tWS = 0;
         projections.forEach(p => { tPA += p.pa; tAB += p.ab || 0; tH += p.h || 0; tHR += p.hr || 0; tK += p.k || 0; tBB += p.bb || 0; tTB += p.tb || 0; tWS += (p.woba || 0) * p.pa });
+        const selectedDates = getSelectedDates();
         savedProjections.push({
             hitter_name: playerName, hitter_id: selectedBatter ? selectedBatter.batter : (selectedPitcher ? selectedPitcher.pitcher : 0),
             mode: currentMode,
