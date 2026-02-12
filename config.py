@@ -34,7 +34,7 @@ MONTH_RANGES = [
 # ------------------------------------------------------------------
 # Pitch types tracked as clustering features
 # ------------------------------------------------------------------
-PITCH_TYPES = ["FF", "SI", "FC", "SL", "CH", "CU", "FS", "KC", "ST", "SV", "KN"]
+PITCH_TYPES = ["FF", "SI", "FC", "SL", "CH", "CU", "FS", "KC", "ST", "KN"]
 
 # ------------------------------------------------------------------
 # Statcast columns to keep from raw data
@@ -83,22 +83,13 @@ OPTIMAL_K = None  # Set after elbow/silhouette analysis (04_clustering.py writes
 RANDOM_STATE = 42
 
 CLUSTER_FEATURES = [
-    # Pitch mix (11)
+    # Pitch mix (10)
     "pct_FF", "pct_SI", "pct_FC", "pct_SL", "pct_CH", "pct_CU", "pct_FS",
-    "pct_KC", "pct_ST", "pct_SV", "pct_KN",
-    # Spin (4)
-    "spin_overall", "spin_FF", "spin_SL", "spin_CU",
-    # Mechanics & outcomes (8)
-    "arm_angle", "whiff_rate", "is_rhp", "is_sp",
-    "avg_velo_FF", "avg_extension", "zone_rate", "groundball_rate",
-    # Zone location — vs same-side hitters (4)
-    "ss_up_rate", "ss_arm_side", "ss_heart_rate", "ss_edge_rate",
-    # Zone location — vs opposite-side hitters (4)
-    "os_up_rate", "os_arm_side", "os_heart_rate", "os_edge_rate",
-    # Platoon location shifts (2)
-    "platoon_lateral_shift", "platoon_height_shift",
-    # Location entropy / predictability (3)
-    "ss_location_entropy", "os_location_entropy", "entropy_shift",
+    "pct_KC", "pct_ST", "pct_KN",
+    # Non-pitch (4) — pruned spin_SL, spin_CU, avg_extension, arm_angle, zone_rate
+    "avg_velo_FF", "spin_overall", "groundball_rate", "whiff_rate",
+    # Hand flag (filtered out for per-hand clustering)
+    "is_rhp",
 ]
 
 MIN_PITCHES_PER_SIDE = 50  # Min pitches vs a batter side for split zone features

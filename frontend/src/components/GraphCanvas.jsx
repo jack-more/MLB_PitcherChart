@@ -119,7 +119,9 @@ export default function GraphCanvas({
           name: c.short_name,
           fullName: c.full_name,
           pitcherCount: c.pitcher_count || 0,
-          centroid: c.centroid || {},
+          avg_velo_FF: c.avg_velo_FF || 0,
+          whiff_rate: c.whiff_rate || 0,
+          groundball_rate: c.groundball_rate || 0,
         }
       })
   }, [clusters, visibleClusters, scales])
@@ -327,10 +329,9 @@ export default function GraphCanvas({
       .attr('opacity', 0)
       .style('cursor', 'pointer')
       .on('mouseenter', (event, d) => {
-        const c = d.centroid
         setTooltip({
           x: event.clientX, y: event.clientY,
-          content: `${d.fullName}\n${d.pitcherCount} pitcher-seasons\nVelo: ${c.avg_velo_FF?.toFixed(1) || '?'} mph | Whiff: ${c.whiff_rate ? (c.whiff_rate * 100).toFixed(1) + '%' : '?'}\nArm Angle: ${c.arm_angle?.toFixed(1) || '?'}deg`,
+          content: `${d.fullName}\n${d.pitcherCount} pitcher-seasons\nVelo: ${d.avg_velo_FF?.toFixed(1) || '?'} mph | Whiff: ${d.whiff_rate ? (d.whiff_rate * 100).toFixed(1) + '%' : '?'}`,
         })
       })
       .on('mouseleave', () => setTooltip(null))

@@ -15,11 +15,11 @@ export default function ControlBar({ clusters, visibleClusters, onToggleCluster 
     if (want !== visibleClusters.has(id)) onToggleCluster(id)
   })
   const spOnly = () => clusterIds.forEach(id => {
-    const isSP = clusters[id]?.centroid?.is_sp > 0.5
+    const isSP = clusters[id]?.is_sp > 0.5
     if (isSP !== visibleClusters.has(id)) onToggleCluster(id)
   })
   const rpOnly = () => clusterIds.forEach(id => {
-    const isRP = clusters[id]?.centroid?.is_sp <= 0.5
+    const isRP = clusters[id]?.is_sp <= 0.5
     if (isRP !== visibleClusters.has(id)) onToggleCluster(id)
   })
 
