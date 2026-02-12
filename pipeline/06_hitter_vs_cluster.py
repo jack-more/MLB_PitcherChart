@@ -40,7 +40,7 @@ def compute_pa_stats(pa_data: pd.DataFrame) -> pd.DataFrame:
         "sac_fly_double_play", "catcher_interf", "intent_walk",
     ])).astype(int)
 
-    agg = pa_data.groupby(["batter", "game_year", "cluster"]).agg(
+    agg = pa_data.groupby(["batter", "game_year", "cluster", "stand"]).agg(
         PA=("events", "count"),
         AB=("is_ab", "sum"),
         H=("is_hit", "sum"),
@@ -74,7 +74,7 @@ def compute_pitch_level_stats(pitch_data: pd.DataFrame) -> pd.DataFrame:
     pitch_data["is_swing"] = pitch_data["description"].isin(SWING_DESCRIPTIONS).astype(int)
     pitch_data["is_whiff"] = pitch_data["description"].isin(WHIFF_DESCRIPTIONS).astype(int)
 
-    agg = pitch_data.groupby(["batter", "game_year", "cluster"]).agg(
+    agg = pitch_data.groupby(["batter", "game_year", "cluster", "stand"]).agg(
         pitches_seen=("pitch_type", "count"),
         swings=("is_swing", "sum"),
         whiffs=("is_whiff", "sum"),
@@ -156,8 +156,8 @@ def main():
 
     # Merge pitch-level whiff data into PA stats
     hitter_final = hitter_pa.merge(
-        hitter_pitch[["batter", "game_year", "cluster", "pitches_seen", "whiff_rate_vs"]],
-        on=["batter", "game_year", "cluster"],
+        hitter_pitch[["batter", "game_year", "cluster", "stand", "pitches_seen", "whiff_rate_vs"]],
+        on=["batter", "game_year", "cluster", "stand"],
         how="left",
     )
 
@@ -223,7 +223,7 @@ def main():
 
     # Hitter vs cluster data (round floats for smaller JSON)
     export_cols = [
-        "batter", "batter_name", "game_year", "cluster",
+        "batter", "batter_name", "game_year", "cluster", "stand",
         "PA", "AB", "H", "HR", "BB", "K", "HBP",
         "BA", "OBP", "SLG", "K_pct", "BB_pct", "wOBA",
         "pitches_seen", "whiff_rate_vs",

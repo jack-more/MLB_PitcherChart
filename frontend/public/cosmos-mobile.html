@@ -565,7 +565,7 @@ let _teamClusterIds = null;
 // ═══════════════════════════════════════
 // DATA LOADING (identical to desktop)
 // ═══════════════════════════════════════
-const DATA_VERSION = 'v22';
+const DATA_VERSION = 'v22.3';
 async function loadJSON(url, label, setStatus) {
     setStatus('Loading ' + label + '...');
     const cacheBust = url + (url.includes('?') ? '&' : '?') + '_v=' + DATA_VERSION;
@@ -1924,9 +1924,12 @@ document.querySelectorAll('.tab').forEach(tab => {
 });
 
 function showSimSheet() {
-    let html = '<div class="stat-header" style="color:var(--accent);">\u26A1 SIM LAB</div>';
-    html += '<div style="font-size:11px;color:#888;font-family:var(--font-tech);margin:8px 0 16px;">Weekly hitter projection tool. For the full SIM LAB experience, open on desktop.</div>';
-    html += '<div style="font-size:12px;color:#666;text-align:center;padding:40px 0;">SIM LAB is optimized for desktop.<br>Visit on a larger screen for full projections.</div>';
+    let html = '<div class="stat-header" style="color:var(--accent);">\u26A1 EDGE FINDER</div>';
+    html += '<div style="font-size:11px;color:#888;font-family:var(--font-tech);margin:8px 0 16px;">Weekly hitter projection tool. Best experienced on desktop.</div>';
+    html += '<div style="text-align:center;padding:40px 0;">';
+    html += '<a href="simlab.html" target="_blank" style="display:inline-block;padding:12px 24px;background:var(--accent);color:#fff;text-decoration:none;font-family:var(--font-tech);font-size:12px;font-weight:700;border-radius:4px;letter-spacing:1px;">OPEN EDGE FINDER</a>';
+    html += '<div style="font-size:10px;color:#555;margin-top:8px;">Best on desktop</div>';
+    html += '</div>';
     sheetContent.innerHTML = html;
     openSheet('full');
 }

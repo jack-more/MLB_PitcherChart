@@ -41,7 +41,7 @@ def compute_pitcher_pa_stats(pa_data: pd.DataFrame) -> pd.DataFrame:
         "sac_fly_double_play", "catcher_interf", "intent_walk",
     ])).astype(int)
 
-    agg = pa_data.groupby(["batter", "pitcher", "player_name", "game_year", "cluster"]).agg(
+    agg = pa_data.groupby(["batter", "pitcher", "player_name", "game_year", "cluster", "stand"]).agg(
         PA=("events", "count"),
         AB=("is_ab", "sum"),
         H=("is_hit", "sum"),
@@ -75,7 +75,7 @@ def compute_pitcher_pitch_stats(pitch_data: pd.DataFrame) -> pd.DataFrame:
     pitch_data["is_swing"] = pitch_data["description"].isin(SWING_DESCRIPTIONS).astype(int)
     pitch_data["is_whiff"] = pitch_data["description"].isin(WHIFF_DESCRIPTIONS).astype(int)
 
-    agg = pitch_data.groupby(["batter", "pitcher", "game_year", "cluster"]).agg(
+    agg = pitch_data.groupby(["batter", "pitcher", "game_year", "cluster", "stand"]).agg(
         pitches_seen=("pitch_type", "count"),
         swings=("is_swing", "sum"),
         whiffs=("is_whiff", "sum"),
@@ -142,8 +142,8 @@ def main():
 
     # Merge pitch-level whiff data
     hitter_final = hitter_pa.merge(
-        hitter_pitch[["batter", "pitcher", "game_year", "cluster", "pitches_seen", "whiff_rate_vs"]],
-        on=["batter", "pitcher", "game_year", "cluster"],
+        hitter_pitch[["batter", "pitcher", "game_year", "cluster", "stand", "pitches_seen", "whiff_rate_vs"]],
+        on=["batter", "pitcher", "game_year", "cluster", "stand"],
         how="left",
     )
 
@@ -192,7 +192,7 @@ def main():
     # --- Export JSON for frontend ---
     export_cols = [
         "batter", "batter_name", "pitcher", "pitcher_name",
-        "game_year", "cluster",
+        "game_year", "cluster", "stand",
         "PA", "AB", "H", "HR", "BB", "K", "HBP",
         "BA", "OBP", "SLG", "K_pct", "BB_pct", "wOBA",
         "pitches_seen", "whiff_rate_vs",
@@ -222,7 +222,7 @@ def main():
     )
     if os.path.isdir(public_dir):
         # Aggregate across years: group by batter × pitcher × cluster
-        agg = export_df.groupby(["batter", "pitcher", "pitcher_name", "cluster"]).agg(
+        agg = export_df.groupby(["batter", "pitcher", "pitcher_name", "cluster", "stand"]).agg(
             PA=("PA", "sum"),
             H=("H", "sum"),
             HR=("HR", "sum"),
@@ -240,6 +240,7 @@ def main():
                 "p": int(r["pitcher"]),
                 "pn": r["pitcher_name"],
                 "c": r["cluster"],
+                "s": r["stand"],
                 "pa": int(r["PA"]),
                 "h": int(r["H"]),
                 "hr": int(r["HR"]),

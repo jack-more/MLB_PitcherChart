@@ -939,7 +939,7 @@
         // ═══════════════════════════════════════
         // DATA LOADING
         // ═══════════════════════════════════════
-        const DATA_VERSION = 'v22';
+        const DATA_VERSION = 'v22.3';
         async function loadJSON(url, label, setStatus) {
             setStatus('Loading ' + label + '...');
             const cacheBust = url + (url.includes('?') ? '&' : '?') + '_v=' + DATA_VERSION;
@@ -2878,10 +2878,12 @@
         // ═══════════════════════════════════════
         document.getElementById('simlab-toggle').addEventListener('click', () => {
             const ab = STATE.activeBatters.length > 0 ? STATE.activeBatters[STATE.activeBatters.length-1] : null;
-            openSimLab(ab);
+            const url = ab ? 'simlab.html?batter=' + ab.batter : 'simlab.html';
+            window.open(url, '_blank');
         });
 
-        function openSimLab(batterObj) {
+        if (false) { // Legacy blob approach — replaced by standalone simlab.html
+        function openSimLab_legacy(batterObj) {
             // Serialize data for the sim lab page
             const serData = {
                 pitcherSeasons: DATA.pitcherSeasons,
@@ -3452,6 +3454,7 @@ if(PRESELECT){selectBatter(PRESELECT)}
             const url = URL.createObjectURL(blob);
             window.open(url, '_blank');
         }
+        } // end if(false) legacy blob
 
         // ═══════════════════════════════════════
         // RESIZE
