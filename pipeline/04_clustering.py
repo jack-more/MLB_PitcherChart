@@ -57,7 +57,7 @@ def find_optimal_k(X_scaled, k_range, min_k=MIN_K):
 
 
 def cluster_hand(pitcher_seasons, hand_label, prefix, features):
-    """Cluster one hand group. Returns updated df, models dict, and centroid info."""
+    """Cluster one hand group. Returns (updated df, models dict)."""
     print(f"\n{'='*50}")
     print(f"  Clustering {hand_label} pitchers ({len(pitcher_seasons):,} pitcher-seasons)")
     print(f"{'='*50}")
@@ -88,13 +88,6 @@ def cluster_hand(pitcher_seasons, hand_label, prefix, features):
     for cid, count in pitcher_seasons["cluster"].value_counts().sort_index().items():
         print(f"    {cid}: {count:,}")
 
-    # Centroids in original scale
-    centroids_scaled = km.cluster_centers_
-    centroids_original = scaler.inverse_transform(centroids_scaled)
-    centroid_df = pd.DataFrame(centroids_original, columns=features)
-    centroid_df.index = [f"{prefix}_{i}" for i in range(optimal_k)]
-    centroid_df.index.name = "cluster"
-
     # 3D PCA
     print(f"  Computing 3D PCA...")
     pca = PCA(n_components=3, random_state=RANDOM_STATE)
@@ -112,16 +105,6 @@ def cluster_hand(pitcher_seasons, hand_label, prefix, features):
     else:
         pitcher_seasons["pca_x"] = -pitcher_seasons["pca_x_raw"] - X_OFFSET
 
-    # Centroid PCA coordinates (also offset)
-    centroids_3d = pca.transform(centroids_scaled)
-    centroid_pca = pd.DataFrame(centroids_3d, columns=["centroid_pca_x_raw", "centroid_pca_y", "centroid_pca_z"])
-    centroid_pca.index = [f"{prefix}_{i}" for i in range(optimal_k)]
-    centroid_pca.index.name = "cluster"
-    if prefix == "R":
-        centroid_pca["centroid_pca_x"] = centroid_pca["centroid_pca_x_raw"] + X_OFFSET
-    else:
-        centroid_pca["centroid_pca_x"] = -centroid_pca["centroid_pca_x_raw"] - X_OFFSET
-
     models = {
         "scaler": scaler,
         "kmeans": km,
@@ -129,7 +112,7 @@ def cluster_hand(pitcher_seasons, hand_label, prefix, features):
         "optimal_k": optimal_k,
     }
 
-    return pitcher_seasons, models, centroid_df, centroid_pca
+    return pitcher_seasons, models
 
 
 def main():
@@ -151,17 +134,15 @@ def main():
     print(f"\nRHP: {len(rhp):,}  |  LHP: {len(lhp):,}")
 
     # Cluster each hand independently
-    rhp_out, rhp_models, rhp_centroids, rhp_centroid_pca = cluster_hand(
+    rhp_out, rhp_models = cluster_hand(
         rhp, "RHP", "R", HAND_CLUSTER_FEATURES
     )
-    lhp_out, lhp_models, lhp_centroids, lhp_centroid_pca = cluster_hand(
+    lhp_out, lhp_models = cluster_hand(
         lhp, "LHP", "L", HAND_CLUSTER_FEATURES
     )
 
     # Merge back
     all_pitchers = pd.concat([rhp_out, lhp_out], ignore_index=True)
-    all_centroids = pd.concat([rhp_centroids, lhp_centroids])
-    all_centroid_pca = pd.concat([rhp_centroid_pca, lhp_centroid_pca])
 
     # Save models
     for prefix, models in [("R", rhp_models), ("L", lhp_models)]:
@@ -169,11 +150,6 @@ def main():
         joblib.dump(models["kmeans"], os.path.join(MODELS_DIR, f"kmeans_{prefix}.joblib"))
         joblib.dump(models["pca"], os.path.join(MODELS_DIR, f"pca_{prefix}.joblib"))
     print("\nModels saved.")
-
-    # Save centroids
-    all_centroids.to_csv(os.path.join(MODELS_DIR, "centroids.csv"))
-    all_centroid_pca.to_csv(os.path.join(MODELS_DIR, "centroid_pca.csv"))
-    print("Centroids saved.")
 
     # Drop temp column and save
     all_pitchers.drop(columns=["pca_x_raw"], inplace=True, errors="ignore")

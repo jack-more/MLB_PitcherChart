@@ -231,12 +231,6 @@ def cluster_single_year(df, features, year, prefix, label):
     for cid, count in df["cluster"].value_counts().sort_index().items():
         print(f"    {cid}: {count:,}")
 
-    # Centroids (original scale)
-    centroids_original = scaler.inverse_transform(km.cluster_centers_)
-    centroid_df = pd.DataFrame(centroids_original, columns=features)
-    centroid_df.index = [f"{prefix}_{i}" for i in range(optimal_k)]
-    centroid_df.index.name = "cluster"
-
     # 3D PCA
     pca = PCA(n_components=min(3, len(features)), random_state=RANDOM_STATE)
     X_3d = pca.fit_transform(X_scaled)
@@ -269,7 +263,7 @@ def cluster_single_year(df, features, year, prefix, label):
         "silhouette": float(best_row["silhouette"]),
     }
 
-    return df, models, centroid_df, res_df
+    return df, models, res_df
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -297,13 +291,15 @@ def _pitcher_traits(row, hand):
     }
 
 
-def profile_clusters(df, centroid_df, features, year):
-    """Profile pitchers using DNA system, grouped by {hand}_{archetype}.
+def profile_clusters(df, features, year):
+    """Profile pitchers: name each K-means cluster from its medoid,
+    then assign that name to all members.
 
-    Each pitcher gets individual archetype + sub-archetype + MUTT tag.
-    Output keyed by hand_archetype (e.g. RHP_Barnburner), NOT cluster IDs.
-    KMeans cluster IDs stay on parquet for PCA galaxy positions.
+    Sub-archetype and MUTT detection still use individual pitcher traits.
+    Output keyed by hand_archetype (e.g. RHP_Barnburner).
     """
+    from scipy.spatial.distance import cdist
+
     print(f"\n{'='*60}")
     print(f"  CLUSTER PROFILES (DNA SYSTEM) — {year}")
     print(f"{'='*60}")
@@ -321,11 +317,47 @@ def profile_clusters(df, centroid_df, features, year):
         "CutCraft": "\u2702\uFE0F",
     }
 
-    # ── Step 1: Assign each pitcher their DNA ──
+    # ── Step 1: Name each K-means cluster from its geometric medoid ──
+    cluster_archetypes = {}   # cluster_id -> archetype name
+    cluster_medoid_rows = {}  # cluster_id -> medoid pitcher row
+
+    for cid in df["cluster"].unique():
+        members = df[df["cluster"] == cid]
+        if len(members) == 0:
+            continue
+
+        # Position-player junk
+        if members["total_pitches"].mean() < 100:
+            cluster_archetypes[cid] = "Eephus Lobber"
+            cluster_medoid_rows[cid] = members.iloc[0]
+            continue
+
+        # Find geometric medoid in clustering feature space
+        feature_cols = [f for f in features if f in members.columns]
+        coords = members[feature_cols].fillna(0).values
+        if len(coords) < 2:
+            medoid_row = members.iloc[0]
+        else:
+            dist_matrix = cdist(coords, coords, metric='euclidean')
+            total_dists = dist_matrix.sum(axis=1)
+            medoid_row = members.iloc[int(np.argmin(total_dists))]
+
+        cluster_medoid_rows[cid] = medoid_row
+        hand = "RHP" if cid.startswith("R") else "LHP"
+        t = _pitcher_traits(medoid_row, hand)
+        cluster_archetypes[cid] = _archetype_name(t, hand)
+
+    print(f"\n  K-means clusters → archetype names (via medoid):")
+    for cid in sorted(cluster_archetypes.keys()):
+        med = cluster_medoid_rows.get(cid)
+        med_name = med.get("player_name", "?") if med is not None else "?"
+        print(f"    {cid} → {cluster_archetypes[cid]} (medoid: {med_name})")
+
+    # ── Step 2: Assign each pitcher archetype from their cluster ──
     arch_list, sub_list, dna_list = [], [], []
     for idx, prow in df.iterrows():
+        cid = prow["cluster"]
         hand = "RHP" if prow.get("is_rhp", 1) == 1 else "LHP"
-        t = _pitcher_traits(prow, hand)
 
         # Position-player junk
         if prow.get("total_pitches", 0) < 100:
@@ -334,7 +366,37 @@ def profile_clusters(df, centroid_df, features, year):
             dna_list.append("Eephus Lobber")
             continue
 
-        primary, sub, dna_str = _archetype_dna(t, hand)
+        # Primary archetype comes from the CLUSTER (medoid-named)
+        primary = cluster_archetypes.get(cid, "Kitchen Sink")
+
+        # Sub-archetype: what other rules does THIS pitcher trigger?
+        t = _pitcher_traits(prow, hand)
+        triggered = []
+        for name, test_fn, defining_fn in ARCHETYPE_RULES:
+            if name == primary or name == "Kitchen Sink":
+                continue
+            if test_fn(t, hand):
+                triggered.append((name, defining_fn(t)))
+
+        if triggered:
+            triggered.sort(key=lambda x: x[1], reverse=True)
+            sub = triggered[0][0]
+        else:
+            sub = "Pure"
+
+        # MUTT check: does this pitcher's individual rule assignment
+        # differ from their cluster's archetype?
+        individual_arch = _archetype_name(t, hand)
+        is_mutt = (individual_arch != primary)
+
+        # Build display string
+        if sub == "Pure" and not is_mutt:
+            dna_str = primary
+        elif is_mutt:
+            dna_str = f"\U0001F9EC {primary} / {sub}"
+        else:
+            dna_str = f"{primary} / {sub}"
+
         arch_list.append(primary)
         sub_list.append(sub)
         dna_list.append(dna_str)
@@ -343,7 +405,7 @@ def profile_clusters(df, centroid_df, features, year):
     df["sub_archetype"] = sub_list
     df["archetype_dna"] = dna_list
 
-    # ── Step 2: Group by (hand, archetype) — NOT cluster IDs ──
+    # ── Step 3: Group by (hand, archetype) and build profiles ──
     profiles = {}
     for (hand_label, arch_name), group in df.groupby(
         [df["is_rhp"].map({1: "RHP", 0: "LHP"}), "archetype"]
@@ -353,33 +415,44 @@ def profile_clusters(df, centroid_df, features, year):
             continue
 
         key = f"{hand_label}_{arch_name}"
-        avg_pitches = group["total_pitches"].mean()
 
-        # Role from member average
-        avg_sp = group["is_sp"].mean() if "is_sp" in group.columns else 0
-        if avg_sp > 0.55:
+        # Find group's geometric medoid for representative stats
+        pca_cols = [c for c in ["pca_x", "pca_y", "pca_z"] if c in group.columns]
+        if len(pca_cols) >= 2 and len(group) >= 2:
+            pca_coords = group[pca_cols].fillna(0).values
+            dist_matrix = cdist(pca_coords, pca_coords, metric='euclidean')
+            total_dists = dist_matrix.sum(axis=1)
+            medoid_row = group.iloc[int(np.argmin(total_dists))]
+        else:
+            medoid_row = group.iloc[0]
+
+        avg_pitches = group["total_pitches"].mean()  # group metadata, not trait averaging
+
+        # Role from medoid
+        medoid_sp = float(medoid_row.get("is_sp", 0))
+        if medoid_sp > 0.55:
             role = "SP"
-        elif avg_sp < 0.35:
+        elif medoid_sp < 0.35:
             role = "RP"
         else:
             role = "SW"
 
-        # Average traits across members (for display — these are MEMBER AVERAGES not centroids)
-        avg_traits = {}
+        # Medoid pitcher's actual traits (NO averaging)
+        medoid_traits = {}
         for col_key, col_name in [
             ("ff", "pct_FF"), ("si", "pct_SI"), ("sl", "pct_SL"), ("cu", "pct_CU"),
             ("ch", "pct_CH"), ("fs", "pct_FS"), ("fc", "pct_FC"), ("st", "pct_ST"),
             ("kc", "pct_KC"), ("kn", "pct_KN"), ("whiff", "whiff_rate"),
             ("gb", "groundball_rate"), ("velo", "avg_velo_FF"), ("spin", "spin_overall"),
         ]:
-            avg_traits[col_key] = round(float(group[col_name].mean()), 3) if col_name in group.columns else 0
-        avg_traits["is_sp"] = round(float(avg_sp), 3)
+            medoid_traits[col_key] = round(float(medoid_row.get(col_name, 0)), 3) if col_name in group.columns else 0
+        medoid_traits["is_sp"] = round(float(medoid_sp), 3)
 
-        # Top pitches
+        # Top pitches from medoid
         pitch_keys = [("ff", "FF"), ("si", "SI"), ("sl", "SL"), ("cu", "CU"),
                       ("ch", "CH"), ("fs", "FS"), ("fc", "FC"), ("st", "ST"),
                       ("kc", "KC"), ("kn", "KN")]
-        top_pitches = sorted([(label, avg_traits[k]) for k, label in pitch_keys if avg_traits[k] > 0.03],
+        top_pitches = sorted([(label, medoid_traits[k]) for k, label in pitch_keys if medoid_traits[k] > 0.03],
                              key=lambda x: x[1], reverse=True)[:4]
         top_str = " | ".join([f"{p[0]}: {p[1]:.0%}" for p in top_pitches])
 
@@ -404,17 +477,18 @@ def profile_clusters(df, centroid_df, features, year):
             "avg_pitches": round(avg_pitches),
             "top_pitches": top_str,
             "examples": examples,
-            "traits": avg_traits,
+            "traits": medoid_traits,
             "sub_archetypes": {k: v for k, v in sub_counts.most_common()},
             "mutt_count": mutt_count,
+            "medoid": medoid_row.get("player_name", "?"),
         }
 
         # Print summary
         pure_count = sub_counts.get("Pure", 0)
         print(f"\n  {key} {emoji} {arch_name} ({role}) — {count} pitchers")
-        print(f"    Avg pitches: {avg_pitches:.0f}")
+        print(f"    Medoid: {medoid_row.get('player_name', '?')}")
         print(f"    Pitches: {top_str}")
-        print(f"    Whiff: {avg_traits['whiff']:.1%} | GB: {avg_traits['gb']:.1%} | Velo: {avg_traits['velo']:.1f}")
+        print(f"    Whiff: {medoid_traits['whiff']:.1%} | GB: {medoid_traits['gb']:.1%} | Velo: {medoid_traits['velo']:.1f}")
         print(f"    Purebred: {pure_count} | Mutts: {mutt_count}")
         print(f"    Examples: {', '.join(examples)}")
         if len(sub_counts) > 1:
@@ -610,23 +684,22 @@ def main():
     print(f"  SECTION 3: KMEANS CLUSTERING")
     print(f"{'#'*60}")
 
-    rhp_out, rhp_models, rhp_centroids, rhp_k_results = cluster_single_year(
+    rhp_out, rhp_models, rhp_k_results = cluster_single_year(
         rhp, features, year, "R", "RHP"
     )
-    lhp_out, lhp_models, lhp_centroids, lhp_k_results = cluster_single_year(
+    lhp_out, lhp_models, lhp_k_results = cluster_single_year(
         lhp, features, year, "L", "LHP"
     )
 
     # Merge
     all_clustered = pd.concat([rhp_out, lhp_out], ignore_index=True)
-    all_centroids = pd.concat([rhp_centroids, lhp_centroids])
 
     # ═════════════ PROFILES ═════════════
     print(f"\n\n{'#'*60}")
     print(f"  SECTION 4: CLUSTER PROFILES")
     print(f"{'#'*60}")
 
-    profiles = profile_clusters(all_clustered, all_centroids, features, year)
+    profiles = profile_clusters(all_clustered, features, year)
 
     # ═════════════ SUMMARY ═════════════
     print(f"\n\n{'#'*60}")
@@ -663,9 +736,6 @@ def main():
         joblib.dump(models["scaler"], os.path.join(out_dir, f"scaler_{prefix}.joblib"))
         joblib.dump(models["kmeans"], os.path.join(out_dir, f"kmeans_{prefix}.joblib"))
         joblib.dump(models["pca"], os.path.join(out_dir, f"pca_{prefix}.joblib"))
-
-    # Save centroids
-    all_centroids.to_csv(os.path.join(out_dir, "centroids.csv"))
 
     # Save profiles
     with open(os.path.join(out_dir, "cluster_profiles.json"), "w") as f:

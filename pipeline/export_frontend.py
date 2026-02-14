@@ -64,13 +64,21 @@ EMOJI_MAP = {
 
 
 def _find_medoid(group):
-    """Find the real pitcher closest to the group's geometric center in PCA space."""
+    """Find the TRUE geometric medoid: the real pitcher that minimizes
+    sum of distances to all other pitchers in PCA space.
+    Returns (pca_x, pca_y, pca_z, medoid_row)."""
+    from scipy.spatial.distance import cdist
+
     coords = group[["pca_x", "pca_y", "pca_z"]].values
-    center = coords.mean(axis=0)
-    dists = np.linalg.norm(coords - center, axis=1)
-    medoid_idx = np.argmin(dists)
+    if len(coords) < 2:
+        row = group.iloc[0]
+        return float(row.pca_x), float(row.pca_y), float(row.pca_z), row
+
+    dist_matrix = cdist(coords, coords, metric='euclidean')
+    total_dists = dist_matrix.sum(axis=1)
+    medoid_idx = int(np.argmin(total_dists))
     row = group.iloc[medoid_idx]
-    return float(row.pca_x), float(row.pca_y), float(row.pca_z)
+    return float(row.pca_x), float(row.pca_y), float(row.pca_z), row
 
 
 def export_all():
@@ -148,15 +156,15 @@ def export_all():
         hand = parts[0]
         archetype_name = parts[1]
 
-        # PCA position: medoid (real pitcher closest to center)
-        med_x, med_y, med_z = _find_medoid(group)
+        # PCA position: true geometric medoid (real pitcher, not closest-to-mean)
+        med_x, med_y, med_z, medoid_row = _find_medoid(group)
 
         # Get traits from pipeline profiles (individual pitcher stats, NOT centroid averages)
         prof = all_profiles.get(key, {})
         traits = prof.get("traits", {})
 
-        # Role from pipeline traits
-        sp_ratio = traits.get("is_sp", float(group["is_sp"].mean()))
+        # Role from medoid pitcher (no averaging)
+        sp_ratio = traits.get("is_sp", float(medoid_row.get("is_sp", 0)))
         if sp_ratio > 0.55:
             role = "SP"
         elif sp_ratio < 0.35:

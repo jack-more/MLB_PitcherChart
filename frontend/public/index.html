@@ -1,17 +1,292 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PITCH.FX // CLUSTER</title>
-    <script>
-        // Route based on screen width (768px breakpoint) and user agent
-        var isMobile = window.innerWidth <= 768 ||
-            /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-        window.location.replace(isMobile ? 'cosmos-mobile.html' : 'cosmos.html');
-    </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PITCHER DNA // ATLAS</title>
+<script>
+var isMobile = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+if (isMobile) window.location.replace('cosmos-mobile.html');
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg-deep: #0D1538;
+    --bg-main: #1A2350;
+    --text-main: #FFFFFF;
+    --text-muted: #8E9AFF;
+    --accent: #FF4400;
+    --font-stack: 'Space Mono', 'Courier New', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    background-color: var(--bg-deep);
+    color: var(--text-main);
+    font-family: var(--font-stack);
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+}
+#landing-view {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 2.5rem 3rem;
+    z-index: 10;
+}
+#dna-canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: -1;
+}
+.nav-minimal {
+    display: flex;
+    justify-content: space-between;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    z-index: 10;
+}
+.mission-overlay {
+    max-width: 600px;
+    z-index: 10;
+}
+.mission-overlay h2 {
+    font-size: 3.5rem;
+    line-height: 0.9;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.02em;
+    color: var(--text-main);
+}
+.mission-overlay h2 .accent {
+    color: var(--accent);
+}
+.mission-overlay p {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    max-width: 45ch;
+    line-height: 1.6;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+}
+.nav-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1.5rem;
+    z-index: 10;
+    align-items: flex-end;
+}
+.nav-btn {
+    font-family: var(--font-stack);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    cursor: pointer;
+    border: 2px solid var(--text-main);
+    background: transparent;
+    color: var(--text-main);
+    padding: 14px 32px;
+    text-decoration: none;
+    transition: all 0.2s;
+    display: inline-block;
+}
+.nav-btn:hover {
+    background: var(--text-main);
+    color: var(--bg-deep);
+}
+.nav-btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+}
+.nav-btn.primary:hover {
+    background: #ff6a33;
+    border-color: #ff6a33;
+    box-shadow: 0 0 30px rgba(255, 68, 0, 0.4);
+}
+.archetype-legend {
+    position: fixed;
+    bottom: 2.5rem;
+    left: 3rem;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    opacity: 0.5;
+    transition: opacity 0.3s;
+}
+.archetype-legend:hover {
+    opacity: 1;
+}
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.5rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+.legend-dot {
+    width: 6px;
+    height: 6px;
+    display: inline-block;
+}
+</style>
 </head>
 <body>
-    <a href="cosmos.html">Loading PITCH.FX // CLUSTER...</a>
+<div id="landing-view">
+    <canvas id="dna-canvas"></canvas>
+
+    <nav class="nav-minimal">
+        <div>PITCHER DNA // v22</div>
+        <div>STATUS: ACTIVE</div>
+        <div>EST. 2025</div>
+    </nav>
+
+    <div class="mission-overlay">
+        <h2>DECODING<br>THE <span class="accent">ARCHITECTURE</span><br>OF PITCHING</h2>
+        <p>17 PITCHER ARCHETYPES IDENTIFIED THROUGH DNA-STYLE CLUSTERING. EVERY PITCH. EVERY PATTERN. EVERY EDGE.</p>
+    </div>
+
+    <div class="nav-buttons">
+        <a href="simlab.html" class="nav-btn">SIM LAB</a>
+        <a href="cosmos.html" class="nav-btn primary">ATLAS //</a>
+    </div>
+</div>
+
+<div class="archetype-legend" id="legend"></div>
+
+<script>
+const ARCHETYPES = [
+    {emoji:'\u26FD', name:'Barnburner', color:'#cc4565'},
+    {emoji:'\uD83E\uDE83', name:'Boomerang', color:'#3aaf9f'},
+    {emoji:'\u2702\uFE0F', name:'CutCraft', color:'#3a8cc4'},
+    {emoji:'\uD83D\uDDE1', name:'Cutman', color:'#8592d6'},
+    {emoji:'\uD83E\uDEB1', name:'Earthworm', color:'#a0584a'},
+    {emoji:'\uD83E\uDDD1\u200D\uD83C\uDF3E', name:'Gardener', color:'#4da85e'},
+    {emoji:'\uD83D\uDC7B', name:'Ghost', color:'#8899aa'},
+    {emoji:'\uD83C\uDFCB\uFE0F', name:'Heavy Duty', color:'#6b5ecc'},
+    {emoji:'\uD83D\uDEB0', name:'Kitchen Sink', color:'#45a87e'},
+    {emoji:'\uD83E\uDDD9', name:'Knuckleball Wiz', color:'#8b52cc'},
+    {emoji:'\uD83D\uDC0D', name:'Snake', color:'#7db04a'},
+    {emoji:'\uD83D\uDC79', name:'Split Demon', color:'#ab47c4'},
+    {emoji:'\u2694\uFE0F', name:'Swordfighter', color:'#c94185'},
+    {emoji:'3\uFE0F\u20E3', name:'Triple Threat', color:'#c43fa8'},
+    {emoji:'\uD83C\uDF7A', name:'Uncle Charlie', color:'#c9a03e'},
+    {emoji:'\uD83C\uDF0A', name:'Undertow', color:'#4178c9'},
+    {emoji:'\uD83E\uDDAC', name:'Yakker', color:'#b8b230'}
+];
+
+// Build legend
+(function(){
+    const el = document.getElementById('legend');
+    ARCHETYPES.forEach(a => {
+        el.innerHTML += '<div class="legend-item"><span class="legend-dot" style="background:' + a.color + '"></span>' + a.emoji + ' ' + a.name + '</div>';
+    });
+})();
+
+// DNA Helix with archetypes
+(function initDna() {
+    const canvas = document.getElementById('dna-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height, t = 0;
+    const particles = [];
+
+    function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    class Particle {
+        constructor(y, offset, archetypeIdx) {
+            this.y = y;
+            this.offset = offset;
+            this.archIdx = archetypeIdx;
+        }
+        update(time) {
+            const angle = this.y * 0.05 + time + this.offset;
+            const radius = 160;
+            const x3d = Math.sin(angle) * radius;
+            const z3d = Math.cos(angle) * radius;
+            const fov = 1000;
+            const scale = fov / (fov + z3d);
+            this.x = (width * 0.55) + x3d * scale;
+            this.screenY = (this.y * 14) * scale + (height * 0.08);
+            this.size = 11 * scale;
+            this.alpha = scale > 1 ? 1 : 0.25;
+            this.scale = scale;
+        }
+        draw() {
+            const a = ARCHETYPES[this.archIdx];
+            // Emoji
+            ctx.font = Math.round(this.size * 1.2) + 'px sans-serif';
+            ctx.globalAlpha = this.alpha;
+            ctx.textAlign = 'center';
+            ctx.fillText(a.emoji, this.x, this.screenY);
+            // Name label
+            ctx.font = 'bold ' + Math.max(7, Math.round(this.size * 0.55)) + 'px "Space Mono", monospace';
+            ctx.fillStyle = a.color;
+            ctx.globalAlpha = this.alpha * 0.8;
+            ctx.fillText(a.name.toUpperCase(), this.x, this.screenY + this.size * 0.9);
+            ctx.globalAlpha = 1;
+        }
+    }
+
+    const count = 90;
+    for (let i = 0; i < count; i++) {
+        const archIdx = i % ARCHETYPES.length;
+        particles.push(new Particle(i, 0, archIdx));
+        particles.push(new Particle(i, Math.PI, archIdx));
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, width, height);
+        t += 0.006;
+
+        // Sort by depth for proper overlap
+        const sorted = [];
+        for (let i = 0; i < particles.length; i += 2) {
+            const p1 = particles[i];
+            const p2 = particles[i + 1];
+            p1.update(t);
+            p2.update(t);
+            sorted.push({p1: p1, p2: p2, z: (p1.scale + p2.scale) / 2});
+        }
+        sorted.sort(function(a, b) { return a.z - b.z; });
+
+        sorted.forEach(function(pair) {
+            const p1 = pair.p1;
+            const p2 = pair.p2;
+            const a = ARCHETYPES[p1.archIdx];
+            // Crossbar
+            ctx.strokeStyle = a.color;
+            ctx.globalAlpha = Math.min(p1.alpha, p2.alpha) * 0.2;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.screenY);
+            ctx.lineTo(p2.x, p2.screenY);
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+            // Draw particles
+            p1.draw();
+            p2.draw();
+        });
+
+        requestAnimationFrame(animate);
+    }
+    animate();
+})();
+</script>
 </body>
 </html>

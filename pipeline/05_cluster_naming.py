@@ -1,8 +1,8 @@
 """
 Step 5: Generate quirky archetype names for each K-Means cluster.
 
-Reads the centroids (in original scale), applies rule-based naming
-examining dominant traits, and saves cluster_profiles.json.
+Uses the geometric medoid (real pitcher closest to center) for each cluster,
+applies rule-based naming examining dominant traits, and saves cluster_profiles.json.
 """
 
 import os
@@ -37,7 +37,7 @@ CLUSTER_COLORS = [
 
 
 def _get_top_pitches(row: pd.Series, n: int = 3) -> list:
-    """Return the top n pitch types by usage from the centroid."""
+    """Return the top n pitch types by usage from the medoid pitcher."""
     pitch_cols = [c for c in row.index if c.startswith("pct_")]
     pitches = [(c.replace("pct_", ""), float(row[c])) for c in pitch_cols if row[c] > 0.03]
     return sorted(pitches, key=lambda x: x[1], reverse=True)[:n]
@@ -60,7 +60,7 @@ def _role_short(is_sp: float) -> str:
 
 
 def _score_traits(row: pd.Series) -> dict:
-    """Score how distinctive each trait is for this cluster centroid."""
+    """Score how distinctive each trait is for this cluster's medoid pitcher."""
     return {
         "ff": row.get("pct_FF", 0),
         "si": row.get("pct_SI", 0),
@@ -83,7 +83,7 @@ def _score_traits(row: pd.Series) -> dict:
 
 
 def generate_full_name(row: pd.Series, hand: str = "RHP") -> str:
-    """Generate a descriptive archetype name from centroid feature values.
+    """Generate a descriptive archetype name from medoid pitcher feature values.
 
     Uses a layered approach: primary identity (most distinctive pitch trait),
     then secondary modifiers (outcome, velocity, groundball tendency).
@@ -205,23 +205,33 @@ def find_nearest_pitchers(
     cluster_id_str: str,
     n: int = 3,
 ) -> list:
-    """Find the n pitchers closest to the cluster centroid using PCA distance."""
+    """Find the n pitchers closest to the cluster's geometric medoid in PCA space."""
+    from scipy.spatial.distance import cdist
+
     mask = pitcher_seasons["cluster"] == cluster_id_str
     if mask.sum() == 0:
         return []
 
     subset = pitcher_seasons[mask]
-    # Use PCA coords as proxy for centroid distance
-    cx = subset["pca_x"].mean()
-    cy = subset["pca_y"].mean()
-    cz = subset["pca_z"].mean() if "pca_z" in subset.columns else 0
-    dists = np.sqrt((subset["pca_x"] - cx)**2 + (subset["pca_y"] - cy)**2 +
-                    ((subset["pca_z"] - cz)**2 if "pca_z" in subset.columns else 0))
-    nearest = dists.nsmallest(n).index
+    pca_cols = ["pca_x", "pca_y"] + (["pca_z"] if "pca_z" in subset.columns else [])
+    coords = subset[pca_cols].fillna(0).values
+
+    if len(coords) < 2:
+        row = subset.iloc[0]
+        return [f"{row.get('player_name', 'Unknown')} ({int(row.get('game_year', 0))})"]
+
+    # True geometric medoid
+    dist_matrix = cdist(coords, coords, metric='euclidean')
+    total_dists = dist_matrix.sum(axis=1)
+    medoid_local_idx = int(np.argmin(total_dists))
+
+    # Distances from medoid
+    dists_from_medoid = dist_matrix[medoid_local_idx]
+    nearest_local = np.argsort(dists_from_medoid)[:n]
 
     examples = []
-    for idx in nearest:
-        row = pitcher_seasons.loc[idx]
+    for local_idx in nearest_local:
+        row = subset.iloc[local_idx]
         name = row.get("player_name", "Unknown")
         year = int(row.get("game_year", 0))
         examples.append(f"{name} ({year})")
@@ -242,30 +252,34 @@ LHP_COLORS = [
 
 
 def main():
+    from scipy.spatial.distance import cdist
+
     # Load data
     data_path = os.path.join(PROCESSED_DATA_DIR, "pitcher_seasons.parquet")
     pitcher_seasons = pd.read_parquet(data_path)
-
-    centroids_csv = os.path.join(MODELS_DIR, "centroids.csv")
-    centroid_df = pd.read_csv(centroids_csv, index_col=0)
-
-    # Enrich centroids with is_sp (not a clustering feature, but needed for naming)
-    if "is_sp" not in centroid_df.columns and "is_sp" in pitcher_seasons.columns:
-        centroid_df["is_sp"] = [
-            pitcher_seasons.loc[pitcher_seasons["cluster"] == cid, "is_sp"].mean()
-            if (pitcher_seasons["cluster"] == cid).sum() > 0 else 0.0
-            for cid in centroid_df.index
-        ]
-
-    centroid_pca_path = os.path.join(MODELS_DIR, "centroid_pca.csv")
-    centroid_pca = pd.read_csv(centroid_pca_path, index_col=0) if os.path.exists(centroid_pca_path) else None
 
     # Load meta
     meta_path = os.path.join(MODELS_DIR, "kmeans_meta.json")
     meta = json.load(open(meta_path)) if os.path.exists(meta_path) else {}
     features_used = meta.get("features", CLUSTER_FEATURES)
 
-    cluster_ids = list(centroid_df.index)
+    # Build medoid rows: for each cluster, find the actual pitcher closest
+    # to geometric medoid (minimizes total distance to all other members)
+    cluster_ids = sorted(pitcher_seasons["cluster"].unique())
+    medoid_rows = {}
+    for cid in cluster_ids:
+        members = pitcher_seasons[pitcher_seasons["cluster"] == cid]
+        if len(members) == 0:
+            continue
+        feature_cols = [f for f in features_used if f != "is_rhp" and f in members.columns]
+        coords = members[feature_cols].fillna(0).values
+        if len(coords) < 2:
+            medoid_rows[cid] = members.iloc[0]
+        else:
+            dist_matrix = cdist(coords, coords, metric='euclidean')
+            total_dists = dist_matrix.sum(axis=1)
+            medoid_rows[cid] = members.iloc[int(np.argmin(total_dists))]
+
     print(f"Naming {len(cluster_ids)} clusters ({sum(1 for c in cluster_ids if c.startswith('R'))} RHP, "
           f"{sum(1 for c in cluster_ids if c.startswith('L'))} LHP)...\n")
 
@@ -274,7 +288,9 @@ def main():
     lhp_idx = 0
 
     for cid in cluster_ids:
-        row = centroid_df.loc[cid]
+        if cid not in medoid_rows:
+            continue
+        row = medoid_rows[cid]
         is_rhp = cid.startswith("R")
         hand = "RHP" if is_rhp else "LHP"
 
@@ -299,24 +315,20 @@ def main():
             short_name = f"Eephus Lobber {role}"
             full_name = f"The Eephus Lobber (Position Player) {_role_str(row.get('is_sp', 0))}"
 
-        # PCA centroid position
-        pca_pos = {}
-        if centroid_pca is not None and cid in centroid_pca.index:
-            pca_row = centroid_pca.loc[cid]
-            pca_pos = {
-                "pca_x": round(float(pca_row["centroid_pca_x"]), 4),
-                "pca_y": round(float(pca_row["centroid_pca_y"]), 4),
-                "pca_z": round(float(pca_row.get("centroid_pca_z", 0)), 4),
-            }
+        # PCA position from medoid pitcher (real pitcher, not phantom average)
+        pca_pos = {
+            "pca_x": round(float(row.get("pca_x", 0)), 4),
+            "pca_y": round(float(row.get("pca_y", 0)), 4),
+            "pca_z": round(float(row.get("pca_z", 0)), 4),
+        }
 
-        # Build centroid dict from clustering features
-        centroid_dict = {col: round(float(row[col]), 4) for col in features_used if col in row.index}
+        # Build representative dict from medoid pitcher's actual features
+        rep_dict = {col: round(float(row.get(col, 0)), 4) for col in features_used if col in row.index}
 
-        # Add movement data (not a clustering feature, but needed for display axes)
-        cluster_mask = pitcher_seasons["cluster"] == cid
+        # Movement data from medoid pitcher (not averaged)
         for extra_col in ["pfx_x_avg", "pfx_z_avg"]:
-            if extra_col in pitcher_seasons.columns and cluster_mask.sum() > 0:
-                centroid_dict[extra_col] = round(float(pitcher_seasons.loc[cluster_mask, extra_col].mean()), 4)
+            if extra_col in row.index:
+                rep_dict[extra_col] = round(float(row.get(extra_col, 0)), 4)
 
         profiles[cid] = {
             "full_name": full_name,
@@ -325,12 +337,13 @@ def main():
             "hand": hand,
             "pitcher_count": count,
             "example_pitchers": examples,
-            "centroid": centroid_dict,
+            "representative": rep_dict,
             **pca_pos,
         }
 
         print(f"  {cid} [{hand}]: {short_name}")
         print(f"    Full: {full_name}")
+        print(f"    Medoid: {row.get('player_name', '?')}")
         print(f"    Examples: {', '.join(examples)}")
         print(f"    Count: {count}")
         print()

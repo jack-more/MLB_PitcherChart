@@ -16,6 +16,11 @@
     --accent-hover: #ff6a33;
     --green: #2a9d8f;
     --red: #e63946;
+    --conf-1: #00c853;
+    --conf-2: #66bb6a;
+    --conf-3: #fdd835;
+    --conf-4: #ef6c00;
+    --conf-5: #b71c1c;
     --grid-unit: 8px;
     --border-radius: 0px;
     --dashed-border: 1px dashed rgba(255, 255, 255, 0.3);
@@ -31,20 +36,21 @@ body{
     border-left:1px solid rgba(0,0,0,0.2);border-right:1px solid rgba(0,0,0,0.2);box-shadow:0 0 50px rgba(0,0,0,0.5)}
 
 /* ═══ TOP BAR ═══ */
-.top-bar{display:grid;grid-template-columns:320px 1fr auto;gap:1.5rem;padding:1rem 1.5rem;
+.top-bar{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;
+    gap:0.5rem 1.5rem;padding:1rem 1.5rem;
     border-bottom:var(--dashed-border);align-items:center;background:rgba(43,58,140,0.9);
     backdrop-filter:blur(5px);z-index:100}
-.brand-block{display:flex;align-items:center;gap:1rem}
+.brand-block{grid-column:1;grid-row:1;display:flex;align-items:center;gap:1rem}
 .back-link{text-decoration:none;color:var(--text-muted);font-size:0.8rem;transition:color 0.15s}
 .back-link:hover{color:var(--accent)}
 .logo{font-weight:700;letter-spacing:-0.5px;font-size:1.1rem;border:1px solid var(--text-main);padding:2px 6px}
-.mode-toggle{display:flex;gap:0;margin-left:8px}
+.mode-toggle{grid-column:2;grid-row:1;justify-self:end;display:flex;gap:0}
 .mode-btn{background:transparent;border:1px solid rgba(255,255,255,0.3);color:var(--text-muted);
-    font-family:var(--font-stack);font-size:0.65rem;padding:3px 8px;cursor:pointer;transition:all 0.15s;letter-spacing:0.5px;border-right:none}
+    font-family:var(--font-stack);font-size:0.75rem;padding:6px 16px;cursor:pointer;transition:all 0.15s;letter-spacing:1px;border-right:none}
 .mode-btn:last-child{border-right:1px solid rgba(255,255,255,0.3)}
 .mode-btn.active{background:var(--accent);border-color:var(--accent);color:#000;font-weight:700}
-.control-cluster{display:flex;gap:1.5rem;align-items:center;padding-left:0.5rem}
-.search-wrap{position:relative;flex:0 0 300px}
+.control-row{grid-column:1 / -1;grid-row:2;display:flex;gap:1rem;align-items:center}
+.search-wrap{position:relative;flex:1}
 .hitter-search{background:transparent;border:none;border-bottom:var(--dashed-border);color:var(--text-main);
     font-family:var(--font-stack);font-size:1rem;width:100%;padding:4px 0;text-transform:uppercase}
 .hitter-search::placeholder{color:var(--text-muted);opacity:0.5}
@@ -85,7 +91,15 @@ body{
 .cal-actions{display:flex;gap:6px;justify-content:flex-end;margin-top:8px;padding-top:8px;
     border-top:var(--dashed-border)}
 
-.action-area{display:flex;align-items:center;gap:1rem}
+.date-indicator{background:transparent;border:1px dashed rgba(255,255,255,0.25);color:var(--text-muted);
+    padding:5px 12px;font-family:var(--font-stack);font-size:0.7rem;cursor:pointer;transition:all 0.15s;
+    letter-spacing:0.5px;white-space:nowrap}
+.date-indicator:hover{border-color:var(--accent);color:var(--accent)}
+.date-indicator .di-dates{color:var(--accent);font-weight:700}
+.btn-refresh{background:transparent;border:1px solid rgba(255,255,255,0.2);color:var(--text-muted);
+    padding:5px 12px;font-family:var(--font-stack);font-size:0.7rem;cursor:pointer;transition:all 0.15s;
+    letter-spacing:0.5px;white-space:nowrap}
+.btn-refresh:hover{border-color:var(--accent);color:var(--accent)}
 .btn{background:transparent;border:1px solid var(--text-main);color:var(--text-main);padding:0.6rem 1.2rem;
     font-family:var(--font-stack);text-transform:uppercase;cursor:pointer;transition:all 0.2s;font-size:0.8rem}
 .btn:hover{background:var(--text-main);color:var(--bg-main)}
@@ -95,12 +109,12 @@ body{
 .btn-sm{padding:4px 8px;font-size:0.7rem}
 
 /* ═══ WORKSPACE ═══ */
-.workspace{display:grid;grid-template-columns:260px 1fr 300px;overflow:hidden}
+.workspace{display:grid;grid-template-columns:240px 1fr 340px;overflow:hidden}
 
 /* Left: Context Column */
 .col-context{padding:1.5rem;border-right:var(--dashed-border);background:rgba(0,0,0,0.1);overflow-y:auto}
 .hero{margin-bottom:2rem}
-.hero-name{font-size:2rem;line-height:1;text-transform:uppercase;word-break:break-word;margin-bottom:0.8rem;letter-spacing:2px}
+.hero-name{font-size:1.8rem;line-height:1;text-transform:uppercase;word-break:break-word;margin-bottom:0.8rem;letter-spacing:2px}
 .hero-meta{display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin-bottom:1.5rem;font-size:0.75rem;color:var(--text-muted)}
 .hero-clear{font-size:0.7rem;color:var(--text-muted);cursor:pointer;margin-top:8px;display:inline-block}
 .hero-clear:hover{color:var(--accent)}
@@ -109,7 +123,8 @@ body{
 .stat-block{margin-bottom:1.5rem}
 .stat-row{display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.1);padding:6px 0;font-size:0.8rem}
 .stat-row .val{font-family:var(--font-stack);letter-spacing:-1px}
-.stat-row .val.good{color:var(--green)}.stat-row .val.bad{color:var(--red)}
+.stat-row .val.good{color:var(--conf-1)}.stat-row .val.bad{color:var(--conf-5)}
+.conf-1{color:var(--conf-1)}.conf-2{color:var(--conf-2)}.conf-3{color:var(--conf-3)}.conf-4{color:var(--conf-4)}.conf-5{color:var(--conf-5)}
 .archetype-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;margin-top:8px;
     border:1px dashed rgba(255,255,255,0.3);font-size:0.75rem}
 .archetype-badge .dot{width:8px;height:8px;display:inline-block}
@@ -149,7 +164,7 @@ body{
 .sc{background:rgba(0,0,0,0.2);padding:8px 10px;text-align:center;min-width:50px;flex:1}
 .sc .sl{font-size:0.5rem;text-transform:uppercase;color:var(--text-muted);letter-spacing:0.5px;font-weight:700;margin-bottom:3px}
 .sc .sv{font-size:1rem;font-weight:800}
-.sc .sv.good{color:var(--green)}.sc .sv.bad{color:var(--red)}
+.sc .sv.good{color:var(--conf-1)}.sc .sv.bad{color:var(--conf-5)}
 
 /* Projections */
 .proj-row{margin-top:12px;padding-top:12px;border-top:1px dashed rgba(255,255,255,0.2)}
@@ -161,11 +176,7 @@ body{
 .pa-edit:focus{border-color:var(--accent)}
 
 /* Lines Panel */
-.lines-toggle{font-size:0.6rem;color:var(--text-muted);cursor:pointer;margin-top:10px;
-    letter-spacing:1px;text-transform:uppercase;display:flex;align-items:center;gap:4px}
-.lines-toggle:hover{color:var(--accent)}
-.lines-panel{display:none;margin-top:10px;padding-top:10px;border-top:1px dashed rgba(255,255,255,0.15)}
-.lines-panel.visible{display:block}
+.lines-panel{display:block;margin-top:10px;padding-top:10px;border-top:1px dashed rgba(255,255,255,0.15)}
 .lines-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .line-item{text-align:center}
 .line-item label{display:block;font-size:0.5rem;color:var(--text-muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:0.5px}
@@ -174,7 +185,66 @@ body{
 .line-item .line-input:focus{border-color:var(--accent)}
 .line-item .line-input::placeholder{color:rgba(255,255,255,0.2)}
 .line-item .edge{font-size:0.65rem;margin-top:2px;font-weight:700}
-.line-item .edge.over{color:var(--green)}.line-item .edge.under{color:var(--red)}.line-item .edge.neutral{color:var(--text-muted)}
+.line-item .edge.over{color:var(--conf-1)}.line-item .edge.under{color:var(--conf-5)}.line-item .edge.neutral{color:var(--text-muted)}
+
+/* ═══ SOURCE BADGE & MATCHUP QUALITY ═══ */
+.gc-source-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;
+    padding-bottom:6px;border-bottom:1px dashed rgba(255,255,255,0.1)}
+.source-badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;font-size:0.6rem;
+    font-weight:700;letter-spacing:1px;text-transform:uppercase;border:1px solid}
+.source-badge.src-h2h{color:var(--conf-1);border-color:var(--conf-1);background:rgba(0,200,83,0.1)}
+.source-badge.src-archetype{color:var(--conf-3);border-color:var(--conf-3);background:rgba(253,216,53,0.1)}
+.source-badge.src-none{color:var(--conf-5);border-color:var(--conf-5);background:rgba(183,28,28,0.1)}
+.matchup-quality{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;font-size:0.55rem;
+    font-weight:800;letter-spacing:1px;text-transform:uppercase}
+.matchup-quality.mq-1{color:var(--conf-1);border:1px solid var(--conf-1)}
+.matchup-quality.mq-2{color:var(--conf-2);border:1px solid var(--conf-2)}
+.matchup-quality.mq-3{color:var(--conf-3);border:1px solid var(--conf-3)}
+.matchup-quality.mq-4{color:var(--conf-4);border:1px solid var(--conf-4)}
+.matchup-quality.mq-5{color:var(--conf-5);border:1px solid var(--conf-5)}
+
+/* ═══ STAT BAR (replaces gc-grid) ═══ */
+.gc-stat-bar{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.gc-stat-bar .sc{min-width:44px;flex:1}
+
+/* ═══ PROPS LABEL ═══ */
+.props-label{font-size:0.6rem;color:var(--accent);font-weight:700;letter-spacing:1px;
+    text-transform:uppercase;margin-top:10px;margin-bottom:6px}
+
+/* ═══ ARCHETYPE CONTEXT (sidebar) ═══ */
+.archetype-context{margin-top:1.5rem}
+.archetype-context .arch-title{display:flex;align-items:center;gap:8px;margin-bottom:8px;
+    font-size:0.85rem;font-weight:700}
+.archetype-context .arch-title .dot{width:10px;height:10px;display:inline-block}
+.archetype-context .arch-detail{font-size:0.7rem;color:var(--text-muted);margin-bottom:4px}
+
+/* ═══ QUICK SCAN ═══ */
+.quick-scan{background:var(--bg-deep);border:2px solid var(--accent);padding:14px;margin-bottom:20px}
+.qs-title{font-size:0.65rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;
+    color:var(--accent);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.qs-title::after{content:'';flex:1;height:1px;border-bottom:1px dashed var(--accent)}
+.qs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.qs-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.08);transition:background 0.15s}
+.qs-item:hover{background:rgba(255,255,255,0.06)}
+.qs-edge{font-size:0.65rem;font-weight:800;letter-spacing:0.5px;min-width:50px;text-align:center;
+    padding:3px 6px}
+.qs-edge.over{color:#000;background:var(--conf-1)}
+.qs-edge.under{color:#000;background:var(--conf-5)}
+.qs-edge.edge-strong{background:var(--conf-1)}.qs-edge.edge-good{background:var(--conf-2)}
+.qs-edge.edge-mild{background:var(--conf-3)}.qs-edge.edge-slim{background:var(--conf-4)}.qs-edge.edge-neg{background:var(--conf-5)}
+.qs-detail{flex:1;min-width:0}
+.qs-detail .qs-player{font-size:0.7rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qs-detail .qs-info{font-size:0.55rem;color:var(--text-muted);letter-spacing:0.5px}
+.qs-section{font-size:0.55rem;color:var(--text-muted);font-weight:700;letter-spacing:1px;
+    text-transform:uppercase;margin:10px 0 6px;padding-top:8px;border-top:1px dashed rgba(255,255,255,0.1)}
+.qs-section:first-child{border-top:none;margin-top:0;padding-top:0}
+
+/* ═══ RECENCY BADGE ═══ */
+.recency-row{display:flex;gap:4px;margin-top:4px}
+.recency-chip{font-size:0.5rem;padding:2px 6px;letter-spacing:0.5px;background:rgba(0,0,0,0.2)}
+.recency-chip .rc-label{color:var(--text-muted)}.recency-chip .rc-val{font-weight:700}
+.recency-chip.rc-hot .rc-val{color:var(--conf-1)}.recency-chip.rc-cold .rc-val{color:var(--conf-5)}
 
 /* ═══ PITCHER OVERRIDE ═══ */
 .pitcher-name-wrap{display:inline-flex;align-items:center;gap:6px}
@@ -219,7 +289,7 @@ body{
 .gt-line-row .line-input:focus{border-color:var(--accent)}
 .gt-line-row .line-input::placeholder{color:rgba(255,255,255,0.2)}
 .gt-coverage{font-size:0.55rem;color:var(--text-muted);margin-top:6px;letter-spacing:0.5px}
-.gt-coverage .cov-good{color:var(--green)}.gt-coverage .cov-warn{color:#e76f51}
+.gt-coverage .cov-good{color:var(--conf-1)}.gt-coverage .cov-warn{color:var(--conf-4)}
 .gt-lineup-toggle{font-size:0.55rem;color:var(--text-muted);cursor:pointer;margin-top:8px;
     letter-spacing:1px;text-transform:uppercase}
 .gt-lineup-toggle:hover{color:var(--accent)}
@@ -246,11 +316,11 @@ body{
     grid-template-rows:auto 1fr auto;overflow:hidden}
 .research-panel{padding:1.2rem;border-bottom:var(--dashed-border)}
 .research-panel .hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.csv-table{width:100%;border-collapse:collapse;font-size:0.65rem;margin-top:8px}
-.csv-table th{text-align:center;color:var(--text-muted);padding:4px 3px;border-bottom:1px solid rgba(255,255,255,0.1);font-size:0.55rem;letter-spacing:0.5px}
+.csv-table{width:100%;border-collapse:collapse;font-size:0.72rem;margin-top:8px}
+.csv-table th{text-align:center;color:var(--text-muted);padding:5px 4px;border-bottom:1px solid rgba(255,255,255,0.1);font-size:0.6rem;letter-spacing:0.5px}
 .csv-table th:first-child{text-align:left}
-.csv-table td{padding:4px 3px;border-bottom:1px dashed rgba(255,255,255,0.1);text-align:center;font-size:0.65rem}
-.csv-table td:first-child{text-align:left;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.csv-table td{padding:5px 4px;border-bottom:1px dashed rgba(255,255,255,0.1);text-align:center;font-size:0.72rem}
+.csv-table td:first-child{text-align:left;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .csv-table .del{color:var(--text-muted);cursor:pointer;font-size:0.8rem}.csv-table .del:hover{color:var(--red)}
 .empty-msg{text-align:center;color:var(--text-muted);font-size:0.75rem;padding:20px 0}
 .notes-area{width:100%;height:100%;background:transparent;border:none;color:var(--text-main);
@@ -267,6 +337,51 @@ body{
 .flash.show{opacity:1}
 .text-accent{color:var(--accent)}.text-right{text-align:right}.mono{font-family:var(--font-stack);letter-spacing:-1px}
 
+/* ═══ TEAM LINEUP CARDS ═══ */
+.team-game-card{background:var(--bg-light);margin-bottom:1.5rem;box-shadow:8px 8px 0px rgba(0,0,0,0.2);
+    position:relative;transition:transform 0.2s}
+.team-game-card:hover{transform:translate(-2px,-2px);box-shadow:10px 10px 0px rgba(0,0,0,0.3)}
+.tg-header{display:flex;justify-content:space-between;align-items:center;padding:1rem 1.2rem;
+    border-bottom:1px dashed rgba(255,255,255,0.2);font-size:0.85rem;font-weight:700}
+.tg-pitcher-info{padding:0.6rem 1.2rem;font-size:0.7rem;color:var(--text-muted);
+    border-bottom:1px dashed rgba(255,255,255,0.15)}
+.tg-pitcher-info .sp-name{color:var(--text-main);font-weight:700}
+.tg-lineup-header{display:grid;grid-template-columns:30px 1fr 50px 50px 50px 50px 50px;gap:4px;
+    padding:6px 1.2rem;font-size:0.55rem;color:var(--text-muted);letter-spacing:1px;font-weight:700;
+    border-bottom:1px solid rgba(255,255,255,0.1)}
+.tg-batter{display:grid;grid-template-columns:30px 1fr 50px 50px 50px 50px 50px;gap:4px;
+    padding:6px 1.2rem;font-size:0.75rem;border-bottom:1px solid rgba(255,255,255,0.05);align-items:center}
+.tg-batter:hover{background:rgba(255,255,255,0.03)}
+.tg-batter .order{color:var(--accent);font-weight:700;font-size:0.7rem}
+.tg-batter .name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tg-batter .stat{text-align:center;font-family:var(--font-stack);letter-spacing:-1px}
+.tg-batter .src{font-size:0.5rem;color:var(--text-muted);font-style:italic;text-align:center}
+.tg-bench-toggle{font-size:0.6rem;color:var(--text-muted);cursor:pointer;padding:8px 1.2rem;
+    letter-spacing:1px;text-transform:uppercase;border-bottom:1px dashed rgba(255,255,255,0.1)}
+.tg-bench-toggle:hover{color:var(--accent)}
+.tg-bench-section{display:none}
+.tg-bench-section.visible{display:block}
+.tg-batter.bench{opacity:0.5}
+.tg-batter.bench .order{color:var(--text-muted)}
+.tg-bench-tag{font-size:0.5rem;background:rgba(255,255,255,0.1);padding:1px 5px;letter-spacing:1px;color:var(--text-muted)}
+.tg-totals{display:flex;gap:6px;flex-wrap:wrap;padding:1rem 1.2rem;border-top:2px solid var(--accent);background:var(--bg-deep)}
+.tg-totals .sc{min-width:60px}.tg-totals .sc .sv{font-size:1rem}
+.tg-runs-badge{background:var(--accent);color:#000;font-weight:900;font-size:1.3rem;padding:8px 14px;
+    text-align:center;min-width:70px}
+.tg-runs-label{font-size:0.5rem;letter-spacing:1px;font-weight:700;margin-top:2px}
+
+/* Status Banner Loading */
+.status-banner.loading{display:block;background:rgba(26,35,80,0.8);border-color:var(--accent);color:var(--accent);
+    text-align:center;letter-spacing:2px;animation:pulse-load 1.5s ease-in-out infinite}
+@keyframes pulse-load{0%,100%{opacity:0.5}50%{opacity:1}}
+
+/* Empty State */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:4rem 2rem;text-align:center;color:var(--text-muted)}
+.empty-state .es-arrow{font-size:2rem;color:var(--accent);margin-bottom:1rem}
+.empty-state .es-title{font-size:0.85rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:0.5rem;color:var(--text-main)}
+.empty-state .es-sub{font-size:0.7rem;letter-spacing:1px;line-height:1.6}
+
 /* Loading */
 #loading-overlay{position:fixed;inset:0;background:var(--bg-deep);display:flex;align-items:center;
     justify-content:center;z-index:999;flex-direction:column;gap:16px}
@@ -281,7 +396,10 @@ body{
 ::-webkit-scrollbar-thumb:hover{background:var(--accent)}
 
 /* Responsive */
-@media(max-width:1100px){.workspace{grid-template-columns:1fr}.col-context,.col-research{display:none}}
+@media(max-width:1100px){.workspace{grid-template-columns:1fr}.col-context,.col-research{display:none}
+    .top-bar{grid-template-columns:1fr;grid-template-rows:auto auto auto}
+    .mode-toggle{grid-column:1;grid-row:2;justify-self:start}
+    .control-row{grid-column:1;grid-row:3}}
 </style>
 </head>
 <body>
@@ -297,20 +415,21 @@ body{
     <div class="brand-block">
       <a href="cosmos.html" class="back-link">&larr; ATLAS</a>
       <div class="logo">SIM LAB</div>
-      <div class="mode-toggle">
-        <button class="mode-btn active" id="mode-hitter" data-mode="hitter">HITTER</button>
-        <button class="mode-btn" id="mode-pitcher" data-mode="pitcher">PITCHER</button>
-        <button class="mode-btn" id="mode-game" data-mode="game">GAME</button>
-      </div>
     </div>
-    <div class="control-cluster">
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="mode-hitter" data-mode="hitter">HITTER</button>
+      <button class="mode-btn" id="mode-pitcher" data-mode="pitcher">PITCHER</button>
+      <button class="mode-btn" id="mode-game" data-mode="game">GAME</button>
+      <button class="mode-btn" id="mode-team" data-mode="team">TEAM</button>
+    </div>
+    <div class="control-row">
       <div class="search-wrap">
         <input type="text" class="hitter-search" id="search" placeholder="SEARCH HITTER..." autocomplete="off">
         <div class="s-drop" id="s-drop"></div>
       </div>
       <div class="cal-wrap" id="cal-wrap">
-        <button class="btn btn-sm" id="cal-trigger">
-          <span id="cal-trigger-label">SELECT DATES</span>
+        <button class="date-indicator" id="cal-trigger">
+          <span id="cal-trigger-label">UPCOMING</span>
         </button>
         <div class="cal-dropdown" id="cal-dropdown">
           <div class="cal-nav">
@@ -322,13 +441,11 @@ body{
           <div class="cal-range-label" id="cal-range-label"></div>
           <div class="cal-actions">
             <button class="btn btn-sm" id="cal-clear">CLEAR</button>
-            <button class="btn btn-sm btn-primary" id="cal-done">DONE</button>
+            <button class="btn btn-sm btn-primary" id="cal-done">APPLY</button>
           </div>
         </div>
       </div>
-    </div>
-    <div class="action-area">
-      <button class="btn btn-primary" id="btn-run" disabled>RUN SLATE</button>
+      <button class="btn-refresh" id="btn-run">&circlearrowright; REFRESH</button>
     </div>
   </header>
 
@@ -350,6 +467,12 @@ body{
           <div class="hero-meta" id="pitcher-hero-meta"></div>
           <div id="pitcher-archetype-badge"></div>
           <span class="hero-clear" id="pc-clear">&times; CLEAR</span>
+        </div>
+        <!-- Team hero -->
+        <div class="hero" id="team-hero" style="display:none">
+          <div class="hero-name" id="team-hero-name"></div>
+          <div class="hero-meta" id="team-hero-meta"></div>
+          <span class="hero-clear" id="tc-clear">&times; CLEAR</span>
         </div>
         <!-- Game mode info -->
         <div class="game-mode-info" id="game-mode-info">
@@ -375,6 +498,11 @@ body{
     <section class="col-slate">
       <div class="section-label" id="slate-label">AVAILABLE MATCHUPS // EDITABLE PA</div>
       <div class="status-banner" id="status-banner"></div>
+      <div class="empty-state" id="empty-state">
+        <div class="es-arrow">&rarr;</div>
+        <div class="es-title">SEARCH A PLAYER</div>
+        <div class="es-sub">OR SWITCH TO GAME MODE FOR<br>TODAY'S FULL SLATE</div>
+      </div>
       <div id="slate"></div>
     </section>
 
@@ -412,33 +540,46 @@ body{
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
 <script>
 // ═══ DATA ═══
-const DATA = { pitcherSeasons: [], hitterVsCluster: [], hitterVsPitcher: [], clusters: {}, batters: [], archetypeKings: {} };
+const DATA = { pitcherSeasons: [], hitterVsCluster: [], hitterVsPitcher: [], clusters: {}, batters: [], archetypeKings: {}, teamRosters: {} };
+
+const MLB_TEAM_IDS = {
+    'BAL':110,'BOS':111,'NYY':147,'TB':139,'TOR':141,
+    'CLE':114,'CWS':145,'DET':116,'KC':118,'MIN':142,
+    'HOU':117,'LAA':108,'OAK':133,'SEA':136,'TEX':140,
+    'ATL':144,'MIA':146,'NYM':121,'PHI':143,'WSH':120,
+    'CHC':112,'CIN':113,'MIL':158,'PIT':134,'STL':138,
+    'ARI':109,'COL':115,'LAD':119,'SD':135,'SF':137
+};
 
 // ═══ STATE ═══
 let currentMode = 'hitter';
 let selectedBatter = null;
 let selectedPitcher = null;
+let selectedTeam = null;
 let teamId = null;
 let schedule = [];
 let projections = [];
 let calRangeStart = null;
 let calRangeEnd = null;
 let calViewYear, calViewMonth;
+let _autoRunId = 0;
+let _autoScheduleCache = null;
 
 // ═══ LOAD DATA ═══
 async function loadData() {
     const status = document.getElementById('load-status');
     const update = (msg) => { if (status) status.textContent = msg; };
     update('Loading cluster profiles...');
-    const [clusters, batters, pitcherSeasons, hvc, hvp, kings] = await Promise.all([
+    const [clusters, batters, pitcherSeasons, hvc, hvp, kings, teamRosters] = await Promise.all([
         fetch('clusters.json').then(r => r.json()),
         fetch('batters.json').then(r => r.json()),
         fetch('pitcher_seasons.json').then(r => r.json()),
         fetch('hitter_vs_cluster.json').then(r => r.json()),
         fetch('hitter_vs_pitcher.json').then(r => r.json()).catch(() => []),
         fetch('archetype_kings.json').then(r => r.json()).catch(() => {}),
+        fetch('teams_2026.json').then(r => r.json()).catch(() => ({ teams: {}, rosters: {} })),
     ]);
-    Object.assign(DATA, { clusters, batters, pitcherSeasons, hitterVsCluster: hvc, hitterVsPitcher: hvp, archetypeKings: kings });
+    Object.assign(DATA, { clusters, batters, pitcherSeasons, hitterVsCluster: hvc, hitterVsPitcher: hvp, archetypeKings: kings, teamRosters });
     update('Building indexes...');
     DATA._hvpIndex = {};
     (DATA.hitterVsPitcher || []).forEach(r => {
@@ -450,8 +591,8 @@ async function loadData() {
 
 // ═══ HELPERS ═══
 function fmtName(n){if(!n)return'Unknown';return n.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ')}
-function baColor(v){return v>=0.300?'good':v<=0.180?'bad':''}
-function wobaColor(v){return v>=0.370?'good':v<=0.250?'bad':''}
+function baColor(v){if(v>=0.300)return'conf-1';if(v>=0.270)return'conf-2';if(v>=0.230)return'conf-3';if(v>=0.200)return'conf-4';return'conf-5'}
+function wobaColor(v){if(v>=0.370)return'conf-1';if(v>=0.340)return'conf-2';if(v>=0.310)return'conf-3';if(v>=0.280)return'conf-4';return'conf-5'}
 function nextMonday(){const d=new Date();const day=d.getDay();const diff=day===0?1:(8-day);d.setDate(d.getDate()+diff);return d.toISOString().split('T')[0]}
 function fmtDate(s){const d=new Date(s+'T12:00:00');return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}).toUpperCase()}
 function archName(clusterId){const c=DATA.clusters[clusterId];return c?(c.short_name||c.full_name||clusterId):clusterId}
@@ -531,11 +672,11 @@ function renderRangeLabel() {
 function updateCalTriggerLabel() {
     const label = document.getElementById('cal-trigger-label');
     if (!calRangeStart) {
-        label.textContent = 'SELECT DATES';
+        label.innerHTML = 'UPCOMING';
     } else if (!calRangeEnd) {
-        label.textContent = fmtDate(calRangeStart);
+        label.innerHTML = '<span class="di-dates">' + fmtDate(calRangeStart) + '</span>';
     } else {
-        label.textContent = fmtDate(calRangeStart) + ' \u2192 ' + fmtDate(calRangeEnd);
+        label.innerHTML = '<span class="di-dates">' + fmtDate(calRangeStart) + ' \u2192 ' + fmtDate(calRangeEnd) + '</span>';
     }
 }
 
@@ -550,7 +691,7 @@ function baseRuns(teamH, teamHR, teamBB, teamTB, teamPA) {
 }
 
 // ═══ PROJECT TEAM ═══
-function projectTeam(lineupIds, opposingPitcherId) {
+function projectTeam(lineupIds, opposingPitcherId, paOverride) {
     const ps = DATA.pitcherSeasons
         .filter(p => p.pitcher === opposingPitcherId)
         .sort((a, b) => b.game_year - a.game_year)[0] || null;
@@ -561,7 +702,7 @@ function projectTeam(lineupIds, opposingPitcherId) {
     const batterDetails = [];
 
     lineupIds.forEach((batterId) => {
-        const assumedPA = 4;
+        const assumedPA = paOverride || 4;
         let projH = 0, projHR = 0, projK = 0, projBB = 0, projTB = 0;
         let source = 'none';
         let batterName = 'Unknown';
@@ -644,6 +785,7 @@ function projectTeam(lineupIds, opposingPitcherId) {
     const modeHitter = document.getElementById('mode-hitter');
     const modePitcher = document.getElementById('mode-pitcher');
     const modeGame = document.getElementById('mode-game');
+    const modeTeam = document.getElementById('mode-team');
     const searchInput = document.getElementById('search');
 
     function setMode(mode) {
@@ -651,32 +793,48 @@ function projectTeam(lineupIds, opposingPitcherId) {
         modeHitter.classList.toggle('active', mode === 'hitter');
         modePitcher.classList.toggle('active', mode === 'pitcher');
         modeGame.classList.toggle('active', mode === 'game');
+        modeTeam.classList.toggle('active', mode === 'team');
         searchInput.value = '';
         document.getElementById('s-drop').classList.remove('visible');
+
+        // Hide all heroes
+        document.getElementById('hitter-hero').style.display = 'none';
+        document.getElementById('pitcher-hero').style.display = 'none';
+        document.getElementById('team-hero').style.display = 'none';
+        document.getElementById('game-mode-info').style.display = 'none';
+        document.getElementById('no-player').style.display = 'none';
 
         if (mode === 'game') {
             searchInput.placeholder = 'FILTER BY TEAM...';
             document.getElementById('slate-label').textContent = 'GAME PROJECTIONS // O/U RUNS';
-            document.getElementById('hitter-hero').style.display = 'none';
-            document.getElementById('pitcher-hero').style.display = 'none';
-            document.getElementById('no-player').style.display = 'none';
+            document.getElementById('empty-state').style.display = 'none';
             document.getElementById('game-mode-info').style.display = 'block';
             document.getElementById('context-stats').innerHTML = '';
-            document.getElementById('btn-run').disabled = false;
+            autoRunDefault('game');
+        } else if (mode === 'team') {
+            searchInput.placeholder = 'SEARCH TEAM...';
+            document.getElementById('slate-label').textContent = 'TEAM LINEUP PROJECTIONS';
+            document.getElementById('context-stats').innerHTML = '';
+            if (!selectedTeam) {
+                document.getElementById('empty-state').style.display = 'flex';
+            } else {
+                document.getElementById('team-hero').style.display = 'block';
+                document.getElementById('empty-state').style.display = 'none';
+            }
         } else {
             searchInput.placeholder = mode === 'hitter' ? 'SEARCH HITTER...' : 'SEARCH PITCHER...';
             document.getElementById('slate-label').textContent = mode === 'hitter'
                 ? 'AVAILABLE MATCHUPS // EDITABLE PA'
                 : 'OPPOSING LINEUP // MATCHUP DATA';
-            document.getElementById('game-mode-info').style.display = 'none';
             if (!selectedBatter && !selectedPitcher) {
-                document.getElementById('no-player').style.display = 'block';
+                document.getElementById('empty-state').style.display = 'flex';
             }
         }
     }
     modeHitter.addEventListener('click', () => setMode('hitter'));
     modePitcher.addEventListener('click', () => setMode('pitcher'));
     modeGame.addEventListener('click', () => setMode('game'));
+    modeTeam.addEventListener('click', () => setMode('team'));
 
     // ═══ SEARCH ═══
     const fuseHitters = new Fuse(DATA.batters, { keys: ['batter_name'], threshold: 0.3 });
@@ -690,14 +848,22 @@ function projectTeam(lineupIds, opposingPitcherId) {
     const pitcherList = Object.values(pitcherMap);
     const fusePitchers = new Fuse(pitcherList, { keys: ['player_name'], threshold: 0.3 });
 
+    // Team search index
+    const teamList = Object.entries(DATA.teamRosters.teams || {})
+        .filter(([a]) => !a.startsWith('WBC-'))
+        .map(([abbr, info]) => ({ abbr, name: info.name, lg: info.lg, div: info.div }));
+    const fuseTeams = new Fuse(teamList, { keys: ['abbr', 'name'], threshold: 0.3 });
+
     const sDrop = document.getElementById('s-drop');
     let sResults = [], sHighlight = 0;
 
     searchInput.addEventListener('input', () => {
         const q = searchInput.value.trim();
-        if (currentMode === 'game') { sDrop.classList.remove('visible'); return; } // team filter handled at runtime
+        if (currentMode === 'game') { sDrop.classList.remove('visible'); return; }
         if (q.length < 2) { sDrop.classList.remove('visible'); sResults = []; return; }
-        if (currentMode === 'hitter') {
+        if (currentMode === 'team') {
+            sResults = fuseTeams.search(q).slice(0, 8).map(r => r.item);
+        } else if (currentMode === 'hitter') {
             sResults = fuseHitters.search(q).slice(0, 8).map(r => r.item);
         } else {
             sResults = fusePitchers.search(q).slice(0, 8).map(r => r.item);
@@ -711,7 +877,8 @@ function projectTeam(lineupIds, opposingPitcherId) {
         if (e.key === 'ArrowUp') { e.preventDefault(); sHighlight = Math.max(sHighlight - 1, 0); renderSearchResults(); }
         if (e.key === 'Enter' && sResults[sHighlight]) {
             if (currentMode === 'hitter') selectBatter(sResults[sHighlight]);
-            else selectPitcherMode(sResults[sHighlight]);
+            else if (currentMode === 'pitcher') selectPitcherMode(sResults[sHighlight]);
+            else if (currentMode === 'team') selectTeam(sResults[sHighlight]);
             sDrop.classList.remove('visible');
         }
         if (e.key === 'Escape') sDrop.classList.remove('visible');
@@ -721,10 +888,17 @@ function projectTeam(lineupIds, opposingPitcherId) {
     function renderSearchResults() {
         if (!sResults.length) { sDrop.classList.remove('visible'); return }
         sDrop.innerHTML = sResults.map((item, i) => {
-            const name = currentMode === 'hitter' ? fmtName(item.batter_name) : fmtName(item.player_name);
-            const info = currentMode === 'hitter'
-                ? (item.total_PA || 0).toLocaleString() + ' PA'
-                : (item.avg_velo_FF || 0).toFixed(1) + ' mph';
+            let name, info;
+            if (currentMode === 'team') {
+                name = item.abbr + ' \u2014 ' + item.name;
+                info = item.lg + ' ' + item.div;
+            } else if (currentMode === 'hitter') {
+                name = fmtName(item.batter_name);
+                info = (item.total_PA || 0).toLocaleString() + ' PA';
+            } else {
+                name = fmtName(item.player_name);
+                info = (item.avg_velo_FF || 0).toFixed(1) + ' mph';
+            }
             return '<div class="s-item' + (i === sHighlight ? ' hl' : '') + '" data-idx="' + i + '"><span>' + name + '</span><span class="pa">' + info + '</span></div>';
         }).join('');
         sDrop.classList.add('visible');
@@ -732,8 +906,10 @@ function projectTeam(lineupIds, opposingPitcherId) {
     sDrop.addEventListener('mousedown', (e) => {
         const el = e.target.closest('.s-item');
         if (!el) return; e.preventDefault();
-        if (currentMode === 'hitter') selectBatter(sResults[parseInt(el.dataset.idx)]);
-        else selectPitcherMode(sResults[parseInt(el.dataset.idx)]);
+        const idx = parseInt(el.dataset.idx);
+        if (currentMode === 'hitter') selectBatter(sResults[idx]);
+        else if (currentMode === 'pitcher') selectPitcherMode(sResults[idx]);
+        else if (currentMode === 'team') selectTeam(sResults[idx]);
         sDrop.classList.remove('visible');
     });
 
@@ -747,9 +923,21 @@ function projectTeam(lineupIds, opposingPitcherId) {
         document.getElementById('pitcher-hero').style.display = 'none';
 
         const rows = DATA.hitterVsCluster.filter(r => r.batter === batter.batter);
-        let totalPA = 0, totalHR = 0, wobaSum = 0;
-        rows.forEach(r => { totalPA += r.PA || 0; totalHR += r.HR || 0; wobaSum += (r.wOBA || 0) * (r.PA || 0) });
+        let totalPA = 0, totalAB = 0, totalH = 0, totalHR = 0, totalBB = 0, totalK = 0, totalHBP = 0, wobaSum = 0;
+        let totalSingles = 0, totalDoubles = 0, totalTriples = 0;
+        rows.forEach(r => {
+            totalPA += r.PA || 0; totalAB += r.AB || 0; totalH += r.H || 0;
+            totalHR += r.HR || 0; totalBB += r.BB || 0; totalK += r.K || 0;
+            totalHBP += r.HBP || 0; wobaSum += (r.wOBA || 0) * (r.PA || 0);
+            totalSingles += r.singles || 0; totalDoubles += r.doubles || 0; totalTriples += r.triples || 0;
+        });
         const careerWoba = totalPA > 0 ? (wobaSum / totalPA).toFixed(3) : '.000';
+        const careerBA = totalAB > 0 ? (totalH / totalAB).toFixed(3) : '.000';
+        const careerOBP = totalPA > 0 ? ((totalH + totalBB + totalHBP) / totalPA).toFixed(3) : '.000';
+        const careerTB = totalSingles + totalDoubles * 2 + totalTriples * 3 + totalHR * 4;
+        const careerSLG = totalAB > 0 ? (careerTB / totalAB).toFixed(3) : '.000';
+        const careerKpct = totalPA > 0 ? ((totalK / totalPA) * 100).toFixed(0) : '0';
+        const careerBBpct = totalPA > 0 ? ((totalBB / totalPA) * 100).toFixed(0) : '0';
 
         const heroEl = document.getElementById('hitter-hero');
         const nameParts = fmtName(batter.batter_name).split(' ');
@@ -773,14 +961,21 @@ function projectTeam(lineupIds, opposingPitcherId) {
         } catch (e) { console.warn('MLB API player lookup failed:', e); showBanner('Could not reach MLB API.'); }
 
         document.getElementById('context-stats').innerHTML =
-            '<div class="section-label">CAREER BASELINE</div><div class="stat-block">' +
+            '<div class="section-label">CAREER vs ALL ARCHETYPES</div><div class="stat-block">' +
+            '<div class="stat-row"><span>BA</span><span class="val mono">' + careerBA + '</span></div>' +
+            '<div class="stat-row"><span>OBP</span><span class="val mono">' + careerOBP + '</span></div>' +
+            '<div class="stat-row"><span>SLG</span><span class="val mono">' + careerSLG + '</span></div>' +
             '<div class="stat-row"><span>wOBA</span><span class="val mono">' + careerWoba + '</span></div>' +
+            '<div class="stat-row"><span>K%</span><span class="val mono">' + careerKpct + '%</span></div>' +
+            '<div class="stat-row"><span>BB%</span><span class="val mono">' + careerBBpct + '%</span></div>' +
             '<div class="stat-row"><span>HR</span><span class="val mono">' + totalHR + '</span></div>' +
             '<div class="stat-row"><span>PA</span><span class="val mono">' + totalPA.toLocaleString() + '</span></div>' +
             '</div>';
 
         heroEl.style.display = 'block';
-        document.getElementById('btn-run').disabled = false;
+
+        // Auto-run: find next 2 games and show projections instantly
+        await autoRunDefault('hitter');
     }
 
     // ═══ PITCHER SELECTION ═══
@@ -830,35 +1025,80 @@ function projectTeam(lineupIds, opposingPitcherId) {
             '</div>';
 
         heroEl.style.display = 'block';
-        document.getElementById('btn-run').disabled = false;
+
+        // Auto-run: find next 2 starts and show projections instantly
+        await autoRunDefault('pitcher');
+    }
+
+    // ═══ TEAM SELECTION ═══
+    async function selectTeam(team) {
+        selectedTeam = team;
+        selectedBatter = null;
+        selectedPitcher = null;
+        searchInput.value = '';
+        sDrop.classList.remove('visible');
+
+        const mlbId = MLB_TEAM_IDS[team.abbr];
+        if (!mlbId) { showBanner('Team ID not found for ' + team.abbr); return; }
+        teamId = mlbId;
+        selectedTeam.mlbId = mlbId;
+
+        document.getElementById('no-player').style.display = 'none';
+        document.getElementById('hitter-hero').style.display = 'none';
+        document.getElementById('pitcher-hero').style.display = 'none';
+        document.getElementById('empty-state').style.display = 'none';
+        document.getElementById('game-mode-info').style.display = 'none';
+
+        const heroEl = document.getElementById('team-hero');
+        document.getElementById('team-hero-name').innerHTML = team.abbr + '<br><span style="font-size:0.9rem;letter-spacing:1px">' + team.name + '</span>';
+        document.getElementById('team-hero-meta').innerHTML =
+            '<div><span class="text-accent">&gt;</span> ' + team.lg + ' ' + team.div + '</div>' +
+            '<div class="text-right">26-MAN</div>';
+        heroEl.style.display = 'block';
+        document.getElementById('context-stats').innerHTML = '';
+
+        await autoRunDefault('team');
     }
 
     // ═══ CLEAR HANDLERS ═══
     document.getElementById('hc-clear').addEventListener('click', () => {
         selectedBatter = null; teamId = null; schedule = []; projections = [];
         document.getElementById('hitter-hero').style.display = 'none';
-        document.getElementById('no-player').style.display = 'block';
+        document.getElementById('no-player').style.display = 'none';
+        document.getElementById('empty-state').style.display = 'flex';
         document.getElementById('context-stats').innerHTML = '';
         document.getElementById('slate').innerHTML = '';
         document.getElementById('totals-dock').style.display = 'none';
-        document.getElementById('btn-run').disabled = true;
+        calRangeStart = null; calRangeEnd = null; updateCalTriggerLabel();
         hideBanner();
     });
     document.getElementById('pc-clear').addEventListener('click', () => {
         selectedPitcher = null; teamId = null; schedule = []; projections = [];
         document.getElementById('pitcher-hero').style.display = 'none';
-        document.getElementById('no-player').style.display = 'block';
+        document.getElementById('no-player').style.display = 'none';
+        document.getElementById('empty-state').style.display = 'flex';
         document.getElementById('context-stats').innerHTML = '';
         document.getElementById('slate').innerHTML = '';
         document.getElementById('totals-dock').style.display = 'none';
-        document.getElementById('btn-run').disabled = true;
+        calRangeStart = null; calRangeEnd = null; updateCalTriggerLabel();
+        hideBanner();
+    });
+    document.getElementById('tc-clear').addEventListener('click', () => {
+        selectedTeam = null; teamId = null; schedule = []; projections = [];
+        document.getElementById('team-hero').style.display = 'none';
+        document.getElementById('no-player').style.display = 'none';
+        document.getElementById('empty-state').style.display = 'flex';
+        document.getElementById('context-stats').innerHTML = '';
+        document.getElementById('slate').innerHTML = '';
+        document.getElementById('totals-dock').style.display = 'none';
+        calRangeStart = null; calRangeEnd = null; updateCalTriggerLabel();
         hideBanner();
     });
 
     // ═══ CALENDAR INIT ═══
-    calRangeStart = nextMonday();
+    calRangeStart = null;
     calRangeEnd = null;
-    const initDate = new Date(nextMonday() + 'T12:00:00');
+    const initDate = new Date();
     calViewMonth = initDate.getMonth();
     calViewYear = initDate.getFullYear();
 
@@ -897,7 +1137,11 @@ function projectTeam(lineupIds, opposingPitcherId) {
         renderCalendar();
     });
     document.getElementById('cal-clear').addEventListener('click', () => { calRangeStart = null; calRangeEnd = null; renderCalendar(); });
-    document.getElementById('cal-done').addEventListener('click', () => { document.getElementById('cal-dropdown').classList.remove('visible'); });
+    document.getElementById('cal-done').addEventListener('click', () => {
+        document.getElementById('cal-dropdown').classList.remove('visible');
+        // Auto-run on APPLY if dates are set
+        if (calRangeStart) { runSlate(); }
+    });
     document.addEventListener('click', (e) => {
         if (!e.target.closest('#cal-wrap')) document.getElementById('cal-dropdown').classList.remove('visible');
     });
@@ -911,6 +1155,10 @@ function projectTeam(lineupIds, opposingPitcherId) {
         if (selectedDates.length === 0) { showBanner('Select at least one date.'); return; }
         if (currentMode === 'hitter' && !selectedBatter) return;
         if (currentMode === 'pitcher' && !selectedPitcher) return;
+        if (currentMode === 'team' && !selectedTeam) return;
+
+        // Hide empty state
+        document.getElementById('empty-state').style.display = 'none';
 
         const sorted = [...selectedDates].sort();
         const startDate = sorted[0];
@@ -920,6 +1168,8 @@ function projectTeam(lineupIds, opposingPitcherId) {
 
         if (currentMode === 'game') {
             await runGameSlate(startDate, endDate, sorted);
+        } else if (currentMode === 'team') {
+            await runTeamSlate(startDate, endDate, sorted);
         } else if (currentMode === 'hitter') {
             await runHitterSlate(startDate, endDate, sorted);
         } else {
@@ -927,12 +1177,188 @@ function projectTeam(lineupIds, opposingPitcherId) {
         }
     }
 
+    // ═══ AUTO-RUN DEFAULT ═══
+    async function autoRunDefault(mode) {
+        const thisRunId = ++_autoRunId;
+        _autoScheduleCache = null;
+
+        // Show loading banner
+        const banner = document.getElementById('status-banner');
+        banner.textContent = 'LOADING UPCOMING GAMES...';
+        banner.classList.add('loading');
+        banner.classList.add('visible');
+
+        const today = new Date();
+        const todayStr = today.toISOString().split('T')[0];
+
+        try {
+            if (mode === 'hitter') {
+                if (!teamId) { hideBanner(); banner.classList.remove('loading'); return; }
+                // Look 14 days ahead for next 2 games
+                const endDate = new Date(today);
+                endDate.setDate(endDate.getDate() + 14);
+                const endStr = endDate.toISOString().split('T')[0];
+
+                const url = 'https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=' + teamId + '&startDate=' + todayStr + '&endDate=' + endStr + '&hydrate=probablePitcher';
+                const data = await (await fetch(url)).json();
+                _autoScheduleCache = data;
+
+                if (thisRunId !== _autoRunId) return; // Race guard
+
+                const gameDates = [];
+                (data.dates || []).forEach(dateObj => {
+                    dateObj.games.forEach(game => {
+                        const gDate = game.officialDate || dateObj.date;
+                        if (!gameDates.includes(gDate)) gameDates.push(gDate);
+                    });
+                });
+                gameDates.sort();
+
+                if (gameDates.length === 0) {
+                    banner.textContent = 'NO UPCOMING GAMES FOUND IN NEXT 14 DAYS';
+                    banner.classList.remove('loading');
+                    banner.classList.add('visible');
+                    return;
+                }
+
+                // Take next 2 game dates
+                const selectedGameDates = gameDates.slice(0, 2);
+                calRangeStart = selectedGameDates[0];
+                calRangeEnd = selectedGameDates.length > 1 ? selectedGameDates[selectedGameDates.length - 1] : null;
+                updateCalTriggerLabel();
+
+            } else if (mode === 'pitcher') {
+                if (!teamId || !selectedPitcher) { hideBanner(); banner.classList.remove('loading'); return; }
+                // Look 30 days ahead for pitcher starts
+                const endDate = new Date(today);
+                endDate.setDate(endDate.getDate() + 30);
+                const endStr = endDate.toISOString().split('T')[0];
+
+                const url = 'https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=' + teamId + '&startDate=' + todayStr + '&endDate=' + endStr + '&hydrate=probablePitcher';
+                const data = await (await fetch(url)).json();
+                _autoScheduleCache = data;
+
+                if (thisRunId !== _autoRunId) return; // Race guard
+
+                const startDates = [];
+                (data.dates || []).forEach(dateObj => {
+                    dateObj.games.forEach(game => {
+                        const isHome = game.teams.home.team.id === teamId;
+                        const myTeam = isHome ? game.teams.home : game.teams.away;
+                        const myPP = myTeam.probablePitcher || null;
+                        if (myPP && myPP.id === selectedPitcher.pitcher) {
+                            const gDate = game.officialDate || dateObj.date;
+                            if (!startDates.includes(gDate)) startDates.push(gDate);
+                        }
+                    });
+                });
+                startDates.sort();
+
+                if (startDates.length === 0) {
+                    banner.textContent = 'NO SCHEDULED STARTS IN NEXT 30 DAYS';
+                    banner.classList.remove('loading');
+                    banner.classList.add('visible');
+                    return;
+                }
+
+                const selectedStartDates = startDates.slice(0, 2);
+                calRangeStart = selectedStartDates[0];
+                calRangeEnd = selectedStartDates.length > 1 ? selectedStartDates[selectedStartDates.length - 1] : null;
+                updateCalTriggerLabel();
+
+            } else if (mode === 'team') {
+                if (!teamId) { hideBanner(); banner.classList.remove('loading'); return; }
+                const endDate = new Date(today);
+                endDate.setDate(endDate.getDate() + 14);
+                const endStr = endDate.toISOString().split('T')[0];
+
+                const url = 'https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=' + teamId + '&startDate=' + todayStr + '&endDate=' + endStr + '&hydrate=probablePitcher,lineups';
+                const data = await (await fetch(url)).json();
+                _autoScheduleCache = data;
+
+                if (thisRunId !== _autoRunId) return;
+
+                const gameDates = [];
+                (data.dates || []).forEach(dateObj => {
+                    dateObj.games.forEach(game => {
+                        const gDate = game.officialDate || dateObj.date;
+                        if (!gameDates.includes(gDate)) gameDates.push(gDate);
+                    });
+                });
+                gameDates.sort();
+
+                if (gameDates.length === 0) {
+                    banner.textContent = 'NO UPCOMING GAMES FOUND IN NEXT 14 DAYS';
+                    banner.classList.remove('loading');
+                    banner.classList.add('visible');
+                    return;
+                }
+
+                const selectedGameDates = gameDates.slice(0, 2);
+                calRangeStart = selectedGameDates[0];
+                calRangeEnd = selectedGameDates.length > 1 ? selectedGameDates[selectedGameDates.length - 1] : null;
+                updateCalTriggerLabel();
+
+            } else if (mode === 'game') {
+                // Find today's games, or scan forward up to 3 days
+                let foundDate = null;
+                for (let i = 0; i <= 3; i++) {
+                    const checkDate = new Date(today);
+                    checkDate.setDate(checkDate.getDate() + i);
+                    const checkStr = checkDate.toISOString().split('T')[0];
+                    const url = 'https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=' + checkStr + '&endDate=' + checkStr;
+                    const data = await (await fetch(url)).json();
+
+                    if (thisRunId !== _autoRunId) return; // Race guard
+
+                    const hasGames = (data.dates || []).some(d => d.games && d.games.length > 0);
+                    if (hasGames) {
+                        foundDate = checkStr;
+                        break;
+                    }
+                }
+
+                if (!foundDate) {
+                    banner.textContent = 'NO GAMES FOUND IN NEXT 3 DAYS';
+                    banner.classList.remove('loading');
+                    banner.classList.add('visible');
+                    return;
+                }
+
+                calRangeStart = foundDate;
+                calRangeEnd = null;
+                updateCalTriggerLabel();
+            }
+        } catch (e) {
+            console.warn('Auto-run schedule fetch failed:', e);
+            banner.textContent = 'COULD NOT FETCH SCHEDULE';
+            banner.classList.remove('loading');
+            banner.classList.add('visible');
+            return;
+        }
+
+        // Clear loading banner
+        banner.classList.remove('loading');
+        hideBanner();
+
+        if (thisRunId !== _autoRunId) return; // Final race guard
+
+        // Run the slate
+        await runSlate();
+    }
+
     // ═══ HITTER SLATE ═══
     async function runHitterSlate(startDate, endDate, filterDates) {
         if (teamId) {
             try {
-                const res = await fetch('https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=' + teamId + '&startDate=' + startDate + '&endDate=' + endDate + '&hydrate=probablePitcher');
-                const data = await res.json();
+                let data;
+                if (_autoScheduleCache) {
+                    data = _autoScheduleCache;
+                    _autoScheduleCache = null;
+                } else {
+                    const res = await fetch('https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=' + teamId + '&startDate=' + startDate + '&endDate=' + endDate + '&hydrate=probablePitcher');
+                    data = await res.json();
+                }
                 if (data.dates) {
                     data.dates.forEach(dateObj => {
                         dateObj.games.forEach(game => {
@@ -977,16 +1403,151 @@ function projectTeam(lineupIds, opposingPitcherId) {
 
         slateEl.innerHTML = html;
         bindPAEdits();
-        bindLinePanels();
+        bindLineInputs();
         bindPitcherOverrides();
+        renderQuickScan('hitter');
+
+        // Show archetype context for first matchup in sidebar
+        if (projections.length > 0 && projections[0].cluster) {
+            updateArchetypeContext(projections[0].cluster);
+        }
+    }
+
+    // ═══ QUICK SCAN ENGINE ═══
+    const DEFAULT_LINES = { h: 1.5, hr: 0.5, tb: 1.5, k: 1.5 };
+
+    function renderQuickScan(mode) {
+        const slateEl = document.getElementById('slate');
+        const existing = document.getElementById('quick-scan-box');
+        if (existing) existing.remove();
+
+        if (projections.length === 0) return;
+
+        const edges = [];
+
+        if (mode === 'hitter') {
+            // Scan hitter projections vs default player prop lines
+            projections.forEach((p, i) => {
+                if (p.source === 'insufficient data') return;
+                const pitcher = p.pitcher || 'Unknown';
+                // Hits edge
+                if (p.h > 0) {
+                    const hEdge = ((p.h - DEFAULT_LINES.h) / DEFAULT_LINES.h * 100);
+                    edges.push({ stat: 'HITS', proj: p.h.toFixed(2), line: DEFAULT_LINES.h, edge: hEdge, dir: hEdge > 0 ? 'over' : 'under', player: fmtName(selectedBatter.batter_name), vs: pitcher, src: p.source, cat: 'hitter' });
+                }
+                // HR edge
+                if (p.hr > 0) {
+                    const hrEdge = ((p.hr - DEFAULT_LINES.hr) / DEFAULT_LINES.hr * 100);
+                    edges.push({ stat: 'HR', proj: p.hr.toFixed(2), line: DEFAULT_LINES.hr, edge: hrEdge, dir: hrEdge > 0 ? 'over' : 'under', player: fmtName(selectedBatter.batter_name), vs: pitcher, src: p.source, cat: 'hitter' });
+                }
+                // TB edge
+                if (p.tb > 0) {
+                    const tbEdge = ((p.tb - DEFAULT_LINES.tb) / DEFAULT_LINES.tb * 100);
+                    edges.push({ stat: 'TB', proj: p.tb.toFixed(2), line: DEFAULT_LINES.tb, edge: tbEdge, dir: tbEdge > 0 ? 'over' : 'under', player: fmtName(selectedBatter.batter_name), vs: pitcher, src: p.source, cat: 'hitter' });
+                }
+                // K edge
+                if (p.k > 0) {
+                    const kEdge = ((p.k - DEFAULT_LINES.k) / DEFAULT_LINES.k * 100);
+                    edges.push({ stat: 'K', proj: p.k.toFixed(2), line: DEFAULT_LINES.k, edge: kEdge, dir: kEdge > 0 ? 'over' : 'under', player: fmtName(selectedBatter.batter_name), vs: pitcher, src: p.source, cat: 'hitter' });
+                }
+            });
+        } else if (mode === 'game') {
+            // Scan game totals for spread + O/U edges
+            projections.forEach((p, i) => {
+                if (!p.hasLineups) return;
+                const spread = p.homeRuns - p.awayRuns;
+                const f5Scale = 5 / 9;
+                const f5Away = p.awayRuns * f5Scale;
+                const f5Home = p.homeRuns * f5Scale;
+                const f5Spread = f5Home - f5Away;
+                const f5Total = f5Away + f5Home;
+
+                edges.push({ stat: 'TOTAL', proj: p.totalRuns.toFixed(1), line: 8.5, edge: ((p.totalRuns - 8.5) / 8.5 * 100), dir: p.totalRuns > 8.5 ? 'over' : 'under', player: p.awayTeam + ' @ ' + p.homeTeam, vs: '', src: 'lineup', cat: 'game' });
+                edges.push({ stat: 'SPREAD', proj: (spread > 0 ? '+' : '') + spread.toFixed(1), line: 1.5, edge: Math.abs(spread) > 1.5 ? Math.abs(spread - 1.5) / 1.5 * 100 : -(1.5 - Math.abs(spread)) / 1.5 * 100, dir: Math.abs(spread) > 1.5 ? 'over' : 'under', player: (spread > 0 ? p.homeTeam : p.awayTeam) + ' -1.5', vs: '', src: 'lineup', cat: 'game' });
+                edges.push({ stat: 'F5 TOTAL', proj: f5Total.toFixed(1), line: 4.5, edge: ((f5Total - 4.5) / 4.5 * 100), dir: f5Total > 4.5 ? 'over' : 'under', player: p.awayTeam + ' @ ' + p.homeTeam, vs: '', src: 'lineup', cat: 'game' });
+                edges.push({ stat: 'F5 SPREAD', proj: (f5Spread > 0 ? '+' : '') + f5Spread.toFixed(1), line: 0.5, edge: Math.abs(f5Spread) > 0.5 ? Math.abs(f5Spread - 0.5) / 0.5 * 100 : -(0.5 - Math.abs(f5Spread)) / 0.5 * 100, dir: Math.abs(f5Spread) > 0.5 ? 'over' : 'under', player: (f5Spread > 0 ? p.homeTeam : p.awayTeam) + ' -0.5', vs: '', src: 'lineup', cat: 'game' });
+            });
+        } else if (mode === 'team') {
+            // Scan team projections for runs O/U
+            projections.forEach((p, i) => {
+                if (!p.hasLineup) return;
+                edges.push({ stat: 'TEAM RUNS', proj: p.runs.toFixed(1), line: 4.5, edge: ((p.runs - 4.5) / 4.5 * 100), dir: p.runs > 4.5 ? 'over' : 'under', player: p.teamAbbr + ' vs ' + p.oppTeam, vs: '', src: 'lineup', cat: 'team' });
+            });
+        }
+
+        // Sort: H2H edges rank higher (1.5x weight), then by absolute edge size
+        edges.sort((a, b) => {
+            const wA = Math.abs(a.edge) * (a.src === 'head-to-head' || (a.src && a.src.startsWith('h2h')) ? 1.5 : 1);
+            const wB = Math.abs(b.edge) * (b.src === 'head-to-head' || (b.src && b.src.startsWith('h2h')) ? 1.5 : 1);
+            return wB - wA;
+        });
+
+        if (edges.length === 0) return;
+
+        // Take top 8 edges
+        const topEdges = edges.slice(0, 8);
+
+        let html = '<div class="quick-scan" id="quick-scan-box">';
+        html += '<div class="qs-title">QUICK SCAN</div>';
+        html += '<div class="qs-grid">';
+
+        topEdges.forEach(e => {
+            const edgePct = Math.abs(e.edge).toFixed(0);
+            const dirLabel = e.dir === 'over' ? 'O +' + edgePct + '%' : 'U -' + edgePct + '%';
+            const absE = Math.abs(e.edge);
+            const eClass = absE >= 25 ? 'edge-strong' : absE >= 15 ? 'edge-good' : absE >= 8 ? 'edge-mild' : absE >= 3 ? 'edge-slim' : 'edge-neg';
+            html += '<div class="qs-item">';
+            html += '<div class="qs-edge ' + e.dir + ' ' + eClass + '">' + dirLabel + '</div>';
+            html += '<div class="qs-detail">';
+            html += '<div class="qs-player">' + e.stat + ' ' + e.proj + ' (line ' + e.line + ')</div>';
+            const srcTag = e.src && (e.src.startsWith('head') || e.src.startsWith('h2h')) ? ' \u00b7 H2H' : (e.src === 'archetype' ? ' \u00b7 ARCH' : '');
+            html += '<div class="qs-info">' + e.player + (e.vs ? ' vs ' + e.vs : '') + srcTag + '</div>';
+            html += '</div></div>';
+        });
+
+        html += '</div></div>';
+
+        slateEl.insertAdjacentHTML('afterbegin', html);
+    }
+
+    // ═══ ARCHETYPE CONTEXT (sidebar) ═══
+    function updateArchetypeContext(clusterId) {
+        const ctx = document.getElementById('context-stats');
+        const cluster = DATA.clusters[clusterId];
+        if (!cluster || !ctx) return;
+
+        const kings = DATA.archetypeKings[clusterId] || [];
+        const topKing = kings[0] || null;
+
+        let html = ctx.innerHTML;
+        html += '<div class="archetype-context">';
+        html += '<div class="section-label">OPPOSING ARCHETYPE</div>';
+        html += '<div class="arch-title"><span class="dot" style="background:' + (cluster.color || '#888') + '"></span>' + (cluster.short_name || cluster.full_name || clusterId) + '</div>';
+        if (cluster.top_pitches) html += '<div class="arch-detail">PITCHES: ' + cluster.top_pitches + '</div>';
+        html += '<div class="arch-detail">';
+        html += 'VELO: ' + (cluster.avg_velo_FF || 0).toFixed(1) + ' mph';
+        html += ' \u00b7 WHIFF: ' + ((cluster.whiff_rate || 0) * 100).toFixed(0) + '%';
+        html += ' \u00b7 GB: ' + ((cluster.groundball_rate || 0) * 100).toFixed(0) + '%';
+        html += '</div>';
+        if (topKing) {
+            html += '<div class="arch-detail" style="margin-top:6px;color:var(--accent)">KING: ' + topKing.name + '</div>';
+        }
+        html += '</div>';
+        ctx.innerHTML = html;
     }
 
     // ═══ PITCHER SLATE ═══
     async function runPitcherSlate(startDate, endDate, filterDates) {
         if (teamId) {
             try {
-                const res = await fetch('https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=' + teamId + '&startDate=' + startDate + '&endDate=' + endDate + '&hydrate=probablePitcher');
-                const data = await res.json();
+                let data;
+                if (_autoScheduleCache) {
+                    data = _autoScheduleCache;
+                    _autoScheduleCache = null;
+                } else {
+                    const res = await fetch('https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=' + teamId + '&startDate=' + startDate + '&endDate=' + endDate + '&hydrate=probablePitcher');
+                    data = await res.json();
+                }
                 if (data.dates) {
                     data.dates.forEach(dateObj => {
                         dateObj.games.forEach(game => {
@@ -1076,6 +1637,259 @@ function projectTeam(lineupIds, opposingPitcherId) {
         slateEl.innerHTML = html;
     }
 
+    // ═══ TEAM SLATE ═══
+    async function runTeamSlate(startDate, endDate, filterDates) {
+        const slateEl = document.getElementById('slate');
+        let html = '';
+        projections = [];
+        document.getElementById('totals-dock').style.display = 'none';
+
+        let data;
+        if (_autoScheduleCache) {
+            data = _autoScheduleCache;
+            _autoScheduleCache = null;
+        } else {
+            const url = 'https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=' + teamId + '&startDate=' + startDate + '&endDate=' + endDate + '&hydrate=probablePitcher,lineups';
+            data = await (await fetch(url)).json();
+        }
+
+        // Fetch active roster (position players only)
+        let rosterPlayers = [];
+        try {
+            const rosterData = await (await fetch('https://statsapi.mlb.com/api/v1/teams/' + teamId + '/roster?rosterType=active')).json();
+            rosterPlayers = (rosterData.roster || []).filter(p => {
+                const posCode = p.position ? parseInt(p.position.code) : 1;
+                return posCode >= 2 && posCode <= 10;
+            }).map(p => ({
+                id: p.person.id,
+                name: p.person.fullName,
+                position: p.position.abbreviation,
+                jerseyNumber: p.jerseyNumber
+            }));
+        } catch (e) { console.warn('Could not fetch roster:', e); }
+
+        // Process each game
+        const allGames = [];
+        (data.dates || []).forEach(dateObj => {
+            dateObj.games.forEach(game => {
+                const gDate = game.officialDate || dateObj.date;
+                if (filterDates.includes(gDate)) {
+                    allGames.push({ ...game, displayDate: gDate });
+                }
+            });
+        });
+
+        if (allGames.length === 0) {
+            html = '<div class="off-day">No games found for selected dates.</div>';
+            slateEl.innerHTML = html;
+            return;
+        }
+
+        allGames.forEach((game, gameIdx) => {
+            const isHome = game.teams.home.team.id === teamId;
+            const oppTeam = isHome ? game.teams.away : game.teams.home;
+            const oppPP = oppTeam.probablePitcher || null;
+            const oppTeamAbbr = oppTeam.team.abbreviation || oppTeam.team.name;
+
+            // Get opposing pitcher archetype
+            const oppPS = oppPP ? DATA.pitcherSeasons.filter(p => p.pitcher === oppPP.id).sort((a, b) => b.game_year - a.game_year)[0] : null;
+            const oppCluster = oppPS ? DATA.clusters[oppPS.cluster] : null;
+
+            // Extract lineup (starting 9)
+            const lineupKey = isHome ? 'homePlayers' : 'awayPlayers';
+            let starterIds = [];
+            if (game.lineups && game.lineups[lineupKey]) {
+                starterIds = game.lineups[lineupKey].map(p => p.id).filter(Boolean);
+            }
+
+            const hasLineup = starterIds.length > 0;
+
+            // Identify bench = roster position players NOT in starting lineup
+            const starterIdSet = new Set(starterIds);
+            const benchPlayersList = rosterPlayers.filter(p => !starterIdSet.has(p.id));
+
+            // Project starters (4 PA)
+            let starterProj = null;
+            if (hasLineup) {
+                starterProj = projectTeam(starterIds, oppPP ? oppPP.id : null);
+            }
+
+            // Project bench (1 PA)
+            let benchProj = null;
+            if (benchPlayersList.length > 0) {
+                benchProj = projectTeam(benchPlayersList.map(p => p.id), oppPP ? oppPP.id : null, 1);
+            }
+
+            // Combined totals
+            let totalH = 0, totalHR = 0, totalK = 0, totalTB = 0, totalBB = 0, totalPA = 0;
+            if (starterProj) {
+                totalH += starterProj.teamH; totalHR += starterProj.teamHR;
+                totalK += starterProj.teamK; totalTB += starterProj.teamTB;
+                totalBB += starterProj.teamBB; totalPA += starterProj.teamPA;
+            }
+            if (benchProj) {
+                totalH += benchProj.teamH; totalHR += benchProj.teamHR;
+                totalK += benchProj.teamK; totalTB += benchProj.teamTB;
+                totalBB += benchProj.teamBB; totalPA += benchProj.teamPA;
+            }
+            const combinedRuns = baseRuns(totalH, totalHR, totalBB, totalTB, totalPA);
+
+            html += buildTeamGameCard({
+                game, gameIdx, isHome, oppTeamAbbr, oppPP, oppPS, oppCluster,
+                hasLineup, starterProj, benchPlayersList, benchProj,
+                combinedRuns, totalH, totalHR, totalK, totalTB
+            });
+
+            projections.push({
+                teamAbbr: selectedTeam.abbr, oppTeam: oppTeamAbbr, date: game.displayDate,
+                runs: combinedRuns, totalH, totalHR, totalK, totalTB, hasLineup,
+                starterProj, benchProj
+            });
+        });
+
+        slateEl.innerHTML = html;
+        bindBenchToggles();
+        bindTeamLineInputs();
+        updateTeamContext(projections);
+        renderQuickScan('team');
+    }
+
+    function buildTeamGameCard(opts) {
+        const { game, gameIdx, isHome, oppTeamAbbr, oppPP, oppPS, oppCluster,
+            hasLineup, starterProj, benchPlayersList, benchProj,
+            combinedRuns, totalH, totalHR, totalK, totalTB } = opts;
+
+        let card = '<div class="team-game-card">';
+
+        // Header
+        card += '<div class="tg-header">';
+        card += '<span>' + selectedTeam.abbr + (isHome ? ' vs ' : ' @ ') + oppTeamAbbr + '</span>';
+        card += '<span style="font-size:0.6rem;color:var(--text-muted);font-weight:400">' + fmtDate(game.displayDate) + '</span>';
+        card += '</div>';
+
+        // Opposing pitcher info
+        const oppName = oppPP ? oppPP.fullName : 'TBD';
+        const oppArchName = oppPS ? archName(oppPS.cluster) : 'Unknown';
+        const oppColor = oppCluster ? oppCluster.color : '#888';
+        card += '<div class="tg-pitcher-info">';
+        card += 'OPP SP: <span class="sp-name">' + fmtName(oppName) + '</span>';
+        card += ' <span style="color:' + oppColor + ';font-size:0.6rem">(' + oppArchName + ')</span>';
+        if (oppPS) {
+            card += ' \u00b7 VELO: ' + (oppPS.avg_velo_FF || 0).toFixed(1);
+            card += ' \u00b7 WHIFF: ' + ((oppPS.whiff_rate || 0) * 100).toFixed(0) + '%';
+        }
+        card += '</div>';
+
+        if (!hasLineup) {
+            card += '<div class="gt-tbd">LINEUPS TBD \u2014 RUN CLOSER TO GAME TIME</div>';
+            card += '</div>';
+            return card;
+        }
+
+        // Column headers
+        card += '<div class="tg-lineup-header">';
+        card += '<span>#</span><span>BATTER</span><span>H</span><span>HR</span><span>K</span><span>TB</span><span>SRC</span>';
+        card += '</div>';
+
+        // Starter rows
+        starterProj.batterDetails.forEach((bd, i) => {
+            card += '<div class="tg-batter">';
+            card += '<span class="order">' + (i + 1) + '</span>';
+            card += '<span class="name">' + fmtName(bd.name) + '</span>';
+            card += '<span class="stat">' + bd.projH.toFixed(2) + '</span>';
+            card += '<span class="stat">' + bd.projHR.toFixed(2) + '</span>';
+            card += '<span class="stat">' + bd.projK.toFixed(2) + '</span>';
+            card += '<span class="stat">' + bd.projTB.toFixed(2) + '</span>';
+            card += '<span class="src">' + bd.source + '</span>';
+            card += '</div>';
+        });
+
+        // Bench toggle
+        if (benchPlayersList.length > 0 && benchProj) {
+            card += '<div class="tg-bench-toggle" data-gidx="' + gameIdx + '">';
+            card += '\u25B6 BENCH (' + benchPlayersList.length + ' PLAYERS \u00b7 1 PA EACH)';
+            card += '</div>';
+            card += '<div class="tg-bench-section" id="bench-section-' + gameIdx + '">';
+            benchProj.batterDetails.forEach(bd => {
+                card += '<div class="tg-batter bench">';
+                card += '<span class="order"><span class="tg-bench-tag">BN</span></span>';
+                card += '<span class="name">' + fmtName(bd.name) + '</span>';
+                card += '<span class="stat">' + bd.projH.toFixed(2) + '</span>';
+                card += '<span class="stat">' + bd.projHR.toFixed(2) + '</span>';
+                card += '<span class="stat">' + bd.projK.toFixed(2) + '</span>';
+                card += '<span class="stat">' + bd.projTB.toFixed(2) + '</span>';
+                card += '<span class="src">' + bd.source + '</span>';
+                card += '</div>';
+            });
+            card += '</div>';
+        }
+
+        // Totals row
+        card += '<div class="tg-totals">';
+        card += '<div class="tg-runs-badge">' + combinedRuns.toFixed(1) + '<div class="tg-runs-label">RUNS</div></div>';
+        card += sc('H', totalH.toFixed(1));
+        card += sc('HR', totalHR.toFixed(1));
+        card += sc('K', totalK.toFixed(1));
+        card += sc('TB', totalTB.toFixed(1));
+        card += '<div class="sc"><div class="sl">COV</div><div class="sv">' + starterProj.coverage + '/' + starterProj.total + '</div></div>';
+        card += '</div>';
+
+        // O/U line input
+        card += '<div class="gt-line-row" style="padding:8px 1.2rem">';
+        card += '<label>TEAM RUNS O/U</label>';
+        card += '<input class="line-input team-ou-input" data-game-idx="' + gameIdx + '" placeholder="4.5">';
+        card += '<div class="edge-display" id="team-edge-' + gameIdx + '"></div>';
+        card += '</div>';
+
+        card += '</div>';
+        return card;
+    }
+
+    function bindBenchToggles() {
+        document.querySelectorAll('.tg-bench-toggle').forEach(el => {
+            el.addEventListener('click', () => {
+                const idx = el.dataset.gidx;
+                const section = document.getElementById('bench-section-' + idx);
+                section.classList.toggle('visible');
+                const count = section.querySelectorAll('.tg-batter').length;
+                el.textContent = section.classList.contains('visible')
+                    ? '\u25BC BENCH (' + count + ' PLAYERS \u00b7 1 PA EACH)'
+                    : '\u25B6 BENCH (' + count + ' PLAYERS \u00b7 1 PA EACH)';
+            });
+        });
+    }
+
+    function bindTeamLineInputs() {
+        document.querySelectorAll('.team-ou-input').forEach(el => {
+            el.addEventListener('input', () => {
+                const idx = parseInt(el.dataset.gameIdx);
+                const proj = projections[idx];
+                if (!proj || !proj.hasLineup) return;
+                const display = document.getElementById('team-edge-' + idx);
+                if (display) display.innerHTML = edgeLabel(proj.runs, el.value);
+            });
+        });
+    }
+
+    function updateTeamContext(teamProjections) {
+        const ctx = document.getElementById('context-stats');
+        if (!teamProjections || teamProjections.length === 0) { ctx.innerHTML = ''; return; }
+        const gamesWithLineups = teamProjections.filter(p => p.hasLineup);
+        const avgRuns = gamesWithLineups.length > 0
+            ? gamesWithLineups.reduce((s, p) => s + p.runs, 0) / gamesWithLineups.length : 0;
+        const avgH = gamesWithLineups.length > 0
+            ? gamesWithLineups.reduce((s, p) => s + p.totalH, 0) / gamesWithLineups.length : 0;
+        const avgHR = gamesWithLineups.length > 0
+            ? gamesWithLineups.reduce((s, p) => s + p.totalHR, 0) / gamesWithLineups.length : 0;
+        ctx.innerHTML =
+            '<div class="section-label">TEAM PROJECTION AVG</div><div class="stat-block">' +
+            '<div class="stat-row"><span>RUNS</span><span class="val mono text-accent" style="font-size:1.1rem">' + avgRuns.toFixed(1) + '</span></div>' +
+            '<div class="stat-row"><span>HITS</span><span class="val mono">' + avgH.toFixed(1) + '</span></div>' +
+            '<div class="stat-row"><span>HR</span><span class="val mono">' + avgHR.toFixed(1) + '</span></div>' +
+            '<div class="stat-row"><span>GAMES</span><span class="val mono">' + gamesWithLineups.length + '/' + teamProjections.length + '</span></div>' +
+            '</div>';
+    }
+
     // ═══ GAME SLATE ═══
     async function runGameSlate(startDate, endDate, filterDates) {
         const slateEl = document.getElementById('slate');
@@ -1135,6 +1949,7 @@ function projectTeam(lineupIds, opposingPitcherId) {
         bindGameLineInputs();
         bindLineupToggles();
         updateGameSummary();
+        renderQuickScan('game');
     }
 
     // ═══ GAME TOTAL CARD BUILDER ═══
@@ -1168,10 +1983,16 @@ function projectTeam(lineupIds, opposingPitcherId) {
             totalRuns = awayProj.runs + homeProj.runs;
         }
 
+        const _awayR = awayProj ? awayProj.runs : 0;
+        const _homeR = homeProj ? homeProj.runs : 0;
+        const _f5s = 5 / 9;
         const gameData = {
             awayTeam, homeTeam, totalRuns, hasLineups,
-            awayRuns: awayProj ? awayProj.runs : 0,
-            homeRuns: homeProj ? homeProj.runs : 0,
+            awayRuns: _awayR,
+            homeRuns: _homeR,
+            spread: _homeR - _awayR,
+            f5Total: totalRuns * _f5s,
+            f5Spread: (_homeR - _awayR) * _f5s,
             awayProj, homeProj,
             awayPP: awayPP ? awayPP.fullName : 'TBD',
             homePP: homePP ? homePP.fullName : 'TBD'
@@ -1236,11 +2057,17 @@ function projectTeam(lineupIds, opposingPitcherId) {
 
             card += '</div>';
 
-            // O/U Line
-            card += '<div class="gt-line-row">';
-            card += '<label>O/U RUNS</label>';
-            card += '<input class="line-input game-ou-input" data-game-idx="' + idx + '" placeholder="8.5">';
-            card += '<div class="edge-display" id="game-edge-' + idx + '"></div>';
+            // Game Lines: O/U, Spread, F5 O/U, F5 Spread
+            const projSpread = homeProj.runs - awayProj.runs;
+            const f5Scale = 5 / 9;
+            const f5Total = (awayProj.runs + homeProj.runs) * f5Scale;
+            const f5Spread = (homeProj.runs - awayProj.runs) * f5Scale;
+
+            card += '<div class="lines-grid" style="margin-top:10px;padding-top:8px;border-top:1px dashed rgba(255,255,255,0.15)">';
+            card += '<div class="line-item"><label>O/U</label><input class="line-input game-ou-input" data-game-idx="' + idx + '" data-type="ou" placeholder="8.5"><div class="edge-display" id="game-edge-' + idx + '"></div></div>';
+            card += '<div class="line-item"><label>SPREAD</label><input class="line-input game-spread-input" data-game-idx="' + idx + '" data-type="spread" placeholder="-1.5"><div class="edge-display" id="game-spread-' + idx + '"></div></div>';
+            card += '<div class="line-item"><label>F5 O/U</label><input class="line-input game-f5ou-input" data-game-idx="' + idx + '" data-type="f5ou" placeholder="4.5"><div class="edge-display" id="game-f5ou-' + idx + '"></div></div>';
+            card += '<div class="line-item"><label>F5 SPREAD</label><input class="line-input game-f5spread-input" data-game-idx="' + idx + '" data-type="f5spread" placeholder="-0.5"><div class="edge-display" id="game-f5spread-' + idx + '"></div></div>';
             card += '</div>';
 
             // Coverage
@@ -1292,11 +2119,51 @@ function projectTeam(lineupIds, opposingPitcherId) {
         document.querySelectorAll('.game-ou-input').forEach(el => {
             el.addEventListener('input', () => {
                 const idx = parseInt(el.dataset.gameIdx);
-                const line = el.value;
                 const proj = projections[idx];
                 if (!proj || !proj.hasLineups) return;
                 const display = document.getElementById('game-edge-' + idx);
-                if (display) display.innerHTML = edgeLabel(proj.totalRuns, line);
+                if (display) display.innerHTML = edgeLabel(proj.totalRuns, el.value);
+            });
+        });
+        document.querySelectorAll('.game-spread-input').forEach(el => {
+            el.addEventListener('input', () => {
+                const idx = parseInt(el.dataset.gameIdx);
+                const proj = projections[idx];
+                if (!proj || !proj.hasLineups) return;
+                const line = parseFloat(el.value);
+                if (isNaN(line)) return;
+                const spread = proj.spread || 0;
+                const diff = spread - line;
+                const display = document.getElementById('game-spread-' + idx);
+                if (display) {
+                    const fav = spread > 0 ? proj.homeTeam : proj.awayTeam;
+                    display.innerHTML = diff > 0 ? '<span class="edge over">' + fav + ' COVERS</span>' : '<span class="edge under">NO COVER</span>';
+                }
+            });
+        });
+        document.querySelectorAll('.game-f5ou-input').forEach(el => {
+            el.addEventListener('input', () => {
+                const idx = parseInt(el.dataset.gameIdx);
+                const proj = projections[idx];
+                if (!proj || !proj.hasLineups) return;
+                const display = document.getElementById('game-f5ou-' + idx);
+                if (display) display.innerHTML = edgeLabel(proj.f5Total || 0, el.value);
+            });
+        });
+        document.querySelectorAll('.game-f5spread-input').forEach(el => {
+            el.addEventListener('input', () => {
+                const idx = parseInt(el.dataset.gameIdx);
+                const proj = projections[idx];
+                if (!proj || !proj.hasLineups) return;
+                const line = parseFloat(el.value);
+                if (isNaN(line)) return;
+                const f5Spread = proj.f5Spread || 0;
+                const diff = f5Spread - line;
+                const display = document.getElementById('game-f5spread-' + idx);
+                if (display) {
+                    const fav = f5Spread > 0 ? proj.homeTeam : proj.awayTeam;
+                    display.innerHTML = diff > 0 ? '<span class="edge over">' + fav + ' COVERS F5</span>' : '<span class="edge under">NO COVER F5</span>';
+                }
             });
         });
     }
@@ -1351,13 +2218,31 @@ function projectTeam(lineupIds, opposingPitcherId) {
         }
 
         let archMatch = null;
+        let recentArch = null; // Current season split
         if (ps && selectedBatter) {
             const archRows = DATA.hitterVsCluster.filter(r => r.batter === selectedBatter.batter && String(r.cluster) === ps.cluster);
             if (archRows.length > 0) {
-                const tot = { PA: 0, AB: 0, H: 0, HR: 0, BB: 0, K: 0, HBP: 0, woba_sum: 0, singles: 0, doubles: 0, triples: 0 };
-                archRows.forEach(r => { tot.PA += r.PA || 0; tot.AB += r.AB || 0; tot.H += r.H || 0; tot.HR += r.HR || 0; tot.BB += r.BB || 0; tot.K += r.K || 0; tot.HBP += r.HBP || 0; tot.woba_sum += (r.wOBA || 0) * (r.PA || 0); tot.singles += r.singles || 0; tot.doubles += r.doubles || 0; tot.triples += r.triples || 0 });
-                const tb = tot.singles + (tot.doubles * 2) + (tot.triples * 3) + (tot.HR * 4);
-                archMatch = { PA: tot.PA, BA: tot.AB > 0 ? tot.H / tot.AB : 0, wOBA: tot.PA > 0 ? tot.woba_sum / tot.PA : 0, HR: tot.HR, K: tot.K, BB: tot.BB, K_pct: tot.PA > 0 ? tot.K / tot.PA : 0, BB_pct: tot.PA > 0 ? tot.BB / tot.PA : 0, TB: tb, TB_rate: tot.PA > 0 ? tb / tot.PA : 0 };
+                const _agg = (rows) => {
+                    const t = { PA: 0, AB: 0, H: 0, HR: 0, BB: 0, K: 0, HBP: 0, woba_sum: 0, singles: 0, doubles: 0, triples: 0, pitches_seen: 0, whiff_weighted: 0 };
+                    rows.forEach(r => { t.PA += r.PA || 0; t.AB += r.AB || 0; t.H += r.H || 0; t.HR += r.HR || 0; t.BB += r.BB || 0; t.K += r.K || 0; t.HBP += r.HBP || 0; t.woba_sum += (r.wOBA || 0) * (r.PA || 0); t.singles += r.singles || 0; t.doubles += r.doubles || 0; t.triples += r.triples || 0; t.pitches_seen += r.pitches_seen || 0; t.whiff_weighted += (r.whiff_rate_vs || 0) * (r.PA || 0) });
+                    const tb = t.singles + (t.doubles * 2) + (t.triples * 3) + (t.HR * 4);
+                    const ba = t.AB > 0 ? t.H / t.AB : 0;
+                    const obp = t.PA > 0 ? (t.H + t.BB + t.HBP) / t.PA : 0;
+                    const slg = t.AB > 0 ? tb / t.AB : 0;
+                    return { PA: t.PA, BA: ba, OBP: obp, SLG: slg, ISO: slg - ba, wOBA: t.PA > 0 ? t.woba_sum / t.PA : 0, HR: t.HR, K: t.K, BB: t.BB, K_pct: t.PA > 0 ? t.K / t.PA : 0, BB_pct: t.PA > 0 ? t.BB / t.PA : 0, TB: tb, TB_rate: t.PA > 0 ? tb / t.PA : 0, whiff_vs: t.PA > 0 ? t.whiff_weighted / t.PA : 0 };
+                };
+                archMatch = _agg(archRows);
+
+                // Recent season split (most recent year in data)
+                const years = archRows.map(r => r.game_year).filter(Boolean);
+                if (years.length > 0) {
+                    const maxYear = Math.max(...years);
+                    const recentRows = archRows.filter(r => r.game_year === maxYear);
+                    if (recentRows.length > 0) {
+                        const ra = _agg(recentRows);
+                        if (ra.PA >= 3) { ra.year = maxYear; recentArch = ra; }
+                    }
+                }
             }
         }
 
@@ -1409,34 +2294,96 @@ function projectTeam(lineupIds, opposingPitcherId) {
         card += '<div class="pitcher-info">';
         card += 'VELO: ' + (ps ? (ps.avg_velo_FF || 0).toFixed(1) : '\u2014') + ' \u00b7 ';
         card += 'WHIFF: ' + (ps ? ((ps.whiff_rate || 0) * 100).toFixed(0) + '%' : '\u2014') + ' \u00b7 ';
+        card += 'GB: ' + (ps ? ((ps.groundball_rate || 0) * 100).toFixed(0) + '%' : '\u2014') + ' \u00b7 ';
         card += role;
         card += '</div>';
 
-        card += '<div class="gc-grid">';
-        card += '<div><div class="gc-section">' + (h2h && h2h.pa >= 1 ? 'Head-to-Head (' + h2h.pa + ' PA)' : 'vs Archetype') + '</div>';
-        card += '<div class="stat-chips">';
+        // Source badge + matchup quality
+        const isH2H = h2h && h2h.pa >= 10;
+        const isArch = !isH2H && archMatch && archMatch.PA >= 5;
+        let srcClass = 'src-none', srcText = 'NO DATA';
+        if (isH2H) { srcClass = 'src-h2h'; srcText = 'H2H: ' + h2h.pa + ' PA'; }
+        else if (isArch) { srcClass = 'src-archetype'; srcText = 'ARCHETYPE: ' + archMatch.PA + ' PA'; }
+        else if (h2h && h2h.pa >= 1) { srcClass = 'src-archetype'; srcText = 'H2H: ' + h2h.pa + ' PA (LOW)'; }
+
+        let mqClass = 'mq-3', mqText = '\u2014';
+        const displayWOBA = isH2H ? (h2h.w || 0) : (archMatch ? archMatch.wOBA : 0);
+        if (displayWOBA >= 0.370) { mqClass = 'mq-1'; mqText = '\u25cf\u25cf\u25cf HOT'; }
+        else if (displayWOBA >= 0.340) { mqClass = 'mq-2'; mqText = '\u25cf\u25cf WARM'; }
+        else if (displayWOBA >= 0.310) { mqClass = 'mq-3'; mqText = '\u25cf FAIR'; }
+        else if (displayWOBA >= 0.270) { mqClass = 'mq-4'; mqText = '\u25cb COOL'; }
+        else if (displayWOBA > 0) { mqClass = 'mq-5'; mqText = '\u25cb COLD'; }
+
+        card += '<div class="gc-source-row">';
+        card += '<div class="source-badge ' + srcClass + '">' + srcText + '</div>';
+        if (displayWOBA > 0) card += '<div class="matchup-quality ' + mqClass + '">' + mqText + '</div>';
+        card += '</div>';
+
+        // H2H stats (show if any PA exist)
         if (h2h && h2h.pa >= 1) {
+            const h2hOBP = h2h.pa > 0 ? ((h2h.h || 0) + (h2h.bb || 0)) / h2h.pa : 0;
+            const h2hKpct = h2h.pa > 0 ? (h2h.k || 0) / h2h.pa : 0;
+            const h2hBBpct = h2h.pa > 0 ? (h2h.bb || 0) / h2h.pa : 0;
+            card += '<div class="gc-section">HEAD-TO-HEAD (' + h2h.pa + ' PA)</div>';
+            card += '<div class="gc-stat-bar">';
             card += scC('BA', h2h.ba != null ? h2h.ba.toFixed(3) : '\u2014', baColor(h2h.ba || 0));
+            card += scC('OBP', h2hOBP.toFixed(3), '');
             card += scC('wOBA', h2h.w != null ? h2h.w.toFixed(3) : '\u2014', wobaColor(h2h.w || 0));
             card += sc('HR', h2h.hr || 0);
-        } else if (archMatch) {
-            card += scC('BA', '~' + archMatch.BA.toFixed(3), baColor(archMatch.BA));
-            card += scC('wOBA', '~' + archMatch.wOBA.toFixed(3), wobaColor(archMatch.wOBA));
-            card += sc('K%', (archMatch.K_pct * 100).toFixed(0) + '%');
-        } else {
-            card += '<div style="font-size:0.7rem;color:var(--text-muted);padding:4px">No data</div>';
+            card += sc('K', h2h.k || 0);
+            card += sc('BB', h2h.bb || 0);
+            card += '</div>';
         }
-        card += '</div></div>';
 
-        card += '<div><div class="gc-section" style="color:var(--accent)">Projection</div>';
-        card += '<div class="stat-chips">';
+        // Archetype stats (show alongside H2H if both exist)
+        if (archMatch && archMatch.PA >= 5) {
+            const archLabel = h2h && h2h.pa >= 1
+                ? 'vs ARCHETYPE (' + archMatch.PA + ' PA CAREER)'
+                : 'vs ' + clusterName.toUpperCase() + ' (' + archMatch.PA + ' PA CAREER)';
+            card += '<div class="gc-section">' + archLabel + '</div>';
+            card += '<div class="gc-stat-bar">';
+            card += scC('BA', '~' + archMatch.BA.toFixed(3), baColor(archMatch.BA));
+            card += scC('OBP', '~' + archMatch.OBP.toFixed(3), '');
+            card += scC('SLG', '~' + archMatch.SLG.toFixed(3), '');
+            card += scC('wOBA', '~' + archMatch.wOBA.toFixed(3), wobaColor(archMatch.wOBA));
+            card += '</div>';
+            card += '<div class="gc-stat-bar">';
+            card += sc('K%', (archMatch.K_pct * 100).toFixed(0) + '%');
+            card += sc('BB%', (archMatch.BB_pct * 100).toFixed(0) + '%');
+            card += sc('ISO', archMatch.ISO.toFixed(3));
+            if (archMatch.whiff_vs > 0) card += sc('WHIFF', (archMatch.whiff_vs * 100).toFixed(0) + '%');
+            card += '</div>';
+
+            // Recency split: current season vs career
+            if (recentArch && recentArch.PA >= 3 && recentArch.year) {
+                const rWoba = recentArch.wOBA;
+                const cWoba = archMatch.wOBA;
+                const trending = rWoba > cWoba + 0.030 ? 'rc-hot' : (rWoba < cWoba - 0.030 ? 'rc-cold' : '');
+                card += '<div class="recency-row">';
+                card += '<div class="recency-chip ' + trending + '"><span class="rc-label">' + recentArch.year + ': </span><span class="rc-val">' + recentArch.wOBA.toFixed(3) + ' wOBA</span></div>';
+                card += '<div class="recency-chip"><span class="rc-label">BA </span><span class="rc-val">' + recentArch.BA.toFixed(3) + '</span></div>';
+                card += '<div class="recency-chip"><span class="rc-label">SLG </span><span class="rc-val">' + recentArch.SLG.toFixed(3) + '</span></div>';
+                card += '<div class="recency-chip"><span class="rc-label">' + recentArch.PA + ' PA</span></div>';
+                card += '</div>';
+            }
+        }
+
+        if (!h2h && (!archMatch || archMatch.PA < 5)) {
+            card += '<div style="font-size:0.7rem;color:var(--text-muted);padding:8px 0">No matchup data available</div>';
+        }
+
+        // Projection
+        card += '<div class="gc-section" style="color:var(--accent);margin-top:10px">PROJECTION</div>';
+        card += '<div class="gc-stat-bar">';
         card += '<div class="sc"><div class="sl">PA</div><div class="sv"><input class="pa-edit" type="number" value="' + assumedPA + '" min="1" max="9" step="0.5" data-idx="' + idx + '"></div></div>';
         card += sc('H', projH.toFixed(2));
         card += sc('HR', projHR.toFixed(2));
+        card += sc('K', projK.toFixed(2));
         card += sc('TB', projTB.toFixed(2));
-        card += '</div></div></div>';
+        card += '</div>';
 
-        card += '<div class="lines-toggle" data-idx="' + idx + '">\u25B6 LINES</div>';
+        // Player Props (always visible)
+        card += '<div class="props-label">PLAYER PROPS</div>';
         card += '<div class="lines-panel" id="lines-' + idx + '">';
         card += '<div class="lines-grid">';
         card += '<div class="line-item"><label>O/U HITS</label><input class="line-input" data-idx="' + idx + '" data-stat="h" placeholder="1.5"><div class="edge-display" id="edge-h-' + idx + '"></div></div>';
@@ -1459,15 +2406,7 @@ function projectTeam(lineupIds, opposingPitcherId) {
         });
     }
 
-    function bindLinePanels() {
-        document.querySelectorAll('.lines-toggle').forEach(el => {
-            el.addEventListener('click', () => {
-                const idx = el.dataset.idx;
-                const panel = document.getElementById('lines-' + idx);
-                panel.classList.toggle('visible');
-                el.textContent = panel.classList.contains('visible') ? '\u25BC LINES' : '\u25B6 LINES';
-            });
-        });
+    function bindLineInputs() {
         document.querySelectorAll('.line-input:not(.game-ou-input)').forEach(el => {
             el.addEventListener('input', () => {
                 const idx = parseInt(el.dataset.idx);
@@ -1561,7 +2500,7 @@ function projectTeam(lineupIds, opposingPitcherId) {
         }
 
         bindPAEdits();
-        bindLinePanels();
+        bindLineInputs();
         bindPitcherOverrides();
         updateTotalsDock();
     }
@@ -1592,6 +2531,7 @@ function projectTeam(lineupIds, opposingPitcherId) {
             '<div class="stat-row"><span>HITS</span><span class="val mono">' + tH.toFixed(1) + '</span></div>' +
             '<div class="stat-row"><span>HR</span><span class="val mono">' + tHR.toFixed(1) + '</span></div>' +
             '<div class="stat-row"><span>K</span><span class="val mono">' + tK.toFixed(1) + '</span></div>' +
+            '<div class="stat-row"><span>BB</span><span class="val mono">' + tBB.toFixed(1) + '</span></div>' +
             '<div class="stat-row"><span>TB</span><span class="val mono text-accent" style="font-size:1.1rem">' + tTB.toFixed(1) + '</span></div>';
     }
 
@@ -1603,11 +2543,20 @@ function projectTeam(lineupIds, opposingPitcherId) {
 
     function saveProjection() {
         if (projections.length === 0) return;
-        const playerName = currentMode === 'hitter'
-            ? (selectedBatter ? selectedBatter.batter_name : 'Unknown')
-            : (selectedPitcher ? selectedPitcher.player_name : 'Unknown');
+        let playerName;
+        if (currentMode === 'team') {
+            playerName = selectedTeam ? selectedTeam.abbr + ' TEAM' : 'Unknown';
+        } else if (currentMode === 'hitter') {
+            playerName = selectedBatter ? selectedBatter.batter_name : 'Unknown';
+        } else {
+            playerName = selectedPitcher ? selectedPitcher.player_name : 'Unknown';
+        }
         let tPA = 0, tAB = 0, tH = 0, tHR = 0, tK = 0, tBB = 0, tTB = 0, tWS = 0;
-        projections.forEach(p => { tPA += p.pa; tAB += p.ab || 0; tH += p.h || 0; tHR += p.hr || 0; tK += p.k || 0; tBB += p.bb || 0; tTB += p.tb || 0; tWS += (p.woba || 0) * p.pa });
+        if (currentMode === 'team') {
+            projections.forEach(p => { tH += p.totalH || 0; tHR += p.totalHR || 0; tK += p.totalK || 0; tTB += p.totalTB || 0; });
+        } else {
+            projections.forEach(p => { tPA += p.pa; tAB += p.ab || 0; tH += p.h || 0; tHR += p.hr || 0; tK += p.k || 0; tBB += p.bb || 0; tTB += p.tb || 0; tWS += (p.woba || 0) * p.pa });
+        }
         const selectedDates = getSelectedDates();
         savedProjections.push({
             hitter_name: playerName, hitter_id: selectedBatter ? selectedBatter.batter : (selectedPitcher ? selectedPitcher.pitcher : 0),
@@ -1680,10 +2629,13 @@ function projectTeam(lineupIds, opposingPitcherId) {
 
     // ═══ UI HELPERS ═══
     function showBanner(msg) { const b = document.getElementById('status-banner'); b.textContent = msg; b.classList.add('visible') }
-    function hideBanner() { document.getElementById('status-banner').classList.remove('visible') }
+    function hideBanner() { const b = document.getElementById('status-banner'); b.classList.remove('visible'); b.classList.remove('loading') }
 
     // ═══ INIT ═══
     document.getElementById('loading-overlay').remove();
+    document.getElementById('no-player').style.display = 'none';
+    document.getElementById('empty-state').style.display = 'flex';
+    searchInput.focus();
     if (PRESELECT) selectBatter(PRESELECT);
 })();
 </script>
