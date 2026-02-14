@@ -33,8 +33,9 @@ body {
     width: 100%; height: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
     padding: 2.5rem 3rem;
+    gap: 1.5rem;
     z-index: 10;
 }
 #dna-canvas {
@@ -86,6 +87,7 @@ body {
     gap: 1.5rem;
     z-index: 10;
     align-items: flex-end;
+    margin-top: auto;
 }
 .nav-btn {
     font-family: var(--font-stack);
@@ -116,6 +118,28 @@ body {
     border-color: #ff6a33;
     box-shadow: 0 0 30px rgba(255, 68, 0, 0.4);
 }
+.archetype-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 1.2rem;
+    opacity: 0.6;
+}
+.arch-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.5rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+.arch-dot {
+    width: 6px;
+    height: 6px;
+    display: inline-block;
+    flex-shrink: 0;
+}
 </style>
 </head>
 <body>
@@ -131,6 +155,7 @@ body {
     <div class="mission-overlay">
         <h2>EVERY ARM<br>HAS A <span class="accent">DNA</span></h2>
         <p>10 YEARS OF PITCHING DATA COMBINED TO CREATE DNA CLUSTERING THAT DECODES THE GAME OF BASEBALL.</p>
+        <div class="archetype-list" id="arch-list"></div>
     </div>
 
     <div class="nav-buttons">
@@ -160,6 +185,14 @@ const ARCHETYPES = [
     {emoji:'\uD83E\uDDAC', name:'Yakker', color:'#b8b230'}
 ];
 
+// Build archetype list
+(function(){
+    const el = document.getElementById('arch-list');
+    ARCHETYPES.forEach(a => {
+        el.innerHTML += '<div class="arch-row"><span class="arch-dot" style="background:' + a.color + '"></span>' + a.emoji + ' ' + a.name + '</div>';
+    });
+})();
+
 // DNA Helix with archetypes
 (function initDna() {
     const canvas = document.getElementById('dna-canvas');
@@ -188,7 +221,8 @@ const ARCHETYPES = [
             const fov = 1000;
             const scale = fov / (fov + z3d);
             this.x = (width * 0.62) + x3d * scale;
-            this.screenY = (this.y * 13) * scale + (height * 0.08);
+            const spacing = (height * 0.78) / 50;
+            this.screenY = (this.y * spacing) * scale + (height * 0.05);
             this.size = 11 * scale;
             this.alpha = scale > 1 ? 1 : 0.25;
             this.scale = scale;
