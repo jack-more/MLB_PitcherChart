@@ -304,6 +304,13 @@ body{
 .gt-batter-row .batter-src{font-size:0.5rem;color:var(--text-muted);font-style:italic}
 .gt-tbd{text-align:center;padding:16px 0;color:var(--text-muted);font-size:0.75rem;font-style:italic}
 
+/* Game type badges */
+.game-type-badge{display:inline-block;font-size:0.5rem;font-weight:800;letter-spacing:1.5px;
+    text-transform:uppercase;padding:2px 8px;margin-bottom:8px;border:1px solid;border-radius:2px}
+.st-badge{color:#2a9d8f;border-color:#2a9d8f;background:rgba(42,157,143,0.1)}
+.wbc-badge{color:#e9c46a;border-color:#e9c46a;background:rgba(233,196,106,0.1)}
+.ex-badge{color:var(--text-muted);border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.03)}
+
 /* Totals */
 .totals-box{background:var(--bg-deep);border:2px solid var(--accent);padding:16px;margin-top:20px}
 .totals-title{font-size:0.7rem;text-transform:uppercase;letter-spacing:2px;color:var(--accent);font-weight:800;margin-bottom:12px}
@@ -1300,7 +1307,7 @@ function projectTeam(lineupIds, opposingPitcherId, paOverride) {
                 updateCalTriggerLabel();
 
             } else if (mode === 'game') {
-                // Find today's games, or scan forward up to 3 days
+                // Phase 1: Scan today → +3 days (covers regular season)
                 let foundDate = null;
                 for (let i = 0; i <= 3; i++) {
                     const checkDate = new Date(today);
@@ -1308,18 +1315,40 @@ function projectTeam(lineupIds, opposingPitcherId, paOverride) {
                     const checkStr = checkDate.toISOString().split('T')[0];
                     const url = 'https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=' + checkStr + '&endDate=' + checkStr;
                     const data = await (await fetch(url)).json();
-
-                    if (thisRunId !== _autoRunId) return; // Race guard
-
+                    if (thisRunId !== _autoRunId) return;
                     const hasGames = (data.dates || []).some(d => d.games && d.games.length > 0);
-                    if (hasGames) {
-                        foundDate = checkStr;
-                        break;
-                    }
+                    if (hasGames) { foundDate = checkStr; break; }
+                }
+
+                // Phase 2: If nothing nearby, widen to 14 days (catches Spring Training)
+                if (!foundDate) {
+                    const extEnd = new Date(today);
+                    extEnd.setDate(extEnd.getDate() + 14);
+                    const extEndStr = extEnd.toISOString().split('T')[0];
+                    const extUrl = 'https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=' + todayStr + '&endDate=' + extEndStr;
+                    const extData = await (await fetch(extUrl)).json();
+                    if (thisRunId !== _autoRunId) return;
+                    const firstDate = (extData.dates || [])
+                        .filter(d => d.games && d.games.length > 0)
+                        .map(d => d.date).sort()[0];
+                    if (firstDate) foundDate = firstDate;
+                }
+
+                // Phase 3: Check WBC (sportId=51) if still nothing
+                if (!foundDate) {
+                    const wbcEnd = new Date(today);
+                    wbcEnd.setDate(wbcEnd.getDate() + 14);
+                    const wbcUrl = 'https://statsapi.mlb.com/api/v1/schedule?sportId=51&startDate=' + todayStr + '&endDate=' + wbcEnd.toISOString().split('T')[0];
+                    const wbcData = await (await fetch(wbcUrl)).json().catch(() => ({dates:[]}));
+                    if (thisRunId !== _autoRunId) return;
+                    const wbcDate = (wbcData.dates || [])
+                        .filter(d => d.games && d.games.length > 0)
+                        .map(d => d.date).sort()[0];
+                    if (wbcDate) foundDate = wbcDate;
                 }
 
                 if (!foundDate) {
-                    banner.textContent = 'NO GAMES FOUND IN NEXT 3 DAYS';
+                    banner.textContent = 'NO GAMES FOUND IN NEXT 14 DAYS';
                     banner.classList.remove('loading');
                     banner.classList.add('visible');
                     return;
@@ -1370,7 +1399,9 @@ function projectTeam(lineupIds, opposingPitcherId, paOverride) {
                                 oppTeam: opp.team.abbreviation || opp.team.name,
                                 pitcher: oppPitcher ? { id: oppPitcher.id, name: oppPitcher.fullName } : null,
                                 originalPitcher: oppPitcher ? { id: oppPitcher.id, name: oppPitcher.fullName } : null,
-                                overridden: false
+                                overridden: false,
+                                gameType: game.gameType || 'R',
+                                seriesDescription: game.seriesDescription || ''
                             });
                         });
                     });
@@ -1387,7 +1418,8 @@ function projectTeam(lineupIds, opposingPitcherId, paOverride) {
 
         days.forEach(day => {
             const games = schedule.filter(g => g.date === day);
-            html += '<div class="day-hdr">' + fmtDate(day) + '</div>';
+            const isST = games.length > 0 && games[0].gameType === 'S';
+            html += '<div class="day-hdr">' + fmtDate(day) + (isST ? ' // SPRING TRAINING' : '') + '</div>';
             if (games.length === 0) { html += '<div class="off-day">OFF DAY</div>'; return; }
             games.forEach(game => {
                 const schedIdx = schedule.indexOf(game);
@@ -1559,7 +1591,9 @@ function projectTeam(lineupIds, opposingPitcherId, paOverride) {
                                 schedule.push({
                                     date: game.officialDate || dateObj.date,
                                     oppTeam: opp.team.abbreviation || opp.team.name,
-                                    oppTeamId: opp.team.id
+                                    oppTeamId: opp.team.id,
+                                    gameType: game.gameType || 'R',
+                                    seriesDescription: game.seriesDescription || ''
                                 });
                             }
                         });
@@ -1581,7 +1615,8 @@ function projectTeam(lineupIds, opposingPitcherId, paOverride) {
         }
 
         for (const game of filteredSchedule) {
-            html += '<div class="day-hdr">' + fmtDate(game.date) + ' vs ' + game.oppTeam + '</div>';
+            const _pST = game.gameType === 'S' ? ' // SPRING TRAINING' : '';
+            html += '<div class="day-hdr">' + fmtDate(game.date) + ' vs ' + game.oppTeam + _pST + '</div>';
 
             const matchedBatters = [];
             Object.entries(DATA._hvpIndex).forEach(([batterId, clusters]) => {
@@ -1767,6 +1802,15 @@ function projectTeam(lineupIds, opposingPitcherId, paOverride) {
         card += '<span style="font-size:0.6rem;color:var(--text-muted);font-weight:400">' + fmtDate(game.displayDate) + '</span>';
         card += '</div>';
 
+        // Game type badge
+        if (game.gameType === 'S') {
+            card += '<div class="game-type-badge st-badge">SPRING TRAINING</div>';
+        } else if ((game.seriesDescription || '').includes('Baseball Classic') || game.gameType === 'W') {
+            card += '<div class="game-type-badge wbc-badge">WBC</div>';
+        } else if (game.gameType === 'E') {
+            card += '<div class="game-type-badge ex-badge">EXHIBITION</div>';
+        }
+
         // Opposing pitcher info
         const oppName = oppPP ? oppPP.fullName : 'TBD';
         const oppArchName = oppPS ? archName(oppPS.cluster) : 'Unknown';
@@ -1897,14 +1941,27 @@ function projectTeam(lineupIds, opposingPitcherId, paOverride) {
         projections = [];
         document.getElementById('totals-dock').style.display = 'none';
 
-        const url = 'https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=' + startDate + '&endDate=' + endDate + '&hydrate=probablePitcher,lineups';
+        const mlbUrl = 'https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=' + startDate + '&endDate=' + endDate + '&hydrate=probablePitcher,lineups';
+        const wbcUrl = 'https://statsapi.mlb.com/api/v1/schedule?sportId=51&startDate=' + startDate + '&endDate=' + endDate + '&hydrate=probablePitcher';
 
         let allGames = [];
         try {
-            const data = await (await fetch(url)).json();
-            (data.dates || []).forEach(dateObj => {
+            const [mlbData, wbcData] = await Promise.all([
+                fetch(mlbUrl).then(r => r.json()),
+                fetch(wbcUrl).then(r => r.json()).catch(() => ({dates:[]}))
+            ]);
+            (mlbData.dates || []).forEach(dateObj => {
                 dateObj.games.forEach(game => {
                     if (filterDates.includes(game.officialDate || dateObj.date)) {
+                        allGames.push({ ...game, displayDate: game.officialDate || dateObj.date });
+                    }
+                });
+            });
+            (wbcData.dates || []).forEach(dateObj => {
+                dateObj.games.forEach(game => {
+                    if (filterDates.includes(game.officialDate || dateObj.date)) {
+                        if (!game.seriesDescription) game.seriesDescription = 'World Baseball Classic';
+                        if (!game.gameType) game.gameType = 'W';
                         allGames.push({ ...game, displayDate: game.officialDate || dateObj.date });
                     }
                 });
@@ -1936,7 +1993,15 @@ function projectTeam(lineupIds, opposingPitcherId, paOverride) {
 
         let gameIdx = 0;
         Object.keys(byDate).sort().forEach(day => {
-            html += '<div class="day-hdr">' + fmtDate(day) + ' \u2014 ' + byDate[day].length + ' GAME' + (byDate[day].length > 1 ? 'S' : '') + '</div>';
+            const dayGames = byDate[day];
+            const stCount = dayGames.filter(g => g.gameType === 'S').length;
+            const wbcCount = dayGames.filter(g => (g.seriesDescription || '').includes('Baseball Classic') || g.gameType === 'W').length;
+            const regCount = dayGames.length - stCount - wbcCount;
+            let dayLabel = fmtDate(day) + ' \u2014 ' + dayGames.length + ' GAME' + (dayGames.length > 1 ? 'S' : '');
+            if (stCount > 0 && regCount === 0 && wbcCount === 0) dayLabel += ' // SPRING TRAINING';
+            else if (wbcCount > 0 && regCount === 0 && stCount === 0) dayLabel += ' // WBC';
+            else if (stCount > 0 && regCount === 0) dayLabel += ' // SPRING TRAINING + WBC';
+            html += '<div class="day-hdr">' + dayLabel + '</div>';
             byDate[day].forEach(game => {
                 const result = buildGameTotalCard(game, day, gameIdx);
                 html += result.html;
@@ -2016,6 +2081,15 @@ function projectTeam(lineupIds, opposingPitcherId, paOverride) {
 
         // Matchup header
         card += '<div class="gt-matchup"><span>' + awayTeam + ' @ ' + homeTeam + '</span><span style="font-size:0.6rem;color:var(--text-muted);font-weight:400">' + fmtDate(day) + '</span></div>';
+
+        // Game type badge (Spring Training / WBC / Exhibition)
+        if (game.gameType === 'S') {
+            card += '<div class="game-type-badge st-badge">SPRING TRAINING</div>';
+        } else if ((game.seriesDescription || '').includes('Baseball Classic') || game.gameType === 'W') {
+            card += '<div class="game-type-badge wbc-badge">WBC</div>';
+        } else if (game.gameType === 'E') {
+            card += '<div class="game-type-badge ex-badge">EXHIBITION</div>';
+        }
 
         // Pitchers
         card += '<div class="gt-pitchers">';
@@ -2281,6 +2355,13 @@ function projectTeam(lineupIds, opposingPitcherId, paOverride) {
         card += ' <span class="pitcher-edit-icon" data-idx="' + idx + '" title="Change pitcher">&#9998;</span></span>';
         card += '<span style="color:' + clusterColor + '" id="pcluster-' + idx + '">' + clusterName + '</span>';
         card += '</div>';
+
+        // Game type badge
+        if (game.gameType === 'S') {
+            card += '<div class="game-type-badge st-badge">SPRING TRAINING</div>';
+        } else if ((game.seriesDescription || '').includes('Baseball Classic') || game.gameType === 'W') {
+            card += '<div class="game-type-badge wbc-badge">WBC</div>';
+        }
 
         if (game.overridden) {
             card += '<div class="pitcher-override-badge"><span>MANUAL OVERRIDE</span><span class="pitcher-reset" data-idx="' + idx + '">RESET</span></div>';
