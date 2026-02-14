@@ -55,6 +55,10 @@ body {
 .mission-overlay {
     max-width: 520px;
     z-index: 10;
+    background: linear-gradient(90deg, var(--bg-deep) 70%, transparent 100%);
+    padding: 2rem 3rem 2rem 0;
+    margin-left: -3rem;
+    padding-left: 3rem;
 }
 .mission-overlay h2 {
     font-size: 3.5rem;
@@ -183,8 +187,8 @@ const ARCHETYPES = [
             const z3d = Math.cos(angle) * radius;
             const fov = 1000;
             const scale = fov / (fov + z3d);
-            this.x = (width * 0.55) + x3d * scale;
-            this.screenY = (this.y * 14) * scale + (height * 0.08);
+            this.x = (width * 0.62) + x3d * scale;
+            this.screenY = (this.y * 13) * scale + (height * 0.08);
             this.size = 11 * scale;
             this.alpha = scale > 1 ? 1 : 0.25;
             this.scale = scale;
