@@ -1249,6 +1249,7 @@ function initNav() {
             contents.forEach(c => c.classList.remove('active'));
             tab.classList.add('active');
             document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+            window.scrollTo(0, 0);
         });
     });
 }
