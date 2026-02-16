@@ -90,7 +90,7 @@ body::after{
 /* Card header */
 .card-header{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:12px;gap:8px}
 .team-block{text-align:center}
-.team-logo{width:48px;height:48px;margin:0 auto 4px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:18px;color:#fff;font-weight:700;letter-spacing:1px}
+.team-logo{width:48px;height:48px;margin:0 auto 4px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:14px;color:#fff;font-weight:700;letter-spacing:1px;overflow:hidden}
 .team-abbr{font-family:var(--font-display);font-size:24px;letter-spacing:2px;text-transform:uppercase}
 .card-center{text-align:center}
 .card-center .proj-label{font-family:var(--font-display);font-size:10px;color:var(--color-meta);letter-spacing:2px;text-transform:uppercase}
@@ -416,6 +416,17 @@ const TEAM_COLORS = {
 };
 
 const DEFAULT_LINES = { h: 1.5, hr: 0.5, tb: 1.5, k: 1.5 };
+
+// Reverse lookup: team ID → abbreviation
+const TEAM_ID_TO_ABBR = {};
+Object.entries(MLB_TEAM_IDS).forEach(([abbr, id]) => { TEAM_ID_TO_ABBR[id] = abbr; });
+function teamAbbr(teamObj) {
+    if (teamObj.abbreviation) return teamObj.abbreviation;
+    if (TEAM_ID_TO_ABBR[teamObj.id]) return TEAM_ID_TO_ABBR[teamObj.id];
+    // Fallback: shorten full name
+    const words = (teamObj.name || '').split(' ');
+    return words.length > 1 ? words[words.length - 1].substring(0, 3).toUpperCase() : (teamObj.name || 'TBD').substring(0, 3).toUpperCase();
+}
 
 // ═══ STATE ═══
 let allGameProjections = [];
@@ -786,8 +797,8 @@ function renderSlate(allGames, slateDate) {
 
 // ═══ BUILD GAME CARD ═══
 function buildGameCard(game, idx) {
-    const awayTeam = game.teams.away.team.abbreviation || game.teams.away.team.name;
-    const homeTeam = game.teams.home.team.abbreviation || game.teams.home.team.name;
+    const awayTeam = teamAbbr(game.teams.away.team);
+    const homeTeam = teamAbbr(game.teams.home.team);
     const awayPP = game.teams.away.probablePitcher || null;
     const homePP = game.teams.home.probablePitcher || null;
 
