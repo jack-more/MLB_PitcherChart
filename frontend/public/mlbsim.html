@@ -48,6 +48,7 @@ body::after{
 .header{position:sticky;top:0;z-index:100;background:var(--color-bg)}
 .brand-row{display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
 .logo{font-family:var(--font-display);font-size:28px;color:var(--color-accent);background:var(--color-black);padding:4px 14px;transform:skewX(-5deg);display:inline-block;letter-spacing:2px;line-height:1.1}
+.byline{font-family:var(--font-body);font-size:11px;font-weight:400;color:#555;letter-spacing:0.5px;font-style:italic}
 .status-dot{width:12px;height:12px;border-radius:50%;background:var(--color-accent);animation:pulse 2s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(255,234,0,0.4)}50%{opacity:0.7;box-shadow:0 0 0 8px rgba(255,234,0,0)}}
 
@@ -90,7 +91,7 @@ body::after{
 /* Card header */
 .card-header{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:12px;gap:8px}
 .team-block{text-align:center}
-.team-logo{width:48px;height:48px;margin:0 auto 4px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:14px;color:#fff;font-weight:700;letter-spacing:1px;overflow:hidden}
+.team-logo{width:48px;height:48px;margin:0 auto 4px;overflow:hidden}
 .team-abbr{font-family:var(--font-display);font-size:24px;letter-spacing:2px;text-transform:uppercase}
 .card-center{text-align:center}
 .card-center .proj-label{font-family:var(--font-display);font-size:10px;color:var(--color-meta);letter-spacing:2px;text-transform:uppercase}
@@ -154,7 +155,8 @@ body::after{
 .prop-card{background:var(--color-black);border:var(--border);min-height:64px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden}
 .prop-rank{position:absolute;bottom:-4px;left:8px;font-family:var(--font-display);font-size:40px;color:rgba(255,255,255,0.06);line-height:1;pointer-events:none}
 .prop-left{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
-.prop-logo{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:9px;font-weight:700;color:#fff;flex-shrink:0}
+.prop-logo{width:32px;height:32px;border-radius:50%;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:9px;font-weight:700;color:#fff}
+.prop-logo img{width:100%;height:100%;object-fit:contain}
 .prop-info{min-width:0}
 .prop-player{font-family:var(--font-body);font-size:14px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .prop-context{font-family:var(--font-mono);font-size:10px;color:#999;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -205,6 +207,15 @@ body::after{
 .signal-crush{background:var(--color-elite);color:#fff}
 .signal-neutral{background:#ccc;color:#333}
 .signal-fade{background:var(--color-tough);color:#fff}
+.arch-row{cursor:pointer;transition:background 0.15s}
+.arch-row:active{opacity:0.8}
+.arch-detail{display:none;padding:6px 10px 8px 34px;background:#fafafa;border-bottom:1px solid #eee}
+.arch-detail.open{display:block}
+.arch-pitcher-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #f0f0f0}
+.arch-pitcher-row:last-child{border-bottom:none}
+.arch-pitcher-name{font-family:var(--font-body);font-size:11px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.arch-pitcher-stats{font-family:var(--font-mono);font-size:9px;color:var(--color-meta);display:flex;gap:8px;flex-shrink:0}
+.arch-pitcher-stats span{min-width:36px;text-align:right}
 .arch-row.tier-elite{background:rgba(0,163,52,0.06)}
 .arch-row.tier-favorable{background:rgba(45,139,78,0.04)}
 .arch-row.tier-neutral{background:rgba(212,192,0,0.04)}
@@ -268,7 +279,10 @@ body::after{
 <!-- Header -->
 <header class="header">
     <div class="brand-row">
-        <div class="logo">MLB SIM</div>
+        <div style="display:flex;align-items:baseline;gap:10px">
+            <div class="logo">MLB SIM</div>
+            <span class="byline">by Jack Morello</span>
+        </div>
         <div class="status-dot" id="status-dot"></div>
     </div>
     <div class="ticker">
@@ -428,6 +442,17 @@ function teamAbbr(teamObj) {
     return words.length > 1 ? words[words.length - 1].substring(0, 3).toUpperCase() : (teamObj.name || 'TBD').substring(0, 3).toUpperCase();
 }
 
+function teamLogoUrl(abbr) {
+    const id = MLB_TEAM_IDS[abbr];
+    return id ? 'https://www.mlbstatic.com/team-logos/' + id + '.svg' : '';
+}
+function teamLogoHtml(abbr, size) {
+    const url = teamLogoUrl(abbr);
+    const fallbackBg = TEAM_COLORS[abbr] || '#666';
+    if (url) return '<img src="' + url + '" alt="' + abbr + '" style="width:100%;height:100%;object-fit:contain" onerror="this.parentNode.textContent=\'' + abbr + '\';this.parentNode.style.background=\'' + fallbackBg + '\';this.parentNode.style.display=\'flex\';this.parentNode.style.alignItems=\'center\';this.parentNode.style.justifyContent=\'center\';this.parentNode.style.color=\'#fff\';this.parentNode.style.fontFamily=\'var(--font-display)\';this.parentNode.style.fontSize=\'14px\'">';
+    return abbr;
+}
+
 // ═══ STATE ═══
 let allGameProjections = [];
 let allBatterMS = [];
@@ -459,7 +484,7 @@ async function loadData() {
 // ═══ HELPERS ═══
 function fmtName(n) { if (!n) return 'Unknown'; return n.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '); }
 function fmtDate(s) { const d = new Date(s + 'T12:00:00'); return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).toUpperCase(); }
-function archName(clusterId) { const c = DATA.clusters[clusterId]; return c ? (c.short_name || c.full_name || clusterId) : clusterId; }
+function archName(clusterId) { const c = DATA.clusters[clusterId]; if (!c) return clusterId; return c.full_name || clusterId; }
 function archEmoji(clusterId) { const c = DATA.clusters[clusterId]; return c && c.emoji ? c.emoji : ''; }
 function lastName(fullName) { return fmtName(fullName).split(' ').pop(); }
 
@@ -859,7 +884,7 @@ function buildGameCard(game, idx) {
 
     // Card header
     c += '<div class="card-header">';
-    c += '<div class="team-block"><div class="team-logo" style="background:' + awayColor + '">' + awayTeam + '</div><div class="team-abbr">' + awayTeam + '</div></div>';
+    c += '<div class="team-block"><div class="team-logo">' + teamLogoHtml(awayTeam) + '</div><div class="team-abbr">' + awayTeam + '</div></div>';
     c += '<div class="card-center">';
     if (hasLineups) {
         c += '<div class="proj-label">PROJECTED</div>';
@@ -872,7 +897,7 @@ function buildGameCard(game, idx) {
         c += '<div class="proj-label">LINEUPS TBD</div>';
     }
     c += '</div>';
-    c += '<div class="team-block"><div class="team-logo" style="background:' + homeColor + '">' + homeTeam + '</div><div class="team-abbr">' + homeTeam + '</div></div>';
+    c += '<div class="team-block"><div class="team-logo">' + teamLogoHtml(homeTeam) + '</div><div class="team-abbr">' + homeTeam + '</div></div>';
     c += '</div>';
 
     // SP matchup
@@ -1021,7 +1046,7 @@ function renderProps() {
         html += '<div class="prop-rank">' + (i + 1) + '</div>';
         html += '<div class="prop-conf ' + conf + '">' + confLabel + '</div>';
         html += '<div class="prop-left">';
-        html += '<div class="prop-logo" style="background:' + e.teamColor + '">' + e.team + '</div>';
+        html += '<div class="prop-logo">' + teamLogoHtml(e.team) + '</div>';
         html += '<div class="prop-info"><div class="prop-player">' + e.player + '</div><div class="prop-context">' + e.ctx + '</div></div>';
         html += '</div>';
         html += '<div class="prop-right">';
@@ -1123,10 +1148,15 @@ function initMatchups() {
         // Archetype breakdown grid
         const clusterIds = Object.keys(DATA.clusters).sort((a, b) => {
             const ca = DATA.clusters[a], cb = DATA.clusters[b];
-            return (ca.short_name || ca.full_name || a).localeCompare(cb.short_name || cb.full_name || b);
+            return (ca.full_name || a).localeCompare(cb.full_name || b);
         });
 
+        // Build pitcher name lookup
+        const pitcherNames = {};
+        DATA.pitcherSeasons.forEach(ps => { if (!pitcherNames[ps.pitcher]) pitcherNames[ps.pitcher] = ps.player_name; });
+
         let gridHtml = '<div class="arch-grid">';
+        let rowIdx = 0;
         clusterIds.forEach(cid => {
             const cl = DATA.clusters[cid];
             const msData = computeMS(batter.batter, cid, null);
@@ -1134,17 +1164,50 @@ function initMatchups() {
             const tier = msTier(msData.ms);
             const signal = msData.ms >= 80 ? 'crush' : msData.ms >= 55 ? 'neutral' : 'fade';
 
-            gridHtml += '<div class="arch-row tier-' + tier + '">';
+            gridHtml += '<div class="arch-row tier-' + tier + '" data-arch-idx="' + rowIdx + '">';
             gridHtml += '<div class="arch-emoji">' + (cl.emoji || '') + '</div>';
-            gridHtml += '<div class="arch-name" style="color:' + (cl.color || '#333') + '">' + (cl.short_name || cl.full_name || cid) + '</div>';
+            gridHtml += '<div class="arch-name" style="color:' + (cl.color || '#333') + '">' + (cl.full_name || cid) + '</div>';
             gridHtml += '<div class="arch-pa">' + msData.pa + '</div>';
             gridHtml += '<div class="arch-woba">' + msData.woba.toFixed(3) + '</div>';
             gridHtml += '<div class="arch-ms ' + msClass(msData.ms) + '">' + msData.ms + '</div>';
             gridHtml += '<div class="arch-signal signal-' + signal + '">' + signal.toUpperCase() + '</div>';
             gridHtml += '</div>';
+
+            // Expandable detail panel for pitcher H2H matchups
+            gridHtml += '<div class="arch-detail" id="arch-detail-' + rowIdx + '">';
+            const hvpRecords = (DATA._hvpIndex[batter.batter] && DATA._hvpIndex[batter.batter][cid]) ? DATA._hvpIndex[batter.batter][cid] : [];
+            if (hvpRecords.length > 0) {
+                const sorted = [...hvpRecords].sort((a, b) => (b.pa || 0) - (a.pa || 0));
+                sorted.forEach(rec => {
+                    const pName = pitcherNames[rec.p] ? fmtName(pitcherNames[rec.p]) : 'Unknown (#' + rec.p + ')';
+                    gridHtml += '<div class="arch-pitcher-row">';
+                    gridHtml += '<div class="arch-pitcher-name">' + pName + '</div>';
+                    gridHtml += '<div class="arch-pitcher-stats">';
+                    gridHtml += '<span>' + (rec.pa || 0) + ' PA</span>';
+                    gridHtml += '<span>' + (rec.ba != null ? rec.ba.toFixed(3) : '\u2014') + ' BA</span>';
+                    gridHtml += '<span>' + (rec.w != null ? rec.w.toFixed(3) : '\u2014') + ' wOBA</span>';
+                    gridHtml += '</div></div>';
+                });
+            } else {
+                gridHtml += '<div style="font-family:var(--font-mono);font-size:9px;color:var(--color-meta);padding:4px 0">Archetype-level data only (no individual pitcher H2H)</div>';
+            }
+            gridHtml += '</div>';
+            rowIdx++;
         });
         gridHtml += '</div>';
         gridEl.innerHTML = gridHtml;
+
+        // Bind click handlers for expandable rows
+        gridEl.querySelectorAll('.arch-row').forEach(row => {
+            row.addEventListener('click', () => {
+                const idx = row.dataset.archIdx;
+                const detail = document.getElementById('arch-detail-' + idx);
+                if (detail) {
+                    detail.classList.toggle('open');
+                    row.style.fontWeight = detail.classList.contains('open') ? '800' : '';
+                }
+            });
+        });
     }
 }
 
@@ -1183,7 +1246,7 @@ function renderArchLegend() {
     const el = document.getElementById('arch-legend');
     const clusterIds = Object.keys(DATA.clusters).sort((a, b) => {
         const ca = DATA.clusters[a], cb = DATA.clusters[b];
-        return (ca.short_name || ca.full_name || a).localeCompare(cb.short_name || cb.full_name || b);
+        return (ca.full_name || a).localeCompare(cb.full_name || b);
     });
 
     let html = '';
@@ -1194,7 +1257,7 @@ function renderArchLegend() {
         html += '<div class="arch-legend-row">';
         html += '<div class="arch-dot" style="background:' + (cl.color || '#888') + '"></div>';
         html += '<div style="font-size:16px">' + (cl.emoji || '') + '</div>';
-        html += '<div class="arch-legend-name" style="color:' + (cl.color || '#333') + '">' + (cl.short_name || cl.full_name || cid) + '</div>';
+        html += '<div class="arch-legend-name" style="color:' + (cl.color || '#333') + '">' + (cl.full_name || cid) + '</div>';
         html += '<div class="arch-legend-desc">' + (cl.description || cl.full_name || '') + '</div>';
         if (king) html += '<div class="arch-legend-king">\u{1F451} ' + fmtName(king.name || king.player_name || '') + '</div>';
         html += '</div>';
