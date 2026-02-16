@@ -1189,12 +1189,13 @@ function renderArchLegend() {
     let html = '';
     clusterIds.forEach(cid => {
         const cl = DATA.clusters[cid];
-        const king = DATA.archetypeKings[cid];
+        const kings = DATA.archetypeKings[cid];
+        const king = Array.isArray(kings) && kings.length > 0 ? kings[0] : null;
         html += '<div class="arch-legend-row">';
         html += '<div class="arch-dot" style="background:' + (cl.color || '#888') + '"></div>';
         html += '<div style="font-size:16px">' + (cl.emoji || '') + '</div>';
         html += '<div class="arch-legend-name" style="color:' + (cl.color || '#333') + '">' + (cl.short_name || cl.full_name || cid) + '</div>';
-        html += '<div class="arch-legend-desc">' + (cl.description || '') + '</div>';
+        html += '<div class="arch-legend-desc">' + (cl.description || cl.full_name || '') + '</div>';
         if (king) html += '<div class="arch-legend-king">\u{1F451} ' + fmtName(king.name || king.player_name || '') + '</div>';
         html += '</div>';
     });
