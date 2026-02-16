@@ -21,6 +21,8 @@
     --conf-3: #fdd835;
     --conf-4: #ef6c00;
     --conf-5: #b71c1c;
+    --grey-matte: #3A3D4A;
+    --grey-light: #4A4D5A;
     --grid-unit: 8px;
     --border-radius: 0px;
     --dashed-border: 1px dashed rgba(255, 255, 255, 0.3);
@@ -112,7 +114,7 @@ body{
 .workspace{display:grid;grid-template-columns:240px 1fr 340px;overflow:hidden}
 
 /* Left: Context Column */
-.col-context{padding:1.5rem;border-right:var(--dashed-border);background:rgba(0,0,0,0.1);overflow-y:auto}
+.col-context{padding:1.5rem;border-right:var(--dashed-border);background:var(--grey-matte);overflow-y:auto}
 .hero{margin-bottom:2rem}
 .hero-name{font-size:1.8rem;line-height:1;text-transform:uppercase;word-break:break-word;margin-bottom:0.8rem;letter-spacing:2px}
 .hero-meta{display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin-bottom:1.5rem;font-size:0.75rem;color:var(--text-muted)}
@@ -149,7 +151,7 @@ body{
 .game-card{display:grid;grid-template-columns:70px 1fr;background:var(--bg-light);margin-bottom:1.5rem;
     box-shadow:8px 8px 0px rgba(0,0,0,0.2);position:relative;transition:transform 0.2s}
 .game-card:hover{transform:translate(-2px,-2px);box-shadow:10px 10px 0px rgba(0,0,0,0.3)}
-.card-spine{background:var(--bg-deep);padding:0.8rem;display:flex;flex-direction:column;
+.card-spine{background:var(--grey-matte);padding:0.8rem;display:flex;flex-direction:column;
     justify-content:center;align-items:center;text-align:center;border-right:1px solid rgba(255,255,255,0.05)}
 .card-spine .vs-label{font-size:1.2rem;font-weight:bold}
 .card-spine .opp-team{margin-top:8px;color:var(--text-muted);font-size:0.8rem}
@@ -161,7 +163,7 @@ body{
 .gc-section{font-size:0.6rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);font-weight:700;margin-bottom:6px}
 .gc-section.warn{color:#e76f51}
 .stat-chips{display:flex;gap:6px;flex-wrap:wrap}
-.sc{background:rgba(0,0,0,0.2);padding:8px 10px;text-align:center;min-width:50px;flex:1}
+.sc{background:var(--grey-light);padding:8px 10px;text-align:center;min-width:50px;flex:1}
 .sc .sl{font-size:0.5rem;text-transform:uppercase;color:var(--text-muted);letter-spacing:0.5px;font-weight:700;margin-bottom:3px}
 .sc .sv{font-size:1rem;font-weight:800}
 .sc .sv.good{color:var(--conf-1)}.sc .sv.bad{color:var(--conf-5)}
@@ -171,7 +173,7 @@ body{
 .proj-label{font-size:0.6rem;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:3px}
 .proj-method{font-size:0.65rem;color:var(--text-muted);font-style:italic;margin-bottom:8px}
 .proj-cards{display:flex;gap:6px;flex-wrap:wrap}
-.pa-edit{width:28px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.2);color:var(--text-main);
+.pa-edit{width:28px;background:var(--grey-light);border:1px solid rgba(255,255,255,0.2);color:var(--text-main);
     font-family:var(--font-stack);font-size:1rem;font-weight:800;text-align:center;outline:none}
 .pa-edit:focus{border-color:var(--accent)}
 
@@ -180,7 +182,7 @@ body{
 .lines-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .line-item{text-align:center}
 .line-item label{display:block;font-size:0.5rem;color:var(--text-muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:0.5px}
-.line-item .line-input{width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.15);
+.line-item .line-input{width:100%;background:var(--grey-light);border:1px solid rgba(255,255,255,0.15);
     color:var(--text-main);font-family:var(--font-stack);font-size:0.8rem;text-align:center;padding:4px 0;outline:none}
 .line-item .line-input:focus{border-color:var(--accent)}
 .line-item .line-input::placeholder{color:rgba(255,255,255,0.2)}
@@ -219,12 +221,12 @@ body{
 .archetype-context .arch-detail{font-size:0.7rem;color:var(--text-muted);margin-bottom:4px}
 
 /* ═══ QUICK SCAN ═══ */
-.quick-scan{background:var(--bg-deep);border:2px solid var(--accent);padding:14px;margin-bottom:20px}
+.quick-scan{background:var(--grey-matte);border:2px solid var(--accent);padding:14px;margin-bottom:20px}
 .qs-title{font-size:0.65rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;
     color:var(--accent);margin-bottom:10px;display:flex;align-items:center;gap:8px}
 .qs-title::after{content:'';flex:1;height:1px;border-bottom:1px dashed var(--accent)}
 .qs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
-.qs-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,0.03);
+.qs-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(74,77,90,0.6);
     border:1px solid rgba(255,255,255,0.08);transition:background 0.15s}
 .qs-item:hover{background:rgba(255,255,255,0.06)}
 .qs-edge{font-size:0.65rem;font-weight:800;letter-spacing:0.5px;min-width:50px;text-align:center;
@@ -267,7 +269,7 @@ body{
 .game-total-card{display:grid;grid-template-columns:80px 1fr;background:var(--bg-light);margin-bottom:1.5rem;
     box-shadow:8px 8px 0px rgba(0,0,0,0.2);position:relative;transition:transform 0.2s}
 .game-total-card:hover{transform:translate(-2px,-2px);box-shadow:10px 10px 0px rgba(0,0,0,0.3)}
-.gt-spine{background:var(--bg-deep);padding:0.8rem;display:flex;flex-direction:column;
+.gt-spine{background:var(--grey-matte);padding:0.8rem;display:flex;flex-direction:column;
     justify-content:center;align-items:center;text-align:center;border-right:1px solid rgba(255,255,255,0.05)}
 .gt-spine .gt-total{font-size:1.6rem;font-weight:900;color:var(--accent)}
 .gt-spine .gt-label{font-size:0.5rem;color:var(--text-muted);letter-spacing:1px;margin-top:4px}
@@ -311,6 +313,51 @@ body{
 .wbc-badge{color:#e9c46a;border-color:#e9c46a;background:rgba(233,196,106,0.1)}
 .ex-badge{color:var(--text-muted);border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.03)}
 
+/* Edge Slots (on cards) */
+.edge-slots{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px}
+.edge-slot{font-size:0.55rem;font-weight:800;letter-spacing:1px;padding:3px 8px;
+    border-radius:2px;text-transform:uppercase}
+.edge-slot.over{background:rgba(0,200,83,0.15);color:var(--conf-1);border:1px solid rgba(0,200,83,0.3)}
+.edge-slot.under{background:rgba(183,28,28,0.15);color:var(--conf-5);border:1px solid rgba(183,28,28,0.3)}
+.edge-slot.neutral{background:rgba(255,255,255,0.05);color:var(--text-muted);border:1px solid rgba(255,255,255,0.1)}
+
+/* Quick Scan Lock */
+.qs-lock{background:none;border:1px solid rgba(255,255,255,0.15);color:var(--text-muted);
+    font-size:0.7rem;cursor:pointer;padding:2px 6px;transition:all 0.15s;flex-shrink:0}
+.qs-lock:hover{border-color:var(--accent);color:var(--accent)}
+.qs-lock.locked{color:var(--conf-1);border-color:var(--conf-1)}
+
+/* Locked Edges sidebar */
+.locked-edges{margin-bottom:16px}
+.locked-edge-item{display:flex;align-items:center;gap:8px;padding:6px 8px;
+    background:var(--grey-light);margin-bottom:4px;font-size:0.65rem}
+.locked-edge-item .le-edge{min-width:50px;text-align:center;font-weight:800;padding:2px 6px;border-radius:2px}
+.locked-edge-item .le-edge.over{background:rgba(0,200,83,0.15);color:var(--conf-1)}
+.locked-edge-item .le-edge.under{background:rgba(183,28,28,0.15);color:var(--conf-5)}
+.locked-edge-item .le-detail{flex:1;min-width:0;overflow:hidden}
+.locked-edge-item .le-player{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.locked-edge-item .le-info{font-size:0.55rem;color:var(--text-muted)}
+.locked-edge-item .le-remove{cursor:pointer;color:var(--text-muted);font-size:0.7rem;padding:0 4px}
+.locked-edge-item .le-remove:hover{color:var(--accent)}
+
+/* Lineup Display (game cards) */
+.gt-lineup-display{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;margin-top:10px;
+    padding-top:10px;border-top:1px dashed rgba(255,255,255,0.15)}
+.gt-sp-center{display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:0 12px;min-width:100px;border-left:1px dashed rgba(255,255,255,0.1);
+    border-right:1px dashed rgba(255,255,255,0.1)}
+.gt-sp-name{font-size:0.7rem;font-weight:700;text-align:center}
+.gt-sp-arch{font-size:0.55rem;margin-top:2px;text-align:center}
+.gt-sp-vs{font-size:0.5rem;color:var(--text-muted);margin:8px 0;letter-spacing:2px;text-transform:uppercase}
+.gt-lineup-col{font-size:0.6rem}
+.gt-lineup-col .lu-header{font-size:0.5rem;font-weight:800;color:var(--text-muted);
+    letter-spacing:1px;margin-bottom:6px;text-transform:uppercase}
+.gt-lu-row{display:flex;align-items:center;gap:6px;padding:2px 0;
+    border-bottom:1px solid rgba(255,255,255,0.04)}
+.gt-lu-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.gt-lu-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gt-lu-woba{font-weight:700;font-size:0.55rem;min-width:32px;text-align:right}
+
 /* Totals */
 .totals-box{background:var(--bg-deep);border:2px solid var(--accent);padding:16px;margin-top:20px}
 .totals-title{font-size:0.7rem;text-transform:uppercase;letter-spacing:2px;color:var(--accent);font-weight:800;margin-bottom:12px}
@@ -319,7 +366,7 @@ body{
 .btn-save{display:block;margin:14px auto 0;width:100%}
 
 /* Right: Research Column */
-.col-research{background:rgba(0,0,0,0.2);border-left:var(--dashed-border);display:grid;
+.col-research{background:var(--grey-matte);border-left:var(--dashed-border);display:grid;
     grid-template-rows:auto 1fr auto;overflow:hidden}
 .research-panel{padding:1.2rem;border-bottom:var(--dashed-border)}
 .research-panel .hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
@@ -515,6 +562,10 @@ body{
 
     <!-- Right: Research -->
     <aside class="col-research">
+      <div class="locked-edges" id="locked-edges" style="display:none">
+        <div class="section-label">LOCKED EDGES</div>
+        <div id="locked-list"></div>
+      </div>
       <div class="research-panel">
         <div class="hdr">
           <div class="section-label" style="margin:0">SAVED PROJECTIONS</div>
@@ -571,6 +622,7 @@ let calRangeEnd = null;
 let calViewYear, calViewMonth;
 let _autoRunId = 0;
 let _autoScheduleCache = null;
+let lockedEdges = JSON.parse(localStorage.getItem('pfx_locked_edges') || '[]');
 
 // ═══ LOAD DATA ═══
 async function loadData() {
@@ -710,7 +762,7 @@ function projectTeam(lineupIds, opposingPitcherId, paOverride) {
 
     lineupIds.forEach((batterId) => {
         const assumedPA = paOverride || 4;
-        let projH = 0, projHR = 0, projK = 0, projBB = 0, projTB = 0;
+        let projH = 0, projHR = 0, projK = 0, projBB = 0, projTB = 0, projWoba = 0;
         let source = 'none';
         let batterName = 'Unknown';
 
@@ -733,6 +785,7 @@ function projectTeam(lineupIds, opposingPitcherId, paOverride) {
                 projK = kRate * assumedPA;
                 projBB = bbRate * assumedPA;
                 projTB = projH + projHR * 3;
+                projWoba = h2h.w || 0;
                 source = 'h2h';
                 coverage++;
             }
@@ -763,6 +816,8 @@ function projectTeam(lineupIds, opposingPitcherId, paOverride) {
                     projK = kRate * assumedPA;
                     projBB = bbRate * assumedPA;
                     projTB = tbRate * assumedPA;
+                    const wobaSum = archRows.reduce((s, r) => s + (r.wOBA || 0) * (r.PA || 0), 0);
+                    projWoba = tot.PA > 0 ? wobaSum / tot.PA : 0;
                     source = 'archetype';
                     coverage++;
                 }
@@ -771,7 +826,7 @@ function projectTeam(lineupIds, opposingPitcherId, paOverride) {
 
         teamH += projH; teamHR += projHR; teamBB += projBB; teamK += projK; teamTB += projTB;
         teamPA += assumedPA;
-        batterDetails.push({ batterId, name: batterName, projH, projHR, projK, projBB, projTB, source });
+        batterDetails.push({ batterId, name: batterName, projH, projHR, projK, projBB, projTB, projWoba, source });
     });
 
     const runs = baseRuns(teamH, teamHR, teamBB, teamTB, teamPA);
@@ -781,6 +836,7 @@ function projectTeam(lineupIds, opposingPitcherId, paOverride) {
 // ═══ BOOT ═══
 (async function boot() {
     await loadData();
+    renderLockedEdges();
 
     const params = new URLSearchParams(window.location.search);
     const batterIdParam = params.get('batter');
@@ -1523,23 +1579,80 @@ function projectTeam(lineupIds, opposingPitcherId, paOverride) {
         html += '<div class="qs-title">QUICK SCAN</div>';
         html += '<div class="qs-grid">';
 
-        topEdges.forEach(e => {
+        topEdges.forEach((e, ei) => {
             const edgePct = Math.abs(e.edge).toFixed(0);
             const dirLabel = e.dir === 'over' ? 'O +' + edgePct + '%' : 'U -' + edgePct + '%';
             const absE = Math.abs(e.edge);
             const eClass = absE >= 25 ? 'edge-strong' : absE >= 15 ? 'edge-good' : absE >= 8 ? 'edge-mild' : absE >= 3 ? 'edge-slim' : 'edge-neg';
+            const isLocked = lockedEdges.some(le => le.stat === e.stat && le.player === e.player && le.vs === e.vs);
             html += '<div class="qs-item">';
             html += '<div class="qs-edge ' + e.dir + ' ' + eClass + '">' + dirLabel + '</div>';
             html += '<div class="qs-detail">';
             html += '<div class="qs-player">' + e.stat + ' ' + e.proj + ' (line ' + e.line + ')</div>';
             const srcTag = e.src && (e.src.startsWith('head') || e.src.startsWith('h2h')) ? ' \u00b7 H2H' : (e.src === 'archetype' ? ' \u00b7 ARCH' : '');
             html += '<div class="qs-info">' + e.player + (e.vs ? ' vs ' + e.vs : '') + srcTag + '</div>';
-            html += '</div></div>';
+            html += '</div>';
+            html += '<button class="qs-lock' + (isLocked ? ' locked' : '') + '" data-qs-idx="' + ei + '" title="Lock this edge">&#128274;</button>';
+            html += '</div>';
         });
 
         html += '</div></div>';
 
         slateEl.insertAdjacentHTML('afterbegin', html);
+
+        // Bind lock buttons
+        document.querySelectorAll('.qs-lock').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const ei = parseInt(btn.dataset.qsIdx);
+                const e = topEdges[ei];
+                if (!e) return;
+                const existIdx = lockedEdges.findIndex(le => le.stat === e.stat && le.player === e.player && le.vs === e.vs);
+                if (existIdx >= 0) {
+                    lockedEdges.splice(existIdx, 1);
+                    btn.classList.remove('locked');
+                } else {
+                    lockedEdges.push({ stat: e.stat, proj: e.proj, line: e.line, edge: e.edge, dir: e.dir, player: e.player, vs: e.vs, src: e.src, timestamp: Date.now() });
+                    btn.classList.add('locked');
+                }
+                localStorage.setItem('pfx_locked_edges', JSON.stringify(lockedEdges));
+                renderLockedEdges();
+            });
+        });
+    }
+
+    // ═══ LOCKED EDGES (sidebar) ═══
+    function renderLockedEdges() {
+        const container = document.getElementById('locked-edges');
+        const list = document.getElementById('locked-list');
+        if (!container || !list) return;
+        if (lockedEdges.length === 0) {
+            container.style.display = 'none';
+            list.innerHTML = '';
+            return;
+        }
+        container.style.display = 'block';
+        let html = '';
+        lockedEdges.forEach((le, i) => {
+            const edgePct = Math.abs(le.edge).toFixed(0);
+            const dirLabel = le.dir === 'over' ? 'O +' + edgePct + '%' : 'U -' + edgePct + '%';
+            html += '<div class="locked-edge-item">';
+            html += '<div class="le-edge ' + le.dir + '">' + dirLabel + '</div>';
+            html += '<div class="le-detail">';
+            html += '<div class="le-player">' + le.stat + ' ' + le.proj + ' (line ' + le.line + ')</div>';
+            html += '<div class="le-info">' + le.player + (le.vs ? ' vs ' + le.vs : '') + '</div>';
+            html += '</div>';
+            html += '<span class="le-remove" data-le-idx="' + i + '" title="Remove">\u2715</span>';
+            html += '</div>';
+        });
+        list.innerHTML = html;
+        list.querySelectorAll('.le-remove').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const idx = parseInt(btn.dataset.leIdx);
+                lockedEdges.splice(idx, 1);
+                localStorage.setItem('pfx_locked_edges', JSON.stringify(lockedEdges));
+                renderLockedEdges();
+            });
+        });
     }
 
     // ═══ ARCHETYPE CONTEXT (sidebar) ═══
@@ -2091,43 +2204,59 @@ function projectTeam(lineupIds, opposingPitcherId, paOverride) {
             card += '<div class="game-type-badge ex-badge">EXHIBITION</div>';
         }
 
-        // Pitchers
-        card += '<div class="gt-pitchers">';
+        // Pitcher + Lineup data
         const awayPName = awayPP ? awayPP.fullName : 'TBD';
         const homePName = homePP ? homePP.fullName : 'TBD';
         const awayArch = awayPS ? archName(awayPS.cluster) : '';
         const homeArch = homePS ? archName(homePS.cluster) : '';
         const awayColor = awayCluster.color || '#888';
         const homeColor = homeCluster.color || '#888';
-        card += awayTeam + ' SP: <span class="sp-name">' + fmtName(awayPName) + '</span>';
-        if (awayArch) card += ' <span style="color:' + awayColor + ';font-size:0.6rem">(' + awayArch + ')</span>';
-        card += '<br>' + homeTeam + ' SP: <span class="sp-name">' + fmtName(homePName) + '</span>';
-        if (homeArch) card += ' <span style="color:' + homeColor + ';font-size:0.6rem">(' + homeArch + ')</span>';
-        card += '</div>';
 
         if (hasLineups) {
-            // Side-by-side projections
-            card += '<div class="gt-sides">';
+            // === NEW: SP Center + Lineup Columns Layout ===
+            function wobaConfClass(w) { return w >= 0.370 ? 'conf-1' : w >= 0.340 ? 'conf-2' : w >= 0.310 ? 'conf-3' : w >= 0.270 ? 'conf-4' : 'conf-5'; }
+            function wobaConfColor(w) { return w >= 0.370 ? 'var(--conf-1)' : w >= 0.340 ? 'var(--conf-2)' : w >= 0.310 ? 'var(--conf-3)' : w >= 0.270 ? 'var(--conf-4)' : 'var(--conf-5)'; }
 
-            // Away offense
-            card += '<div class="gt-side">';
-            card += '<div class="gt-side-label">' + awayTeam + ' OFFENSE</div>';
-            card += '<div class="gt-side-runs">' + awayProj.runs.toFixed(1) + '</div>';
-            card += '<div class="gt-side-stats">';
-            card += '<div class="mini-stat">H <span>' + awayProj.teamH.toFixed(1) + '</span></div>';
-            card += '<div class="mini-stat">HR <span>' + awayProj.teamHR.toFixed(1) + '</span></div>';
-            card += '<div class="mini-stat">TB <span>' + awayProj.teamTB.toFixed(1) + '</span></div>';
-            card += '</div></div>';
+            card += '<div class="gt-lineup-display">';
 
-            // Home offense
-            card += '<div class="gt-side">';
-            card += '<div class="gt-side-label">' + homeTeam + ' OFFENSE</div>';
-            card += '<div class="gt-side-runs">' + homeProj.runs.toFixed(1) + '</div>';
-            card += '<div class="gt-side-stats">';
-            card += '<div class="mini-stat">H <span>' + homeProj.teamH.toFixed(1) + '</span></div>';
-            card += '<div class="mini-stat">HR <span>' + homeProj.teamHR.toFixed(1) + '</span></div>';
-            card += '<div class="mini-stat">TB <span>' + homeProj.teamTB.toFixed(1) + '</span></div>';
-            card += '</div></div>';
+            // Away lineup column (batting vs home SP)
+            card += '<div class="gt-lineup-col">';
+            card += '<div class="lu-header">' + awayTeam + ' \u2014 ' + awayProj.runs.toFixed(1) + ' R</div>';
+            awayProj.batterDetails.forEach((bd, i) => {
+                const lastName = fmtName(bd.name).split(' ').pop();
+                const dotColor = wobaConfColor(bd.projWoba);
+                const wobaClass = wobaConfClass(bd.projWoba);
+                card += '<div class="gt-lu-row">';
+                card += '<span class="gt-lu-dot" style="background:' + dotColor + '"></span>';
+                card += '<span class="gt-lu-name">' + (i + 1) + '. ' + lastName + '</span>';
+                card += '<span class="gt-lu-woba ' + wobaClass + '">' + (bd.projWoba > 0 ? bd.projWoba.toFixed(3) : '\u2014') + '</span>';
+                card += '</div>';
+            });
+            card += '</div>';
+
+            // SP Center column
+            card += '<div class="gt-sp-center">';
+            card += '<div class="gt-sp-name" style="color:' + awayColor + '">' + fmtName(awayPName) + '</div>';
+            if (awayArch) card += '<div class="gt-sp-arch" style="color:' + awayColor + '">' + awayArch + '</div>';
+            card += '<div class="gt-sp-vs">vs</div>';
+            card += '<div class="gt-sp-name" style="color:' + homeColor + '">' + fmtName(homePName) + '</div>';
+            if (homeArch) card += '<div class="gt-sp-arch" style="color:' + homeColor + '">' + homeArch + '</div>';
+            card += '</div>';
+
+            // Home lineup column (batting vs away SP)
+            card += '<div class="gt-lineup-col">';
+            card += '<div class="lu-header">' + homeTeam + ' \u2014 ' + homeProj.runs.toFixed(1) + ' R</div>';
+            homeProj.batterDetails.forEach((bd, i) => {
+                const lastName = fmtName(bd.name).split(' ').pop();
+                const dotColor = wobaConfColor(bd.projWoba);
+                const wobaClass = wobaConfClass(bd.projWoba);
+                card += '<div class="gt-lu-row">';
+                card += '<span class="gt-lu-dot" style="background:' + dotColor + '"></span>';
+                card += '<span class="gt-lu-name">' + (i + 1) + '. ' + lastName + '</span>';
+                card += '<span class="gt-lu-woba ' + wobaClass + '">' + (bd.projWoba > 0 ? bd.projWoba.toFixed(3) : '\u2014') + '</span>';
+                card += '</div>';
+            });
+            card += '</div>';
 
             card += '</div>';
 
@@ -2144,6 +2273,19 @@ function projectTeam(lineupIds, opposingPitcherId, paOverride) {
             card += '<div class="line-item"><label>F5 SPREAD</label><input class="line-input game-f5spread-input" data-game-idx="' + idx + '" data-type="f5spread" placeholder="-0.5"><div class="edge-display" id="game-f5spread-' + idx + '"></div></div>';
             card += '</div>';
 
+            // Edge slots
+            const _ouEdge = ((totalRuns - 8.5) / 8.5 * 100);
+            const _spEdge = Math.abs(projSpread) > 1.5 ? ((Math.abs(projSpread) - 1.5) / 1.5 * 100) : -((1.5 - Math.abs(projSpread)) / 1.5 * 100);
+            card += '<div class="edge-slots">';
+            if (Math.abs(_ouEdge) >= 5) {
+                card += '<div class="edge-slot ' + (_ouEdge > 0 ? 'over' : 'under') + '">' + (_ouEdge > 0 ? 'O' : 'U') + ' ' + (_ouEdge > 0 ? '+' : '') + _ouEdge.toFixed(0) + '% TOTAL</div>';
+            }
+            if (Math.abs(_spEdge) >= 5) {
+                const spLabel = projSpread > 0 ? homeTeam : awayTeam;
+                card += '<div class="edge-slot ' + (_spEdge > 0 ? 'over' : 'under') + '">' + spLabel + ' ' + (_spEdge > 0 ? '+' : '') + _spEdge.toFixed(0) + '% SPREAD</div>';
+            }
+            card += '</div>';
+
             // Coverage
             const awayCov = awayProj.coverage + '/' + awayProj.total;
             const homeCov = homeProj.coverage + '/' + homeProj.total;
@@ -2152,35 +2294,14 @@ function projectTeam(lineupIds, opposingPitcherId, paOverride) {
             const awayClass = awayPct >= 0.7 ? 'cov-good' : 'cov-warn';
             const homeClass = homePct >= 0.7 ? 'cov-good' : 'cov-warn';
             card += '<div class="gt-coverage">COVERAGE: <span class="' + awayClass + '">' + awayCov + '</span> ' + awayTeam + ' \u00b7 <span class="' + homeClass + '">' + homeCov + '</span> ' + homeTeam + '</div>';
-
-            // Lineup toggle
-            card += '<div class="gt-lineup-toggle" data-gidx="' + idx + '">\u25B6 LINEUP DETAILS</div>';
-            card += '<div class="gt-lineup-detail" id="lineup-detail-' + idx + '">';
-
-            // Away lineup
-            card += '<div class="gt-lineup-section">' + awayTeam + ' vs ' + (homeArch || 'Unknown') + '</div>';
-            awayProj.batterDetails.forEach((bd, i) => {
-                const lastName = fmtName(bd.name).split(' ').pop();
-                card += '<div class="gt-batter-row">';
-                card += '<span class="batter-name">' + (i + 1) + '. ' + lastName + '</span>';
-                card += '<span class="batter-stats">H <span>' + bd.projH.toFixed(2) + '</span> TB <span>' + bd.projTB.toFixed(2) + '</span></span>';
-                card += '<span class="batter-src">' + bd.source + '</span>';
-                card += '</div>';
-            });
-
-            // Home lineup
-            card += '<div class="gt-lineup-section">' + homeTeam + ' vs ' + (awayArch || 'Unknown') + '</div>';
-            homeProj.batterDetails.forEach((bd, i) => {
-                const lastName = fmtName(bd.name).split(' ').pop();
-                card += '<div class="gt-batter-row">';
-                card += '<span class="batter-name">' + (i + 1) + '. ' + lastName + '</span>';
-                card += '<span class="batter-stats">H <span>' + bd.projH.toFixed(2) + '</span> TB <span>' + bd.projTB.toFixed(2) + '</span></span>';
-                card += '<span class="batter-src">' + bd.source + '</span>';
-                card += '</div>';
-            });
-
-            card += '</div>';
         } else {
+            // No lineups yet — show pitchers only
+            card += '<div class="gt-pitchers">';
+            card += awayTeam + ' SP: <span class="sp-name">' + fmtName(awayPName) + '</span>';
+            if (awayArch) card += ' <span style="color:' + awayColor + ';font-size:0.6rem">(' + awayArch + ')</span>';
+            card += '<br>' + homeTeam + ' SP: <span class="sp-name">' + fmtName(homePName) + '</span>';
+            if (homeArch) card += ' <span style="color:' + homeColor + ';font-size:0.6rem">(' + homeArch + ')</span>';
+            card += '</div>';
             card += '<div class="gt-tbd">LINEUPS TBD &mdash; RUN CLOSER TO GAME TIME</div>';
         }
 
@@ -2462,6 +2583,26 @@ function projectTeam(lineupIds, opposingPitcherId, paOverride) {
         card += sc('K', projK.toFixed(2));
         card += sc('TB', projTB.toFixed(2));
         card += '</div>';
+
+        // Edge slots (green/red indicators vs default lines)
+        if (projSource !== 'insufficient data') {
+            const _edges = [];
+            const hEdge = ((projH - DEFAULT_LINES.h) / DEFAULT_LINES.h * 100);
+            if (Math.abs(hEdge) >= 5) _edges.push({ dir: hEdge > 0 ? 'over' : 'under', pct: hEdge, label: 'H' });
+            const hrEdge = ((projHR - DEFAULT_LINES.hr) / DEFAULT_LINES.hr * 100);
+            if (Math.abs(hrEdge) >= 5) _edges.push({ dir: hrEdge > 0 ? 'over' : 'under', pct: hrEdge, label: 'HR' });
+            const tbEdge = ((projTB - DEFAULT_LINES.tb) / DEFAULT_LINES.tb * 100);
+            if (Math.abs(tbEdge) >= 5) _edges.push({ dir: tbEdge > 0 ? 'over' : 'under', pct: tbEdge, label: 'TB' });
+            const kEdge = ((projK - DEFAULT_LINES.k) / DEFAULT_LINES.k * 100);
+            if (Math.abs(kEdge) >= 5) _edges.push({ dir: kEdge > 0 ? 'over' : 'under', pct: kEdge, label: 'K' });
+            if (_edges.length > 0) {
+                card += '<div class="edge-slots">';
+                _edges.forEach(e => {
+                    card += '<div class="edge-slot ' + e.dir + '">' + (e.dir === 'over' ? 'O +' : 'U ') + e.pct.toFixed(0) + '% ' + e.label + '</div>';
+                });
+                card += '</div>';
+            }
+        }
 
         // Player Props (always visible)
         card += '<div class="props-label">PLAYER PROPS</div>';

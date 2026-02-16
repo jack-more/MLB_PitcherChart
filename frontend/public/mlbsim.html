@@ -287,6 +287,7 @@ body::after{
 <header class="header">
     <div class="brand-row">
         <div style="display:flex;align-items:baseline;gap:10px">
+            <a href="cosmos.html" style="font-family:var(--font-mono);font-size:9px;color:var(--color-meta);text-decoration:none;letter-spacing:1px">&larr; ATLAS</a>
             <div class="logo">MLB SIM</div>
             <span class="byline">by Jack Morello</span>
         </div>
@@ -1276,6 +1277,9 @@ function initMatchups() {
         }
         renderArchGrid();
     }
+
+    // Expose for deep-link support
+    window.selectBatter = selectBatter;
 }
 
 // ═══ TRENDS TAB ═══
@@ -1393,6 +1397,17 @@ function initNav() {
     initChips();
     initMatchups();
     renderArchLegend();
+
+    // Handle ?batter= deep link from cosmos
+    const params = new URLSearchParams(window.location.search);
+    const batterIdParam = params.get('batter');
+    if (batterIdParam) {
+        const batter = DATA.batters.find(b => b.batter === parseInt(batterIdParam));
+        if (batter) {
+            document.querySelector('[data-tab="matchups"]').click();
+            window.selectBatter(batter);
+        }
+    }
 
     // Scan for games
     await scanGames();

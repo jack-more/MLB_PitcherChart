@@ -689,7 +689,7 @@
         <div class="batter-stack" id="batter-stack"></div>
 
         <div class="header-controls">
-            <div class="key key-dark" id="simlab-toggle" style="height:30px;padding:0 14px;font-size:10px;letter-spacing:1px;font-weight:700;background:linear-gradient(135deg,#ff4400,#cc2200);color:#fff;border:none;cursor:pointer;border-radius:4px;box-shadow:0 0 8px rgba(255,68,0,0.4),0 0 20px rgba(255,68,0,0.15);animation:simGlow 2s ease-in-out infinite;display:flex;align-items:center;gap:6px;"><span style="font-size:13px;">⚡</span> SIM LAB</div>
+            <div class="key key-dark" id="simlab-toggle" style="height:30px;padding:0 14px;font-size:10px;letter-spacing:1px;font-weight:700;background:linear-gradient(135deg,#ff4400,#cc2200);color:#fff;border:none;cursor:pointer;border-radius:4px;box-shadow:0 0 8px rgba(255,68,0,0.4),0 0 20px rgba(255,68,0,0.15);animation:simGlow 2s ease-in-out infinite;display:flex;align-items:center;gap:6px;"><span style="font-size:13px;">⚡</span> MLB SIM</div>
             <div class="key key-dark" id="history-toggle" style="height:28px;padding:0 10px;font-size:9px;letter-spacing:0.5px;">HISTORY</div>
             <a href="cosmos-mobile.html" class="key key-dark" style="height:28px;padding:0 10px;font-size:9px;letter-spacing:0.5px;text-decoration:none;display:flex;align-items:center;gap:4px;">📱 Mobile</a>
             <div class="led active" id="led-data"></div>
@@ -3048,11 +3048,11 @@
         }
 
         // ═══════════════════════════════════════
-        // SIM LAB
+        // MLB SIM
         // ═══════════════════════════════════════
         document.getElementById('simlab-toggle').addEventListener('click', () => {
             const ab = STATE.activeBatters.length > 0 ? STATE.activeBatters[STATE.activeBatters.length-1] : null;
-            const url = ab ? 'simlab.html?batter=' + ab.batter : 'simlab.html';
+            const url = ab ? 'mlbsim.html?batter=' + ab.batter : 'mlbsim.html';
             window.open(url, '_blank');
         });
 
