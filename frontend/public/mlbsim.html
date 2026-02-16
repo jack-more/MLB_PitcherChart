@@ -49,6 +49,8 @@ body::after{
 .brand-row{display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
 .logo{font-family:var(--font-display);font-size:28px;color:var(--color-accent);background:var(--color-black);padding:4px 14px;transform:skewX(-5deg);display:inline-block;letter-spacing:2px;line-height:1.1}
 .byline{font-family:var(--font-body);font-size:11px;font-weight:400;color:#555;letter-spacing:0.5px;font-style:italic}
+.atlas-btn{font-family:var(--font-mono);font-size:9px;font-weight:700;color:var(--color-meta);text-decoration:none;letter-spacing:1px;padding:4px 10px;border:1.5px solid var(--color-meta);border-radius:12px;transition:all 0.15s}
+.atlas-btn:active{background:var(--color-black);color:#fff}
 .status-dot{width:12px;height:12px;border-radius:50%;background:var(--color-accent);animation:pulse 2s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(255,234,0,0.4)}50%{opacity:0.7;box-shadow:0 0 0 8px rgba(255,234,0,0)}}
 
@@ -287,11 +289,13 @@ body::after{
 <header class="header">
     <div class="brand-row">
         <div style="display:flex;align-items:baseline;gap:10px">
-            <a href="cosmos.html" style="font-family:var(--font-mono);font-size:9px;color:var(--color-meta);text-decoration:none;letter-spacing:1px">&larr; ATLAS</a>
             <div class="logo">MLB SIM</div>
             <span class="byline">by Jack Morello</span>
         </div>
-        <div class="status-dot" id="status-dot"></div>
+        <div style="display:flex;align-items:center;gap:8px">
+            <a href="cosmos.html" class="atlas-btn">ATLAS</a>
+            <div class="status-dot" id="status-dot"></div>
+        </div>
     </div>
     <div class="ticker">
         <div class="ticker-track" id="ticker-track">
@@ -312,7 +316,6 @@ body::after{
         <div class="chips" id="filter-chips">
             <div class="chip active" data-filter="all">All Games</div>
             <div class="chip" data-filter="value">Best Value</div>
-            <div class="chip" data-filter="high-total">High Total</div>
             <div class="chip" data-filter="early">Early Slate</div>
         </div>
         <div class="slate-info">
@@ -1365,7 +1368,6 @@ function initChips() {
                 if (!gp) return;
                 let show = true;
                 if (filter === 'value') show = gp.hasLineups && Math.abs(gp.spread) >= 1.5;
-                else if (filter === 'high-total') show = gp.hasLineups && gp.totalRuns >= 9;
                 else if (filter === 'early') show = i < Math.ceil(allGameProjections.length / 2);
                 card.style.display = show ? '' : 'none';
             });

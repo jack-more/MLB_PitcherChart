@@ -572,8 +572,8 @@
         }
         @keyframes scanTextAnim { 0% { opacity:0; letter-spacing:16px; } 30% { opacity:1; letter-spacing:4px; } 80% { opacity:1; } 100% { opacity:0; } }
         @keyframes simGlow {
-            0%, 100% { box-shadow: 0 0 8px rgba(255,68,0,0.4), 0 0 20px rgba(255,68,0,0.15); }
-            50% { box-shadow: 0 0 14px rgba(255,68,0,0.6), 0 0 30px rgba(255,68,0,0.25); }
+            0%, 100% { box-shadow: 0 0 8px rgba(255,234,0,0.3), 0 0 20px rgba(255,234,0,0.12); }
+            50% { box-shadow: 0 0 14px rgba(255,234,0,0.5), 0 0 30px rgba(255,234,0,0.2); }
         }
 
         /* ═══ PITCHER ROSTER ═══ */
@@ -689,7 +689,7 @@
         <div class="batter-stack" id="batter-stack"></div>
 
         <div class="header-controls">
-            <div class="key key-dark" id="simlab-toggle" style="height:30px;padding:0 14px;font-size:10px;letter-spacing:1px;font-weight:700;background:linear-gradient(135deg,#ff4400,#cc2200);color:#fff;border:none;cursor:pointer;border-radius:4px;box-shadow:0 0 8px rgba(255,68,0,0.4),0 0 20px rgba(255,68,0,0.15);animation:simGlow 2s ease-in-out infinite;display:flex;align-items:center;gap:6px;"><span style="font-size:13px;">⚡</span> MLB SIM</div>
+            <div class="key key-dark" id="simlab-toggle" style="height:30px;padding:0 14px;font-size:10px;letter-spacing:1.5px;font-weight:700;font-family:'Anton',sans-serif;background:#080808;color:#FFEA00;border:none;cursor:pointer;border-radius:4px;box-shadow:0 0 8px rgba(255,234,0,0.3),0 0 20px rgba(255,234,0,0.12);animation:simGlow 2s ease-in-out infinite;display:flex;align-items:center;gap:6px;transform:skewX(-5deg);"><span style="font-size:13px;">⚡</span> MLB SIM</div>
             <div class="key key-dark" id="history-toggle" style="height:28px;padding:0 10px;font-size:9px;letter-spacing:0.5px;">HISTORY</div>
             <a href="cosmos-mobile.html" class="key key-dark" style="height:28px;padding:0 10px;font-size:9px;letter-spacing:0.5px;text-decoration:none;display:flex;align-items:center;gap:4px;">📱 Mobile</a>
             <div class="led active" id="led-data"></div>
