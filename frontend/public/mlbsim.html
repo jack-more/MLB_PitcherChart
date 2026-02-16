@@ -195,8 +195,15 @@ body::after{
 .today-arch{font-family:var(--font-mono);font-size:10px;color:var(--color-meta)}
 .today-ms{font-family:var(--font-display);font-size:32px}
 
+.arch-filter-bar{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+.arch-filter-chip{font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:5px 12px;border:2px solid var(--color-black);background:var(--color-card);cursor:pointer;transition:all 0.15s;white-space:nowrap}
+.arch-filter-chip.active{background:var(--color-accent);color:var(--color-black)}
+.arch-filter-chip:hover{background:var(--color-black);color:#fff}
+.arch-filter-chip.active:hover{background:var(--color-accent);color:var(--color-black)}
 .arch-grid{background:var(--color-card);border:var(--border);box-shadow:var(--shadow);overflow:hidden}
-.arch-row{display:grid;grid-template-columns:auto 1fr 40px 48px 56px 52px;align-items:center;gap:6px;padding:8px 10px;min-height:44px;border-bottom:1px solid #eee;font-size:12px}
+.arch-row{display:grid;grid-template-columns:auto 1fr 40px 48px 40px 40px 56px 52px;align-items:center;gap:6px;padding:8px 10px;min-height:44px;border-bottom:1px solid #eee;font-size:12px}
+.arch-ba,.arch-krate{font-family:var(--font-mono);font-size:10px;color:var(--color-meta);text-align:center}
+.arch-col-active{font-weight:800;color:var(--color-black)!important}
 .arch-row:last-child{border-bottom:none}
 .arch-emoji{font-size:16px;text-align:center}
 .arch-name{font-family:var(--font-body);font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1145,69 +1152,129 @@ function initMatchups() {
 
         profileEl.innerHTML = html;
 
-        // Archetype breakdown grid
-        const clusterIds = Object.keys(DATA.clusters).sort((a, b) => {
-            const ca = DATA.clusters[a], cb = DATA.clusters[b];
-            return (ca.full_name || a).localeCompare(cb.full_name || b);
-        });
+        // Archetype breakdown grid — build enriched data
+        const clusterIds = Object.keys(DATA.clusters);
 
         // Build pitcher name lookup
         const pitcherNames = {};
         DATA.pitcherSeasons.forEach(ps => { if (!pitcherNames[ps.pitcher]) pitcherNames[ps.pitcher] = ps.player_name; });
 
-        let gridHtml = '<div class="arch-grid">';
-        let rowIdx = 0;
+        // Compute all archetype stats for this batter
+        const archData = [];
         clusterIds.forEach(cid => {
             const cl = DATA.clusters[cid];
             const msData = computeMS(batter.batter, cid, null);
             if (msData.source === 'none') return;
-            const tier = msTier(msData.ms);
-            const signal = msData.ms >= 80 ? 'crush' : msData.ms >= 55 ? 'neutral' : 'fade';
 
-            gridHtml += '<div class="arch-row tier-' + tier + '" data-arch-idx="' + rowIdx + '">';
-            gridHtml += '<div class="arch-emoji">' + (cl.emoji || '') + '</div>';
-            gridHtml += '<div class="arch-name" style="color:' + (cl.color || '#333') + '">' + (cl.full_name || cid) + '</div>';
-            gridHtml += '<div class="arch-pa">' + msData.pa + '</div>';
-            gridHtml += '<div class="arch-woba">' + msData.woba.toFixed(3) + '</div>';
-            gridHtml += '<div class="arch-ms ' + msClass(msData.ms) + '">' + msData.ms + '</div>';
-            gridHtml += '<div class="arch-signal signal-' + signal + '">' + signal.toUpperCase() + '</div>';
-            gridHtml += '</div>';
+            // Compute BA and K rate from hitterVsCluster rows
+            const archRows = DATA.hitterVsCluster.filter(r =>
+                r.batter === batter.batter && String(r.cluster) === String(cid)
+            );
+            let totPA = 0, totAB = 0, totH = 0, totK = 0, totHR = 0, totBB = 0;
+            archRows.forEach(r => {
+                totPA += r.PA || 0; totAB += r.AB || 0; totH += r.H || 0;
+                totK += r.K || 0; totHR += r.HR || 0; totBB += r.BB || 0;
+            });
+            const ba = totAB > 0 ? totH / totAB : 0;
+            const kRate = totPA > 0 ? totK / totPA : 0;
 
-            // Expandable detail panel for pitcher H2H matchups
-            gridHtml += '<div class="arch-detail" id="arch-detail-' + rowIdx + '">';
-            const hvpRecords = (DATA._hvpIndex[batter.batter] && DATA._hvpIndex[batter.batter][cid]) ? DATA._hvpIndex[batter.batter][cid] : [];
-            if (hvpRecords.length > 0) {
-                const sorted = [...hvpRecords].sort((a, b) => (b.pa || 0) - (a.pa || 0));
-                sorted.forEach(rec => {
-                    const pName = pitcherNames[rec.p] ? fmtName(pitcherNames[rec.p]) : 'Unknown (#' + rec.p + ')';
-                    gridHtml += '<div class="arch-pitcher-row">';
-                    gridHtml += '<div class="arch-pitcher-name">' + pName + '</div>';
-                    gridHtml += '<div class="arch-pitcher-stats">';
-                    gridHtml += '<span>' + (rec.pa || 0) + ' PA</span>';
-                    gridHtml += '<span>' + (rec.ba != null ? rec.ba.toFixed(3) : '\u2014') + ' BA</span>';
-                    gridHtml += '<span>' + (rec.w != null ? rec.w.toFixed(3) : '\u2014') + ' wOBA</span>';
-                    gridHtml += '</div></div>';
-                });
-            } else {
-                gridHtml += '<div style="font-family:var(--font-mono);font-size:9px;color:var(--color-meta);padding:4px 0">Archetype-level data only (no individual pitcher H2H)</div>';
-            }
-            gridHtml += '</div>';
-            rowIdx++;
-        });
-        gridHtml += '</div>';
-        gridEl.innerHTML = gridHtml;
-
-        // Bind click handlers for expandable rows
-        gridEl.querySelectorAll('.arch-row').forEach(row => {
-            row.addEventListener('click', () => {
-                const idx = row.dataset.archIdx;
-                const detail = document.getElementById('arch-detail-' + idx);
-                if (detail) {
-                    detail.classList.toggle('open');
-                    row.style.fontWeight = detail.classList.contains('open') ? '800' : '';
-                }
+            archData.push({
+                cid, cl, msData,
+                tier: msTier(msData.ms),
+                signal: msData.ms >= 80 ? 'crush' : msData.ms >= 55 ? 'neutral' : 'fade',
+                ba, kRate, totPA, totHR,
+                hvpRecords: (DATA._hvpIndex[batter.batter] && DATA._hvpIndex[batter.batter][cid]) ? DATA._hvpIndex[batter.batter][cid] : []
             });
         });
+
+        // Filter/sort state
+        let currentSort = 'ms';
+        function renderArchGrid() {
+            // Sort archData based on currentSort
+            const sorted = [...archData];
+            if (currentSort === 'ms') sorted.sort((a, b) => b.msData.ms - a.msData.ms);
+            else if (currentSort === 'ba') sorted.sort((a, b) => b.ba - a.ba);
+            else if (currentSort === 'krate') sorted.sort((a, b) => a.kRate - b.kRate); // lower K% = better for batter
+            else if (currentSort === 'woba') sorted.sort((a, b) => b.msData.woba - a.msData.woba);
+            else if (currentSort === 'hr') sorted.sort((a, b) => b.totHR - a.totHR);
+            else if (currentSort === 'pa') sorted.sort((a, b) => b.totPA - a.totPA);
+
+            let gridHtml = '';
+            // Filter chips
+            gridHtml += '<div class="arch-filter-bar">';
+            const chips = [
+                { key: 'ms', label: 'MS' },
+                { key: 'ba', label: 'BA' },
+                { key: 'krate', label: 'K%' },
+                { key: 'woba', label: 'wOBA' },
+                { key: 'hr', label: 'HR' },
+                { key: 'pa', label: 'PA' }
+            ];
+            chips.forEach(c => {
+                gridHtml += '<div class="arch-filter-chip' + (currentSort === c.key ? ' active' : '') + '" data-sort="' + c.key + '">' + c.label + '</div>';
+            });
+            gridHtml += '</div>';
+
+            gridHtml += '<div class="arch-grid">';
+            sorted.forEach((d, rowIdx) => {
+                const isBA = currentSort === 'ba';
+                const isK = currentSort === 'krate';
+
+                gridHtml += '<div class="arch-row tier-' + d.tier + '" data-arch-idx="' + rowIdx + '">';
+                gridHtml += '<div class="arch-emoji">' + (d.cl.emoji || '') + '</div>';
+                gridHtml += '<div class="arch-name" style="color:' + (d.cl.color || '#333') + '">' + (d.cl.full_name || d.cid) + '</div>';
+                gridHtml += '<div class="arch-pa' + (currentSort === 'pa' ? ' arch-col-active' : '') + '">' + d.msData.pa + '</div>';
+                gridHtml += '<div class="arch-ba' + (isBA ? ' arch-col-active' : '') + '">' + d.ba.toFixed(3) + '</div>';
+                gridHtml += '<div class="arch-krate' + (isK ? ' arch-col-active' : '') + '">' + (d.kRate * 100).toFixed(0) + '%</div>';
+                gridHtml += '<div class="arch-woba' + (currentSort === 'woba' ? ' arch-col-active' : '') + '">' + d.msData.woba.toFixed(3) + '</div>';
+                gridHtml += '<div class="arch-ms ' + msClass(d.msData.ms) + '">' + d.msData.ms + '</div>';
+                gridHtml += '<div class="arch-signal signal-' + d.signal + '">' + d.signal.toUpperCase() + '</div>';
+                gridHtml += '</div>';
+
+                // Expandable detail panel for pitcher H2H matchups
+                gridHtml += '<div class="arch-detail" id="arch-detail-' + rowIdx + '">';
+                if (d.hvpRecords.length > 0) {
+                    const hvpSorted = [...d.hvpRecords].sort((a, b) => (b.pa || 0) - (a.pa || 0));
+                    hvpSorted.forEach(rec => {
+                        const pName = pitcherNames[rec.p] ? fmtName(pitcherNames[rec.p]) : 'Unknown (#' + rec.p + ')';
+                        gridHtml += '<div class="arch-pitcher-row">';
+                        gridHtml += '<div class="arch-pitcher-name">' + pName + '</div>';
+                        gridHtml += '<div class="arch-pitcher-stats">';
+                        gridHtml += '<span>' + (rec.pa || 0) + ' PA</span>';
+                        gridHtml += '<span>' + (rec.ba != null ? rec.ba.toFixed(3) : '\u2014') + ' BA</span>';
+                        gridHtml += '<span>' + (rec.w != null ? rec.w.toFixed(3) : '\u2014') + ' wOBA</span>';
+                        gridHtml += '</div></div>';
+                    });
+                } else {
+                    gridHtml += '<div style="font-family:var(--font-mono);font-size:9px;color:var(--color-meta);padding:4px 0">Archetype-level data only</div>';
+                }
+                gridHtml += '</div>';
+            });
+            gridHtml += '</div>';
+            gridEl.innerHTML = gridHtml;
+
+            // Bind click handlers for expandable rows
+            gridEl.querySelectorAll('.arch-row').forEach(row => {
+                row.addEventListener('click', () => {
+                    const idx = row.dataset.archIdx;
+                    const detail = document.getElementById('arch-detail-' + idx);
+                    if (detail) {
+                        detail.classList.toggle('open');
+                        row.style.fontWeight = detail.classList.contains('open') ? '800' : '';
+                    }
+                });
+            });
+
+            // Bind filter chip clicks
+            gridEl.querySelectorAll('.arch-filter-chip').forEach(chip => {
+                chip.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    currentSort = chip.dataset.sort;
+                    renderArchGrid();
+                });
+            });
+        }
+        renderArchGrid();
     }
 }
 
