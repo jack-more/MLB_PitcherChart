@@ -254,6 +254,34 @@
             padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.08);
             display: flex; flex-direction: column; gap: 8px;
         }
+        .filter-section {
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 4px;
+            padding: 10px 12px;
+            background: rgba(255,255,255,0.02);
+        }
+        .filter-bar-header {
+            font-family: var(--font-tech);
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            color: #888;
+            font-weight: 700;
+            padding-bottom: 4px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            margin-bottom: 4px;
+        }
+        .header-hitter-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .header-hitter-controls .key-row {
+            margin: 0;
+        }
+        .header-hitter-controls .label {
+            margin: 0;
+            white-space: nowrap;
+        }
 
         .key-row { display: flex; gap: 4px; flex-wrap: wrap; }
         .key-row .key {
@@ -680,10 +708,18 @@
             <div class="search-dropdown" id="search-dropdown"></div>
         </div>
 
-        <div class="team-filter" id="batter-team-filter" style="margin-left:6px;">
-            <input type="text" id="batter-team-search" placeholder="TEAM ROSTER" autocomplete="off" style="width:120px;font-size:9px;">
-            <div class="team-dropdown" id="batter-team-dropdown"></div>
-            <span class="team-clear" id="batter-team-clear">&times;</span>
+        <div class="header-hitter-controls">
+            <div class="key-row" id="metric-keys">
+                <div class="key key-orange" data-stat="wOBA">wOBA</div>
+                <div class="key key-dark" data-stat="BA">BA</div>
+                <div class="key key-dark" data-stat="SLG">SLG</div>
+                <div class="key key-dark" data-stat="K_pct">K%</div>
+                <div class="key key-dark" data-stat="BB_pct">BB%</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;">
+                <span class="label" style="margin:0;white-space:nowrap;">MIN PA: <span id="pa-val">10</span></span>
+                <input type="range" min="1" max="200" value="10" id="pa-slider" style="width:70px;">
+            </div>
         </div>
 
         <div class="batter-stack" id="batter-stack"></div>
@@ -708,25 +744,18 @@
 
     <aside id="sidebar">
         <div class="filter-bar">
-            <div>
-                <div class="label-line"><span class="label">Metric</span></div>
-                <div class="key-row" id="metric-keys">
-                    <div class="key key-orange" data-stat="wOBA">wOBA</div>
-                    <div class="key key-dark" data-stat="BA">BA</div>
-                    <div class="key key-dark" data-stat="SLG">SLG</div>
-                    <div class="key key-dark" data-stat="K_pct">K%</div>
-                    <div class="key key-dark" data-stat="BB_pct">BB%</div>
-                </div>
-            </div>
-            <div>
-                <div class="label-line"><span class="label">Filter</span></div>
+            <div class="filter-bar-header">⚾ PITCHER FILTERS</div>
+
+            <div class="filter-section">
+                <div class="label-line"><span class="label">Hand</span></div>
                 <div class="key-row" id="filter-keys">
                     <div class="key key-orange" data-filter="all">ALL</div>
                     <div class="key key-dark" data-filter="RHP">RHP</div>
                     <div class="key key-dark" data-filter="LHP">LHP</div>
                 </div>
             </div>
-            <div>
+
+            <div class="filter-section">
                 <div class="label-line"><span class="label">Team</span></div>
                 <div class="team-filter" id="team-filter">
                     <input type="text" id="team-search" placeholder="ALL TEAMS" autocomplete="off">
@@ -734,20 +763,16 @@
                     <span class="team-clear" id="team-clear">&times;</span>
                 </div>
             </div>
-            <div>
-                <div style="display:flex;align-items:center;gap:8px;">
-                    <span class="label" style="margin:0;">MIN PA: <span id="pa-val">10</span></span>
-                    <input type="range" min="1" max="200" value="10" id="pa-slider" style="flex:1;">
-                </div>
-            </div>
-            <div>
+
+            <div class="filter-section">
+                <div class="label-line"><span class="label">Year</span></div>
                 <select id="year-select" style="width:100%;background:#1e2124;border:1px solid #333;color:#e0e0e0;padding:4px 6px;font-family:var(--font-tech);font-size:9px;outline:none;border-radius:3px;">
                     <option value="all">ALL YEARS</option>
                 </select>
             </div>
-            <div style="border-top:1px solid #222;padding-top:6px;margin-top:4px;">
-                <div class="label-line"><span class="label">Pitcher Filters</span></div>
-                <div style="display:flex;align-items:center;gap:6px;margin-top:3px;">
+
+            <div class="filter-section">
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
                     <span class="label" style="margin:0;min-width:28px;">Velo</span>
                     <div class="range-slider" style="flex:1;--accent-color:#f4a261;">
                         <div class="range-track"></div>
@@ -757,7 +782,7 @@
                     </div>
                     <span id="pf-velo-display" style="font-size:8px;color:#888;min-width:52px;text-align:right;">82-103</span>
                 </div>
-                <div style="display:flex;align-items:center;gap:6px;margin-top:3px;">
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
                     <span class="label" style="margin:0;min-width:28px;">Move</span>
                     <div class="range-slider" style="flex:1;--accent-color:#2a9d8f;">
                         <div class="range-track"></div>
@@ -767,7 +792,7 @@
                     </div>
                     <span id="pf-hbreak-display" style="font-size:8px;color:#888;min-width:52px;text-align:right;">-18 to 18</span>
                 </div>
-                <div class="key-row" id="role-keys" style="margin-top:4px;">
+                <div class="key-row" id="role-keys" style="margin-top:2px;">
                     <div class="key key-orange" data-role="all">ALL</div>
                     <div class="key key-dark" data-role="SP">SP</div>
                     <div class="key key-dark" data-role="RP">RP</div>
@@ -909,7 +934,6 @@
             highlightedCluster: null,
             savedSearches: JSON.parse(localStorage.getItem('pfx_saved') || '[]'),
             teamFilter: null,
-            batterTeamFilter: null,
             pitcherFilters: { veloMin: null, veloMax: null, hBreakMin: null, hBreakMax: null, roleFilter: null },
         };
 
@@ -2419,7 +2443,7 @@
 
         function addBatter(batter) {
             STATE.activeBatters = STATE.activeBatters.filter(b => b.batter !== batter.batter);
-            const maxBatters = STATE.batterTeamFilter ? 15 : 5;
+            const maxBatters = 5;
             if (STATE.activeBatters.length >= maxBatters) STATE.activeBatters.shift();
             STATE.activeBatters.push(batter);
             renderBatterStack();
@@ -2472,13 +2496,6 @@
                 html += '<div class="filter-chip team-chip">' + label + '<span class="remove" data-filter="team">\u2715</span></div>';
             }
 
-            // Batter team filter chip
-            if (STATE.batterTeamFilter) {
-                const bTeam = DATA.teamRosters.teams ? DATA.teamRosters.teams[STATE.batterTeamFilter] : null;
-                const bLabel = STATE.batterTeamFilter + (bTeam ? ' \u2014 ' + bTeam.name : '') + ' (' + STATE.activeBatters.length + ' batters)';
-                html += '<div class="filter-chip team-chip" style="background:rgba(42,157,143,0.2);border-color:#2a9d8f;">\u26BE ' + bLabel + '<span class="remove" data-filter="batter-team">\u2715</span></div>';
-            }
-
             // Secondary batter chips (non-primary batters)
             STATE.activeBatters.slice(0, -1).forEach(b => {
                 html += '<div class="batter-chip" data-id="'+b.batter+'">'+fmtName(b.batter_name)+'<span class="remove" data-id="'+b.batter+'">\u2715</span></div>';
@@ -2515,9 +2532,6 @@
                         document.getElementById('team-clear').style.display = 'none';
                         updateTeamFilter(null);
                         renderBatterStack();
-                    } else if (f === 'batter-team') {
-                        // Clear batter team filter
-                        clearBatterTeam();
                     }
                 });
             });
@@ -2761,105 +2775,7 @@
             });
         })();
 
-        // ═══ BATTER TEAM FILTER ═══
-        async function loadBatterTeam(abbr) {
-            const mlbId = MLB_TEAM_IDS[abbr];
-            if (!mlbId) return;
-            try {
-                const resp = await fetch('https://statsapi.mlb.com/api/v1/teams/' + mlbId + '/roster?rosterType=active');
-                const data = await resp.json();
-                const posPlayers = (data.roster || [])
-                    .filter(p => parseInt(p.position.code) >= 2)
-                    .map(p => p.person.id);
-                // Match against DATA.batters
-                const matched = posPlayers
-                    .map(id => DATA.batters.find(b => b.batter === id))
-                    .filter(Boolean);
-                STATE.activeBatters = matched;
-                STATE.batterTeamFilter = abbr;
-                renderBatterStack();
-                if (matched.length > 0) spawnBatter(matched[matched.length - 1]);
-            } catch(e) {
-                console.warn('Failed to load batter team roster:', e);
-            }
-        }
-
-        function clearBatterTeam() {
-            STATE.batterTeamFilter = null;
-            STATE.activeBatters = [];
-            document.getElementById('batter-team-search').value = '';
-            document.getElementById('batter-team-search').placeholder = 'TEAM ROSTER';
-            document.getElementById('batter-team-clear').style.display = 'none';
-            renderBatterStack();
-            clearBatter();
-            buildArchetypeList();
-        }
-
-        (function() {
-            const input = document.getElementById('batter-team-search');
-            const dropdown = document.getElementById('batter-team-dropdown');
-            const clearBtn = document.getElementById('batter-team-clear');
-            let hlIdx = -1;
-
-            const DIV_ORDER = [
-                { label: 'AL East', teams: ['BAL','BOS','NYY','TB','TOR'] },
-                { label: 'AL Central', teams: ['CLE','CWS','DET','KC','MIN'] },
-                { label: 'AL West', teams: ['HOU','LAA','OAK','SEA','TEX'] },
-                { label: 'NL East', teams: ['ATL','MIA','NYM','PHI','WSH'] },
-                { label: 'NL Central', teams: ['CHC','CIN','MIL','PIT','STL'] },
-                { label: 'NL West', teams: ['ARI','COL','LAD','SD','SF'] },
-            ];
-
-            function renderBTDropdown(filter) {
-                const q = (filter || '').toLowerCase();
-                let html = '';
-                const teams = DATA.teamRosters.teams || {};
-                DIV_ORDER.forEach(div => {
-                    const matching = div.teams.filter(abbr => {
-                        const t = teams[abbr];
-                        if (!t) return false;
-                        if (!q) return true;
-                        return abbr.toLowerCase().includes(q) || t.name.toLowerCase().includes(q);
-                    });
-                    if (matching.length === 0) return;
-                    html += '<div class="team-group-header">' + div.label + '</div>';
-                    matching.forEach(abbr => {
-                        const t = teams[abbr];
-                        html += '<div class="team-option" data-abbr="' + abbr + '">'
-                            + '<span>' + abbr + ' \u2014 ' + t.name + '</span>'
-                            + '<span class="team-count">\u26BE</span></div>';
-                    });
-                });
-                dropdown.innerHTML = html;
-                hlIdx = -1;
-                dropdown.classList.toggle('visible', html.length > 0);
-            }
-
-            function selectBatterTeam(abbr) {
-                const t = (DATA.teamRosters.teams || {})[abbr];
-                input.value = abbr + ' \u2014 ' + (t ? t.name : abbr);
-                clearBtn.style.display = 'block';
-                dropdown.classList.remove('visible');
-                loadBatterTeam(abbr);
-            }
-
-            input.addEventListener('focus', () => { if (!STATE.batterTeamFilter) renderBTDropdown(input.value); });
-            input.addEventListener('input', () => {
-                clearBtn.style.display = 'none';
-                if (STATE.batterTeamFilter) clearBatterTeam();
-                renderBTDropdown(input.value);
-            });
-            input.addEventListener('keydown', (e) => {
-                const opts = dropdown.querySelectorAll('.team-option');
-                if (e.key === 'ArrowDown') { e.preventDefault(); hlIdx = Math.min(hlIdx + 1, opts.length - 1); opts.forEach((o, i) => o.classList.toggle('highlighted', i === hlIdx)); if (opts[hlIdx]) opts[hlIdx].scrollIntoView({ block: 'nearest' }); }
-                else if (e.key === 'ArrowUp') { e.preventDefault(); hlIdx = Math.max(hlIdx - 1, 0); opts.forEach((o, i) => o.classList.toggle('highlighted', i === hlIdx)); if (opts[hlIdx]) opts[hlIdx].scrollIntoView({ block: 'nearest' }); }
-                else if (e.key === 'Enter') { e.preventDefault(); if (hlIdx >= 0 && opts[hlIdx]) selectBatterTeam(opts[hlIdx].dataset.abbr); }
-                else if (e.key === 'Escape') { dropdown.classList.remove('visible'); input.blur(); }
-            });
-            dropdown.addEventListener('click', (e) => { const opt = e.target.closest('.team-option'); if (opt) selectBatterTeam(opt.dataset.abbr); });
-            clearBtn.addEventListener('click', clearBatterTeam);
-            document.addEventListener('click', (e) => { if (!e.target.closest('#batter-team-filter')) dropdown.classList.remove('visible'); });
-        })();
+        // ═══ BATTER TEAM FILTER (REMOVED) ═══
 
         const paSlider = document.getElementById('pa-slider'), paVal = document.getElementById('pa-val');
         paSlider.addEventListener('input', () => {
