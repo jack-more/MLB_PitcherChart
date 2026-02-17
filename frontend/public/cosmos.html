@@ -131,15 +131,61 @@
         }
 
         .search-box {
-            position: relative; flex: 0 0 280px;
+            position: relative; flex: 0 0 320px;
         }
         .search-box input {
-            width: 100%; background: #111; border: 1px solid #333;
-            color: #fff; padding: 7px 10px; font-family: var(--font-tech);
-            font-size: 11px; outline: none; border-radius: 3px;
+            width: 100%; background: #0d0d0d;
+            border: 2px solid #f4a261;
+            color: #fff; padding: 9px 14px 9px 38px; font-family: var(--font-tech);
+            font-size: 12px; outline: none; border-radius: 5px;
+            letter-spacing: 1px;
+            box-shadow: 0 0 12px rgba(244, 162, 97, 0.15), inset 0 0 20px rgba(0,0,0,0.3);
+            transition: border-color 0.3s, box-shadow 0.3s;
         }
-        .search-box input:focus { border-color: var(--accent-orange); }
-        .search-box input::placeholder { color: #999; }
+        .search-box input:focus {
+            border-color: var(--accent-orange);
+            box-shadow: 0 0 20px rgba(255, 68, 0, 0.3), 0 0 40px rgba(244, 162, 97, 0.12), inset 0 0 20px rgba(0,0,0,0.3);
+        }
+        .search-box input::placeholder {
+            color: #f4a261;
+            opacity: 0.7;
+            letter-spacing: 1.5px;
+            font-weight: 600;
+        }
+        .search-box::before {
+            content: '';
+            position: absolute;
+            left: 11px; top: 50%;
+            transform: translateY(-50%);
+            width: 18px; height: 18px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f4a261' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+            background-size: contain;
+            background-repeat: no-repeat;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.8;
+        }
+        .search-box::after {
+            content: '🏏 Look up any MLB batter';
+            position: absolute;
+            bottom: -16px; left: 2px;
+            font-size: 8px;
+            font-family: var(--font-tech);
+            color: rgba(244, 162, 97, 0.45);
+            letter-spacing: 0.8px;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        .search-box:focus-within::after {
+            color: rgba(244, 162, 97, 0.7);
+        }
+        @keyframes searchPulse {
+            0%, 100% { box-shadow: 0 0 12px rgba(244, 162, 97, 0.15), inset 0 0 20px rgba(0,0,0,0.3); }
+            50% { box-shadow: 0 0 18px rgba(244, 162, 97, 0.25), 0 0 30px rgba(244, 162, 97, 0.08), inset 0 0 20px rgba(0,0,0,0.3); }
+        }
+        .search-box input:not(:focus) {
+            animation: searchPulse 3s ease-in-out infinite;
+        }
 
         .search-dropdown {
             position: absolute; top: 100%; left: 0; width: 100%; max-height: 260px;
@@ -713,7 +759,7 @@
         </div>
 
         <div class="search-box">
-            <input type="text" id="batter-search" placeholder="SEARCH BATTER..." autocomplete="off">
+            <input type="text" id="batter-search" placeholder="SEARCH ANY BATTER..." autocomplete="off">
             <div class="search-dropdown" id="search-dropdown"></div>
         </div>
 
