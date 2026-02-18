@@ -1242,7 +1242,7 @@
             geo.computeVertexNormals();
 
             const mat = new THREE.MeshStandardMaterial({
-                color: 0x0e0e0e, roughness: 0.95, metalness: 0.0,
+                color: 0x8a8a7a, roughness: 0.85, metalness: 0.0,  // Gray-green ground
             });
             terrainMesh = new THREE.Mesh(geo, mat);
             terrainMesh.receiveShadow = true;
@@ -1281,41 +1281,203 @@
             return inside;
         }
 
-        // ── Terrain-following highway ──
-        let _highwayGroup = null;
-        function buildHighway() {
-            // Remove old highway
-            if (_highwayGroup) {
-                scene.remove(_highwayGroup);
-                _highwayGroup.traverse(c => { if (c.geometry) c.geometry.dispose(); if (c.material) c.material.dispose(); });
-            }
-            _highwayGroup = new THREE.Group();
-            _highwayGroup.name = 'highway';
+        // ── Road Network (Voronoi edges + central boulevard) ──
+        const ROAD_WIDTH = 0.08;
+        const ROAD_DEFAULT = 0x555555;
+        const ROAD_SEGS = 10;
+        const PERF_GREEN  = new THREE.Color(0x2a9d8f);
+        const PERF_YELLOW = new THREE.Color(0xf4a261);
+        const PERF_RED    = new THREE.Color(0xe63946);
+        const ROAD_NEUTRAL = new THREE.Color(ROAD_DEFAULT);
+        let _pulsePhase = 0;
 
-            // Road segments following terrain at X=0
-            const hwMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.8 });
-            for (let z = -15; z < 15; z += 0.5) {
-                const y = getTerrainHeight(0, z + 0.25) + 0.02;
-                const geo = new THREE.BoxGeometry(0.15, 0.03, 0.5);
-                const seg = new THREE.Mesh(geo, hwMat);
-                seg.position.set(0, y, z + 0.25);
-                _highwayGroup.add(seg);
+        function extractVoronoiEdges(cells) {
+            const edgeMap = new Map();
+            const EPS_D = 3; // toFixed digits for dedup
+            function eKey(a, b) {
+                const ax = a.x.toFixed(EPS_D), az = a.z.toFixed(EPS_D);
+                const bx = b.x.toFixed(EPS_D), bz = b.z.toFixed(EPS_D);
+                return ax < bx || (ax === bx && az < bz)
+                    ? `${ax},${az}|${bx},${bz}`
+                    : `${bx},${bz}|${ax},${az}`;
             }
+            Object.entries(cells).forEach(([id, poly]) => {
+                for (let i = 0; i < poly.length; i++) {
+                    const v1 = poly[i], v2 = poly[(i + 1) % poly.length];
+                    const k = eKey(v1, v2);
+                    if (edgeMap.has(k)) { edgeMap.get(k).cellB = id; }
+                    else { edgeMap.set(k, { v1, v2, cellA: id, cellB: null }); }
+                }
+            });
+            return [...edgeMap.values()];
+        }
+
+        function buildRibbonGeometry(points, width) {
+            const halfW = width / 2;
+            const verts = [], idxs = [], norms = [];
+            for (let i = 0; i < points.length; i++) {
+                const p = points[i];
+                let tx, tz;
+                if (i === 0) { tx = points[1].x - p.x; tz = points[1].z - p.z; }
+                else if (i === points.length - 1) { tx = p.x - points[i-1].x; tz = p.z - points[i-1].z; }
+                else { tx = points[i+1].x - points[i-1].x; tz = points[i+1].z - points[i-1].z; }
+                const len = Math.sqrt(tx*tx + tz*tz) || 1;
+                const px = -tz / len, pz = tx / len; // perpendicular
+                verts.push(p.x - px*halfW, p.y, p.z - pz*halfW);
+                verts.push(p.x + px*halfW, p.y, p.z + pz*halfW);
+                norms.push(0,1,0, 0,1,0);
+                if (i < points.length - 1) {
+                    const b = i * 2;
+                    idxs.push(b, b+1, b+2, b+1, b+3, b+2);
+                }
+            }
+            const geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+            geo.setAttribute('normal', new THREE.Float32BufferAttribute(norms, 3));
+            geo.setIndex(idxs);
+            return geo;
+        }
+
+        function buildRoads() {
+            // Clear old
+            while (roadGroup.children.length) {
+                const c = roadGroup.children[0];
+                if (c.geometry) c.geometry.dispose();
+                if (c.material) c.material.dispose();
+                roadGroup.remove(c);
+            }
+
+            const cells = getVoronoiCells();
+            if (!cells) return;
+
+            const edges = extractVoronoiEdges(cells);
+            const defaultMat = new THREE.MeshStandardMaterial({
+                color: ROAD_DEFAULT,
+                emissive: new THREE.Color(ROAD_DEFAULT),
+                emissiveIntensity: 0.05,
+                roughness: 0.6,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.8,
+            });
+
+            edges.forEach(edge => {
+                const { v1, v2, cellA, cellB } = edge;
+                // Subdivide for terrain following
+                const pts = [];
+                for (let t = 0; t <= 1; t += 1 / ROAD_SEGS) {
+                    const x = v1.x + (v2.x - v1.x) * t;
+                    const z = v1.z + (v2.z - v1.z) * t;
+                    pts.push(new THREE.Vector3(x, getTerrainHeight(x, z) + 0.02, z));
+                }
+
+                // Perpendicular offset for dual-lane
+                const dx = v2.x - v1.x, dz = v2.z - v1.z;
+                const len = Math.sqrt(dx*dx + dz*dz) || 1;
+                const perpX = -dz / len, perpZ = dx / len;
+                const offset = ROAD_WIDTH * 0.55;
+                const halfW = ROAD_WIDTH * 0.45;
+
+                // Lane A (toward cellA)
+                const ptsA = pts.map(p => new THREE.Vector3(p.x + perpX*offset, p.y, p.z + perpZ*offset));
+                const matA = defaultMat.clone();
+                const meshA = new THREE.Mesh(buildRibbonGeometry(ptsA, halfW), matA);
+                meshA.userData = { type: 'road-lane', forCell: cellA, partner: cellB };
+                roadGroup.add(meshA);
+
+                // Lane B (toward cellB) — only if shared edge
+                if (cellB) {
+                    const ptsB = pts.map(p => new THREE.Vector3(p.x - perpX*offset, p.y, p.z - perpZ*offset));
+                    const matB = defaultMat.clone();
+                    const meshB = new THREE.Mesh(buildRibbonGeometry(ptsB, halfW), matB);
+                    meshB.userData = { type: 'road-lane', forCell: cellB, partner: cellA };
+                    roadGroup.add(meshB);
+                }
+            });
+
+            // Central boulevard at X≈0
+            buildCentralBoulevard();
+        }
+
+        function buildCentralBoulevard() {
+            const BLVD_WIDTH = 0.25;
+            const pts = [];
+            for (let z = -15; z <= 15; z += 0.4) {
+                pts.push(new THREE.Vector3(0, getTerrainHeight(0, z) + 0.025, z));
+            }
+            const geo = buildRibbonGeometry(pts, BLVD_WIDTH);
+            const mat = new THREE.MeshStandardMaterial({
+                color: 0x666666,
+                emissive: new THREE.Color(0x666666),
+                emissiveIntensity: 0.08,
+                roughness: 0.5,
+                side: THREE.DoubleSide,
+            });
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.userData = { type: 'boulevard' };
+            roadGroup.add(mesh);
+
             // Orange center dashes
-            const dashMat = new THREE.MeshStandardMaterial({ color: 0xff4400, emissive: 0xff4400, emissiveIntensity: 0.3 });
-            for (let z = -15; z < 15; z += 0.8) {
+            const dashMat = new THREE.MeshStandardMaterial({
+                color: 0xff6600, emissive: 0xff6600, emissiveIntensity: 0.4,
+            });
+            for (let z = -15; z < 15; z += 0.9) {
                 const y = getTerrainHeight(0, z) + 0.04;
-                const geo = new THREE.BoxGeometry(0.04, 0.04, 0.3);
-                const dash = new THREE.Mesh(geo, dashMat);
+                const dGeo = new THREE.BoxGeometry(0.03, 0.02, 0.35);
+                const dash = new THREE.Mesh(dGeo, dashMat);
                 dash.position.set(0, y, z);
-                _highwayGroup.add(dash);
+                dash.userData = { type: 'boulevard-dash' };
+                roadGroup.add(dash);
             }
-            scene.add(_highwayGroup);
+        }
+
+        function colorRoadsForBatter(matchups) {
+            const wobaByCluster = {};
+            matchups.forEach(m => {
+                if ((m.PA || 0) >= STATE.minPA) wobaByCluster[m.cluster] = m.wOBA || 0;
+            });
+
+            roadGroup.children.forEach(mesh => {
+                if (mesh.userData.type !== 'road-lane') return;
+                const woba = wobaByCluster[mesh.userData.forCell];
+                if (woba === undefined) {
+                    mesh.material.color.copy(ROAD_NEUTRAL);
+                    mesh.material.emissive.copy(ROAD_NEUTRAL);
+                    mesh.material.emissiveIntensity = 0.03;
+                    mesh.material.opacity = 0.4;
+                    mesh.material.transparent = true;
+                    mesh.userData._baseEmissive = null;
+                    return;
+                }
+                let perfColor, intensity;
+                if (woba >= 0.370) { perfColor = PERF_GREEN; intensity = 0.5 + (woba - 0.370) / 0.13 * 0.3; }
+                else if (woba >= 0.310) { perfColor = PERF_YELLOW; intensity = 0.2 + (woba - 0.310) / 0.06 * 0.2; }
+                else { perfColor = PERF_RED; intensity = 0.4 + (0.310 - woba) / 0.11 * 0.3; }
+
+                mesh.material.color.copy(perfColor);
+                mesh.material.emissive.copy(perfColor);
+                mesh.material.emissiveIntensity = intensity;
+                mesh.material.opacity = 1.0;
+                mesh.material.transparent = false;
+                mesh.userData._baseEmissive = intensity;
+            });
+        }
+
+        function resetRoadColors() {
+            roadGroup.children.forEach(mesh => {
+                if (mesh.userData.type !== 'road-lane') return;
+                mesh.material.color.copy(ROAD_NEUTRAL);
+                mesh.material.emissive.copy(ROAD_NEUTRAL);
+                mesh.material.emissiveIntensity = 0.05;
+                mesh.material.opacity = 0.8;
+                mesh.material.transparent = true;
+                mesh.userData._baseEmissive = null;
+            });
         }
 
         // ── Three.js Scene ──
         let scene, camera, renderer, css2DRenderer, controls;
-        let neighborhoodGroup, buildingGroup, labelGroup, routeGroup;
+        let neighborhoodGroup, buildingGroup, labelGroup, routeGroup, roadGroup;
         const neighborhoodMeshes = new Map(); // clusterId → Mesh
         const buildingMeshes = [];            // all building meshes for raycaster
         const buildingData = new Map();       // mesh.uuid → { pitchers, clusterId }
@@ -1328,8 +1490,8 @@
 
             // Scene
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x0a0a0a);
-            scene.fog = new THREE.FogExp2(0x0a0a0a, 0.006);
+            scene.background = new THREE.Color(0x87CEEB);  // Sky blue
+            scene.fog = new THREE.FogExp2(0x87CEEB, 0.012);
 
             // Camera — LA aerial vantage point (see full city on load)
             camera = new THREE.PerspectiveCamera(55, w / h, 0.1, 200);
@@ -1364,10 +1526,14 @@
             controls.target.set(-1, 0, 0); // Center slightly left (city center is ~X=-1)
 
             // Lights
-            const ambient = new THREE.AmbientLight(0xffffff, 0.35);
+            const ambient = new THREE.AmbientLight(0xffffff, 0.55);
             scene.add(ambient);
 
-            const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+            // Hemisphere light for sky/ground color bleed
+            const hemiLight = new THREE.HemisphereLight(0x87CEEB, 0x8a8a7a, 0.3);
+            scene.add(hemiLight);
+
+            const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
             dirLight.position.set(10, 20, 8);
             dirLight.castShadow = true;
             dirLight.shadow.mapSize.width = 2048;
@@ -1406,6 +1572,10 @@
             routeGroup = new THREE.Group();
             routeGroup.name = 'routes';
             scene.add(routeGroup);
+
+            roadGroup = new THREE.Group();
+            roadGroup.name = 'roads';
+            scene.add(roadGroup);
         }
 
         function resizeCanvas() {
@@ -1811,114 +1981,51 @@
 
         // ── Build Batter Routes + Neighborhood Glow ──
         function buildRoutes() {
-            // Clear old
-            while (routeGroup.children.length) routeGroup.remove(routeGroup.children[0]);
-
-            // Remove 3D batter badge when no batters active
+            // No batters active — reset everything
             if (STATE.activeBatters.length === 0) {
-                // Reset neighborhood glow to default state
                 neighborhoodMeshes.forEach((mesh, id) => {
                     const cl = DATA.clusters[id];
                     if (cl) mesh.material.emissive.set(new THREE.Color(cl.color));
                     mesh.material.emissiveIntensity = 0.08;
                     mesh.material.opacity = 0.25;
                 });
+                resetRoadColors();
                 buildBatterBadge3D(null, null);
                 return;
             }
 
             const batter = STATE.activeBatters[STATE.activeBatters.length - 1];
             const matchups = getMatchupData(batter);
-            const useYearMedoids = STATE.selectedYear !== 'all';
-            const yearMedoids = useYearMedoids ? computeYearMedoids(STATE.selectedYear) : null;
 
-            // Neighborhood glow
+            // Neighborhood glow (green / yellow / red based on wOBA)
             neighborhoodMeshes.forEach((mesh, id) => {
                 const m = matchups.find(x => String(x.cluster) === id);
                 if (m && (m.PA || 0) >= STATE.minPA) {
                     const woba = m.wOBA || 0;
                     if (woba >= 0.370) {
-                        mesh.material.emissive.set(0x2a9d8f); // green
+                        mesh.material.emissive.set(0x2a9d8f);
                         mesh.material.emissiveIntensity = 0.25;
                     } else if (woba >= 0.310) {
-                        mesh.material.emissive.set(0xf4a261); // yellow
+                        mesh.material.emissive.set(0xf4a261);
                         mesh.material.emissiveIntensity = 0.15;
                     } else {
-                        mesh.material.emissive.set(0xe63946); // red
+                        mesh.material.emissive.set(0xe63946);
                         mesh.material.emissiveIntensity = 0.25;
                     }
-                    mesh.material.opacity = 0.30;
+                    mesh.material.opacity = 0.35;
                 } else {
                     mesh.material.emissive.set(mesh.material.color);
                     mesh.material.emissiveIntensity = 0.03;
-                    mesh.material.opacity = 0.12;
+                    mesh.material.opacity = 0.15;
                 }
             });
 
-            // Route arcs (top 10 by PA)
-            const sorted = [...matchups].filter(m => (m.PA || 0) >= STATE.minPA).sort((a, b) => (b.PA||0) - (a.PA||0)).slice(0, 10);
-            sorted.forEach(m => {
-                const cl = DATA.clusters[m.cluster];
-                if (!cl) return;
-                let px, py;
-                if (yearMedoids && yearMedoids[m.cluster]) {
-                    px = yearMedoids[m.cluster].x; py = yearMedoids[m.cluster].y;
-                } else {
-                    px = cl.pca_x; py = cl.pca_y;
-                    if (px == null || py == null) return;
-                }
+            // Color roads based on hitter performance
+            colorRoadsForBatter(matchups);
 
-                const woba = m.wOBA || 0;
-                const pa = m.PA || 0;
-                const color = woba >= 0.370 ? 0x2a9d8f : woba >= 0.310 ? 0xf4a261 : 0xe63946;
-
-                // Route thickness: crush zones = fat highways, struggle zones = thin wires
-                // PA drives base thickness, wOBA modulates it
-                const paFactor = Math.max(0.02, Math.min(0.10, pa / 200));
-                const wobaBoost = woba >= 0.370 ? 1.5 : woba >= 0.310 ? 1.0 : 0.6;
-                const thickness = paFactor * wobaBoost;
-
-                // Route opacity: crush = bright, struggle = faded
-                const routeOpacity = woba >= 0.370 ? 0.85 : woba >= 0.310 ? 0.65 : 0.45;
-                const emissiveStr = woba >= 0.370 ? 0.7 : woba >= 0.310 ? 0.4 : 0.2;
-
-                // Bezier arc from 3D badge position down to neighborhood
-                const routeZ = -py * PCA_Y_SCALE;
-                const routeTerrainY = getTerrainHeight(px, routeZ);
-                const start = _batterBadge3D
-                    ? _batterBadge3D.position.clone()
-                    : new THREE.Vector3(-1, 6, 4);
-                const end = new THREE.Vector3(px, routeTerrainY + 0.5, routeZ);
-                const mid = new THREE.Vector3(
-                    (start.x + end.x) / 2,
-                    Math.max(start.y, end.y) + 2,
-                    (start.z + end.z) / 2
-                );
-                const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
-                const tubeGeo = new THREE.TubeGeometry(curve, 24, thickness, 6, false);
-                const tubeMat = new THREE.MeshStandardMaterial({
-                    color: color,
-                    emissive: color,
-                    emissiveIntensity: emissiveStr,
-                    transparent: true,
-                    opacity: routeOpacity,
-                });
-                const tube = new THREE.Mesh(tubeGeo, tubeMat);
-                routeGroup.add(tube);
-
-                // Glow tube — wider halo, brighter for crush matchups
-                const glowRadius = thickness * (woba >= 0.370 ? 4 : 2.5);
-                const glowOpacity = woba >= 0.370 ? 0.12 : woba >= 0.310 ? 0.06 : 0.03;
-                const glowGeo = new THREE.TubeGeometry(curve, 24, glowRadius, 6, false);
-                const glowMat = new THREE.MeshBasicMaterial({
-                    color: color,
-                    transparent: true,
-                    opacity: glowOpacity,
-                });
-                routeGroup.add(new THREE.Mesh(glowGeo, glowMat));
-            });
-
-            // Note: stat chips now shown via neighborhood glow + dock (sprite labels are GPU-rendered)
+            // Build 3D batter badge
+            const stats = getFilteredBatterStats(batter);
+            buildBatterBadge3D(batter, stats);
         }
 
         // ── Master rebuild ──
@@ -1928,7 +2035,7 @@
             buildTerrain();        // FIRST: terrain heightfield (everything depends on it)
             buildNeighborhoods();  // Project onto terrain
             buildBuildings();      // Confined to Voronoi + on terrain
-            buildHighway();        // Terrain-following highway
+            buildRoads();          // Voronoi edge roads + central boulevard
             buildLabels();         // Terrain-aware Y
             buildRoutes();         // Terrain-aware endpoints
         }
@@ -1949,6 +2056,17 @@
         function animate() {
             requestAnimationFrame(animate);
             if (controls) controls.update();
+
+            // Pulse active road lanes when batter is searched
+            if (STATE.activeBatters.length > 0 && roadGroup) {
+                _pulsePhase += 0.04;
+                const pulse = Math.sin(_pulsePhase) * 0.5 + 0.5;
+                roadGroup.children.forEach(mesh => {
+                    if (mesh.userData.type !== 'road-lane' || !mesh.userData._baseEmissive) return;
+                    mesh.material.emissiveIntensity = mesh.userData._baseEmissive * (0.6 + 0.4 * pulse);
+                });
+            }
+
             if (renderer && scene && camera) {
                 renderer.render(scene, camera);
                 css2DRenderer.render(scene, camera);
