@@ -114,7 +114,15 @@ def export_all():
 
     # ── Enhance cluster profiles with emojis for frontend ──
     clusters_out = {}
+    # Build a set of cluster IDs that have at least 1 qualified pitcher
+    qualified_clusters = set(qualified["cluster"].unique())
+
     for cid, prof in profiles.items():
+        # Skip clusters with no qualified pitchers (sub-threshold only)
+        if cid not in qualified_clusters:
+            print(f"  Skipping {cid} (no qualified pitchers)")
+            continue
+
         arch_name = _extract_archetype_name(prof["short_name"])
         emoji = _find_emoji(arch_name)
         role = prof["short_name"].split()[-1] if prof["short_name"].split()[-1] in ("SP", "RP", "SW") else ""

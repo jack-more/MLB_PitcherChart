@@ -304,6 +304,12 @@ def main():
 
         full_name = generate_full_name(row, hand)
         short_name = generate_short_name(row, full_name, hand)
+
+        # Force post-hoc cluster names (override medoid-based naming)
+        role = _role_short(row.get("is_sp", 0))
+        if cid.endswith("_UT"):
+            short_name = f"Undertow {role}"
+            full_name = f"The Undertow Sinker-Dominant No-Fastball Worm Burner {_role_str(row.get('is_sp', 0))}"
         examples = find_nearest_pitchers(pitcher_seasons, cid, n=3)
         count = int((pitcher_seasons["cluster"] == cid).sum())
 

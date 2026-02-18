@@ -508,12 +508,12 @@
 
         /* 3D floating badge (CSS2DObject) */
         .city-batter-badge {
-            background: rgba(10,10,10,0.92); border: 2px solid #555;
-            color: #fff; padding: 6px 14px; border-radius: 16px;
-            font-family: var(--font-tech); font-size: 11px; font-weight: 700;
+            background: rgba(10,10,10,0.95); border: 2px solid #888;
+            color: #fff; padding: 8px 18px; border-radius: 20px;
+            font-family: var(--font-tech); font-size: 13px; font-weight: 700;
             pointer-events: none; white-space: nowrap;
-            display: flex; align-items: center; gap: 6px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.7);
+            display: flex; align-items: center; gap: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.8), 0 0 15px rgba(255,255,255,0.15);
             text-shadow: 0 1px 3px rgba(0,0,0,0.8);
         }
         .city-batter-badge .badge-name { color: #fff; }
@@ -1302,8 +1302,8 @@
         }
 
         // ── Road Network (Voronoi edges + central boulevard) ──
-        const ROAD_WIDTH = 0.08;
-        const ROAD_DEFAULT = 0x555555;
+        const ROAD_WIDTH = 0.10;
+        const ROAD_DEFAULT = 0x666666;
         const ROAD_SEGS = 10;
         const PERF_GREEN  = new THREE.Color(0x2a9d8f);
         const PERF_YELLOW = new THREE.Color(0xf4a261);
@@ -1463,16 +1463,17 @@
                 if (woba === undefined) {
                     mesh.material.color.copy(ROAD_NEUTRAL);
                     mesh.material.emissive.copy(ROAD_NEUTRAL);
-                    mesh.material.emissiveIntensity = 0.03;
-                    mesh.material.opacity = 0.4;
+                    mesh.material.emissiveIntensity = 0.05;
+                    mesh.material.opacity = 0.5;
                     mesh.material.transparent = true;
                     mesh.userData._baseEmissive = null;
                     return;
                 }
                 let perfColor, intensity;
-                if (woba >= 0.370) { perfColor = PERF_GREEN; intensity = 0.5 + (woba - 0.370) / 0.13 * 0.3; }
-                else if (woba >= 0.310) { perfColor = PERF_YELLOW; intensity = 0.2 + (woba - 0.310) / 0.06 * 0.2; }
-                else { perfColor = PERF_RED; intensity = 0.4 + (0.310 - woba) / 0.11 * 0.3; }
+                // Much brighter roads — visible at distance
+                if (woba >= 0.370) { perfColor = PERF_GREEN; intensity = 0.9 + (woba - 0.370) / 0.13 * 0.5; }
+                else if (woba >= 0.310) { perfColor = PERF_YELLOW; intensity = 0.5 + (woba - 0.310) / 0.06 * 0.4; }
+                else { perfColor = PERF_RED; intensity = 0.7 + (0.310 - woba) / 0.11 * 0.5; }
 
                 mesh.material.color.copy(perfColor);
                 mesh.material.emissive.copy(perfColor);
@@ -1480,6 +1481,53 @@
                 mesh.material.opacity = 1.0;
                 mesh.material.transparent = false;
                 mesh.userData._baseEmissive = intensity;
+            });
+        }
+
+        // ── Color buildings based on batter performance ──
+        function colorBuildingsForBatter(matchups) {
+            const wobaByCluster = {};
+            matchups.forEach(m => {
+                if ((m.PA || 0) >= STATE.minPA) wobaByCluster[m.cluster] = m.wOBA || 0;
+            });
+
+            buildingMeshes.forEach(mesh => {
+                const cid = mesh.userData.clusterId;
+                const woba = wobaByCluster[cid];
+                if (woba === undefined) {
+                    // No data — dim the building
+                    const cl = DATA.clusters[cid];
+                    if (cl) mesh.material.color.set(new THREE.Color(cl.color).multiplyScalar(0.4));
+                    mesh.material.emissive.set(0x000000);
+                    mesh.material.emissiveIntensity = 0;
+                    return;
+                }
+                // Restore original cluster color
+                const cl = DATA.clusters[cid];
+                if (cl) mesh.material.color.set(cl.color);
+
+                // Apply green/yellow/red glow spotlight on buildings
+                if (woba >= 0.370) {
+                    mesh.material.emissive.set(0x2a9d8f);  // Green
+                    mesh.material.emissiveIntensity = 0.35 + (woba - 0.370) / 0.13 * 0.25;
+                } else if (woba >= 0.310) {
+                    mesh.material.emissive.set(0xf4a261);  // Yellow/orange
+                    mesh.material.emissiveIntensity = 0.15 + (woba - 0.310) / 0.06 * 0.15;
+                } else {
+                    mesh.material.emissive.set(0xe63946);  // Red
+                    mesh.material.emissiveIntensity = 0.30 + (0.310 - woba) / 0.11 * 0.25;
+                }
+            });
+        }
+
+        function resetBuildingColors() {
+            buildingMeshes.forEach(mesh => {
+                const cid = mesh.userData.clusterId;
+                const cl = DATA.clusters[cid];
+                if (cl) mesh.material.color.set(cl.color);
+                mesh.material.emissive.set(0x000000);
+                mesh.material.emissiveIntensity = 0;
+                mesh.userData._baseBuildingEmissive = null;
             });
         }
 
@@ -2010,6 +2058,7 @@
                     mesh.material.opacity = 0.25;
                 });
                 resetRoadColors();
+                resetBuildingColors();
                 buildBatterBadge3D(null, null);
                 return;
             }
@@ -2024,24 +2073,25 @@
                     const woba = m.wOBA || 0;
                     if (woba >= 0.370) {
                         mesh.material.emissive.set(0x2a9d8f);
-                        mesh.material.emissiveIntensity = 0.25;
+                        mesh.material.emissiveIntensity = 0.35;
                     } else if (woba >= 0.310) {
                         mesh.material.emissive.set(0xf4a261);
-                        mesh.material.emissiveIntensity = 0.15;
+                        mesh.material.emissiveIntensity = 0.20;
                     } else {
                         mesh.material.emissive.set(0xe63946);
-                        mesh.material.emissiveIntensity = 0.25;
+                        mesh.material.emissiveIntensity = 0.35;
                     }
-                    mesh.material.opacity = 0.35;
+                    mesh.material.opacity = 0.45;
                 } else {
                     mesh.material.emissive.set(mesh.material.color);
                     mesh.material.emissiveIntensity = 0.03;
-                    mesh.material.opacity = 0.15;
+                    mesh.material.opacity = 0.12;
                 }
             });
 
-            // Color roads based on hitter performance
+            // Color roads AND buildings based on hitter performance
             colorRoadsForBatter(matchups);
+            colorBuildingsForBatter(matchups);
 
             // Build 3D batter badge
             const stats = getFilteredBatterStats(batter);
@@ -2077,13 +2127,24 @@
             requestAnimationFrame(animate);
             if (controls) controls.update();
 
-            // Pulse active road lanes when batter is searched
-            if (STATE.activeBatters.length > 0 && roadGroup) {
-                _pulsePhase += 0.04;
-                const pulse = Math.sin(_pulsePhase) * 0.5 + 0.5;
-                roadGroup.children.forEach(mesh => {
+            // Pulse active roads + buildings when batter is searched
+            if (STATE.activeBatters.length > 0) {
+                _pulsePhase += 0.035;
+                const pulse = Math.sin(_pulsePhase) * 0.5 + 0.5;  // 0→1 oscillation
+
+                // Pulse roads
+                if (roadGroup) roadGroup.children.forEach(mesh => {
                     if (mesh.userData.type !== 'road-lane' || !mesh.userData._baseEmissive) return;
-                    mesh.material.emissiveIntensity = mesh.userData._baseEmissive * (0.6 + 0.4 * pulse);
+                    mesh.material.emissiveIntensity = mesh.userData._baseEmissive * (0.5 + 0.5 * pulse);
+                });
+
+                // Gentle pulse on buildings that have emissive glow
+                buildingMeshes.forEach(mesh => {
+                    if (mesh.material.emissiveIntensity > 0.05) {
+                        // Store base intensity on first pulse
+                        if (!mesh.userData._baseBuildingEmissive) mesh.userData._baseBuildingEmissive = mesh.material.emissiveIntensity;
+                        mesh.material.emissiveIntensity = mesh.userData._baseBuildingEmissive * (0.7 + 0.3 * pulse);
+                    }
                 });
             }
 
@@ -2435,9 +2496,9 @@
                 labelGroup.remove(_batterBadge3D);
                 _batterBadge3D = null;
             }
-            if (!batter) return;
+            if (!batter || !stats) return;
 
-            const tier = getBatterTier(stats.avg);
+            const tier = getBatterTier(stats.avg || 0);
 
             const div = document.createElement('div');
             div.className = 'city-batter-badge';
@@ -2454,20 +2515,22 @@
 
         function spawnBatter(batter) {
             const matchups = getMatchupData(batter);
-            const stats = getFilteredBatterStats(batter);
+            const stats = getFilteredBatterStats(batter) || { pa: 0, avg: 0 };
 
             // Compute tier
-            const tier = getBatterTier(stats.avg);
+            const tier = getBatterTier(stats.avg || 0);
 
             // Update HTML badge
-            document.getElementById('badge-name').textContent = fmtName(batter.batter_name);
-            const tierEl = document.getElementById('badge-tier');
-            tierEl.textContent = tier.label;
-            tierEl.className = 'tier-chip ' + tier.cls;
-            document.getElementById('badge-stat').textContent = fmtStatVal(STATE.selectedStat, stats.avg) + ' ' + statLabel(STATE.selectedStat) + ' \u00b7 ' + stats.pa.toLocaleString() + ' PA';
-            document.getElementById('batter-badge').classList.add('visible');
-            document.getElementById('batter-badge').style.borderColor = tier.color;
-            document.getElementById('led-batter').classList.add('active');
+            try {
+                document.getElementById('badge-name').textContent = fmtName(batter.batter_name);
+                const tierEl = document.getElementById('badge-tier');
+                tierEl.textContent = tier.label;
+                tierEl.className = 'tier-chip ' + tier.cls;
+                document.getElementById('badge-stat').textContent = fmtStatVal(STATE.selectedStat, stats.avg || 0) + ' ' + statLabel(STATE.selectedStat) + ' \u00b7 ' + Math.round(stats.pa || 0).toLocaleString() + ' PA';
+                document.getElementById('batter-badge').classList.add('visible');
+                document.getElementById('batter-badge').style.borderColor = tier.color;
+                document.getElementById('led-batter').classList.add('active');
+            } catch(e) { console.warn('Badge error:', e); }
 
             // Build 3D floating badge above city
             buildBatterBadge3D(batter, stats);
