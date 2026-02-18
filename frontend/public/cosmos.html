@@ -301,6 +301,13 @@
         .filter-section .label-line::before {
             background: #f4a261;
         }
+        .filter-bar .label {
+            color: #f4a261 !important;
+            font-size: 9px;
+            letter-spacing: 1px;
+            font-family: var(--font-tech);
+            font-weight: 700;
+        }
         .filter-bar-header {
             font-family: var(--font-tech);
             font-size: 11px;
@@ -820,66 +827,70 @@
         <div class="filter-bar">
             <div class="filter-bar-header">⚾ PITCHER FILTERS</div>
 
-            <div class="filter-section">
-                <div class="label-line"><span class="label">Hand</span></div>
-                <div class="key-row" id="filter-keys">
+            <!-- Row 1: HAND + ROLE toggles -->
+            <div style="display:flex;align-items:center;gap:10px;">
+                <div class="key-row" id="filter-keys" style="flex:1;">
                     <div class="key key-orange" data-filter="all">ALL</div>
                     <div class="key key-dark" data-filter="RHP">RHP</div>
                     <div class="key key-dark" data-filter="LHP">LHP</div>
                 </div>
-            </div>
-
-            <div class="filter-section">
-                <div class="label-line"><span class="label">Team</span></div>
-                <div class="team-filter" id="team-filter">
-                    <input type="text" id="team-search" placeholder="ALL TEAMS" autocomplete="off">
-                    <div class="team-dropdown" id="team-dropdown"></div>
-                    <span class="team-clear" id="team-clear">&times;</span>
-                </div>
-            </div>
-
-            <div class="filter-section">
-                <div class="label-line"><span class="label">Pitcher</span></div>
-                <div class="team-filter" id="pitcher-filter">
-                    <input type="text" id="pitcher-search" placeholder="SEARCH PITCHERS" autocomplete="off">
-                    <div class="team-dropdown" id="pitcher-dropdown"></div>
-                    <span class="team-clear" id="pitcher-clear">&times;</span>
-                </div>
-            </div>
-
-            <div class="filter-section">
-                <div class="label-line"><span class="label">Year</span></div>
-                <select id="year-select" style="width:100%;background:#1e2124;border:1px solid #333;color:#e0e0e0;padding:4px 6px;font-family:var(--font-tech);font-size:9px;outline:none;border-radius:3px;">
-                    <option value="all">ALL YEARS</option>
-                </select>
-            </div>
-
-            <div class="filter-section">
-                <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                    <span class="label" style="margin:0;min-width:28px;">Velo</span>
-                    <div class="range-slider" style="flex:1;--accent-color:#f4a261;">
-                        <div class="range-track"></div>
-                        <div class="range-fill" id="pf-velo-fill" style="background:#f4a261;left:0;width:100%;"></div>
-                        <input type="range" min="82" max="103" value="82" id="pf-velo-min">
-                        <input type="range" min="82" max="103" value="103" id="pf-velo-max">
-                    </div>
-                    <span id="pf-velo-display" style="font-size:8px;color:#888;min-width:52px;text-align:right;">82-103</span>
-                </div>
-                <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                    <span class="label" style="margin:0;min-width:28px;">Move</span>
-                    <div class="range-slider" style="flex:1;--accent-color:#2a9d8f;">
-                        <div class="range-track"></div>
-                        <div class="range-fill" id="pf-hbreak-fill" style="background:#2a9d8f;left:0;width:100%;"></div>
-                        <input type="range" min="-18" max="18" value="-18" id="pf-hbreak-min">
-                        <input type="range" min="-18" max="18" value="18" id="pf-hbreak-max">
-                    </div>
-                    <span id="pf-hbreak-display" style="font-size:8px;color:#888;min-width:52px;text-align:right;">-18 to 18</span>
-                </div>
-                <div class="key-row" id="role-keys" style="margin-top:2px;">
+                <div class="key-row" id="role-keys" style="flex:1;">
                     <div class="key key-orange" data-role="all">ALL</div>
                     <div class="key key-dark" data-role="SP">SP</div>
                     <div class="key key-dark" data-role="RP">RP</div>
                 </div>
+            </div>
+
+            <!-- Row 2: Team + Pitcher search (combined) -->
+            <div class="team-filter" id="team-filter" style="margin-bottom:2px;">
+                <input type="text" id="team-search" placeholder="FILTER BY TEAM" autocomplete="off">
+                <div class="team-dropdown" id="team-dropdown"></div>
+                <span class="team-clear" id="team-clear">&times;</span>
+            </div>
+            <div class="team-filter" id="pitcher-filter">
+                <input type="text" id="pitcher-search" placeholder="SEARCH PITCHERS" autocomplete="off">
+                <div class="team-dropdown" id="pitcher-dropdown"></div>
+                <span class="team-clear" id="pitcher-clear">&times;</span>
+            </div>
+
+            <!-- Row 3: YEAR range slider -->
+            <div style="display:flex;align-items:center;gap:6px;">
+                <span class="label" style="margin:0;min-width:28px;">Year</span>
+                <div class="range-slider" style="flex:1;--accent-color:#f4a261;">
+                    <div class="range-track"></div>
+                    <div class="range-fill" id="pf-year-fill" style="background:#f4a261;left:0;width:100%;"></div>
+                    <input type="range" min="2015" max="2025" value="2025" id="pf-year-min">
+                    <input type="range" min="2015" max="2025" value="2025" id="pf-year-max">
+                </div>
+                <span id="pf-year-display" style="font-size:8px;color:#888;min-width:52px;text-align:right;">2025+</span>
+            </div>
+            <!-- Hidden select preserved for yearPassesFilter compatibility -->
+            <select id="year-select" style="display:none;">
+                <option value="all">ALL YEARS</option>
+            </select>
+
+            <!-- Row 4: VELO range slider -->
+            <div style="display:flex;align-items:center;gap:6px;">
+                <span class="label" style="margin:0;min-width:28px;">Velo</span>
+                <div class="range-slider" style="flex:1;--accent-color:#f4a261;">
+                    <div class="range-track"></div>
+                    <div class="range-fill" id="pf-velo-fill" style="background:#f4a261;left:0;width:100%;"></div>
+                    <input type="range" min="82" max="103" value="82" id="pf-velo-min">
+                    <input type="range" min="82" max="103" value="103" id="pf-velo-max">
+                </div>
+                <span id="pf-velo-display" style="font-size:8px;color:#888;min-width:52px;text-align:right;">82-103</span>
+            </div>
+
+            <!-- Row 5: MOVE range slider -->
+            <div style="display:flex;align-items:center;gap:6px;">
+                <span class="label" style="margin:0;min-width:28px;">Move</span>
+                <div class="range-slider" style="flex:1;--accent-color:#2a9d8f;">
+                    <div class="range-track"></div>
+                    <div class="range-fill" id="pf-hbreak-fill" style="background:#2a9d8f;left:0;width:100%;"></div>
+                    <input type="range" min="-18" max="18" value="-18" id="pf-hbreak-min">
+                    <input type="range" min="-18" max="18" value="18" id="pf-hbreak-max">
+                </div>
+                <span id="pf-hbreak-display" style="font-size:8px;color:#888;min-width:52px;text-align:right;">-18 to 18</span>
             </div>
         </div>
 
@@ -1029,9 +1040,10 @@
         let statBackHandler = null;
 
         // Year filter helper: returns true if this game_year passes the filter
+        // Supports: 'all', '2025+', '2020+', '2023', etc.
         function yearPassesFilter(gameYear, filterVal) {
             if (!filterVal || filterVal === 'all') return true;
-            if (filterVal === '2025+') return gameYear >= 2025;
+            if (filterVal.endsWith('+')) return gameYear >= parseInt(filterVal);
             return gameYear === parseInt(filterVal);
         }
 
@@ -1158,13 +1170,21 @@
 
             const years = [...new Set(DATA.pitcherSeasons.map(r => r.game_year))].sort();
             const sel = document.getElementById('year-select');
-            // Add 2025+ as the first option after ALL YEARS (default)
             const maxYear = Math.max(...years);
+            const minYear = Math.min(...years);
+            // Populate hidden select for compatibility
             const o25p = document.createElement('option');
             o25p.value = '2025+';
             o25p.textContent = '2025+';
             sel.appendChild(o25p);
             years.forEach(y => { const o = document.createElement('option'); o.value = y; o.textContent = y; sel.appendChild(o); });
+            // Update year range slider bounds dynamically
+            const yrMin = document.getElementById('pf-year-min');
+            const yrMax = document.getElementById('pf-year-max');
+            if (yrMin && yrMax) {
+                yrMin.min = minYear; yrMin.max = maxYear; yrMin.value = maxYear;
+                yrMax.min = minYear; yrMax.max = maxYear; yrMax.value = maxYear;
+            }
             // Default to 2025+
             sel.value = '2025+';
             STATE.selectedYear = '2025+';
@@ -2374,7 +2394,7 @@
             // Default: cluster-level data (no team filter)
             let rows = DATA.hitterVsCluster.filter(r => r.batter === batter.batter);
             if (STATE.selectedYear !== 'all') rows = rows.filter(r => yearPassesFilter(r.game_year, STATE.selectedYear));
-            if ((STATE.selectedYear === 'all' || STATE.selectedYear === '2025+') && rows.length > 0) {
+            if ((STATE.selectedYear === 'all' || STATE.selectedYear.endsWith('+')) && rows.length > 0) {
                 const grouped = {};
                 rows.forEach(r => {
                     const k = r.cluster;
@@ -3300,9 +3320,57 @@
             render(); refreshData(); buildArchetypeList(); renderBatterStack();
         });
 
+        // Year select (hidden) still used internally — kept for compatibility
         document.getElementById('year-select').addEventListener('change', (e) => {
             STATE.selectedYear = e.target.value; refreshData(); buildArchetypeList(); render();
         });
+
+        // ═══ YEAR RANGE SLIDER ═══
+        (function() {
+            const minEl = document.getElementById('pf-year-min');
+            const maxEl = document.getElementById('pf-year-max');
+            const fillEl = document.getElementById('pf-year-fill');
+            const dispEl = document.getElementById('pf-year-display');
+            const selEl = document.getElementById('year-select');
+            if (!minEl || !maxEl) return;
+
+            function updateYearSlider() {
+                const lo = parseInt(minEl.value), hi = parseInt(maxEl.value);
+                // Constrain
+                if (lo > hi) { minEl.value = hi; }
+                const loV = parseInt(minEl.value), hiV = parseInt(maxEl.value);
+                // Update fill bar
+                const mn = 2015, mx = 2025, range = mx - mn;
+                fillEl.style.left = ((loV - mn) / range * 100) + '%';
+                fillEl.style.width = ((hiV - loV) / range * 100) + '%';
+                // Determine year filter value
+                let yearVal;
+                if (loV <= 2015 && hiV >= 2025) {
+                    yearVal = 'all';
+                    dispEl.textContent = 'ALL';
+                } else if (loV >= 2025 && hiV >= 2025) {
+                    yearVal = '2025+';
+                    dispEl.textContent = '2025+';
+                } else if (loV === hiV) {
+                    yearVal = String(loV);
+                    dispEl.textContent = String(loV);
+                } else {
+                    // Custom range — use the min year as "from this year onward"
+                    yearVal = String(loV) + '+';
+                    dispEl.textContent = loV + '-' + hiV;
+                }
+                // Update STATE + hidden select
+                STATE.selectedYear = yearVal;
+                selEl.value = yearVal;
+                refreshData(); buildArchetypeList(); render();
+            }
+            minEl.addEventListener('input', updateYearSlider);
+            maxEl.addEventListener('input', updateYearSlider);
+            // Init
+            const mn = 2015, mx = 2025;
+            fillEl.style.left = ((2025 - mn) / (mx - mn) * 100) + '%';
+            fillEl.style.width = '0%';
+        })();
 
         // ═══ PITCHER FILTERS (dual-range sliders) ═══
         function updateRangeFill(minEl, maxEl, fillEl) {
