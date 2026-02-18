@@ -984,31 +984,33 @@
         function archDesc(id) { return ARCHETYPE_DESC[archNameOnly(id)] || ''; }
 
         function calcArchetypeDNA(ps) {
-            const px = ps.pca_x, py = ps.pca_y, pz = ps.pca_z;
-            if (px == null || py == null) return [];
-            const distances = [];
-            Object.entries(DATA.clusters).forEach(([cid, cl]) => {
-                if (cl.pca_x == null) return;
-                const d = Math.sqrt((px-cl.pca_x)**2 + (py-cl.pca_y)**2 + ((pz||0)-(cl.pca_z||0))**2);
-                distances.push({ cid, dist: d, color: cl.color });
+            // DNA = career season breakdown: what % of this pitcher's career was in each archetype
+            const allSeasons = DATA.pitcherSeasons.filter(p => p.pitcher === ps.pitcher);
+            if (!allSeasons.length) return [];
+            const counts = {};
+            allSeasons.forEach(s => {
+                const cid = s.cluster;
+                counts[cid] = (counts[cid] || 0) + 1;
             });
-            if (!distances.length) return [];
-            const sorted = [...distances].sort((a,b) => a.dist - b.dist);
-            const sigma = sorted[0].dist * 0.75 || 0.5;
-            distances.forEach(d => { d.sim = Math.exp(-(d.dist*d.dist)/(2*sigma*sigma)); });
-            const total = distances.reduce((s,d) => s+d.sim, 0);
-            distances.forEach(d => { d.pct = total > 0 ? (d.sim/total)*100 : 0; });
-            distances.sort((a,b) => b.pct - a.pct);
-            const own = distances.findIndex(d => d.cid === ps.cluster);
-            if (own > 0) { const [item] = distances.splice(own,1); distances.unshift(item); }
-            return distances.slice(0,5);
+            const total = allSeasons.length;
+            const result = Object.entries(counts).map(([cid, n]) => ({
+                cid,
+                pct: (n / total) * 100,
+                color: DATA.clusters[cid]?.color || '#666',
+            }));
+            result.sort((a, b) => b.pct - a.pct);
+            // Put the current cluster first if it isn't already
+            const own = result.findIndex(d => d.cid === ps.cluster);
+            if (own > 0) { const [item] = result.splice(own, 1); result.unshift(item); }
+            return result.slice(0, 5);
         }
 
         function isTweener(ps) {
             const dna = calcArchetypeDNA(ps);
             if (!dna.length) return false;
+            // Tweener = current archetype accounts for less than half their career
             const own = dna.find(d => d.cid === ps.cluster);
-            return own ? own.pct < 45 : false;
+            return own ? own.pct < 50 : false;
         }
 
         let statBackHandler = null;
