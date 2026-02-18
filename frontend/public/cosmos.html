@@ -1536,12 +1536,12 @@
             // OrbitControls — bind to canvas (css2d overlay has pointer-events:none)
             controls = new OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
-            controls.dampingFactor = 0.12;
-            controls.rotateSpeed = 0.5;
-            controls.zoomSpeed = 2.0;  // Much more responsive scroll zoom
-            controls.panSpeed = 0.5;
-            controls.minDistance = 1.5;  // Allow closer zoom for detail
-            controls.maxDistance = 80;   // Allow further zoom out for overview
+            controls.dampingFactor = 0.08;  // Snappier response
+            controls.rotateSpeed = 0.7;
+            controls.zoomSpeed = 8.0;  // Supersonic zoom — each scroll tick covers huge ground
+            controls.panSpeed = 0.8;
+            controls.minDistance = 0.5;  // Get right up in a building's face
+            controls.maxDistance = 120;  // Full bird's-eye view
             controls.maxPolarAngle = Math.PI / 2.1; // Don't go below ground
             controls.target.set(-1, 0, 0); // Center slightly left (city center is ~X=-1)
 
