@@ -1688,45 +1688,47 @@
             return sprite;
         }
 
-        // Large side-of-town banner sprite (LEFTIES / RIGHTIES)
-        function makeBannerSprite(text, color, bgAlpha) {
+        // Ground-painted district label (flat on the terrain like a map label)
+        function makeGroundLabel(text, color) {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
-            const fontSize = 72;
+            const fontSize = 120;
             ctx.font = '900 ' + fontSize + 'px sans-serif';
             const metrics = ctx.measureText(text);
-            const w = Math.ceil(metrics.width) + 60;
-            const h = fontSize + 30;
+            const w = Math.ceil(metrics.width) + 40;
+            const h = fontSize + 40;
             canvas.width = w; canvas.height = h;
-            // Semi-transparent background
-            ctx.fillStyle = 'rgba(10,10,14,' + (bgAlpha || 0.55) + ')';
-            ctx.beginPath();
-            ctx.roundRect(0, 0, w, h, 8);
-            ctx.fill();
-            // Bottom accent line
-            ctx.fillStyle = color;
-            ctx.fillRect(8, h - 4, w - 16, 3);
-            // Text
+            // No background — text only, painted on terrain
             ctx.font = '900 ' + fontSize + 'px sans-serif';
             ctx.fillStyle = color;
+            ctx.globalAlpha = 0.40;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.letterSpacing = '6px';
             ctx.fillText(text, w / 2, h / 2);
             const tex = new THREE.CanvasTexture(canvas);
             tex.minFilter = THREE.LinearFilter;
-            const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false, depthWrite: false, opacity: 0.9 });
-            const sprite = new THREE.Sprite(mat);
-            const sc = 0.009;
-            sprite.scale.set(w * sc, h * sc, 1);
-            return sprite;
+            const geo = new THREE.PlaneGeometry(w * 0.012, h * 0.012);
+            const mat = new THREE.MeshBasicMaterial({
+                map: tex,
+                transparent: true,
+                depthWrite: false,
+                side: THREE.DoubleSide,
+            });
+            const mesh = new THREE.Mesh(geo, mat);
+            // Lay flat on ground (rotate to face up)
+            mesh.rotation.x = -Math.PI / 2;
+            return mesh;
         }
 
-        // LEFTIES / RIGHTIES side-of-town banners
+        // LEFTIES / RIGHTIES ground labels
         let _sideLabels = [];
         function buildSideLabels() {
             // Remove old
-            _sideLabels.forEach(obj => { if (obj.parent) obj.parent.remove(obj); if (obj.material) obj.material.dispose(); });
+            _sideLabels.forEach(obj => {
+                if (obj.parent) obj.parent.remove(obj);
+                if (obj.material) { obj.material.map?.dispose(); obj.material.dispose(); }
+                if (obj.geometry) obj.geometry.dispose();
+            });
             _sideLabels = [];
 
             const rhpIds = Object.keys(DATA.clusters).filter(id => id.startsWith('R_'));
@@ -1737,17 +1739,22 @@
             const rhpCenterX = avgX(rhpIds);
             const lhpCenterX = avgX(lhpIds);
 
-            const bannerY = 6.5;
+            // Place on the outer edge of each side, on the ground
+            const rhpEdgeX = rhpCenterX + 3.5;
+            const lhpEdgeX = lhpCenterX - 3.5;
+            const labelZ = 0;
 
-            const rightyBanner = makeBannerSprite('RIGHTIES', '#ff6b4a');
-            rightyBanner.position.set(rhpCenterX, bannerY, 0);
-            scene.add(rightyBanner);
-            _sideLabels.push(rightyBanner);
+            const rightyLabel = makeGroundLabel('R I G H T I E S', '#ff6b4a');
+            const rTerrainY = getTerrainHeight(rhpEdgeX, labelZ);
+            rightyLabel.position.set(rhpEdgeX, rTerrainY + 0.05, labelZ);
+            scene.add(rightyLabel);
+            _sideLabels.push(rightyLabel);
 
-            const leftyBanner = makeBannerSprite('LEFTIES', '#4a9eff');
-            leftyBanner.position.set(lhpCenterX, bannerY, 0);
-            scene.add(leftyBanner);
-            _sideLabels.push(leftyBanner);
+            const leftyLabel = makeGroundLabel('L E F T I E S', '#4a9eff');
+            const lTerrainY = getTerrainHeight(lhpEdgeX, labelZ);
+            leftyLabel.position.set(lhpEdgeX, lTerrainY + 0.05, labelZ);
+            scene.add(leftyLabel);
+            _sideLabels.push(leftyLabel);
         }
 
         function buildLabels() {
