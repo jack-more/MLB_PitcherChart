@@ -1106,7 +1106,7 @@ function initMatchups() {
     function renderDrop() {
         if (!results.length) { drop.classList.remove('visible'); return; }
         drop.innerHTML = results.map((b, i) =>
-            '<div class="search-item' + (i === highlight ? ' hl' : '') + '" data-idx="' + i + '"><span>' + fmtName(b.batter_name) + '</span><span class="pa">' + (b.total_PA || 0).toLocaleString() + ' PA</span></div>'
+            '<div class="search-item' + (i === highlight ? ' hl' : '') + '" data-idx="' + i + '"><span>' + fmtName(b.batter_name) + '</span><span class="pa">' + Math.round(b.total_PA || 0).toLocaleString() + ' PA</span></div>'
         ).join('');
         drop.classList.add('visible');
     }
@@ -1134,7 +1134,7 @@ function initMatchups() {
 
         let html = '<div class="profile-card">';
         html += '<div class="profile-name">' + fmtName(batter.batter_name).toUpperCase() + '</div>';
-        html += '<div class="profile-team">' + totPA.toLocaleString() + ' PA</div>';
+        html += '<div class="profile-team">' + Math.round(totPA).toLocaleString() + ' PA</div>';
         html += '<div class="profile-stats">';
         html += '<div class="profile-stat"><span class="val">' + ba + '</span><span class="lbl">BA</span></div>';
         html += '<div class="profile-stat"><span class="val">' + obp + '</span><span class="lbl">OBP</span></div>';
@@ -1227,7 +1227,7 @@ function initMatchups() {
                 gridHtml += '<div class="arch-row tier-' + d.tier + '" data-arch-idx="' + rowIdx + '">';
                 gridHtml += '<div class="arch-emoji">' + (d.cl.emoji || '') + '</div>';
                 gridHtml += '<div class="arch-name" style="color:' + (d.cl.color || '#333') + '">' + (d.cl.full_name || d.cid) + '</div>';
-                gridHtml += '<div class="arch-pa' + (currentSort === 'pa' ? ' arch-col-active' : '') + '">' + d.msData.pa + '</div>';
+                gridHtml += '<div class="arch-pa' + (currentSort === 'pa' ? ' arch-col-active' : '') + '">' + Math.round(d.msData.pa) + '</div>';
                 gridHtml += '<div class="arch-ba' + (isBA ? ' arch-col-active' : '') + '">' + d.ba.toFixed(3) + '</div>';
                 gridHtml += '<div class="arch-krate' + (isK ? ' arch-col-active' : '') + '">' + (d.kRate * 100).toFixed(0) + '%</div>';
                 gridHtml += '<div class="arch-woba' + (currentSort === 'woba' ? ' arch-col-active' : '') + '">' + d.msData.woba.toFixed(3) + '</div>';

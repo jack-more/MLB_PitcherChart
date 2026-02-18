@@ -481,15 +481,43 @@
 
         .batter-badge {
             position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
-            background: var(--key-dark); border: 1px solid #333;
+            background: var(--key-dark); border: 2px solid #333;
             color: #fff; padding: 7px 18px; border-radius: 20px;
             font-family: var(--font-tech); font-size: 13px; font-weight: 700; z-index: 10;
             box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-            opacity: 0; transition: opacity 0.3s; pointer-events: none;
-            white-space: nowrap;
+            opacity: 0; transition: opacity 0.3s, border-color 0.3s; pointer-events: none;
+            white-space: nowrap; display: flex; align-items: center; gap: 8px;
         }
         .batter-badge.visible { opacity: 1; }
-        .batter-badge strong { color: #fff; margin-right: 6px; }
+        .batter-badge strong { color: #fff; margin-right: 2px; }
+        .batter-badge .tier-chip {
+            font-size: 9px; font-weight: 900; letter-spacing: 1.5px;
+            padding: 2px 8px; border-radius: 3px; text-transform: uppercase;
+        }
+        .batter-badge .tier-chip.elite { background: #FFD700; color: #000; }
+        .batter-badge .tier-chip.plus  { background: #2a9d8f; color: #fff; }
+        .batter-badge .tier-chip.avg   { background: #f4a261; color: #000; }
+        .batter-badge .tier-chip.below { background: #e63946; color: #fff; }
+
+        /* 3D floating badge (CSS2DObject) */
+        .city-batter-badge {
+            background: rgba(10,10,10,0.92); border: 2px solid #555;
+            color: #fff; padding: 6px 14px; border-radius: 16px;
+            font-family: var(--font-tech); font-size: 11px; font-weight: 700;
+            pointer-events: none; white-space: nowrap;
+            display: flex; align-items: center; gap: 6px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.7);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+        }
+        .city-batter-badge .badge-name { color: #fff; }
+        .city-batter-badge .badge-tier {
+            font-size: 8px; font-weight: 900; letter-spacing: 1.2px;
+            padding: 2px 6px; border-radius: 2px;
+        }
+        .city-batter-badge .badge-tier.elite { background: #FFD700; color: #000; }
+        .city-batter-badge .badge-tier.plus  { background: #2a9d8f; color: #fff; }
+        .city-batter-badge .badge-tier.avg   { background: #f4a261; color: #000; }
+        .city-batter-badge .badge-tier.below { background: #e63946; color: #fff; }
 
         #tooltip {
             position: absolute; background: rgba(20,20,20,0.95);
@@ -854,7 +882,9 @@
     <main id="screen">
         <canvas id="plot"></canvas>
         <div class="batter-badge" id="batter-badge">
-            <strong id="badge-name"></strong> <span id="badge-stat"></span>
+            <strong id="badge-name"></strong>
+            <span class="tier-chip" id="badge-tier"></span>
+            <span id="badge-stat"></span>
         </div>
         <div id="tooltip"></div>
         <div id="stat-panel">
@@ -1654,11 +1684,16 @@
             // Clear old
             while (routeGroup.children.length) routeGroup.remove(routeGroup.children[0]);
 
+            // Remove 3D batter badge when no batters active
             if (STATE.activeBatters.length === 0) {
-                // Reset neighborhood glow
-                neighborhoodMeshes.forEach((mesh) => {
-                    mesh.material.emissiveIntensity = 0.05;
+                // Reset neighborhood glow to default state
+                neighborhoodMeshes.forEach((mesh, id) => {
+                    const cl = DATA.clusters[id];
+                    if (cl) mesh.material.emissive.set(new THREE.Color(cl.color));
+                    mesh.material.emissiveIntensity = 0.08;
+                    mesh.material.opacity = 0.25;
                 });
+                buildBatterBadge3D(null, null);
                 return;
             }
 
@@ -1704,37 +1739,51 @@
                 }
 
                 const woba = m.wOBA || 0;
+                const pa = m.PA || 0;
                 const color = woba >= 0.370 ? 0x2a9d8f : woba >= 0.310 ? 0xf4a261 : 0xe63946;
-                const thickness = Math.max(0.02, Math.min(0.12, (m.PA || 0) / 200));
 
-                // Bezier arc from above city center down to neighborhood
+                // Route thickness: crush zones = fat highways, struggle zones = thin wires
+                // PA drives base thickness, wOBA modulates it
+                const paFactor = Math.max(0.02, Math.min(0.10, pa / 200));
+                const wobaBoost = woba >= 0.370 ? 1.5 : woba >= 0.310 ? 1.0 : 0.6;
+                const thickness = paFactor * wobaBoost;
+
+                // Route opacity: crush = bright, struggle = faded
+                const routeOpacity = woba >= 0.370 ? 0.85 : woba >= 0.310 ? 0.65 : 0.45;
+                const emissiveStr = woba >= 0.370 ? 0.7 : woba >= 0.310 ? 0.4 : 0.2;
+
+                // Bezier arc from 3D badge position down to neighborhood
                 const routeZ = -py * PCA_Y_SCALE;
                 const routeTerrainY = getTerrainHeight(px, routeZ);
-                const start = new THREE.Vector3(0, 8, 12);
+                const start = _batterBadge3D
+                    ? _batterBadge3D.position.clone()
+                    : new THREE.Vector3(-1, 6, 4);
                 const end = new THREE.Vector3(px, routeTerrainY + 0.5, routeZ);
                 const mid = new THREE.Vector3(
                     (start.x + end.x) / 2,
-                    Math.max(start.y, end.y) + 3,
+                    Math.max(start.y, end.y) + 2,
                     (start.z + end.z) / 2
                 );
                 const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
-                const tubeGeo = new THREE.TubeGeometry(curve, 20, thickness, 6, false);
+                const tubeGeo = new THREE.TubeGeometry(curve, 24, thickness, 6, false);
                 const tubeMat = new THREE.MeshStandardMaterial({
                     color: color,
                     emissive: color,
-                    emissiveIntensity: 0.5,
+                    emissiveIntensity: emissiveStr,
                     transparent: true,
-                    opacity: 0.7,
+                    opacity: routeOpacity,
                 });
                 const tube = new THREE.Mesh(tubeGeo, tubeMat);
                 routeGroup.add(tube);
 
-                // Glow tube (wider, transparent)
-                const glowGeo = new THREE.TubeGeometry(curve, 20, thickness * 3, 6, false);
+                // Glow tube — wider halo, brighter for crush matchups
+                const glowRadius = thickness * (woba >= 0.370 ? 4 : 2.5);
+                const glowOpacity = woba >= 0.370 ? 0.12 : woba >= 0.310 ? 0.06 : 0.03;
+                const glowGeo = new THREE.TubeGeometry(curve, 24, glowRadius, 6, false);
                 const glowMat = new THREE.MeshBasicMaterial({
                     color: color,
                     transparent: true,
-                    opacity: 0.08,
+                    opacity: glowOpacity,
                 });
                 routeGroup.add(new THREE.Mesh(glowGeo, glowMat));
             });
@@ -2103,14 +2152,59 @@
             return { pa: totalPA, avg: totalPA > 0 ? totalStatWeighted/totalPA : 0 };
         }
 
+        // Batter tier classification by wOBA
+        function getBatterTier(woba) {
+            if (woba >= 0.370) return { label: 'ELITE', cls: 'elite', color: '#FFD700' };
+            if (woba >= 0.320) return { label: 'PLUS',  cls: 'plus',  color: '#2a9d8f' };
+            if (woba >= 0.290) return { label: 'AVG',   cls: 'avg',   color: '#f4a261' };
+            return                     { label: 'BELOW', cls: 'below', color: '#e63946' };
+        }
+
+        // 3D floating batter badge (CSS2DObject above city)
+        let _batterBadge3D = null;
+        function buildBatterBadge3D(batter, stats) {
+            // Remove old
+            if (_batterBadge3D) {
+                if (_batterBadge3D.element) _batterBadge3D.element.remove();
+                labelGroup.remove(_batterBadge3D);
+                _batterBadge3D = null;
+            }
+            if (!batter) return;
+
+            const tier = getBatterTier(stats.avg);
+
+            const div = document.createElement('div');
+            div.className = 'city-batter-badge';
+            div.innerHTML =
+                '<span class="badge-name">' + fmtName(batter.batter_name) + '</span>' +
+                '<span class="badge-tier ' + tier.cls + '">' + tier.label + '</span>';
+
+            const obj = new CSS2DObject(div);
+            // Float above city center, offset toward camera
+            obj.position.set(-1, 6, 4);
+            labelGroup.add(obj);
+            _batterBadge3D = obj;
+        }
+
         function spawnBatter(batter) {
             const matchups = getMatchupData(batter);
             const stats = getFilteredBatterStats(batter);
 
+            // Compute tier
+            const tier = getBatterTier(stats.avg);
+
+            // Update HTML badge
             document.getElementById('badge-name').textContent = fmtName(batter.batter_name);
+            const tierEl = document.getElementById('badge-tier');
+            tierEl.textContent = tier.label;
+            tierEl.className = 'tier-chip ' + tier.cls;
             document.getElementById('badge-stat').textContent = fmtStatVal(STATE.selectedStat, stats.avg) + ' ' + statLabel(STATE.selectedStat) + ' \u00b7 ' + stats.pa.toLocaleString() + ' PA';
             document.getElementById('batter-badge').classList.add('visible');
+            document.getElementById('batter-badge').style.borderColor = tier.color;
             document.getElementById('led-batter').classList.add('active');
+
+            // Build 3D floating badge above city
+            buildBatterBadge3D(batter, stats);
 
             updateDock(batter, matchups);
             saveSearch(batter);
@@ -2120,7 +2214,9 @@
 
         function clearBatter() {
             document.getElementById('batter-badge').classList.remove('visible');
+            document.getElementById('batter-badge').style.borderColor = '#333';
             document.getElementById('led-batter').classList.remove('active');
+            buildBatterBadge3D(null, null); // Remove 3D badge
             document.getElementById('stat-panel').classList.remove('visible');
             document.getElementById('dock-best-content').innerHTML = '<span style="color:var(--text-label)">Search a batter</span>';
             document.getElementById('dock-worst-content').innerHTML = '<span style="color:var(--text-label)">Search a batter</span>';
@@ -2136,7 +2232,13 @@
             updateDock(b, matchups);
             // Update badge — use pitcher-level stats when team filter active
             const stats = getFilteredBatterStats(b);
+            const tier = getBatterTier(stats.avg);
+            const tierEl = document.getElementById('badge-tier');
+            tierEl.textContent = tier.label;
+            tierEl.className = 'tier-chip ' + tier.cls;
             document.getElementById('badge-stat').textContent = fmtStatVal(STATE.selectedStat, stats.avg) + ' ' + statLabel(STATE.selectedStat) + ' \u00b7 ' + stats.pa.toLocaleString() + ' PA';
+            document.getElementById('batter-badge').style.borderColor = tier.color;
+            buildBatterBadge3D(b, stats);
             render();
         }
 
