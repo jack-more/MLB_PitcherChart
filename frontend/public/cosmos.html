@@ -1668,24 +1668,27 @@
             }
             labelObjects.clear();
 
-            const yearFilter = STATE.selectedYear !== 'all' ? STATE.selectedYear : null;
-            const yearMedoids = yearFilter ? computeYearMedoids(yearFilter) : null;
+            const cells = getVoronoiCells();
 
             Object.entries(DATA.clusters).forEach(([id, cl]) => {
                 if (!STATE.visibleClusters.has(id)) return;
+                if (cl.pca_x == null || cl.pca_y == null) return;
 
-                let px, py;
-                if (yearMedoids && yearMedoids[id]) {
-                    px = yearMedoids[id].x; py = yearMedoids[id].y;
+                // Place label at Voronoi polygon centroid (where the buildings actually are)
+                let labelX, labelZ;
+                const poly = cells && cells[id];
+                if (poly && poly.length >= 3) {
+                    labelX = poly.reduce((s, p) => s + p.x, 0) / poly.length;
+                    labelZ = poly.reduce((s, p) => s + p.z, 0) / poly.length;
                 } else {
-                    if (cl.pca_x == null || cl.pca_y == null) return;
-                    px = cl.pca_x; py = cl.pca_y;
+                    // Fallback to PCA centroid
+                    labelX = cl.pca_x;
+                    labelZ = -(cl.pca_y * PCA_Y_SCALE);
                 }
 
                 const name = (cl.emoji || '') + ' ' + archName(id);
 
-                const worldZ = -py * PCA_Y_SCALE;
-                const terrainY = getTerrainHeight(px, worldZ);
+                const terrainY = getTerrainHeight(labelX, labelZ);
                 // Anchor label just above tallest building in this cluster
                 let maxBuildingTop = terrainY;
                 buildingMeshes.forEach(m => {
@@ -1697,7 +1700,7 @@
                 const labelY = maxBuildingTop + 0.4;
 
                 const sprite = makeTextSprite(name, cl.color);
-                sprite.position.set(px, labelY, worldZ);
+                sprite.position.set(labelX, labelY, labelZ);
                 sprite.userData = { clusterId: id };
                 labelGroup.add(sprite);
                 labelObjects.set(id, { obj: sprite, div: null });
