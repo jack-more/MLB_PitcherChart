@@ -473,11 +473,11 @@
         #screen:active { cursor: grabbing; }
 
         canvas { display: block; width: 100%; height: 100%; }
-        .city-label { pointer-events: none; text-align: center; padding: 4px 10px; border-radius: 4px; background: rgba(10,10,10,0.88); border-top: 2px solid currentColor; white-space: nowrap; transition: opacity 0.25s ease, transform 0.25s ease; transform-origin: center bottom; }
-        .city-label-name { font: bold 13px var(--font-ui); white-space: nowrap; text-shadow: 0 1px 3px rgba(0,0,0,0.6); }
-        .city-label-meta { font: 9px var(--font-tech); color: #999; margin-top: 2px; }
+        .city-label { pointer-events: none; text-align: center; padding: 4px 10px; border-radius: 4px; background: rgba(10,10,10,0.88); border-top: 2px solid currentColor; white-space: nowrap; }
+        .city-label-name { font: bold 11px var(--font-ui); white-space: nowrap; text-shadow: 0 1px 3px rgba(0,0,0,0.6); }
+        .city-label-meta { font: 8px var(--font-tech); color: #999; margin-top: 1px; }
         .city-label-stat { font: bold 14px var(--font-tech); margin-top: 3px; }
-        .css2d-renderer { position: absolute !important; top: 0; left: 0; pointer-events: none; overflow: visible; }
+        .css2d-renderer { position: absolute !important; top: 0; left: 0; pointer-events: none; overflow: visible; z-index: 1; }
 
         .batter-badge {
             position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
@@ -1288,7 +1288,7 @@
         const neighborhoodMeshes = new Map(); // clusterId → Mesh
         const buildingMeshes = [];            // all building meshes for raycaster
         const buildingData = new Map();       // mesh.uuid → { pitchers, clusterId }
-        const labelObjects = new Map();       // clusterId → CSS2DObject
+        const labelObjects = new Map();       // clusterId → { obj: Sprite }
         let _voronoiCache = null, _voronoiCacheKey = '';
         let _buildingCache = null, _buildingCacheKey = '';
 
@@ -1625,12 +1625,45 @@
             });
         }
 
-        // ── Build Labels ──
+        // ── Build Labels (GPU sprites — no CSS jitter) ──
+        function makeTextSprite(text, color) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const fontSize = 48;
+            ctx.font = 'bold ' + fontSize + 'px sans-serif';
+            const metrics = ctx.measureText(text);
+            const w = Math.ceil(metrics.width) + 24;
+            const h = fontSize + 20;
+            canvas.width = w; canvas.height = h;
+            // Background pill
+            ctx.fillStyle = 'rgba(10,10,10,0.85)';
+            ctx.beginPath();
+            ctx.roundRect(0, 0, w, h, 6);
+            ctx.fill();
+            // Top border
+            ctx.fillStyle = color;
+            ctx.fillRect(0, 0, w, 3);
+            // Text
+            ctx.font = 'bold ' + fontSize + 'px sans-serif';
+            ctx.fillStyle = color;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, w / 2, h / 2 + 2);
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.minFilter = THREE.LinearFilter;
+            const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false, depthWrite: false });
+            const sprite = new THREE.Sprite(mat);
+            const sc = 0.005;
+            sprite.scale.set(w * sc, h * sc, 1);
+            return sprite;
+        }
+
         function buildLabels() {
             // Clear old
             while (labelGroup.children.length) {
                 const child = labelGroup.children[0];
-                if (child.element) child.element.remove();
+                if (child.element) child.element.remove();       // CSS2D cleanup (legacy)
+                if (child.material) { child.material.map?.dispose(); child.material.dispose(); }
                 labelGroup.remove(child);
             }
             labelObjects.clear();
@@ -1649,33 +1682,25 @@
                     px = cl.pca_x; py = cl.pca_y;
                 }
 
-                const role = cl.is_sp > 0.55 ? 'SP' : cl.is_sp < 0.35 ? 'RP' : 'SW';
-                const countStr = yearMedoids && yearMedoids[id] ? yearMedoids[id].n : cl.pitcher_count;
-
-                const div = document.createElement('div');
-                div.className = 'city-label';
-                div.style.borderColor = cl.color;
-                div.innerHTML =
-                    '<div class="city-label-name" style="color:' + cl.color + '">' + archName(id) + '</div>' +
-                    '<div class="city-label-meta">' + cl.hand + ' · ' + role + ' · ' + countStr + '</div>';
+                const name = (cl.emoji || '') + ' ' + archName(id);
 
                 const worldZ = -py * PCA_Y_SCALE;
                 const terrainY = getTerrainHeight(px, worldZ);
-                // Find max building top in this cluster for label positioning
-                let maxBuildingTop = 0;
+                // Anchor label just above tallest building in this cluster
+                let maxBuildingTop = terrainY;
                 buildingMeshes.forEach(m => {
                     if (m.userData.clusterId === id) {
                         const top = m.position.y + (m.geometry.parameters ? m.geometry.parameters.height / 2 : 0);
                         if (top > maxBuildingTop) maxBuildingTop = top;
                     }
                 });
-                const labelY = Math.max(terrainY + 1.5, maxBuildingTop + 0.5);
+                const labelY = maxBuildingTop + 0.4;
 
-                const labelObj = new CSS2DObject(div);
-                labelObj.position.set(px, labelY, worldZ);
-                labelObj.userData = { clusterId: id };
-                labelGroup.add(labelObj);
-                labelObjects.set(id, { obj: labelObj, div });
+                const sprite = makeTextSprite(name, cl.color);
+                sprite.position.set(px, labelY, worldZ);
+                sprite.userData = { clusterId: id };
+                labelGroup.add(sprite);
+                labelObjects.set(id, { obj: sprite, div: null });
             });
         }
 
@@ -1788,23 +1813,7 @@
                 routeGroup.add(new THREE.Mesh(glowGeo, glowMat));
             });
 
-            // Update label stat chips
-            labelObjects.forEach(({ obj, div }, id) => {
-                const m = matchups.find(x => String(x.cluster) === id);
-                // Remove old stat chip
-                const old = div.querySelector('.city-label-stat');
-                if (old) old.remove();
-                if (m && (m.PA || 0) >= STATE.minPA) {
-                    const val = m[STATE.selectedStat] || 0;
-                    const display = (STATE.selectedStat === 'K_pct' || STATE.selectedStat === 'BB_pct')
-                        ? (val * 100).toFixed(0) + '%' : val.toFixed(3);
-                    const chip = document.createElement('div');
-                    chip.className = 'city-label-stat';
-                    chip.style.color = perfHex(STATE.selectedStat, val);
-                    chip.textContent = display;
-                    div.appendChild(chip);
-                }
-            });
+            // Note: stat chips now shown via neighborhood glow + dock (sprite labels are GPU-rendered)
         }
 
         // ── Master rebuild ──
@@ -1831,54 +1840,6 @@
             });
         }
 
-        // ── Label declutter: hide overlapping labels each frame ──
-        const _labelScreenRects = [];
-        function declutterLabels() {
-            if (!camera || labelObjects.size === 0) return;
-            const hw = screenEl.clientWidth / 2, hh = screenEl.clientHeight / 2;
-            const items = [];
-            labelObjects.forEach(({ obj, div }, id) => {
-                const cl = DATA.clusters[id];
-                if (!cl || !STATE.visibleClusters.has(id)) { div.style.opacity = '0'; return; }
-                // Project 3D → screen
-                const v = obj.position.clone().project(camera);
-                const sx = (v.x * hw) + hw;
-                const sy = -(v.y * hh) + hh;
-                const behind = v.z > 1;
-                // Distance from camera for sizing
-                const dist = camera.position.distanceTo(obj.position);
-                const priority = cl.pitcher_count || 1;
-                // Label bounding box estimate (scale with distance)
-                const scale = Math.max(0.45, Math.min(1.0, 8 / dist));
-                const w = 120 * scale, h = 36 * scale;
-                items.push({ id, div, sx, sy, w, h, dist, priority, behind, scale });
-            });
-            // Sort by priority (highest pitcher count first = shown first)
-            items.sort((a, b) => b.priority - a.priority);
-            const placed = [];
-            items.forEach(it => {
-                if (it.behind || it.sx < -50 || it.sx > screenEl.clientWidth + 50 || it.sy < -50 || it.sy > screenEl.clientHeight + 50) {
-                    it.div.style.opacity = '0';
-                    return;
-                }
-                // Check overlap with already-placed labels
-                const pad = 6;
-                const r = { l: it.sx - it.w/2 - pad, r: it.sx + it.w/2 + pad, t: it.sy - it.h/2 - pad, b: it.sy + it.h/2 + pad };
-                let overlaps = false;
-                for (const p of placed) {
-                    if (r.l < p.r && r.r > p.l && r.t < p.b && r.b > p.t) { overlaps = true; break; }
-                }
-                if (overlaps) {
-                    it.div.style.opacity = '0';
-                } else {
-                    const alpha = Math.max(0.4, Math.min(1.0, 12 / it.dist));
-                    it.div.style.opacity = String(alpha);
-                    it.div.style.transform = 'scale(' + it.scale + ')';
-                    placed.push(r);
-                }
-            });
-        }
-
         // Animation loop
         function animate() {
             requestAnimationFrame(animate);
@@ -1886,7 +1847,6 @@
             if (renderer && scene && camera) {
                 renderer.render(scene, camera);
                 css2DRenderer.render(scene, camera);
-                declutterLabels();
             }
         }
 
