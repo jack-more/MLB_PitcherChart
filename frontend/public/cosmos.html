@@ -2335,8 +2335,13 @@
         // BATTER SYSTEM
         // ═══════════════════════════════════════
         function deriveStats(r) {
-            const pa=r.PA||0, ab=r.AB||0, h=r.H||0, hr=r.HR||0, bb=r.BB||0, k=r.K||0, hbp=r.HBP||0;
-            const s=r.singles||0, d=r.doubles||0, t=r.triples||0;
+            // Round counting stats (PA, AB, H, etc.) — they can be floats from GMM soft-assignment
+            r.PA=Math.round(r.PA||0); r.AB=Math.round(r.AB||0); r.H=Math.round(r.H||0);
+            r.HR=Math.round(r.HR||0); r.BB=Math.round(r.BB||0); r.K=Math.round(r.K||0);
+            r.HBP=Math.round(r.HBP||0); r.singles=Math.round(r.singles||0);
+            r.doubles=Math.round(r.doubles||0); r.triples=Math.round(r.triples||0);
+            const pa=r.PA, ab=r.AB, h=r.H, hr=r.HR, bb=r.BB, k=r.K, hbp=r.HBP;
+            const s=r.singles, d=r.doubles, t=r.triples;
             r.BA = ab>0 ? h/ab : 0; r.OBP = pa>0 ? (h+bb+hbp)/pa : 0;
             r.SLG = ab>0 ? (s+2*d+3*t+4*hr)/ab : 0; r.K_pct = pa>0 ? k/pa : 0; r.BB_pct = pa>0 ? bb/pa : 0;
             return r;
@@ -2387,7 +2392,7 @@
         // Compute batter badge stats (uses getMatchupData which handles team filter)
         function getFilteredBatterStats(batter) {
             const matchups = getMatchupData(batter);
-            const totalPA = matchups.reduce((s,r) => s+(r.PA||0), 0);
+            const totalPA = Math.round(matchups.reduce((s,r) => s+(r.PA||0), 0));
             const stat = STATE.selectedStat;
             const totalStatWeighted = matchups.reduce((s,r) => s+(r[stat]||0)*(r.PA||0), 0);
             return { pa: totalPA, avg: totalPA > 0 ? totalStatWeighted/totalPA : 0 };
@@ -2521,7 +2526,7 @@
                     yearRows.forEach(r => {
                         const v = getStatFromRow(r, ss);
                         const bw = Math.min(100,Math.max(5,(v/statBarMax(ss))*100));
-                        html += '<div class="matchup-bar"><span class="yr">'+r.game_year+'</span><div class="bar-track"><div class="bar-fill" style="width:'+bw+'%;background:'+statBarColor(ss,v)+';"></div></div><span class="woba-val">'+fmtStatVal(ss,v)+'</span><span class="pa-val">'+r.PA+' PA</span></div>';
+                        html += '<div class="matchup-bar"><span class="yr">'+r.game_year+'</span><div class="bar-track"><div class="bar-fill" style="width:'+bw+'%;background:'+statBarColor(ss,v)+';"></div></div><span class="woba-val">'+fmtStatVal(ss,v)+'</span><span class="pa-val">'+Math.round(r.PA)+' PA</span></div>';
                     });
                 }
 
@@ -2546,9 +2551,9 @@
                         const baColor = m.ba != null ? (m.ba >= 0.300 ? 'color:var(--perf-green)' : m.ba <= 0.180 ? 'color:var(--perf-red)' : '') : '';
                         html += '<div class="roster-row roster-clickable" data-pid="'+m.p+'">';
                         html += '<span class="r-name">'+fmtName(m.pn)+'</span>';
-                        html += '<span class="r-val">'+(m.pa||0)+'</span>';
+                        html += '<span class="r-val">'+Math.round(m.pa||0)+'</span>';
                         html += '<span class="r-val highlight" style="'+baColor+'">'+baVal+'</span>';
-                        html += '<span class="r-val">'+(m.hr||0)+'</span>';
+                        html += '<span class="r-val">'+Math.round(m.hr||0)+'</span>';
                         html += '<span class="r-val">'+(m.k||0)+'</span>';
                         html += '<span class="r-val">'+whiff+'</span>';
                         html += '</div>';
@@ -2704,7 +2709,7 @@
                 if (matchup) {
                     const ss = STATE.selectedStat;
                     // Compute selected stat from compact pitcher matchup data
-                    const pa = matchup.pa||0;
+                    const pa = Math.round(matchup.pa||0);
                     let featVal = 0;
                     if (ss==='wOBA') featVal = matchup.w||0;
                     else if (ss==='BA') featVal = matchup.ba||0;
@@ -3024,7 +3029,7 @@
                     nightmareEl.innerHTML = nightmares.slice(0, 5).map(m => {
                         const val = hvpStat(m, ss);
                         return '<div class="dock-row"><span class="d-name">' + fmtName(m.pn) + '</span>'
-                            + '<span class="d-stat">' + m.pa + 'PA</span>'
+                            + '<span class="d-stat">' + Math.round(m.pa||0) + 'PA</span>'
                             + '<span class="d-stat bad">' + fmtStatVal(ss, val) + '</span></div>';
                     }).join('');
                 } else {
@@ -3071,7 +3076,7 @@
                     dreamEl.innerHTML = dreams.slice(0, 5).map(m => {
                         const val = hvpStat(m, ss);
                         return '<div class="dock-row"><span class="d-name">' + fmtName(m.pn) + '</span>'
-                            + '<span class="d-stat">' + m.pa + 'PA</span>'
+                            + '<span class="d-stat">' + Math.round(m.pa||0) + 'PA</span>'
                             + '<span class="d-stat good">' + fmtStatVal(ss, val) + '</span></div>';
                     }).join('');
                 } else {
@@ -3707,7 +3712,7 @@
                 const baVal = m.ba != null ? m.ba.toFixed(3) : '\u2014';
                 const whiff = m.w != null ? (m.w*100).toFixed(0)+'%' : '\u2014';
                 const baColor = m.ba != null ? (m.ba >= 0.300 ? 'color:var(--perf-green)' : m.ba <= 0.180 ? 'color:var(--perf-red)' : '') : '';
-                return '<div class="roster-row roster-clickable" data-pid="'+m.p+'"><span class="r-name">'+fmtName(m.pn)+'</span><span class="r-val">'+(m.pa||0)+'</span><span class="r-val highlight" style="'+baColor+'">'+baVal+'</span><span class="r-val">'+(m.hr||0)+'</span><span class="r-val">'+(m.k||0)+'</span><span class="r-val">'+whiff+'</span></div>';
+                return '<div class="roster-row roster-clickable" data-pid="'+m.p+'"><span class="r-name">'+fmtName(m.pn)+'</span><span class="r-val">'+Math.round(m.pa||0)+'</span><span class="r-val highlight" style="'+baColor+'">'+baVal+'</span><span class="r-val">'+Math.round(m.hr||0)+'</span><span class="r-val">'+Math.round(m.k||0)+'</span><span class="r-val">'+whiff+'</span></div>';
             }).join('');
         });
 
@@ -4006,7 +4011,7 @@ async function selectBatter(batter){
 
     document.getElementById('hc-name').textContent=fmtName(batter.batter_name);
     document.getElementById('hc-sub').textContent='';
-    document.getElementById('hc-career').textContent='Career: '+careerWoba+' wOBA \\u00b7 '+totalHR+' HR \\u00b7 '+totalPA.toLocaleString()+' PA';
+    document.getElementById('hc-career').textContent='Career: '+careerWoba+' wOBA \\u00b7 '+Math.round(totalHR)+' HR \\u00b7 '+Math.round(totalPA).toLocaleString()+' PA';
     document.getElementById('hitter-card').classList.add('visible');
     document.getElementById('btn-run').disabled=false;
 
@@ -4190,19 +4195,19 @@ function buildGameCard(game, day){
     // Right: head-to-head
     card+='<div>';
     if(h2h&&h2h.pa>=1){
-        card+='<div class="gc-section">Head-to-Head <span class="pa-note">('+h2h.pa+' PA)</span></div>';
+        card+='<div class="gc-section">Head-to-Head <span class="pa-note">('+Math.round(h2h.pa)+' PA)</span></div>';
         card+='<div class="stat-row">';
-        card+=sc('PA',h2h.pa);
+        card+=sc('PA',Math.round(h2h.pa));
         card+=scC('BA',h2h.ba!=null?h2h.ba.toFixed(3):'\\u2014',baColor(h2h.ba||0));
         card+=scC('wOBA',h2h.w!=null?h2h.w.toFixed(3):'\\u2014',wobaColor(h2h.w||0));
-        card+=sc('HR',h2h.hr||0);
-        card+=sc('K',h2h.k||0);
+        card+=sc('HR',Math.round(h2h.hr||0));
+        card+=sc('K',Math.round(h2h.k||0));
         card+='</div>';
     }else{
         card+='<div class="gc-section warn">No Direct History \\u2014 Using Archetype</div>';
         if(archMatch){
             card+='<div class="stat-row">';
-            card+=sc('PA','~'+archMatch.PA);
+            card+=sc('PA','~'+Math.round(archMatch.PA));
             card+=scC('BA','~'+archMatch.BA.toFixed(3),baColor(archMatch.BA));
             card+=scC('wOBA','~'+archMatch.wOBA.toFixed(3),wobaColor(archMatch.wOBA));
             card+=sc('K%',(archMatch.K_pct*100).toFixed(0)+'%');
@@ -4227,7 +4232,7 @@ function buildGameCard(game, day){
     card+='<div class="gc-section">vs Archetype (All Time)</div>';
     if(archMatch){
         card+='<div class="stat-row">';
-        card+=sc('PA',archMatch.PA);
+        card+=sc('PA',Math.round(archMatch.PA));
         card+=scC('BA',archMatch.BA.toFixed(3),baColor(archMatch.BA));
         card+=scC('wOBA',archMatch.wOBA.toFixed(3),wobaColor(archMatch.wOBA));
         card+=sc('K%',(archMatch.K_pct*100).toFixed(0)+'%');
