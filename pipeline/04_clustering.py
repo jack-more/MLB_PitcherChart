@@ -1,9 +1,11 @@
 """
-Step 4: K-Means clustering on pitcher-season feature vectors.
+Step 4: GMM (Gaussian Mixture Model) clustering on pitcher-season feature vectors.
 
 Runs SEPARATE clustering for RHP and LHP pitchers.
 - StandardScaler preprocessing (per-hand)
-- Silhouette score for optimal K selection (min K=8)
+- BIC for optimal K selection (min K=8)
+- Soft probability vectors per pitcher-season (stored separately)
+- Hard cluster assignment via argmax for backward compatibility
 - 3D PCA projection for galaxy view
 - RHP clusters offset to the right (+X), LHP to the left (-X)
 - Cluster IDs: R_0, R_1, ... for RHP; L_0, L_1, ... for LHP
@@ -16,7 +18,7 @@ import pandas as pd
 import numpy as np
 import joblib
 from sklearn.preprocessing import StandardScaler
-from sklearn.cluster import KMeans
+from sklearn.mixture import GaussianMixture
 from sklearn.metrics import silhouette_score
 from sklearn.decomposition import PCA
 
@@ -34,30 +36,39 @@ X_OFFSET = 5.0  # How far to shift RHP right / LHP left in PCA space
 
 
 def find_optimal_k(X_scaled, k_range, min_k=MIN_K):
-    """Run KMeans for each K, return optimal K (enforcing minimum)."""
+    """Run GMM for each K, return optimal K using BIC (lower is better), enforcing minimum."""
     results = []
     for k in k_range:
-        km = KMeans(n_clusters=k, n_init=10, max_iter=300, random_state=RANDOM_STATE)
-        labels = km.fit_predict(X_scaled)
-        sil = silhouette_score(X_scaled, labels)
-        results.append({"k": k, "inertia": km.inertia_, "silhouette": sil})
-        print(f"    K={k}  sil={sil:.4f}  inertia={km.inertia_:.0f}")
+        gmm = GaussianMixture(
+            n_components=k, n_init=5, max_iter=300,
+            covariance_type="full", random_state=RANDOM_STATE,
+        )
+        labels = gmm.fit_predict(X_scaled)
+        bic = gmm.bic(X_scaled)
+        sil = silhouette_score(X_scaled, labels) if k > 1 else -1
+        results.append({"k": k, "bic": bic, "silhouette": sil})
+        print(f"    K={k}  BIC={bic:.0f}  sil={sil:.4f}")
 
     df = pd.DataFrame(results)
     practical = df[df["k"] >= min_k]
     if len(practical) > 0:
-        best = practical.loc[practical["silhouette"].idxmax()]
+        # BIC: lower is better
+        best = practical.loc[practical["bic"].idxmin()]
     else:
-        best = df.loc[df["silhouette"].idxmax()]
+        best = df.loc[df["bic"].idxmin()]
     optimal_k = int(best["k"])
     if optimal_k < min_k:
         optimal_k = min_k
-    print(f"    -> Optimal K: {optimal_k} (sil={best['silhouette']:.4f})")
+    print(f"    -> Optimal K: {optimal_k} (BIC={best['bic']:.0f}, sil={best['silhouette']:.4f})")
     return optimal_k
 
 
 def cluster_hand(pitcher_seasons, hand_label, prefix, features):
-    """Cluster one hand group. Returns (updated df, models dict)."""
+    """Cluster one hand group using GMM. Returns (updated df, proba_df, models dict).
+
+    proba_df has columns: pitcher, game_year, and one column per cluster ID
+    (e.g. R_0, R_1, ...) with the soft probability for that cluster.
+    """
     print(f"\n{'='*50}")
     print(f"  Clustering {hand_label} pitchers ({len(pitcher_seasons):,} pitcher-seasons)")
     print(f"{'='*50}")
@@ -75,16 +86,30 @@ def cluster_hand(pitcher_seasons, hand_label, prefix, features):
     print(f"  Searching for optimal K...")
     optimal_k = find_optimal_k(X_scaled, K_RANGE, MIN_K)
 
-    # Fit final KMeans
-    print(f"  Fitting KMeans with K={optimal_k}...")
-    km = KMeans(n_clusters=optimal_k, n_init=20, max_iter=500, random_state=RANDOM_STATE)
-    local_labels = km.fit_predict(X_scaled)
+    # Fit final GMM
+    print(f"  Fitting GMM with K={optimal_k}...")
+    gmm = GaussianMixture(
+        n_components=optimal_k, n_init=10, max_iter=500,
+        covariance_type="full", random_state=RANDOM_STATE,
+    )
+    local_labels = gmm.fit_predict(X_scaled)
 
-    # Assign prefixed cluster IDs: R_0, R_1, ... or L_0, L_1, ...
+    # Get soft probability vectors
+    proba = gmm.predict_proba(X_scaled)  # shape: (n_samples, optimal_k)
+    cluster_ids = [f"{prefix}_{c}" for c in range(optimal_k)]
+
+    # Build probability DataFrame
     pitcher_seasons = pitcher_seasons.copy()
+    proba_df = pd.DataFrame(proba, columns=cluster_ids, index=pitcher_seasons.index)
+    proba_df["pitcher"] = pitcher_seasons["pitcher"].values
+    proba_df["game_year"] = pitcher_seasons["game_year"].values
+
+    # Hard assignment via argmax (backward-compatible)
     pitcher_seasons["cluster"] = [f"{prefix}_{c}" for c in local_labels]
 
-    # Print sizes
+    # Print sizes and avg max-probability (how "crisp" assignments are)
+    avg_max_prob = proba.max(axis=1).mean()
+    print(f"  Avg max-cluster probability: {avg_max_prob:.3f} (1.0 = perfectly crisp)")
     for cid, count in pitcher_seasons["cluster"].value_counts().sort_index().items():
         print(f"    {cid}: {count:,}")
 
@@ -107,12 +132,13 @@ def cluster_hand(pitcher_seasons, hand_label, prefix, features):
 
     models = {
         "scaler": scaler,
-        "kmeans": km,
+        "gmm": gmm,
         "pca": pca,
         "optimal_k": optimal_k,
+        "cluster_ids": cluster_ids,
     }
 
-    return pitcher_seasons, models
+    return pitcher_seasons, proba_df, models
 
 
 def main():
@@ -134,20 +160,30 @@ def main():
     print(f"\nRHP: {len(rhp):,}  |  LHP: {len(lhp):,}")
 
     # Cluster each hand independently
-    rhp_out, rhp_models = cluster_hand(
+    rhp_out, rhp_proba, rhp_models = cluster_hand(
         rhp, "RHP", "R", HAND_CLUSTER_FEATURES
     )
-    lhp_out, lhp_models = cluster_hand(
+    lhp_out, lhp_proba, lhp_models = cluster_hand(
         lhp, "LHP", "L", HAND_CLUSTER_FEATURES
     )
 
     # Merge back
     all_pitchers = pd.concat([rhp_out, lhp_out], ignore_index=True)
 
+    # Merge probability vectors (each hand has its own cluster columns)
+    all_proba = pd.concat([rhp_proba, lhp_proba], ignore_index=True)
+    # Fill NaN for cross-hand clusters (RHP pitchers have 0 probability for LHP clusters)
+    all_proba = all_proba.fillna(0.0)
+
+    # Save probability vectors
+    proba_path = os.path.join(PROCESSED_DATA_DIR, "cluster_probabilities.parquet")
+    all_proba.to_parquet(proba_path, engine="pyarrow", compression="snappy")
+    print(f"\nSaved cluster probabilities: {proba_path} ({len(all_proba):,} rows)")
+
     # Save models
     for prefix, models in [("R", rhp_models), ("L", lhp_models)]:
         joblib.dump(models["scaler"], os.path.join(MODELS_DIR, f"scaler_{prefix}.joblib"))
-        joblib.dump(models["kmeans"], os.path.join(MODELS_DIR, f"kmeans_{prefix}.joblib"))
+        joblib.dump(models["gmm"], os.path.join(MODELS_DIR, f"gmm_{prefix}.joblib"))
         joblib.dump(models["pca"], os.path.join(MODELS_DIR, f"pca_{prefix}.joblib"))
     print("\nModels saved.")
 
@@ -166,7 +202,13 @@ def main():
         "total_clusters": rhp_models["optimal_k"] + lhp_models["optimal_k"],
         "features": HAND_CLUSTER_FEATURES,
         "x_offset": X_OFFSET,
+        "method": "gmm",
+        "rhp_cluster_ids": rhp_models["cluster_ids"],
+        "lhp_cluster_ids": lhp_models["cluster_ids"],
     }
+    with open(os.path.join(MODELS_DIR, "cluster_meta.json"), "w") as f:
+        json.dump(meta, f, indent=2)
+    # Backward-compatible alias
     with open(os.path.join(MODELS_DIR, "kmeans_meta.json"), "w") as f:
         json.dump(meta, f, indent=2)
 
@@ -191,6 +233,7 @@ def main():
         sub_lhp = sub[sub["is_rhp"] == 0].copy() if "is_rhp" in sub.columns else pd.DataFrame()
 
         sub_parts = []
+        sub_proba_parts = []
         for prefix, models, sub_hand, label in [
             ("R", rhp_models, sub_rhp, "RHP"),
             ("L", lhp_models, sub_lhp, "LHP"),
@@ -206,9 +249,18 @@ def main():
             X_sub_scaled = np.clip(X_sub_scaled, -10, 10)
             X_sub_scaled = np.nan_to_num(X_sub_scaled, nan=0.0, posinf=0.0, neginf=0.0)
 
-            # Predict nearest cluster
-            local_labels = models["kmeans"].predict(X_sub_scaled)
+            # Predict nearest cluster (hard) and probabilities (soft)
+            local_labels = models["gmm"].predict(X_sub_scaled)
+            sub_proba = models["gmm"].predict_proba(X_sub_scaled)
             sub_hand["cluster"] = [f"{prefix}_{c}" for c in local_labels]
+
+            # Build probability DataFrame for sub-threshold pitchers
+            sub_proba_df = pd.DataFrame(
+                sub_proba, columns=models["cluster_ids"], index=sub_hand.index
+            )
+            sub_proba_df["pitcher"] = sub_hand["pitcher"].values
+            sub_proba_df["game_year"] = sub_hand["game_year"].values
+            sub_proba_parts.append(sub_proba_df)
 
             # PCA coordinates
             X_3d = models["pca"].transform(X_sub_scaled)
@@ -229,6 +281,13 @@ def main():
             all_pitchers.to_parquet(data_path, engine="pyarrow", compression="snappy")
             print(f"\n  Updated pitcher_seasons with sub-threshold assignments")
             print(f"  New total: {len(all_pitchers):,} pitcher-seasons")
+
+        # Append sub-threshold probabilities
+        if sub_proba_parts:
+            sub_all_proba = pd.concat(sub_proba_parts, ignore_index=True).fillna(0.0)
+            all_proba = pd.concat([all_proba, sub_all_proba], ignore_index=True).fillna(0.0)
+            all_proba.to_parquet(proba_path, engine="pyarrow", compression="snappy")
+            print(f"  Updated cluster_probabilities with sub-threshold pitchers")
     else:
         print("\nNo sub-threshold pitcher file found — skipping nearest-cluster assignment.")
 

@@ -473,6 +473,11 @@
         #screen:active { cursor: grabbing; }
 
         canvas { display: block; width: 100%; height: 100%; }
+        .city-label { pointer-events: none; text-align: center; padding: 4px 10px; border-radius: 4px; background: rgba(10,10,10,0.88); border-top: 2px solid currentColor; white-space: nowrap; }
+        .city-label-name { font: bold 13px var(--font-ui); white-space: nowrap; text-shadow: 0 1px 3px rgba(0,0,0,0.6); }
+        .city-label-meta { font: 9px var(--font-tech); color: #999; margin-top: 2px; }
+        .city-label-stat { font: bold 14px var(--font-tech); margin-top: 3px; }
+        .css2d-renderer { position: absolute !important; top: 0; left: 0; pointer-events: none; overflow: visible; }
 
         .batter-badge {
             position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
@@ -885,7 +890,19 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
-    <script>
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+    <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
     (function() {
         'use strict';
 
@@ -1093,151 +1110,691 @@
         }
 
         // ═══════════════════════════════════════
-        // CANVAS SETUP
+        // THREE.JS CITY SETUP
         // ═══════════════════════════════════════
-        const canvas = document.getElementById('plot');
-        const ctx = canvas.getContext('2d');
         const screenEl = document.getElementById('screen');
+        const canvas = document.getElementById('plot');
 
-        // PCA axes — the true archetype space
-        // pca_x: RHP positive (~-5 to +10), LHP negative (~-12 to -1.5)
-        // pca_y: PC2 (~-7 to +6)
+        // PCA axes — used for coordinate mapping
         const PCA_X_MIN = -14, PCA_X_MAX = 14;
         const PCA_Y_MIN = -14, PCA_Y_MAX = 14;
 
-        const MARGIN = { top: 40, right: 24, bottom: 40, left: 48 };
-
-        let viewOffset = { x: 0, y: 0 };
-        let viewZoom = 1.0;
-        let isDragging = false, dragStart = { x: 0, y: 0 }, dragOffset = { x: 0, y: 0 };
-
-        function cssW() { return canvas.getBoundingClientRect().width; }
-        function cssH() { return canvas.getBoundingClientRect().height; }
-
-        function plotArea() {
-            return {
-                x: MARGIN.left, y: MARGIN.top,
-                w: cssW() - MARGIN.left - MARGIN.right,
-                h: cssH() - MARGIN.top - MARGIN.bottom,
-            };
+        // PCA → Three.js world coords (XZ plane, Y = up)
+        // PCA Y has very narrow range (~3 units) vs PCA X (~14 units)
+        // Scale Y by 3x so the city isn't a thin ribbon
+        const PCA_Y_SCALE = 3.0;
+        function pca2world(pcaX, pcaY) {
+            return new THREE.Vector3(pcaX, 0, -pcaY * PCA_Y_SCALE);
         }
 
-        // Data → CSS-pixel coords on canvas (PCA space)
-        function d2c(pcaX, pcaY) {
-            const p = plotArea();
-            const nx = (pcaX - PCA_X_MIN) / (PCA_X_MAX - PCA_X_MIN);
-            const ny = 1 - (pcaY - PCA_Y_MIN) / (PCA_Y_MAX - PCA_Y_MIN);
-            const cx = p.x + nx * p.w;
-            const cy = p.y + ny * p.h;
-            const cw = cssW(), ch = cssH();
-            return {
-                x: (cx - cw / 2) * viewZoom + cw / 2 + viewOffset.x,
-                y: (cy - ch / 2) * viewZoom + ch / 2 + viewOffset.y,
-            };
+        // Keep legacy d2c/c2d as stubs (some sidebar code may reference them)
+        function d2c(pcaX, pcaY) { return { x: 0, y: 0 }; }
+        function c2d(sx, sy) { return { pcaX: 0, pcaY: 0 }; }
+
+        // ── Terrain heightfield (LA-style rolling hills) ──
+        const TERRAIN_SEGMENTS = 128;
+        const TERRAIN_SIZE = 32;
+        const TERRAIN_MAX_HEIGHT = 2.0;   // World units at densest peak (gentle LA hills)
+        const TERRAIN_SIGMA = 2.5;        // Wide Gaussian spread per cluster
+        let terrainMesh = null;
+        let _heightCache = null;          // Float32Array for fast bilinear lookup
+
+        function normalizeCount(count) {
+            // Log-scale so small clusters are visible but large ones dominate
+            return Math.max(0, (Math.log(count + 1) - Math.log(2)) / (Math.log(550) - Math.log(2)));
         }
 
-        function c2d(sx, sy) {
-            const cw = cssW(), ch = cssH();
-            const ux = (sx - viewOffset.x - cw / 2) / viewZoom + cw / 2;
-            const uy = (sy - viewOffset.y - ch / 2) / viewZoom + ch / 2;
-            const p = plotArea();
-            const nx = (ux - p.x) / p.w;
-            const ny = (uy - p.y) / p.h;
-            return { pcaX: PCA_X_MIN + nx * (PCA_X_MAX - PCA_X_MIN), pcaY: PCA_Y_MAX - ny * (PCA_Y_MAX - PCA_Y_MIN) };
+        function computeTerrainHeight(x, z) {
+            // Sum of Gaussian kernels centered at each visible cluster centroid
+            if (!DATA.clusters) return 0;
+            let h = 0;
+            Object.entries(DATA.clusters).forEach(([id, cl]) => {
+                if (!STATE.visibleClusters.has(id)) return;
+                const cx = cl.pca_x;
+                const cz = -cl.pca_y * PCA_Y_SCALE;
+                const dx = x - cx, dz = z - cz;
+                const distSq = dx * dx + dz * dz;
+                const amp = normalizeCount(cl.pitcher_count);
+                h += amp * Math.exp(-distSq / (2 * TERRAIN_SIGMA * TERRAIN_SIGMA));
+            });
+            return Math.min(TERRAIN_MAX_HEIGHT, h * TERRAIN_MAX_HEIGHT);
+        }
+
+        function buildTerrain() {
+            if (terrainMesh) {
+                scene.remove(terrainMesh);
+                terrainMesh.geometry.dispose();
+                terrainMesh.material.dispose();
+            }
+
+            const geo = new THREE.PlaneGeometry(TERRAIN_SIZE, TERRAIN_SIZE, TERRAIN_SEGMENTS, TERRAIN_SEGMENTS);
+            geo.rotateX(-Math.PI / 2);
+
+            const pos = geo.attributes.position;
+            _heightCache = new Float32Array(pos.count);
+            for (let i = 0; i < pos.count; i++) {
+                const x = pos.getX(i), z = pos.getZ(i);
+                const h = computeTerrainHeight(x, z);
+                _heightCache[i] = h;
+                pos.setY(i, h);
+            }
+            geo.computeVertexNormals();
+
+            const mat = new THREE.MeshStandardMaterial({
+                color: 0x0e0e0e, roughness: 0.95, metalness: 0.0,
+            });
+            terrainMesh = new THREE.Mesh(geo, mat);
+            terrainMesh.receiveShadow = true;
+            scene.add(terrainMesh);
+        }
+
+        function getTerrainHeight(x, z) {
+            // Bilinear interpolation from cached heightfield — O(1)
+            if (!_heightCache) return 0;
+            const half = TERRAIN_SIZE / 2;
+            const seg = TERRAIN_SEGMENTS;
+            const gx = (x + half) / TERRAIN_SIZE * seg;
+            const gz = (z + half) / TERRAIN_SIZE * seg;
+            const ix = Math.max(0, Math.min(seg - 1, Math.floor(gx)));
+            const iz = Math.max(0, Math.min(seg - 1, Math.floor(gz)));
+            const fx = gx - ix, fz = gz - iz;
+            const w = seg + 1;
+            const h00 = _heightCache[iz * w + ix] || 0;
+            const h10 = _heightCache[iz * w + Math.min(ix + 1, seg)] || 0;
+            const h01 = _heightCache[Math.min(iz + 1, seg) * w + ix] || 0;
+            const h11 = _heightCache[Math.min(iz + 1, seg) * w + Math.min(ix + 1, seg)] || 0;
+            return (h00 * (1 - fx) + h10 * fx) * (1 - fz) + (h01 * (1 - fx) + h11 * fx) * fz;
+        }
+
+        // Point-in-polygon test (ray casting algorithm)
+        function pointInPolygon(pt, poly) {
+            let inside = false;
+            for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+                const xi = poly[i].x, zi = poly[i].z;
+                const xj = poly[j].x, zj = poly[j].z;
+                if ((zi > pt.z) !== (zj > pt.z) &&
+                    pt.x < (xj - xi) * (pt.z - zi) / (zj - zi) + xi) {
+                    inside = !inside;
+                }
+            }
+            return inside;
+        }
+
+        // ── Terrain-following highway ──
+        let _highwayGroup = null;
+        function buildHighway() {
+            // Remove old highway
+            if (_highwayGroup) {
+                scene.remove(_highwayGroup);
+                _highwayGroup.traverse(c => { if (c.geometry) c.geometry.dispose(); if (c.material) c.material.dispose(); });
+            }
+            _highwayGroup = new THREE.Group();
+            _highwayGroup.name = 'highway';
+
+            // Road segments following terrain at X=0
+            const hwMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.8 });
+            for (let z = -15; z < 15; z += 0.5) {
+                const y = getTerrainHeight(0, z + 0.25) + 0.02;
+                const geo = new THREE.BoxGeometry(0.15, 0.03, 0.5);
+                const seg = new THREE.Mesh(geo, hwMat);
+                seg.position.set(0, y, z + 0.25);
+                _highwayGroup.add(seg);
+            }
+            // Orange center dashes
+            const dashMat = new THREE.MeshStandardMaterial({ color: 0xff4400, emissive: 0xff4400, emissiveIntensity: 0.3 });
+            for (let z = -15; z < 15; z += 0.8) {
+                const y = getTerrainHeight(0, z) + 0.04;
+                const geo = new THREE.BoxGeometry(0.04, 0.04, 0.3);
+                const dash = new THREE.Mesh(geo, dashMat);
+                dash.position.set(0, y, z);
+                _highwayGroup.add(dash);
+            }
+            scene.add(_highwayGroup);
+        }
+
+        // ── Three.js Scene ──
+        let scene, camera, renderer, css2DRenderer, controls;
+        let neighborhoodGroup, buildingGroup, labelGroup, routeGroup;
+        const neighborhoodMeshes = new Map(); // clusterId → Mesh
+        const buildingMeshes = [];            // all building meshes for raycaster
+        const buildingData = new Map();       // mesh.uuid → { pitchers, clusterId }
+        const labelObjects = new Map();       // clusterId → CSS2DObject
+        let _voronoiCache = null, _voronoiCacheKey = '';
+        let _buildingCache = null, _buildingCacheKey = '';
+
+        function initThreeScene() {
+            const w = screenEl.clientWidth, h = screenEl.clientHeight;
+
+            // Scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0a0a0a);
+            scene.fog = new THREE.FogExp2(0x0a0a0a, 0.006);
+
+            // Camera — LA aerial vantage point (see full city on load)
+            camera = new THREE.PerspectiveCamera(55, w / h, 0.1, 200);
+            camera.position.set(-1, 8, 10);
+            camera.lookAt(-1, 0, 0);
+
+            // WebGL Renderer
+            renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+            renderer.setSize(w, h);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.1;
+
+            // CSS2D Renderer (for labels)
+            css2DRenderer = new CSS2DRenderer();
+            css2DRenderer.setSize(w, h);
+            css2DRenderer.domElement.classList.add('css2d-renderer');
+            screenEl.appendChild(css2DRenderer.domElement);
+
+            // OrbitControls
+            controls = new OrbitControls(camera, css2DRenderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.12;
+            controls.rotateSpeed = 0.5;
+            controls.zoomSpeed = 0.8;
+            controls.panSpeed = 0.5;
+            controls.minDistance = 3;
+            controls.maxDistance = 60;
+            controls.maxPolarAngle = Math.PI / 2.1; // Don't go below ground
+            controls.target.set(-1, 0, 0); // Center slightly left (city center is ~X=-1)
+
+            // Lights
+            const ambient = new THREE.AmbientLight(0xffffff, 0.35);
+            scene.add(ambient);
+
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+            dirLight.position.set(10, 20, 8);
+            dirLight.castShadow = true;
+            dirLight.shadow.mapSize.width = 2048;
+            dirLight.shadow.mapSize.height = 2048;
+            dirLight.shadow.camera.left = -20;
+            dirLight.shadow.camera.right = 20;
+            dirLight.shadow.camera.top = 20;
+            dirLight.shadow.camera.bottom = -20;
+            dirLight.shadow.camera.near = 0.5;
+            dirLight.shadow.camera.far = 50;
+            dirLight.shadow.bias = -0.001;
+            scene.add(dirLight);
+
+            // Subtle orange accent light from below for warm city glow
+            const warmLight = new THREE.PointLight(0xff4400, 0.15, 40);
+            warmLight.position.set(0, -2, 0);
+            scene.add(warmLight);
+
+            // NOTE: Flat ground plane, grid, and static highway REMOVED.
+            // Terrain heightfield (buildTerrain) replaces the ground.
+            // Highway is now built dynamically (buildHighway) to follow terrain.
+
+            // Scene groups
+            neighborhoodGroup = new THREE.Group();
+            neighborhoodGroup.name = 'neighborhoods';
+            scene.add(neighborhoodGroup);
+
+            buildingGroup = new THREE.Group();
+            buildingGroup.name = 'buildings';
+            scene.add(buildingGroup);
+
+            labelGroup = new THREE.Group();
+            labelGroup.name = 'labels';
+            scene.add(labelGroup);
+
+            routeGroup = new THREE.Group();
+            routeGroup.name = 'routes';
+            scene.add(routeGroup);
         }
 
         function resizeCanvas() {
-            const dpr = Math.min(window.devicePixelRatio, 2);
-            const rect = canvas.getBoundingClientRect();
-            canvas.width = rect.width * dpr;
-            canvas.height = rect.height * dpr;
-            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-            render();
+            if (!renderer) return;
+            const w = screenEl.clientWidth, h = screenEl.clientHeight;
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+            renderer.setSize(w, h);
+            css2DRenderer.setSize(w, h);
         }
 
-        // ═══════════════════════════════════════
-        // RENDERING
-        // ═══════════════════════════════════════
+        // ── Voronoi Computation ──
+        function clipPolygonByBisector(poly, a, b) {
+            const mx = (a.x + b.x) / 2, mz = (a.z + b.z) / 2;
+            const nx = a.x - b.x, nz = a.z - b.z;
+            const result = [];
+            for (let i = 0; i < poly.length; i++) {
+                const curr = poly[i];
+                const next = poly[(i + 1) % poly.length];
+                const dCurr = (curr.x - mx) * nx + (curr.z - mz) * nz;
+                const dNext = (next.x - mx) * nx + (next.z - mz) * nz;
+                if (dCurr >= 0) result.push(curr);
+                if ((dCurr >= 0) !== (dNext >= 0)) {
+                    const t = dCurr / (dCurr - dNext);
+                    result.push({
+                        x: curr.x + t * (next.x - curr.x),
+                        z: curr.z + t * (next.z - curr.z)
+                    });
+                }
+            }
+            return result;
+        }
+
+        function computeVoronoiCells(centroids, bounds) {
+            const cells = {};
+            const bPoly = [
+                { x: bounds.xMin, z: bounds.zMin },
+                { x: bounds.xMax, z: bounds.zMin },
+                { x: bounds.xMax, z: bounds.zMax },
+                { x: bounds.xMin, z: bounds.zMax },
+            ];
+            for (const c of centroids) {
+                let poly = [...bPoly];
+                for (const other of centroids) {
+                    if (other.id === c.id) continue;
+                    poly = clipPolygonByBisector(poly, c, other);
+                    if (poly.length < 3) break;
+                }
+                cells[c.id] = poly;
+            }
+            return cells;
+        }
+
+        function getVoronoiCells() {
+            const visIds = [...STATE.visibleClusters].sort().join(',');
+            const yearFilter = STATE.selectedYear !== 'all' ? STATE.selectedYear : null;
+            const key = visIds + '|' + (yearFilter || 'all');
+            if (_voronoiCache && _voronoiCacheKey === key) return _voronoiCache;
+
+            const centroids = [];
+            const yearMedoids = yearFilter ? computeYearMedoids(yearFilter) : null;
+            Object.entries(DATA.clusters).forEach(([id, cl]) => {
+                if (!STATE.visibleClusters.has(id)) return;
+                let px, pz;
+                if (yearMedoids && yearMedoids[id]) {
+                    px = yearMedoids[id].x; pz = -yearMedoids[id].y * PCA_Y_SCALE;
+                } else {
+                    if (cl.pca_x == null || cl.pca_y == null) return;
+                    px = cl.pca_x; pz = -cl.pca_y * PCA_Y_SCALE;
+                }
+                centroids.push({ id, x: px, z: pz });
+            });
+
+            const bounds = { xMin: -16, xMax: 16, zMin: -16, zMax: 16 };
+            _voronoiCache = computeVoronoiCells(centroids, bounds);
+            _voronoiCacheKey = key;
+            return _voronoiCache;
+        }
+
+        // ── Inset a polygon for street gaps ──
+        function insetPolygon(poly, amount) {
+            if (poly.length < 3) return poly;
+            // Compute centroid
+            let cx = 0, cz = 0;
+            poly.forEach(p => { cx += p.x; cz += p.z; });
+            cx /= poly.length; cz /= poly.length;
+            // Move each vertex toward centroid
+            return poly.map(p => ({
+                x: p.x + (cx - p.x) * amount,
+                z: p.z + (cz - p.z) * amount,
+            }));
+        }
+
+        // ── Build Neighborhoods (terrain-projected) ──
+        function buildNeighborhoods() {
+            // Clear old
+            while (neighborhoodGroup.children.length) neighborhoodGroup.remove(neighborhoodGroup.children[0]);
+            neighborhoodMeshes.clear();
+
+            const cells = getVoronoiCells();
+            if (!cells) return;
+
+            Object.entries(cells).forEach(([id, poly]) => {
+                if (poly.length < 3) return;
+                const cl = DATA.clusters[id];
+                if (!cl) return;
+
+                // Inset for streets
+                const inset = insetPolygon(poly, 0.03);
+
+                // Build ShapeGeometry in XY, then we'll rewrite vertices to XYZ on terrain
+                const shape = new THREE.Shape();
+                shape.moveTo(inset[0].x, inset[0].z);
+                for (let i = 1; i < inset.length; i++) shape.lineTo(inset[i].x, inset[i].z);
+                shape.closePath();
+
+                // Use more subdivisions for smoother terrain following
+                const geo = new THREE.ShapeGeometry(shape, 8);
+
+                // Rewrite vertices: ShapeGeometry produces (x, y, 0).
+                // We want (x, terrainY, z) — project onto terrain surface.
+                const pos = geo.attributes.position;
+                for (let i = 0; i < pos.count; i++) {
+                    const vx = pos.getX(i);
+                    const vz = pos.getY(i); // ShapeGeometry Y → world Z
+                    const vy = getTerrainHeight(vx, vz) + 0.01; // Just above terrain
+                    pos.setXYZ(i, vx, vy, vz);
+                }
+                geo.computeVertexNormals();
+
+                const color = new THREE.Color(cl.color);
+                const mat = new THREE.MeshStandardMaterial({
+                    color: color,
+                    emissive: color,
+                    emissiveIntensity: 0.08,
+                    transparent: true,
+                    opacity: 0.25,
+                    roughness: 0.9,
+                    side: THREE.DoubleSide,
+                });
+                const mesh = new THREE.Mesh(geo, mat);
+                // No rotation needed — vertices are already in world XYZ
+                mesh.receiveShadow = true;
+                mesh.userData = { clusterId: id, type: 'neighborhood' };
+                neighborhoodGroup.add(mesh);
+                neighborhoodMeshes.set(id, mesh);
+            });
+        }
+
+        // ── Build Buildings (confined to Voronoi zones, on terrain) ──
+        function buildBuildings() {
+            // Clear old
+            while (buildingGroup.children.length) buildingGroup.remove(buildingGroup.children[0]);
+            buildingMeshes.length = 0;
+            buildingData.clear();
+
+            const cells = getVoronoiCells();
+            if (!cells || !DATA.pitcherSeasons) return;
+
+            const yearFilter = STATE.selectedYear !== 'all' ? parseInt(STATE.selectedYear) : null;
+            const SLOT_SIZE = 0.35; // Tighter grid for clean packing inside Voronoi
+
+            // Group pitchers by cluster
+            const clusterPitchers = {};
+            DATA.pitcherSeasons.forEach(ps => {
+                if (!isPitcherVisible(ps)) return;
+                if (yearFilter && ps.game_year !== yearFilter) return;
+                if (!passesPitcherFilters(ps)) return;
+                if (ps.pca_x == null || ps.pca_y == null) return;
+                if (!clusterPitchers[ps.cluster]) clusterPitchers[ps.cluster] = [];
+                clusterPitchers[ps.cluster].push(ps);
+            });
+
+            Object.entries(clusterPitchers).forEach(([clusterId, pitchers]) => {
+                const cl = DATA.clusters[clusterId];
+                if (!cl) return;
+                const poly = cells[clusterId];
+                if (!poly || poly.length < 3) return;
+
+                // Inset polygon 10% so buildings don't touch street edges
+                const inset = insetPolygon(poly, 0.10);
+
+                // Compute bounding box of the inset polygon
+                let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
+                inset.forEach(p => {
+                    minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x);
+                    minZ = Math.min(minZ, p.z); maxZ = Math.max(maxZ, p.z);
+                });
+
+                // Create grid slots INSIDE the polygon
+                const slots = [];
+                for (let x = minX; x <= maxX; x += SLOT_SIZE) {
+                    for (let z = minZ; z <= maxZ; z += SLOT_SIZE) {
+                        if (pointInPolygon({ x, z }, inset)) {
+                            slots.push({ x, z });
+                        }
+                    }
+                }
+
+                if (slots.length === 0) return;
+
+                // Sort slots from center outward — buildings fill from core
+                const cx = inset.reduce((s, p) => s + p.x, 0) / inset.length;
+                const cz = inset.reduce((s, p) => s + p.z, 0) / inset.length;
+                slots.sort((a, b) => {
+                    const da = (a.x - cx) ** 2 + (a.z - cz) ** 2;
+                    const db = (b.x - cx) ** 2 + (b.z - cz) ** 2;
+                    return da - db;
+                });
+
+                // Distribute pitchers across slots (round-robin, center-first)
+                const slotPitchers = slots.map(() => []);
+                pitchers.forEach((ps, i) => {
+                    slotPitchers[i % slots.length].push(ps);
+                });
+
+                const color = new THREE.Color(cl.color);
+
+                slotPitchers.forEach((pList, si) => {
+                    if (pList.length === 0) return;
+                    const slot = slots[si];
+                    const count = pList.length;
+                    const avgVelo = pList.reduce((s, p) => s + (p.avg_velo_FF || 90), 0) / count;
+
+                    // Height: 85mph→~0.2, 95mph→~2.2, 100+mph→3.0
+                    const height = Math.max(0.2, (avgVelo - 82) / 18 * 3.0);
+                    // Footprint: scales with sqrt of pitcher count
+                    const footprint = Math.min(SLOT_SIZE * 0.85, 0.12 + Math.sqrt(count) * 0.06);
+
+                    // Building base sits on terrain surface
+                    const terrainY = getTerrainHeight(slot.x, slot.z);
+
+                    const geo = new THREE.BoxGeometry(footprint, height, footprint);
+                    const mat = new THREE.MeshStandardMaterial({
+                        color: color,
+                        metalness: 0.25,
+                        roughness: 0.65,
+                    });
+                    const mesh = new THREE.Mesh(geo, mat);
+                    mesh.position.set(slot.x, terrainY + height / 2, slot.z);
+                    mesh.castShadow = true;
+                    mesh.receiveShadow = true;
+                    mesh.userData = { type: 'building', clusterId, pitchers: pList };
+                    buildingGroup.add(mesh);
+                    buildingMeshes.push(mesh);
+                    buildingData.set(mesh.uuid, { pitchers: pList, clusterId });
+                });
+            });
+        }
+
+        // ── Build Labels ──
+        function buildLabels() {
+            // Clear old
+            while (labelGroup.children.length) {
+                const child = labelGroup.children[0];
+                if (child.element) child.element.remove();
+                labelGroup.remove(child);
+            }
+            labelObjects.clear();
+
+            const yearFilter = STATE.selectedYear !== 'all' ? STATE.selectedYear : null;
+            const yearMedoids = yearFilter ? computeYearMedoids(yearFilter) : null;
+
+            Object.entries(DATA.clusters).forEach(([id, cl]) => {
+                if (!STATE.visibleClusters.has(id)) return;
+
+                let px, py;
+                if (yearMedoids && yearMedoids[id]) {
+                    px = yearMedoids[id].x; py = yearMedoids[id].y;
+                } else {
+                    if (cl.pca_x == null || cl.pca_y == null) return;
+                    px = cl.pca_x; py = cl.pca_y;
+                }
+
+                const role = cl.is_sp > 0.55 ? 'SP' : cl.is_sp < 0.35 ? 'RP' : 'SW';
+                const countStr = yearMedoids && yearMedoids[id] ? yearMedoids[id].n : cl.pitcher_count;
+
+                const div = document.createElement('div');
+                div.className = 'city-label';
+                div.style.borderColor = cl.color;
+                div.innerHTML =
+                    '<div class="city-label-name" style="color:' + cl.color + '">' + archName(id) + '</div>' +
+                    '<div class="city-label-meta">' + cl.hand + ' · ' + role + ' · ' + countStr + '</div>';
+
+                const worldZ = -py * PCA_Y_SCALE;
+                const terrainY = getTerrainHeight(px, worldZ);
+                // Find max building top in this cluster for label positioning
+                let maxBuildingTop = 0;
+                buildingMeshes.forEach(m => {
+                    if (m.userData.clusterId === id) {
+                        const top = m.position.y + (m.geometry.parameters ? m.geometry.parameters.height / 2 : 0);
+                        if (top > maxBuildingTop) maxBuildingTop = top;
+                    }
+                });
+                const labelY = Math.max(terrainY + 1.5, maxBuildingTop + 0.5);
+
+                const labelObj = new CSS2DObject(div);
+                labelObj.position.set(px, labelY, worldZ);
+                labelObj.userData = { clusterId: id };
+                labelGroup.add(labelObj);
+                labelObjects.set(id, { obj: labelObj, div });
+            });
+        }
+
+        // ── Build Batter Routes + Neighborhood Glow ──
+        function buildRoutes() {
+            // Clear old
+            while (routeGroup.children.length) routeGroup.remove(routeGroup.children[0]);
+
+            if (STATE.activeBatters.length === 0) {
+                // Reset neighborhood glow
+                neighborhoodMeshes.forEach((mesh) => {
+                    mesh.material.emissiveIntensity = 0.05;
+                });
+                return;
+            }
+
+            const batter = STATE.activeBatters[STATE.activeBatters.length - 1];
+            const matchups = getMatchupData(batter);
+            const yearFilter = STATE.selectedYear !== 'all' ? STATE.selectedYear : null;
+            const yearMedoids = yearFilter ? computeYearMedoids(yearFilter) : null;
+
+            // Neighborhood glow
+            neighborhoodMeshes.forEach((mesh, id) => {
+                const m = matchups.find(x => String(x.cluster) === id);
+                if (m && (m.PA || 0) >= STATE.minPA) {
+                    const woba = m.wOBA || 0;
+                    if (woba >= 0.370) {
+                        mesh.material.emissive.set(0x2a9d8f); // green
+                        mesh.material.emissiveIntensity = 0.25;
+                    } else if (woba >= 0.310) {
+                        mesh.material.emissive.set(0xf4a261); // yellow
+                        mesh.material.emissiveIntensity = 0.15;
+                    } else {
+                        mesh.material.emissive.set(0xe63946); // red
+                        mesh.material.emissiveIntensity = 0.25;
+                    }
+                    mesh.material.opacity = 0.30;
+                } else {
+                    mesh.material.emissive.set(mesh.material.color);
+                    mesh.material.emissiveIntensity = 0.03;
+                    mesh.material.opacity = 0.12;
+                }
+            });
+
+            // Route arcs (top 10 by PA)
+            const sorted = [...matchups].filter(m => (m.PA || 0) >= STATE.minPA).sort((a, b) => (b.PA||0) - (a.PA||0)).slice(0, 10);
+            sorted.forEach(m => {
+                const cl = DATA.clusters[m.cluster];
+                if (!cl) return;
+                let px, py;
+                if (yearMedoids && yearMedoids[m.cluster]) {
+                    px = yearMedoids[m.cluster].x; py = yearMedoids[m.cluster].y;
+                } else {
+                    px = cl.pca_x; py = cl.pca_y;
+                    if (px == null || py == null) return;
+                }
+
+                const woba = m.wOBA || 0;
+                const color = woba >= 0.370 ? 0x2a9d8f : woba >= 0.310 ? 0xf4a261 : 0xe63946;
+                const thickness = Math.max(0.02, Math.min(0.12, (m.PA || 0) / 200));
+
+                // Bezier arc from above city center down to neighborhood
+                const routeZ = -py * PCA_Y_SCALE;
+                const routeTerrainY = getTerrainHeight(px, routeZ);
+                const start = new THREE.Vector3(0, 8, 12);
+                const end = new THREE.Vector3(px, routeTerrainY + 0.5, routeZ);
+                const mid = new THREE.Vector3(
+                    (start.x + end.x) / 2,
+                    Math.max(start.y, end.y) + 3,
+                    (start.z + end.z) / 2
+                );
+                const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
+                const tubeGeo = new THREE.TubeGeometry(curve, 20, thickness, 6, false);
+                const tubeMat = new THREE.MeshStandardMaterial({
+                    color: color,
+                    emissive: color,
+                    emissiveIntensity: 0.5,
+                    transparent: true,
+                    opacity: 0.7,
+                });
+                const tube = new THREE.Mesh(tubeGeo, tubeMat);
+                routeGroup.add(tube);
+
+                // Glow tube (wider, transparent)
+                const glowGeo = new THREE.TubeGeometry(curve, 20, thickness * 3, 6, false);
+                const glowMat = new THREE.MeshBasicMaterial({
+                    color: color,
+                    transparent: true,
+                    opacity: 0.08,
+                });
+                routeGroup.add(new THREE.Mesh(glowGeo, glowMat));
+            });
+
+            // Update label stat chips
+            labelObjects.forEach(({ obj, div }, id) => {
+                const m = matchups.find(x => String(x.cluster) === id);
+                // Remove old stat chip
+                const old = div.querySelector('.city-label-stat');
+                if (old) old.remove();
+                if (m && (m.PA || 0) >= STATE.minPA) {
+                    const val = m[STATE.selectedStat] || 0;
+                    const display = (STATE.selectedStat === 'K_pct' || STATE.selectedStat === 'BB_pct')
+                        ? (val * 100).toFixed(0) + '%' : val.toFixed(3);
+                    const chip = document.createElement('div');
+                    chip.className = 'city-label-stat';
+                    chip.style.color = perfHex(STATE.selectedStat, val);
+                    chip.textContent = display;
+                    div.appendChild(chip);
+                }
+            });
+        }
+
+        // ── Master rebuild ──
+        function rebuildCity() {
+            if (!scene) return;
+            _voronoiCache = null; // Force recompute
+            buildTerrain();        // FIRST: terrain heightfield (everything depends on it)
+            buildNeighborhoods();  // Project onto terrain
+            buildBuildings();      // Confined to Voronoi + on terrain
+            buildHighway();        // Terrain-following highway
+            buildLabels();         // Terrain-aware Y
+            buildRoutes();         // Terrain-aware endpoints
+        }
+
+        // render() — called from ~20 places in existing code
+        // Now triggers a city rebuild
+        let _renderPending = false;
         function render() {
-            const w = cssW(), h = cssH();
-            ctx.clearRect(0, 0, w, h);
-            drawGrid(w, h);
-            drawDots();
-            drawCentroids();
-            drawBatterLines();
+            if (_renderPending) return;
+            _renderPending = true;
+            requestAnimationFrame(() => {
+                _renderPending = false;
+                rebuildCity();
+            });
         }
 
-        function drawGrid(w, h) {
-            ctx.fillStyle = '#0a0a0a';
-            ctx.fillRect(0, 0, w, h);
-
-            ctx.strokeStyle = '#151515';
-            ctx.lineWidth = 0.5;
-
-            // Vertical gridlines every 2 PCA units
-            for (let x = -14; x <= 12; x += 2) {
-                const a = d2c(x, PCA_Y_MIN), b = d2c(x, PCA_Y_MAX);
-                ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-            }
-            // Horizontal gridlines every 2 PCA units
-            for (let y = -8; y <= 8; y += 2) {
-                const a = d2c(PCA_X_MIN, y), b = d2c(PCA_X_MAX, y);
-                ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-            }
-
-            // Center divider at x=0 (RHP/LHP boundary)
-            const c0a = d2c(0, PCA_Y_MIN), c0b = d2c(0, PCA_Y_MAX);
-            ctx.strokeStyle = '#2a2a2a'; ctx.lineWidth = 1.5;
-            ctx.beginPath(); ctx.moveTo(c0a.x, c0a.y); ctx.lineTo(c0b.x, c0b.y); ctx.stroke();
-
-            // Horizontal center at y=0
-            const h0a = d2c(PCA_X_MIN, 0), h0b = d2c(PCA_X_MAX, 0);
-            ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 0.8;
-            ctx.beginPath(); ctx.moveTo(h0a.x, h0a.y); ctx.lineTo(h0b.x, h0b.y); ctx.stroke();
-
-            // X-axis tick marks (PCA range values)
-            ctx.font = '8px "Courier New", monospace';
-            ctx.fillStyle = '#333';
-            ctx.textAlign = 'center';
-            for (let x = -12; x <= 12; x += 4) {
-                const p = d2c(x, PCA_Y_MIN);
-                ctx.fillText(x, p.x, p.y + 14);
-            }
-            // Y-axis tick marks
-            ctx.textAlign = 'right';
-            for (let y = -12; y <= 12; y += 4) {
-                if (y === 0) continue;
-                const p = d2c(PCA_X_MIN, y);
-                ctx.fillText(y, p.x - 4, p.y + 3);
-            }
-
-            // Chart title — bottom center
-            ctx.fillStyle = '#555';
-            ctx.font = 'bold 11px -apple-system, sans-serif';
-            ctx.textAlign = 'center';
-            const mb = d2c((PCA_X_MIN + PCA_X_MAX) / 2, PCA_Y_MIN);
-            ctx.fillText('PREDICTIVE PITCHER ATLAS', mb.x, mb.y + 30);
-
-            // Zone labels — top corners
-            ctx.font = 'bold 11px -apple-system, sans-serif';
-            ctx.fillStyle = '#333';
-            ctx.textAlign = 'left';
-            const tl = d2c(PCA_X_MIN, PCA_Y_MAX);
-            ctx.fillText('LHP', tl.x + 8, tl.y + 18);
-            ctx.textAlign = 'right';
-            const tr = d2c(PCA_X_MAX, PCA_Y_MAX);
-            ctx.fillText('RHP', tr.x - 8, tr.y + 18);
-
-            // Year indicator when filtering
-            if (STATE.selectedYear !== 'all') {
-                ctx.font = 'bold 48px -apple-system, sans-serif';
-                ctx.fillStyle = 'rgba(255,255,255,0.04)';
-                ctx.textAlign = 'center';
-                const center = d2c((PCA_X_MIN + PCA_X_MAX) / 2, (PCA_Y_MIN + PCA_Y_MAX) / 2);
-                ctx.fillText(STATE.selectedYear, center.x, center.y + 16);
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            if (controls) controls.update();
+            if (renderer && scene && camera) {
+                renderer.render(scene, camera);
+                css2DRenderer.render(scene, camera);
             }
         }
 
+        // ═══════════════════════════════════════
+        // UTILITY FUNCTIONS (kept from old rendering)
+        // ═══════════════════════════════════════
         function hexRgb(hex) {
             hex = hex.replace('#', '');
             return { r: parseInt(hex.substring(0,2),16), g: parseInt(hex.substring(2,4),16), b: parseInt(hex.substring(4,6),16) };
@@ -1261,36 +1818,6 @@
             if (f.roleFilter === 'SP' && !ps.is_sp) return false;
             if (f.roleFilter === 'RP' && ps.is_sp) return false;
             return true;
-        }
-
-        function drawDots() {
-            const hl = STATE.highlightedCluster;
-            const seasons = DATA.pitcherSeasons;
-            const yearFilter = STATE.selectedYear !== 'all' ? parseInt(STATE.selectedYear) : null;
-            for (let i = 0; i < seasons.length; i++) {
-                const ps = seasons[i];
-                const cluster = DATA.clusters[ps.cluster];
-                if (!cluster) continue;
-                if (!isPitcherVisible(ps)) continue;
-                if (yearFilter && ps.game_year !== yearFilter) continue;
-                if (!passesPitcherFilters(ps)) continue;
-                const px = ps.pca_x, py = ps.pca_y;
-                if (px == null || py == null) continue;
-
-                const pos = d2c(px, py);
-                const rgb = hexRgb(cluster.color);
-                let alpha = 0.45, radius = 2.5;
-
-                if (hl) {
-                    if (ps.cluster === hl) { alpha = 0.9; radius = 3.5; }
-                    else { alpha = 0.05; radius = 1.5; }
-                }
-
-                ctx.beginPath();
-                ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + alpha + ')';
-                ctx.fill();
-            }
         }
 
         // Compute per-year medoid positions from visible dots (true geometric medoid)
@@ -1329,112 +1856,7 @@
             return result;
         }
 
-        function drawCentroids() {
-            const yearFilter = STATE.selectedYear !== 'all' ? STATE.selectedYear : null;
-            const yearMedoids = yearFilter ? computeYearMedoids(yearFilter) : null;
-
-            const filteredClusters = yearMedoids ? null : getFilteredClusterSet();
-
-            Object.entries(DATA.clusters).forEach(([id, cluster]) => {
-                if (!STATE.visibleClusters.has(id)) return;
-
-                let px, py, yearCount = null;
-                if (yearMedoids) {
-                    const yc = yearMedoids[id];
-                    if (!yc) return; // no pitchers this year/filter
-                    px = yc.x; py = yc.y; yearCount = yc.n;
-                } else {
-                    if (filteredClusters && !filteredClusters.has(id)) return; // all pitchers filtered out
-                    px = cluster.pca_x; py = cluster.pca_y;
-                    if (px == null || py == null) return;
-                }
-
-                const pos = d2c(px, py);
-                const hl = STATE.highlightedCluster;
-                const isHl = hl === id;
-                const dim = hl && !isHl;
-                const rgb = hexRgb(cluster.color);
-                const alpha = dim ? 0.10 : 1;
-
-                const outerR = isHl ? 24 : 18;
-                const innerR = isHl ? 6 : 5;
-
-                // Glow behind centroid
-                if (!dim) {
-                    ctx.beginPath();
-                    ctx.arc(pos.x, pos.y, outerR + 6, 0, Math.PI * 2);
-                    ctx.fillStyle = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',0.06)';
-                    ctx.fill();
-                }
-
-                // Outer ring
-                ctx.beginPath();
-                ctx.arc(pos.x, pos.y, outerR, 0, Math.PI * 2);
-                ctx.strokeStyle = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + alpha + ')';
-                ctx.lineWidth = isHl ? 3 : 2;
-                ctx.stroke();
-
-                // Inner dot
-                ctx.beginPath();
-                ctx.arc(pos.x, pos.y, innerR, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + alpha + ')';
-                ctx.fill();
-
-                if (!dim) {
-                    const cent = cluster;
-                    const role = cent.is_sp > 0.5 ? 'SP' : 'RP';
-                    const countLabel = yearCount != null ? yearCount + ' pitchers' : cluster.pitcher_count + ' pitchers';
-
-                    // Text background pill for readability
-                    ctx.font = 'bold 12px -apple-system, sans-serif';
-                    const nameW = ctx.measureText(archName(id)).width;
-                    ctx.font = '9px "Courier New", monospace';
-                    const roleW = Math.max(ctx.measureText(cluster.hand + ' ' + role).width, ctx.measureText(countLabel).width);
-                    const pillW = Math.max(nameW, roleW) + 10;
-                    ctx.fillStyle = 'rgba(10,10,10,0.75)';
-                    ctx.beginPath();
-                    const pillX = pos.x - pillW/2;
-                    const pillY = pos.y + outerR + 3;
-                    const pillH = 36;
-                    const pillR = 4;
-                    ctx.moveTo(pillX + pillR, pillY);
-                    ctx.lineTo(pillX + pillW - pillR, pillY);
-                    ctx.quadraticCurveTo(pillX + pillW, pillY, pillX + pillW, pillY + pillR);
-                    ctx.lineTo(pillX + pillW, pillY + pillH - pillR);
-                    ctx.quadraticCurveTo(pillX + pillW, pillY + pillH, pillX + pillW - pillR, pillY + pillH);
-                    ctx.lineTo(pillX + pillR, pillY + pillH);
-                    ctx.quadraticCurveTo(pillX, pillY + pillH, pillX, pillY + pillH - pillR);
-                    ctx.lineTo(pillX, pillY + pillR);
-                    ctx.quadraticCurveTo(pillX, pillY, pillX + pillR, pillY);
-                    ctx.fill();
-
-                    ctx.font = 'bold 12px -apple-system, sans-serif';
-                    ctx.fillStyle = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + (alpha * 0.95) + ')';
-                    ctx.textAlign = 'center';
-                    ctx.fillText(archName(id), pos.x, pos.y + outerR + 16);
-
-                    ctx.font = '9px "Courier New", monospace';
-                    ctx.fillStyle = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',0.55)';
-                    ctx.fillText(cluster.hand + ' ' + role + ' \u00b7 ' + countLabel, pos.x, pos.y + outerR + 26);
-
-                    // Stat chip when batter active
-                    if (STATE.activeBatters.length > 0) {
-                        const batter = STATE.activeBatters[STATE.activeBatters.length - 1];
-                        const matchups = getMatchupData(batter);
-                        const m = matchups.find(x => String(x.cluster) === id);
-                        if (m && (m.PA || 0) >= STATE.minPA) {
-                            const val = m[STATE.selectedStat] || 0;
-                            const display = (STATE.selectedStat === 'K_pct' || STATE.selectedStat === 'BB_pct')
-                                ? (val * 100).toFixed(0) + '%' : val.toFixed(3);
-                            ctx.font = 'bold 12px "Courier New", monospace';
-                            ctx.fillStyle = perfHex(STATE.selectedStat, val);
-                            ctx.textAlign = 'center';
-                            ctx.fillText(display, pos.x, pos.y - outerR - 6);
-                        }
-                    }
-                }
-            });
-        }
+        // drawCentroids removed — replaced by buildLabels() in Three.js city
 
         function wobaColor(w) {
             if (w >= 0.370) return '#2a9d8f';
@@ -1482,231 +1904,142 @@
             return m.w || 0;
         }
 
-        function drawBatterLines() {
-            if (STATE.activeBatters.length === 0) return;
-            const batter = STATE.activeBatters[STATE.activeBatters.length - 1];
-            const matchups = getMatchupData(batter);
-
-            const badge = document.getElementById('batter-badge');
-            const bRect = badge.getBoundingClientRect();
-            const cRect = screenEl.getBoundingClientRect();
-            const bx = bRect.left + bRect.width / 2 - cRect.left;
-            const by = bRect.bottom - cRect.top + 2;
-
-            const yearFilter = STATE.selectedYear !== 'all' ? STATE.selectedYear : null;
-            const yearMedoids = yearFilter ? computeYearMedoids(yearFilter) : null;
-
-            const filteredClusters2 = yearMedoids ? null : getFilteredClusterSet();
-
-            Object.entries(DATA.clusters).forEach(([cid, cluster]) => {
-                if (!STATE.visibleClusters.has(cid)) return;
-                if (_teamClusterIds && !_teamClusterIds.has(cid)) return;
-                if (filteredClusters2 && !filteredClusters2.has(cid)) return;
-
-                let cpx, cpy;
-                if (yearMedoids) {
-                    const yc = yearMedoids[cid];
-                    if (!yc) return;
-                    cpx = yc.x; cpy = yc.y;
-                } else {
-                    cpx = cluster.pca_x; cpy = cluster.pca_y;
-                    if (cpx == null || cpy == null) return;
-                }
-
-                const hl = STATE.highlightedCluster;
-                if (hl && cid !== hl) return;
-
-                const pos = d2c(cpx, cpy);
-                const m = matchups.find(x => String(x.cluster) === cid);
-                const pa = m ? m.PA || 0 : 0;
-                const statVal = m ? (m[STATE.selectedStat] || 0) : 0;
-
-                if (pa < STATE.minPA) {
-                    ctx.beginPath(); ctx.setLineDash([4,6]);
-                    ctx.moveTo(bx, by); ctx.lineTo(pos.x, pos.y);
-                    ctx.strokeStyle = 'rgba(60,60,60,0.3)'; ctx.lineWidth = 0.5;
-                    ctx.stroke(); ctx.setLineDash([]);
-                    return;
-                }
-
-                const color = perfHex(STATE.selectedStat, statVal);
-                const thickness = Math.max(1.5, Math.min(5, pa / 80));
-
-                // Glow
-                ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(pos.x, pos.y);
-                ctx.strokeStyle = color; ctx.lineWidth = thickness + 5;
-                ctx.globalAlpha = 0.12; ctx.stroke(); ctx.globalAlpha = 1;
-
-                // Main line
-                ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(pos.x, pos.y);
-                ctx.strokeStyle = color; ctx.lineWidth = thickness;
-                ctx.globalAlpha = 0.9; ctx.stroke(); ctx.globalAlpha = 1;
-            });
-        }
+        // drawBatterLines removed — replaced by buildRoutes() in Three.js city
 
         // ═══════════════════════════════════════
-        // CANVAS INTERACTION
+        // THREE.JS RAYCASTER INTERACTION
         // ═══════════════════════════════════════
         const tooltipEl = document.getElementById('tooltip');
+        const raycaster = new THREE.Raycaster();
+        const _mouse = new THREE.Vector2();
 
-        canvas.addEventListener('wheel', (e) => {
-            e.preventDefault();
-            viewZoom = Math.max(0.5, Math.min(5, viewZoom * (e.deltaY > 0 ? 0.9 : 1.1)));
-            render();
-        }, { passive: false });
+        function getMouseNDC(e) {
+            if (!renderer) return null;
+            const rect = renderer.domElement.getBoundingClientRect();
+            _mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+            _mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+            return _mouse;
+        }
 
-        canvas.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            dragStart = { x: e.clientX, y: e.clientY };
-            dragOffset = { x: viewOffset.x, y: viewOffset.y };
-            canvas.style.cursor = 'grabbing';
-        });
+        // Hover handler — attached after initThreeScene
+        function onCityHover(e) {
+            if (!scene || !camera) return;
+            const ndc = getMouseNDC(e);
+            if (!ndc) return;
+            raycaster.setFromCamera(ndc, camera);
 
-        canvas.addEventListener('mousemove', (e) => {
-            if (isDragging) {
-                viewOffset.x = dragOffset.x + (e.clientX - dragStart.x);
-                viewOffset.y = dragOffset.y + (e.clientY - dragStart.y);
-                render();
-                return;
-            }
-            const rect = canvas.getBoundingClientRect();
-            const mx = e.clientX - rect.left, my = e.clientY - rect.top;
-
-            // Hover: centroids
-            const hoverYearFilter = STATE.selectedYear !== 'all' ? STATE.selectedYear : null;
-            const hoverYearMedoids = hoverYearFilter ? computeYearMedoids(hoverYearFilter) : null;
-            const hoverFilteredClusters = hoverYearMedoids ? null : getFilteredClusterSet();
-            let found = null;
-            Object.entries(DATA.clusters).forEach(([id, cl]) => {
-                if (!STATE.visibleClusters.has(id)) return;
-                if (hoverFilteredClusters && !hoverFilteredClusters.has(id)) return;
-                let hpx, hpy;
-                if (hoverYearMedoids) {
-                    const yc = hoverYearMedoids[id];
-                    if (!yc) return;
-                    hpx = yc.x; hpy = yc.y;
-                } else {
-                    hpx = cl.pca_x; hpy = cl.pca_y;
-                    if (hpx == null || hpy == null) return;
+            // Test buildings first
+            const bHits = raycaster.intersectObjects(buildingMeshes, false);
+            if (bHits.length > 0) {
+                const hit = bHits[0].object;
+                const data = buildingData.get(hit.uuid);
+                if (data && data.pitchers.length > 0) {
+                    const cl = DATA.clusters[data.clusterId];
+                    const names = data.pitchers.slice(0, 4).map(p => fmtName(p.player_name) + ' (' + p.game_year + ')');
+                    const extra = data.pitchers.length > 4 ? '<br>+' + (data.pitchers.length - 4) + ' more' : '';
+                    tooltipEl.innerHTML = '<b style="color:' + (cl?.color || '#888') + '">' + archName(data.clusterId) + '</b><br>' + names.join('<br>') + extra;
+                    tooltipEl.style.left = (e.clientX - screenEl.getBoundingClientRect().left + 12) + 'px';
+                    tooltipEl.style.top = (e.clientY - screenEl.getBoundingClientRect().top - 10) + 'px';
+                    tooltipEl.classList.add('visible');
+                    renderer.domElement.style.cursor = 'pointer';
+                    return;
                 }
-                const pos = d2c(hpx, hpy);
-                if (Math.sqrt((mx-pos.x)**2+(my-pos.y)**2) < 22) found = { id, cl, pos, yearCent: hoverYearMedoids ? hoverYearMedoids[id] : null };
-            });
-
-            if (found) {
-                const c = found.cl;
-                const role = c.is_sp > 0.5 ? 'SP' : 'RP';
-                const countStr = found.yearCent ? found.yearCent.n + ' pitchers' : found.cl.pitcher_count + ' pitchers';
-                tooltipEl.innerHTML = '<b style="color:'+found.cl.color+'">'+archName(found.id)+'</b><br>'+found.cl.hand+' '+role+' \u00b7 '+countStr+'<br>Velo: '+(c.avg_velo_FF||0).toFixed(1)+' \u00b7 Whiff: '+((c.whiff_rate||0)*100).toFixed(0)+'%';
-                tooltipEl.style.left = (e.clientX - screenEl.getBoundingClientRect().left + 12) + 'px';
-                tooltipEl.style.top = (e.clientY - screenEl.getBoundingClientRect().top - 10) + 'px';
-                tooltipEl.classList.add('visible');
-                canvas.style.cursor = 'pointer';
-                return;
             }
 
-            // Hover: pitcher dots
-            const dotYearFilter = STATE.selectedYear !== 'all' ? parseInt(STATE.selectedYear) : null;
-            let closestDot = null, closestDist = 8;
-            for (let i = 0; i < DATA.pitcherSeasons.length; i++) {
-                const ps = DATA.pitcherSeasons[i];
-                if (!isPitcherVisible(ps)) continue;
-                if (dotYearFilter && ps.game_year !== dotYearFilter) continue;
-                if (!passesPitcherFilters(ps)) continue;
-                if (ps.pca_x == null || ps.pca_y == null) continue;
-                const pos = d2c(ps.pca_x, ps.pca_y);
-                const dist = Math.sqrt((mx-pos.x)**2+(my-pos.y)**2);
-                if (dist < closestDist) { closestDist = dist; closestDot = { ps, pos }; }
-            }
-
-            if (closestDot) {
-                const ps = closestDot.ps;
-                const cl = DATA.clusters[ps.cluster];
-                const tw = isTweener(ps) ? ' <span style="color:#8b5cf6;font-size:9px;">\u{1F9EC}+</span>' : '';
-                tooltipEl.innerHTML = '<b>'+fmtName(ps.player_name)+'</b> ('+ps.game_year+')<br><span style="color:'+(cl?.color||'#888')+'">'+archName(ps.cluster)+'</span>'+tw+' \u00b7 '+(ps.avg_velo_FF||0).toFixed(1)+' mph';
-                tooltipEl.style.left = (e.clientX - screenEl.getBoundingClientRect().left + 12) + 'px';
-                tooltipEl.style.top = (e.clientY - screenEl.getBoundingClientRect().top - 10) + 'px';
-                tooltipEl.classList.add('visible');
-                canvas.style.cursor = 'crosshair';
-            } else {
-                tooltipEl.classList.remove('visible');
-                canvas.style.cursor = 'grab';
-            }
-        });
-
-        canvas.addEventListener('mouseup', () => { isDragging = false; canvas.style.cursor = 'grab'; });
-        canvas.addEventListener('mouseleave', () => { isDragging = false; tooltipEl.classList.remove('visible'); });
-
-        canvas.addEventListener('click', (e) => {
-            if (isDragging) return;
-            const rect = canvas.getBoundingClientRect();
-            const mx = e.clientX - rect.left, my = e.clientY - rect.top;
-
-            // Priority 1: cluster centroid clicks
-            const clickYearFilter = STATE.selectedYear !== 'all' ? STATE.selectedYear : null;
-            const clickYearMedoids = clickYearFilter ? computeYearMedoids(clickYearFilter) : null;
-            const clickFilteredClusters = clickYearMedoids ? null : getFilteredClusterSet();
-            let medoidHit = false;
-            Object.entries(DATA.clusters).forEach(([id, cl]) => {
-                if (medoidHit) return;
-                if (!STATE.visibleClusters.has(id)) return;
-                if (clickFilteredClusters && !clickFilteredClusters.has(id)) return;
-                let cpx, cpy;
-                if (clickYearMedoids) {
-                    const yc = clickYearMedoids[id];
-                    if (!yc) return;
-                    cpx = yc.x; cpy = yc.y;
-                } else {
-                    cpx = cl.pca_x; cpy = cl.pca_y;
-                    if (cpx == null || cpy == null) return;
+            // Test neighborhood ground meshes
+            const nMeshes = [...neighborhoodMeshes.values()];
+            const nHits = raycaster.intersectObjects(nMeshes, false);
+            if (nHits.length > 0) {
+                const hit = nHits[0].object;
+                const cid = hit.userData.clusterId;
+                if (cid) {
+                    const cl = DATA.clusters[cid];
+                    if (cl) {
+                        const role = (cl.is_sp || 0) > 0.5 ? 'SP' : 'RP';
+                        tooltipEl.innerHTML = '<b style="color:' + cl.color + '">' + archName(cid) + '</b><br>' + cl.hand + ' ' + role + ' · ' + cl.pitcher_count + ' pitchers';
+                        tooltipEl.style.left = (e.clientX - screenEl.getBoundingClientRect().left + 12) + 'px';
+                        tooltipEl.style.top = (e.clientY - screenEl.getBoundingClientRect().top - 10) + 'px';
+                        tooltipEl.classList.add('visible');
+                        renderer.domElement.style.cursor = 'pointer';
+                        return;
+                    }
                 }
-                const pos = d2c(cpx, cpy);
-                if (Math.sqrt((mx-pos.x)**2+(my-pos.y)**2) < 22) {
-                    medoidHit = true;
-                    if (STATE.highlightedCluster === id) {
-                        // Toggle off — deselect and close panel
+            }
+
+            tooltipEl.classList.remove('visible');
+            renderer.domElement.style.cursor = 'grab';
+        }
+
+        // Click handler
+        function onCityClick(e) {
+            if (!scene || !camera) return;
+            const ndc = getMouseNDC(e);
+            if (!ndc) return;
+            raycaster.setFromCamera(ndc, camera);
+
+            // Priority 1: building clicks → pitcher stat panel
+            const bHits = raycaster.intersectObjects(buildingMeshes, false);
+            if (bHits.length > 0) {
+                const hit = bHits[0].object;
+                const data = buildingData.get(hit.uuid);
+                if (data && data.pitchers.length > 0) {
+                    // If single pitcher, show pitcher panel; otherwise show cluster panel
+                    if (data.pitchers.length === 1) {
+                        const ab = STATE.activeBatters.length > 0 ? STATE.activeBatters[STATE.activeBatters.length - 1] : null;
+                        showPitcherStatPanel(data.pitchers[0], ab);
+                    } else {
+                        const ab = STATE.activeBatters.length > 0 ? STATE.activeBatters[STATE.activeBatters.length - 1] : null;
+                        showStatPanel(ab, data.clusterId);
+                    }
+                    return;
+                }
+            }
+
+            // Priority 2: neighborhood ground clicks → cluster stat panel
+            const nMeshes = [...neighborhoodMeshes.values()];
+            const nHits = raycaster.intersectObjects(nMeshes, false);
+            if (nHits.length > 0) {
+                const hit = nHits[0].object;
+                const cid = hit.userData.clusterId;
+                if (cid) {
+                    if (STATE.highlightedCluster === cid) {
+                        // Toggle off
                         STATE.highlightedCluster = null;
                         document.getElementById('stat-panel').classList.remove('visible');
                         if (STATE.activeBatters.length > 0) {
-                            const ab2 = STATE.activeBatters[STATE.activeBatters.length-1];
+                            const ab2 = STATE.activeBatters[STATE.activeBatters.length - 1];
                             updateDock(ab2, getMatchupData(ab2));
                         }
                         render(); buildArchetypeList();
                     } else {
-                        const ab = STATE.activeBatters.length > 0 ? STATE.activeBatters[STATE.activeBatters.length-1] : null;
-                        showStatPanel(ab, id);
+                        const ab = STATE.activeBatters.length > 0 ? STATE.activeBatters[STATE.activeBatters.length - 1] : null;
+                        showStatPanel(ab, cid);
                     }
+                    return;
                 }
-            });
-            if (medoidHit) return;
-
-            // Priority 2: individual pitcher dot clicks
-            const clickDotYearFilter = STATE.selectedYear !== 'all' ? parseInt(STATE.selectedYear) : null;
-            let closestDot = null, closestDist = 12;
-            for (let i = 0; i < DATA.pitcherSeasons.length; i++) {
-                const ps = DATA.pitcherSeasons[i];
-                if (!isPitcherVisible(ps)) continue;
-                if (clickDotYearFilter && ps.game_year !== clickDotYearFilter) continue;
-                if (!passesPitcherFilters(ps)) continue;
-                if (ps.pca_x == null || ps.pca_y == null) continue;
-                const pos = d2c(ps.pca_x, ps.pca_y);
-                const dist = Math.sqrt((mx-pos.x)**2+(my-pos.y)**2);
-                if (dist < closestDist) { closestDist = dist; closestDot = ps; }
             }
-            if (closestDot) {
-                const ab = STATE.activeBatters.length > 0 ? STATE.activeBatters[STATE.activeBatters.length-1] : null;
-                showPitcherStatPanel(closestDot, ab);
-            } else if (STATE.highlightedCluster) {
-                // Clicked empty canvas space — reset to show all archetypes
+
+            // Clicked empty space — deselect
+            if (STATE.highlightedCluster) {
                 STATE.highlightedCluster = null;
                 document.getElementById('stat-panel').classList.remove('visible');
                 if (STATE.activeBatters.length > 0) {
-                    const ab = STATE.activeBatters[STATE.activeBatters.length-1];
+                    const ab = STATE.activeBatters[STATE.activeBatters.length - 1];
                     updateDock(ab, getMatchupData(ab));
                 }
                 render(); buildArchetypeList();
             }
-        });
+        }
+
+        // Wire interaction after scene init
+        function attachCityInteractions() {
+            if (!renderer) return;
+            renderer.domElement.addEventListener('mousemove', onCityHover);
+            renderer.domElement.addEventListener('click', onCityClick);
+            renderer.domElement.addEventListener('mouseleave', () => {
+                tooltipEl.classList.remove('visible');
+            });
+        }
 
         // ═══════════════════════════════════════
         // BATTER SYSTEM
@@ -3597,8 +3930,14 @@ if(PRESELECT){selectBatter(PRESELECT)}
         // ═══════════════════════════════════════
         async function boot() {
             try {
+                // Initialize Three.js scene first (before data loads, so renderer is ready)
+                initThreeScene();
+                attachCityInteractions();
+                animate();
+
                 await loadAllData();
                 resizeCanvas();
+                render(); // Build the city now that data is loaded
                 buildArchetypeList();
                 initSearch();
                 renderSaved();
