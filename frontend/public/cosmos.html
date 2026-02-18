@@ -473,7 +473,7 @@
         #screen:active { cursor: grabbing; }
 
         canvas { display: block; width: 100%; height: 100%; }
-        .city-label { pointer-events: none; text-align: center; padding: 4px 10px; border-radius: 4px; background: rgba(10,10,10,0.88); border-top: 2px solid currentColor; white-space: nowrap; }
+        .city-label { pointer-events: none; text-align: center; padding: 4px 10px; border-radius: 4px; background: rgba(10,10,10,0.88); border-top: 2px solid currentColor; white-space: nowrap; transition: opacity 0.25s ease, transform 0.25s ease; transform-origin: center bottom; }
         .city-label-name { font: bold 13px var(--font-ui); white-space: nowrap; text-shadow: 0 1px 3px rgba(0,0,0,0.6); }
         .city-label-meta { font: 9px var(--font-tech); color: #999; margin-top: 2px; }
         .city-label-stat { font: bold 14px var(--font-tech); margin-top: 3px; }
@@ -1320,8 +1320,8 @@
             css2DRenderer.domElement.classList.add('css2d-renderer');
             screenEl.appendChild(css2DRenderer.domElement);
 
-            // OrbitControls
-            controls = new OrbitControls(camera, css2DRenderer.domElement);
+            // OrbitControls — bind to canvas (css2d overlay has pointer-events:none)
+            controls = new OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
             controls.dampingFactor = 0.12;
             controls.rotateSpeed = 0.5;
@@ -1831,6 +1831,54 @@
             });
         }
 
+        // ── Label declutter: hide overlapping labels each frame ──
+        const _labelScreenRects = [];
+        function declutterLabels() {
+            if (!camera || labelObjects.size === 0) return;
+            const hw = screenEl.clientWidth / 2, hh = screenEl.clientHeight / 2;
+            const items = [];
+            labelObjects.forEach(({ obj, div }, id) => {
+                const cl = DATA.clusters[id];
+                if (!cl || !STATE.visibleClusters.has(id)) { div.style.opacity = '0'; return; }
+                // Project 3D → screen
+                const v = obj.position.clone().project(camera);
+                const sx = (v.x * hw) + hw;
+                const sy = -(v.y * hh) + hh;
+                const behind = v.z > 1;
+                // Distance from camera for sizing
+                const dist = camera.position.distanceTo(obj.position);
+                const priority = cl.pitcher_count || 1;
+                // Label bounding box estimate (scale with distance)
+                const scale = Math.max(0.45, Math.min(1.0, 8 / dist));
+                const w = 120 * scale, h = 36 * scale;
+                items.push({ id, div, sx, sy, w, h, dist, priority, behind, scale });
+            });
+            // Sort by priority (highest pitcher count first = shown first)
+            items.sort((a, b) => b.priority - a.priority);
+            const placed = [];
+            items.forEach(it => {
+                if (it.behind || it.sx < -50 || it.sx > screenEl.clientWidth + 50 || it.sy < -50 || it.sy > screenEl.clientHeight + 50) {
+                    it.div.style.opacity = '0';
+                    return;
+                }
+                // Check overlap with already-placed labels
+                const pad = 6;
+                const r = { l: it.sx - it.w/2 - pad, r: it.sx + it.w/2 + pad, t: it.sy - it.h/2 - pad, b: it.sy + it.h/2 + pad };
+                let overlaps = false;
+                for (const p of placed) {
+                    if (r.l < p.r && r.r > p.l && r.t < p.b && r.b > p.t) { overlaps = true; break; }
+                }
+                if (overlaps) {
+                    it.div.style.opacity = '0';
+                } else {
+                    const alpha = Math.max(0.4, Math.min(1.0, 12 / it.dist));
+                    it.div.style.opacity = String(alpha);
+                    it.div.style.transform = 'scale(' + it.scale + ')';
+                    placed.push(r);
+                }
+            });
+        }
+
         // Animation loop
         function animate() {
             requestAnimationFrame(animate);
@@ -1838,6 +1886,7 @@
             if (renderer && scene && camera) {
                 renderer.render(scene, camera);
                 css2DRenderer.render(scene, camera);
+                declutterLabels();
             }
         }
 
@@ -2020,8 +2069,17 @@
         }
 
         // Click handler
+        // Drag-guard: ignore clicks that were actually orbit drags
+        let _mouseDownPos = null;
+        function onCityMouseDown(e) { _mouseDownPos = { x: e.clientX, y: e.clientY }; }
+
         function onCityClick(e) {
             if (!scene || !camera) return;
+            // If mouse moved more than 6px since mousedown, it was a drag — skip click
+            if (_mouseDownPos) {
+                const dx = e.clientX - _mouseDownPos.x, dy = e.clientY - _mouseDownPos.y;
+                if (dx * dx + dy * dy > 36) return;
+            }
             const ndc = getMouseNDC(e);
             if (!ndc) return;
             raycaster.setFromCamera(ndc, camera);
@@ -2084,6 +2142,7 @@
         function attachCityInteractions() {
             if (!renderer) return;
             renderer.domElement.addEventListener('mousemove', onCityHover);
+            renderer.domElement.addEventListener('mousedown', onCityMouseDown);
             renderer.domElement.addEventListener('click', onCityClick);
             renderer.domElement.addEventListener('mouseleave', () => {
                 tooltipEl.classList.remove('visible');
