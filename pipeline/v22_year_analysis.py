@@ -4,7 +4,7 @@ v22: Per-Year Clustering Analysis
 Runs a THOROUGH analysis for a single year:
   1) Feature diagnostics: correlation matrix, VIF, feature distributions
   2) Drop-one silhouette analysis: which features help/hurt clustering?
-  3) KMeans clustering (RHP/LHP separately)
+  3) GMM clustering (RHP/LHP separately) with soft probabilities
   4) Cluster profiling with our naming convention
   5) Comparison summary for user review
 
@@ -23,7 +23,7 @@ import joblib
 from collections import Counter
 
 from sklearn.preprocessing import StandardScaler
-from sklearn.cluster import KMeans
+from sklearn.mixture import GaussianMixture
 from sklearn.metrics import silhouette_score, silhouette_samples
 from sklearn.decomposition import PCA
 from statsmodels.stats.outliers_influence import variance_inflation_factor
@@ -187,13 +187,15 @@ def drop_one_analysis(df, features, label="ALL", k=None):
 
 
 # ═══════════════════════════════════════════════════════════════
-# 3. KMEANS CLUSTERING
+# 3. GMM CLUSTERING
 # ═══════════════════════════════════════════════════════════════
 
 def cluster_single_year(df, features, year, prefix, label):
-    """Full KMeans clustering for one hand in one year."""
+    """Full GMM clustering for one hand in one year.
+    Returns (df_with_clusters_and_probas, models, search_results_df).
+    """
     print(f"\n{'='*60}")
-    print(f"  CLUSTERING {label} — {year} (n={len(df):,})")
+    print(f"  GMM CLUSTERING {label} — {year} (n={len(df):,})")
     print(f"{'='*60}")
 
     X = df[features].fillna(0).values
@@ -204,30 +206,47 @@ def cluster_single_year(df, features, year, prefix, label):
     X_scaled = np.clip(X_scaled, -10, 10)
     X_scaled = np.nan_to_num(X_scaled, nan=0.0, posinf=0.0, neginf=0.0)
 
-    # Search for optimal K
+    # Search for optimal K using BIC (lower is better)
     print(f"  K search (K={MIN_K}..{MAX_K}):")
     results = []
     for k in range(MIN_K, MAX_K + 1):
-        km = KMeans(n_clusters=k, n_init=10, max_iter=300, random_state=RANDOM_STATE)
-        labels = km.fit_predict(X_scaled)
-        sil = silhouette_score(X_scaled, labels)
-        results.append({"k": k, "silhouette": sil, "inertia": km.inertia_})
-        print(f"    K={k:>2}  sil={sil:.4f}  inertia={km.inertia_:>10.0f}")
+        gmm = GaussianMixture(
+            n_components=k, n_init=5, max_iter=300,
+            covariance_type="full", random_state=RANDOM_STATE,
+        )
+        labels = gmm.fit_predict(X_scaled)
+        bic = gmm.bic(X_scaled)
+        sil = silhouette_score(X_scaled, labels) if k > 1 else -1
+        results.append({"k": k, "bic": bic, "silhouette": sil})
+        print(f"    K={k:>2}  BIC={bic:>10.0f}  sil={sil:.4f}")
 
     res_df = pd.DataFrame(results)
-    best_row = res_df.loc[res_df["silhouette"].idxmax()]
+    # Use BIC for selection (lower is better), with silhouette as tiebreaker
+    best_row = res_df.loc[res_df["bic"].idxmin()]
     optimal_k = int(best_row["k"])
-    print(f"  -> Optimal K: {optimal_k} (sil={best_row['silhouette']:.4f})")
+    print(f"  -> Optimal K: {optimal_k} (BIC={best_row['bic']:.0f}, sil={best_row['silhouette']:.4f})")
 
-    # Fit final model
-    km = KMeans(n_clusters=optimal_k, n_init=20, max_iter=500, random_state=RANDOM_STATE)
-    local_labels = km.fit_predict(X_scaled)
+    # Fit final GMM
+    gmm = GaussianMixture(
+        n_components=optimal_k, n_init=10, max_iter=500,
+        covariance_type="full", random_state=RANDOM_STATE,
+    )
+    local_labels = gmm.fit_predict(X_scaled)
+
+    # Get soft probability vectors
+    proba = gmm.predict_proba(X_scaled)  # shape: (n_samples, optimal_k)
 
     df = df.copy()
     df["cluster"] = [f"{prefix}_{c}" for c in local_labels]
 
-    # Cluster sizes
-    print(f"\n  Cluster sizes:")
+    # Store soft probabilities as columns: gmm_proba_R_0, gmm_proba_R_1, etc.
+    for c in range(optimal_k):
+        df[f"gmm_proba_{prefix}_{c}"] = proba[:, c]
+
+    # Cluster sizes + avg max probability (crispness)
+    avg_max_prob = proba.max(axis=1).mean()
+    print(f"\n  Avg max-cluster probability: {avg_max_prob:.3f} (1.0 = perfectly crisp)")
+    print(f"  Cluster sizes:")
     for cid, count in df["cluster"].value_counts().sort_index().items():
         print(f"    {cid}: {count:,}")
 
@@ -257,7 +276,7 @@ def cluster_single_year(df, features, year, prefix, label):
 
     models = {
         "scaler": scaler,
-        "kmeans": km,
+        "gmm": gmm,
         "pca": pca,
         "optimal_k": optimal_k,
         "silhouette": float(best_row["silhouette"]),
@@ -292,7 +311,7 @@ def _pitcher_traits(row, hand):
 
 
 def profile_clusters(df, features, year):
-    """Profile pitchers: name each K-means cluster from its medoid,
+    """Profile pitchers: name each GMM cluster from its medoid,
     then assign that name to all members.
 
     Sub-archetype and MUTT detection still use individual pitcher traits.
@@ -317,7 +336,7 @@ def profile_clusters(df, features, year):
         "CutCraft": "\u2702\uFE0F",
     }
 
-    # ── Step 1: Name each K-means cluster from its geometric medoid ──
+    # ── Step 1: Name each GMM cluster from its geometric medoid ──
     cluster_archetypes = {}   # cluster_id -> archetype name
     cluster_medoid_rows = {}  # cluster_id -> medoid pitcher row
 
@@ -334,7 +353,7 @@ def profile_clusters(df, features, year):
 
         # Find geometric medoid in clustering feature space
         feature_cols = [f for f in features if f in members.columns]
-        coords = members[feature_cols].fillna(0).values
+        coords = members[feature_cols].fillna(0).values.astype(np.float64)
         if len(coords) < 2:
             medoid_row = members.iloc[0]
         else:
@@ -347,7 +366,7 @@ def profile_clusters(df, features, year):
         t = _pitcher_traits(medoid_row, hand)
         cluster_archetypes[cid] = _archetype_name(t, hand)
 
-    print(f"\n  K-means clusters → archetype names (via medoid):")
+    print(f"\n  GMM clusters → archetype names (via medoid):")
     for cid in sorted(cluster_archetypes.keys()):
         med = cluster_medoid_rows.get(cid)
         med_name = med.get("player_name", "?") if med is not None else "?"
@@ -419,7 +438,7 @@ def profile_clusters(df, features, year):
         # Find group's geometric medoid for representative stats
         pca_cols = [c for c in ["pca_x", "pca_y", "pca_z"] if c in group.columns]
         if len(pca_cols) >= 2 and len(group) >= 2:
-            pca_coords = group[pca_cols].fillna(0).values
+            pca_coords = group[pca_cols].fillna(0).values.astype(np.float64)
             dist_matrix = cdist(pca_coords, pca_coords, metric='euclidean')
             total_dists = dist_matrix.sum(axis=1)
             medoid_row = group.iloc[int(np.argmin(total_dists))]
@@ -681,7 +700,7 @@ def main():
 
     # ═════════════ CLUSTERING ═════════════
     print(f"\n\n{'#'*60}")
-    print(f"  SECTION 3: KMEANS CLUSTERING")
+    print(f"  SECTION 3: GMM CLUSTERING")
     print(f"{'#'*60}")
 
     rhp_out, rhp_models, rhp_k_results = cluster_single_year(
@@ -711,7 +730,7 @@ def main():
     total_archetypes = len(profiles)
     junk = sum(1 for p in profiles.values() if p["name"] == "Eephus Lobber")
 
-    print(f"\n  KMeans clusters: {total_clusters} ({rhp_models['optimal_k']} RHP + {lhp_models['optimal_k']} LHP)")
+    print(f"\n  GMM clusters: {total_clusters} ({rhp_models['optimal_k']} RHP + {lhp_models['optimal_k']} LHP)")
     print(f"  DNA archetypes: {total_archetypes} (grouped by hand + archetype)")
     print(f"  Total pitchers: {total_pitchers:,}")
     print(f"  Junk (Eephus Lobber): {junk}")
@@ -731,10 +750,10 @@ def main():
     out_dir = os.path.join(MODELS_DIR, str(year))
     os.makedirs(out_dir, exist_ok=True)
 
-    # Save models
+    # Save models (GMM)
     for prefix, models in [("R", rhp_models), ("L", lhp_models)]:
         joblib.dump(models["scaler"], os.path.join(out_dir, f"scaler_{prefix}.joblib"))
-        joblib.dump(models["kmeans"], os.path.join(out_dir, f"kmeans_{prefix}.joblib"))
+        joblib.dump(models["gmm"], os.path.join(out_dir, f"gmm_{prefix}.joblib"))
         joblib.dump(models["pca"], os.path.join(out_dir, f"pca_{prefix}.joblib"))
 
     # Save profiles

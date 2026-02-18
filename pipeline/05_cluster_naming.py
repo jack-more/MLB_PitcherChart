@@ -272,7 +272,7 @@ def main():
         if len(members) == 0:
             continue
         feature_cols = [f for f in features_used if f != "is_rhp" and f in members.columns]
-        coords = members[feature_cols].fillna(0).values
+        coords = members[feature_cols].fillna(0).values.astype(np.float64)
         if len(coords) < 2:
             medoid_rows[cid] = members.iloc[0]
         else:

@@ -1,7 +1,7 @@
 {
-  "rhp_k": 8,
-  "lhp_k": 9,
-  "total_clusters": 17,
+  "rhp_k": 15,
+  "lhp_k": 11,
+  "total_clusters": 26,
   "features": [
     "pct_FF",
     "pct_SI",
@@ -13,15 +13,41 @@
     "pct_KC",
     "pct_ST",
     "pct_KN",
-    "spin_overall",
-    "spin_SL",
-    "spin_CU",
-    "arm_angle",
-    "whiff_rate",
     "avg_velo_FF",
-    "avg_extension",
-    "zone_rate",
-    "groundball_rate"
+    "spin_overall",
+    "groundball_rate",
+    "whiff_rate"
   ],
-  "x_offset": 5.0
+  "x_offset": 5.0,
+  "method": "gmm",
+  "rhp_cluster_ids": [
+    "R_0",
+    "R_1",
+    "R_2",
+    "R_3",
+    "R_4",
+    "R_5",
+    "R_6",
+    "R_7",
+    "R_8",
+    "R_9",
+    "R_10",
+    "R_11",
+    "R_12",
+    "R_13",
+    "R_14"
+  ],
+  "lhp_cluster_ids": [
+    "L_0",
+    "L_1",
+    "L_2",
+    "L_3",
+    "L_4",
+    "L_5",
+    "L_6",
+    "L_7",
+    "L_8",
+    "L_9",
+    "L_10"
+  ]
 }

@@ -357,24 +357,8 @@ def main():
         json.dump(hvc_json, f)
     print(f"Frontend hitter_vs_cluster: {len(hvc_json):,} rows")
 
-    # Pitcher seasons (for pitcher dots on the graph)
-    pitcher_seasons_path = os.path.join(PROCESSED_DATA_DIR, "pitcher_seasons.parquet")
-    if os.path.exists(pitcher_seasons_path):
-        ps = pd.read_parquet(pitcher_seasons_path)
-        ps_export_cols = [
-            "pitcher", "player_name", "game_year", "cluster",
-            "pca_x", "pca_y", "pca_z",
-            "whiff_rate", "avg_velo_FF", "arm_angle", "is_rhp", "is_sp",
-            "pfx_x_avg", "pfx_z_avg",
-        ]
-        ps_export_cols = [c for c in ps_export_cols if c in ps.columns]
-        ps_export = ps[ps_export_cols].copy()
-        float_cols_ps = ps_export.select_dtypes(include=[np.floating]).columns
-        ps_export[float_cols_ps] = ps_export[float_cols_ps].round(4)
-        ps_json = ps_export.to_dict(orient="records")
-        with open(os.path.join(frontend_dir, "pitcher_seasons.json"), "w") as f:
-            json.dump(ps_json, f)
-        print(f"Frontend pitcher_seasons: {len(ps_json):,} rows")
+    # NOTE: pitcher_seasons.json is now exported by export_frontend.py (with GMM probas)
+    # Only copy batters.json and hitter_vs_cluster.json here
 
     # Also export to frontend/public/ for static serving
     public_dir = os.path.join(
@@ -383,7 +367,7 @@ def main():
     )
     if os.path.isdir(public_dir):
         import shutil
-        for fname in ["batters.json", "hitter_vs_cluster.json", "pitcher_seasons.json"]:
+        for fname in ["batters.json", "hitter_vs_cluster.json"]:
             src = os.path.join(frontend_dir, fname)
             if os.path.exists(src):
                 shutil.copy2(src, os.path.join(public_dir, fname))

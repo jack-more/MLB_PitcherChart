@@ -839,6 +839,15 @@
             </div>
 
             <div class="filter-section">
+                <div class="label-line"><span class="label">Pitcher</span></div>
+                <div class="team-filter" id="pitcher-filter">
+                    <input type="text" id="pitcher-search" placeholder="SEARCH PITCHERS" autocomplete="off">
+                    <div class="team-dropdown" id="pitcher-dropdown"></div>
+                    <span class="team-clear" id="pitcher-clear">&times;</span>
+                </div>
+            </div>
+
+            <div class="filter-section">
                 <div class="label-line"><span class="label">Year</span></div>
                 <select id="year-select" style="width:100%;background:#1e2124;border:1px solid #333;color:#e0e0e0;padding:4px 6px;font-family:var(--font-tech);font-size:9px;outline:none;border-radius:3px;">
                     <option value="all">ALL YEARS</option>
@@ -980,45 +989,56 @@
             'Swordfighter':          'Slider-first, sword swings for whiffs',
             'Heavy Duty':            'High fastball usage, overpowers with heat',
             'Kitchen Sink':          'Multi-pitch arsenal, no dominant pitch type',
+            'Wormburner':            'Pure sinker specialist, 35%+ sinker, groundball machine',
+            'Heater-Heavy':          'Fastball-dominant flamethrower, overpowers with velocity',
         };
         function archDesc(id) { return ARCHETYPE_DESC[archNameOnly(id)] || ''; }
 
         function calcArchetypeDNA(ps) {
-            // DNA = career season breakdown: what % of this pitcher's career was in each archetype
-            const allSeasons = DATA.pitcherSeasons.filter(p => p.pitcher === ps.pitcher);
-            if (!allSeasons.length) return [];
-            const counts = {};
-            allSeasons.forEach(s => {
-                const cid = s.cluster;
-                counts[cid] = (counts[cid] || 0) + 1;
-            });
-            const total = allSeasons.length;
-            const result = Object.entries(counts).map(([cid, n]) => ({
-                cid,
-                pct: (n / total) * 100,
-                color: DATA.clusters[cid]?.color || '#666',
-            }));
-            result.sort((a, b) => b.pct - a.pct);
-            // Put the current cluster first if it isn't already
-            const own = result.findIndex(d => d.cid === ps.cluster);
-            if (own > 0) { const [item] = result.splice(own, 1); result.unshift(item); }
-            return result.slice(0, 5);
+            // DNA = real per-season GMM soft probabilities from the pipeline
+            // ps.gmm_proba is { "RHP_Ghost": 0.964, "RHP_Heavy Duty": 0.036, ... }
+            if (ps.gmm_proba && Object.keys(ps.gmm_proba).length > 0) {
+                const result = Object.entries(ps.gmm_proba).map(([cid, prob]) => ({
+                    cid,
+                    pct: prob * 100,
+                    color: DATA.clusters[cid]?.color || '#666',
+                }));
+                result.sort((a, b) => b.pct - a.pct);
+                // Ensure current cluster is first
+                const own = result.findIndex(d => d.cid === ps.cluster);
+                if (own > 0) { const [item] = result.splice(own, 1); result.unshift(item); }
+                return result.slice(0, 5);
+            }
+            // Fallback: if no GMM proba available, use 100% for assigned cluster
+            return [{
+                cid: ps.cluster,
+                pct: 100,
+                color: DATA.clusters[ps.cluster]?.color || '#666',
+            }];
         }
 
         function isTweener(ps) {
-            const dna = calcArchetypeDNA(ps);
-            if (!dna.length) return false;
-            // Tweener = current archetype accounts for less than half their career
-            const own = dna.find(d => d.cid === ps.cluster);
-            return own ? own.pct < 50 : false;
+            // Tweener = GMM says <80% probability for assigned cluster
+            // (i.e., the model genuinely sees this pitcher between archetypes)
+            if (ps.gmm_proba && ps.gmm_proba[ps.cluster] != null) {
+                return ps.gmm_proba[ps.cluster] < 0.80;
+            }
+            return false;
         }
 
         let statBackHandler = null;
 
+        // Year filter helper: returns true if this game_year passes the filter
+        function yearPassesFilter(gameYear, filterVal) {
+            if (!filterVal || filterVal === 'all') return true;
+            if (filterVal === '2025+') return gameYear >= 2025;
+            return gameYear === parseInt(filterVal);
+        }
+
         const STATE = {
             activeBatters: [],
             selectedStat: 'wOBA',
-            selectedYear: 'all',
+            selectedYear: '2025+',
             minPA: 10,
             visibleClusters: new Set(),
             highlightedCluster: null,
@@ -1069,7 +1089,7 @@
         // ═══════════════════════════════════════
         // DATA LOADING
         // ═══════════════════════════════════════
-        const DATA_VERSION = 'v22.3';
+        const DATA_VERSION = Date.now(); // always bust cache
         async function loadJSON(url, label, setStatus) {
             setStatus('Loading ' + label + '...');
             const cacheBust = url + (url.includes('?') ? '&' : '?') + '_v=' + DATA_VERSION;
@@ -1136,9 +1156,18 @@
 
             STATE.visibleClusters = new Set(Object.keys(DATA.clusters));
 
-            const years = [...new Set(DATA.hitterVsCluster.map(r => r.game_year))].sort();
+            const years = [...new Set(DATA.pitcherSeasons.map(r => r.game_year))].sort();
             const sel = document.getElementById('year-select');
+            // Add 2025+ as the first option after ALL YEARS (default)
+            const maxYear = Math.max(...years);
+            const o25p = document.createElement('option');
+            o25p.value = '2025+';
+            o25p.textContent = '2025+';
+            sel.appendChild(o25p);
             years.forEach(y => { const o = document.createElement('option'); o.value = y; o.textContent = y; sel.appendChild(o); });
+            // Default to 2025+
+            sel.value = '2025+';
+            STATE.selectedYear = '2025+';
         }
 
         // ═══════════════════════════════════════
@@ -1327,10 +1356,10 @@
             controls.enableDamping = true;
             controls.dampingFactor = 0.12;
             controls.rotateSpeed = 0.5;
-            controls.zoomSpeed = 0.8;
+            controls.zoomSpeed = 2.0;  // Much more responsive scroll zoom
             controls.panSpeed = 0.5;
-            controls.minDistance = 3;
-            controls.maxDistance = 60;
+            controls.minDistance = 1.5;  // Allow closer zoom for detail
+            controls.maxDistance = 80;   // Allow further zoom out for overview
             controls.maxPolarAngle = Math.PI / 2.1; // Don't go below ground
             controls.target.set(-1, 0, 0); // Center slightly left (city center is ~X=-1)
 
@@ -1432,12 +1461,12 @@
 
         function getVoronoiCells() {
             const visIds = [...STATE.visibleClusters].sort().join(',');
-            const yearFilter = STATE.selectedYear !== 'all' ? STATE.selectedYear : null;
-            const key = visIds + '|' + (yearFilter || 'all');
+            const key = visIds + '|' + STATE.selectedYear;
             if (_voronoiCache && _voronoiCacheKey === key) return _voronoiCache;
 
             const centroids = [];
-            const yearMedoids = yearFilter ? computeYearMedoids(yearFilter) : null;
+            const useYearMedoids = STATE.selectedYear !== 'all';
+            const yearMedoids = useYearMedoids ? computeYearMedoids(STATE.selectedYear) : null;
             Object.entries(DATA.clusters).forEach(([id, cl]) => {
                 if (!STATE.visibleClusters.has(id)) return;
                 let px, pz;
@@ -1536,14 +1565,13 @@
             const cells = getVoronoiCells();
             if (!cells || !DATA.pitcherSeasons) return;
 
-            const yearFilter = STATE.selectedYear !== 'all' ? parseInt(STATE.selectedYear) : null;
             const SLOT_SIZE = 0.35; // Tighter grid for clean packing inside Voronoi
 
             // Group pitchers by cluster
             const clusterPitchers = {};
             DATA.pitcherSeasons.forEach(ps => {
                 if (!isPitcherVisible(ps)) return;
-                if (yearFilter && ps.game_year !== yearFilter) return;
+                if (!yearPassesFilter(ps.game_year, STATE.selectedYear)) return;
                 if (!passesPitcherFilters(ps)) return;
                 if (ps.pca_x == null || ps.pca_y == null) return;
                 if (!clusterPitchers[ps.cluster]) clusterPitchers[ps.cluster] = [];
@@ -1660,6 +1688,68 @@
             return sprite;
         }
 
+        // Large side-of-town banner sprite (LEFTIES / RIGHTIES)
+        function makeBannerSprite(text, color, bgAlpha) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const fontSize = 72;
+            ctx.font = '900 ' + fontSize + 'px sans-serif';
+            const metrics = ctx.measureText(text);
+            const w = Math.ceil(metrics.width) + 60;
+            const h = fontSize + 30;
+            canvas.width = w; canvas.height = h;
+            // Semi-transparent background
+            ctx.fillStyle = 'rgba(10,10,14,' + (bgAlpha || 0.55) + ')';
+            ctx.beginPath();
+            ctx.roundRect(0, 0, w, h, 8);
+            ctx.fill();
+            // Bottom accent line
+            ctx.fillStyle = color;
+            ctx.fillRect(8, h - 4, w - 16, 3);
+            // Text
+            ctx.font = '900 ' + fontSize + 'px sans-serif';
+            ctx.fillStyle = color;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.letterSpacing = '6px';
+            ctx.fillText(text, w / 2, h / 2);
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.minFilter = THREE.LinearFilter;
+            const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false, depthWrite: false, opacity: 0.9 });
+            const sprite = new THREE.Sprite(mat);
+            const sc = 0.009;
+            sprite.scale.set(w * sc, h * sc, 1);
+            return sprite;
+        }
+
+        // LEFTIES / RIGHTIES side-of-town banners
+        let _sideLabels = [];
+        function buildSideLabels() {
+            // Remove old
+            _sideLabels.forEach(obj => { if (obj.parent) obj.parent.remove(obj); if (obj.material) obj.material.dispose(); });
+            _sideLabels = [];
+
+            const rhpIds = Object.keys(DATA.clusters).filter(id => id.startsWith('R_'));
+            const lhpIds = Object.keys(DATA.clusters).filter(id => id.startsWith('L_'));
+            if (!rhpIds.length || !lhpIds.length) return;
+
+            const avgX = (ids) => ids.reduce((s, id) => s + DATA.clusters[id].pca_x, 0) / ids.length;
+            const rhpCenterX = avgX(rhpIds);
+            const lhpCenterX = avgX(lhpIds);
+
+            const bannerY = 6.5;
+
+            const rightyBanner = makeBannerSprite('RIGHTIES', '#ff6b4a');
+            rightyBanner.position.set(rhpCenterX, bannerY, 0);
+            scene.add(rightyBanner);
+            _sideLabels.push(rightyBanner);
+
+            const leftyBanner = makeBannerSprite('LEFTIES', '#4a9eff');
+            leftyBanner.position.set(lhpCenterX, bannerY, 0);
+            scene.add(leftyBanner);
+            _sideLabels.push(leftyBanner);
+        }
+
         function buildLabels() {
             // Clear old
             while (labelGroup.children.length) {
@@ -1707,6 +1797,9 @@
                 labelGroup.add(sprite);
                 labelObjects.set(id, { obj: sprite, div: null });
             });
+
+            // Also build the LEFTIES / RIGHTIES side banners
+            buildSideLabels();
         }
 
         // ── Build Batter Routes + Neighborhood Glow ──
@@ -1729,8 +1822,8 @@
 
             const batter = STATE.activeBatters[STATE.activeBatters.length - 1];
             const matchups = getMatchupData(batter);
-            const yearFilter = STATE.selectedYear !== 'all' ? STATE.selectedYear : null;
-            const yearMedoids = yearFilter ? computeYearMedoids(yearFilter) : null;
+            const useYearMedoids = STATE.selectedYear !== 'all';
+            const yearMedoids = useYearMedoids ? computeYearMedoids(STATE.selectedYear) : null;
 
             // Neighborhood glow
             neighborhoodMeshes.forEach((mesh, id) => {
@@ -1885,10 +1978,9 @@
 
         // Compute per-year medoid positions from visible dots (true geometric medoid)
         function computeYearMedoids(year) {
-            const yearInt = parseInt(year);
             const groups = {};
             DATA.pitcherSeasons.forEach(ps => {
-                if (ps.game_year !== yearInt) return;
+                if (!yearPassesFilter(ps.game_year, year)) return;
                 if (!isPitcherVisible(ps)) return;
                 if (!passesPitcherFilters(ps)) return;
                 if (ps.pca_x == null || ps.pca_y == null) return;
@@ -2151,8 +2243,8 @@
 
             // Default: cluster-level data (no team filter)
             let rows = DATA.hitterVsCluster.filter(r => r.batter === batter.batter);
-            if (STATE.selectedYear !== 'all') rows = rows.filter(r => r.game_year === parseInt(STATE.selectedYear));
-            if (STATE.selectedYear === 'all' && rows.length > 0) {
+            if (STATE.selectedYear !== 'all') rows = rows.filter(r => yearPassesFilter(r.game_year, STATE.selectedYear));
+            if ((STATE.selectedYear === 'all' || STATE.selectedYear === '2025+') && rows.length > 0) {
                 const grouped = {};
                 rows.forEach(r => {
                     const k = r.cluster;
@@ -2343,7 +2435,9 @@
                 }
             } else {
                 html += '<div class="stat-header" style="color:'+cluster.color+'">'+archName(clusterId)+'</div>';
-                html += '<div class="stat-sub" style="color:'+cluster.color+'">'+cluster.hand+' '+role+' \u2014 '+cluster.pitcher_count+' pitchers</div>';
+                const filteredMembers = DATA.pitcherSeasons.filter(p => p.cluster === clusterId && yearPassesFilter(p.game_year, STATE.selectedYear));
+                const uniqueCount = new Set(filteredMembers.map(p => p.pitcher)).size;
+                html += '<div class="stat-sub" style="color:'+cluster.color+'">'+cluster.hand+' '+role+' \u2014 '+uniqueCount+' pitchers</div>';
                 html += '<div class="section-hdr">Cluster Profile</div>';
                 if (cent.avg_velo_FF>0) html += '<div class="profile-row"><span>Avg Fastball</span><span class="pval">'+(cent.avg_velo_FF).toFixed(1)+' mph</span></div>';
                 html += '<div class="profile-row"><span>Whiff Rate</span><span class="pval">'+((cent.whiff_rate||0)*100).toFixed(1)+'%</span></div>';
@@ -2351,7 +2445,7 @@
                 html += '<div class="profile-row"><span>Top Pitches</span><span class="pval">'+(cent.top_pitches || '\u2014')+'</span></div>';
 
                 // Pitcher roster (no batter context — show cluster members with their stats)
-                const members = DATA.pitcherSeasons.filter(p => p.cluster === clusterId && (!_teamPitcherIds || _teamPitcherIds.has(p.pitcher)));
+                const members = DATA.pitcherSeasons.filter(p => p.cluster === clusterId && yearPassesFilter(p.game_year, STATE.selectedYear) && (!_teamPitcherIds || _teamPitcherIds.has(p.pitcher)));
                 // Dedupe by pitcher ID, keep latest season
                 const seen = {};
                 members.forEach(p => {
@@ -2584,16 +2678,14 @@
             const batters = STATE.activeBatters;
             const hasBatters = batters.length > 0;
 
-            // Pre-compute team-filtered pitcher counts per cluster
-            let _teamCounts = null;
-            if (_teamPitcherIds) {
-                _teamCounts = {};
-                DATA.pitcherSeasons.forEach(ps => {
-                    if (!_teamPitcherIds.has(ps.pitcher)) return;
-                    if (!_teamCounts[ps.cluster]) _teamCounts[ps.cluster] = new Set();
-                    _teamCounts[ps.cluster].add(ps.pitcher);
-                });
-            }
+            // Pre-compute filtered pitcher counts per cluster (respects year + team filters)
+            const _clusterCounts = {};
+            DATA.pitcherSeasons.forEach(ps => {
+                if (!yearPassesFilter(ps.game_year, STATE.selectedYear)) return;
+                if (_teamPitcherIds && !_teamPitcherIds.has(ps.pitcher)) return;
+                if (!_clusterCounts[ps.cluster]) _clusterCounts[ps.cluster] = new Set();
+                _clusterCounts[ps.cluster].add(ps.pitcher);
+            });
 
             // Pre-compute matchup data for all active batters
             const allMatchups = batters.map(b => getMatchupData(b));
@@ -2666,7 +2758,7 @@
                             }
                         });
                     } else {
-                        const displayCount = _teamCounts ? (_teamCounts[id] ? _teamCounts[id].size : 0) : c.pitcher_count;
+                        const displayCount = _clusterCounts[id] ? _clusterCounts[id].size : 0;
                         html += '<span class="arch-count">'+displayCount+'</span>';
                     }
 
@@ -2713,15 +2805,17 @@
                 });
             }
 
-            // Update sidebar status when team filter active
+            // Update sidebar status with filtered counts
+            const totalFiltered = Object.values(_clusterCounts).reduce((s, set) => s + set.size, 0);
+            const activeArchCount = Object.keys(_clusterCounts).length;
             if (STATE.teamFilter) {
                 const tName = DATA.teamRosters.teams[STATE.teamFilter] ? DATA.teamRosters.teams[STATE.teamFilter].name : STATE.teamFilter;
-                const filteredCount = _teamCounts ? Object.values(_teamCounts).reduce((s, set) => s + set.size, 0) : 0;
                 document.getElementById('sidebar-status').textContent =
-                    filteredCount + ' PITCHERS \u00b7 ' + tName.toUpperCase();
-            } else if (DATA.pitcherSeasons.length > 0) {
+                    totalFiltered + ' PITCHERS \u00b7 ' + tName.toUpperCase();
+            } else {
+                const yearLabel = STATE.selectedYear === 'all' ? '' : ' (' + STATE.selectedYear + ')';
                 document.getElementById('sidebar-status').textContent =
-                    Object.keys(DATA.clusters).length + ' ARCHETYPES \u00b7 ' + DATA.pitcherSeasons.length.toLocaleString() + ' SEASONS \u00b7 ' + DATA.batters.length.toLocaleString() + ' BATTERS';
+                    activeArchCount + ' ARCHETYPES \u00b7 ' + totalFiltered.toLocaleString() + ' SEASONS' + yearLabel + ' \u00b7 ' + DATA.batters.length.toLocaleString() + ' BATTERS';
             }
         }
 
@@ -3270,6 +3364,119 @@
             // Close dropdown on click outside
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('#team-filter')) {
+                    dropdown.classList.remove('visible');
+                }
+            });
+        })();
+
+        // ═══ PITCHER SEARCH ═══
+        (function() {
+            const input = document.getElementById('pitcher-search');
+            const dropdown = document.getElementById('pitcher-dropdown');
+            const clearBtn = document.getElementById('pitcher-clear');
+            let highlightIdx = -1;
+
+            function getPitcherNames() {
+                // Build unique pitcher list with their most recent season's data
+                const byId = {};
+                DATA.pitcherSeasons.forEach(ps => {
+                    if (!byId[ps.pitcher] || ps.game_year > byId[ps.pitcher].game_year) {
+                        byId[ps.pitcher] = ps;
+                    }
+                });
+                return Object.values(byId).sort((a, b) =>
+                    (a.player_name || '').localeCompare(b.player_name || '')
+                );
+            }
+
+            function renderDropdown(filter) {
+                const q = (filter || '').toLowerCase().trim();
+                if (!q || q.length < 2) { dropdown.classList.remove('visible'); return; }
+                const pitchers = getPitcherNames();
+                const matches = pitchers.filter(ps => {
+                    const name = (ps.player_name || '').toLowerCase();
+                    return name.includes(q);
+                }).slice(0, 15);
+                if (matches.length === 0) { dropdown.classList.remove('visible'); return; }
+                let html = '';
+                matches.forEach(ps => {
+                    const cl = DATA.clusters[ps.cluster];
+                    const color = cl?.color || '#888';
+                    const arch = ps.archetype || '';
+                    html += '<div class="team-option" data-pid="' + ps.pitcher + '" data-year="' + ps.game_year + '">'
+                        + '<span>' + (ps.player_name || '') + '</span>'
+                        + '<span class="team-count" style="color:' + color + ';">' + arch + '</span></div>';
+                });
+                dropdown.innerHTML = html;
+                highlightIdx = -1;
+                dropdown.classList.add('visible');
+            }
+
+            function selectPitcher(pid, year) {
+                dropdown.classList.remove('visible');
+                // Find the best pitcher-season (prefer current year filter, then most recent)
+                const pidInt = parseInt(pid);
+                let ps;
+                // If year filter is active, try to find in that year range
+                if (STATE.selectedYear !== 'all') {
+                    ps = DATA.pitcherSeasons.find(p => p.pitcher === pidInt && yearPassesFilter(p.game_year, STATE.selectedYear));
+                }
+                // Fallback: most recent season
+                if (!ps) {
+                    const allPS = DATA.pitcherSeasons.filter(p => p.pitcher === pidInt).sort((a, b) => b.game_year - a.game_year);
+                    ps = allPS[0];
+                }
+                if (!ps) return;
+                input.value = ps.player_name || '';
+                clearBtn.style.display = 'block';
+                // Open pitcher profile panel
+                const ab = STATE.activeBatters.length > 0 ? STATE.activeBatters[STATE.activeBatters.length - 1] : null;
+                showPitcherStatPanel(ps, ab);
+            }
+
+            function clearPitcher() {
+                input.value = '';
+                clearBtn.style.display = 'none';
+            }
+
+            input.addEventListener('focus', () => renderDropdown(input.value));
+            input.addEventListener('input', () => {
+                clearBtn.style.display = 'none';
+                renderDropdown(input.value);
+            });
+
+            input.addEventListener('keydown', (e) => {
+                const opts = dropdown.querySelectorAll('.team-option');
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    highlightIdx = Math.min(highlightIdx + 1, opts.length - 1);
+                    opts.forEach((o, i) => o.classList.toggle('highlighted', i === highlightIdx));
+                    if (opts[highlightIdx]) opts[highlightIdx].scrollIntoView({ block: 'nearest' });
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    highlightIdx = Math.max(highlightIdx - 1, 0);
+                    opts.forEach((o, i) => o.classList.toggle('highlighted', i === highlightIdx));
+                    if (opts[highlightIdx]) opts[highlightIdx].scrollIntoView({ block: 'nearest' });
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (highlightIdx >= 0 && opts[highlightIdx]) {
+                        selectPitcher(opts[highlightIdx].dataset.pid, opts[highlightIdx].dataset.year);
+                    }
+                } else if (e.key === 'Escape') {
+                    dropdown.classList.remove('visible');
+                    input.blur();
+                }
+            });
+
+            dropdown.addEventListener('click', (e) => {
+                const opt = e.target.closest('.team-option');
+                if (opt) selectPitcher(opt.dataset.pid, opt.dataset.year);
+            });
+
+            clearBtn.addEventListener('click', clearPitcher);
+
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('#pitcher-filter')) {
                     dropdown.classList.remove('visible');
                 }
             });
@@ -4067,7 +4274,7 @@ if(PRESELECT){selectBatter(PRESELECT)}
                 buildArchetypeList();
                 initSearch();
                 renderSaved();
-                const total = DATA.pitcherSeasons.length;
+                const total = DATA.pitcherSeasons.filter(ps => yearPassesFilter(ps.game_year, STATE.selectedYear)).length;
                 document.getElementById('sidebar-status').textContent =
                     Object.keys(DATA.clusters).length + ' ARCHETYPES \u00b7 ' + total.toLocaleString() + ' SEASONS \u00b7 ' + DATA.batters.length.toLocaleString() + ' BATTERS';
                 document.getElementById('led-data').classList.add('green');
