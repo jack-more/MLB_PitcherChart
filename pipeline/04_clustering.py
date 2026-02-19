@@ -286,6 +286,95 @@ def main():
                     posthoc_ids[prefix].remove(small_cid)
                 print(f"  Merged {small_cid} ({len(small_rows)} members) -> {best_cid}")
 
+    # ═══════════════════════════════════════════════════════════════
+    # Remap probability columns to match post-hoc hard labels
+    # ═══════════════════════════════════════════════════════════════
+    # After post-hoc extraction + merging, the hard cluster labels in
+    # all_pitchers may differ from the GMM-native columns in all_proba.
+    # We need to:
+    #   1. Create new columns for post-hoc clusters (R_UT, L_UT)
+    #   2. Remove columns for merged-away clusters
+    #   3. Combine probability mass for merged clusters
+    print(f"\n{'='*50}")
+    print("  Remapping probability columns to match final cluster IDs")
+    print(f"{'='*50}")
+
+    # Build the set of final cluster IDs from hard assignments
+    final_cluster_ids = set(all_pitchers["cluster"].unique())
+    gmm_cluster_cols = [c for c in all_proba.columns if c not in ("pitcher", "game_year")]
+
+    # Step 1: For post-hoc extracted clusters (e.g. R_UT, L_UT),
+    # create a new probability column. Pitchers matching the rule get prob=1.0
+    # for the new cluster, with their original GMM probabilities zeroed out.
+    # Non-matching pitchers get 0.0 for the new cluster.
+    for new_cid in final_cluster_ids:
+        if new_cid not in gmm_cluster_cols:
+            # This is a post-hoc cluster — need to create its probability column
+            # Find which pitchers have this hard assignment
+            ut_pitchers = all_pitchers[all_pitchers["cluster"] == new_cid][["pitcher", "game_year"]].copy()
+            ut_pitchers["_key"] = list(zip(ut_pitchers["pitcher"].values, ut_pitchers["game_year"].values))
+            ut_keys = set(ut_pitchers["_key"].values)
+
+            # Create column: 1.0 for extracted pitchers, 0.0 for everyone else
+            proba_keys = list(zip(all_proba["pitcher"].values, all_proba["game_year"].values))
+            all_proba[new_cid] = [1.0 if k in ut_keys else 0.0 for k in proba_keys]
+
+            # Zero out the original GMM cluster probabilities for these pitchers
+            # (their probability mass has moved to the new cluster)
+            prefix = new_cid.split("_")[0]  # "R" or "L"
+            hand_gmm_cols = [c for c in gmm_cluster_cols if c.startswith(prefix + "_")]
+            ut_mask = all_proba[new_cid] == 1.0
+            for col in hand_gmm_cols:
+                all_proba.loc[ut_mask, col] = 0.0
+
+            print(f"  Created probability column {new_cid}: {ut_mask.sum()} pitchers = 1.0")
+
+    # Step 2: For merged-away clusters, combine their probability into the target
+    # Find GMM columns that are no longer in the final cluster set
+    gmm_cols_to_remove = []
+    for col in gmm_cluster_cols:
+        if col not in final_cluster_ids:
+            gmm_cols_to_remove.append(col)
+
+    if gmm_cols_to_remove:
+        # Figure out where each removed cluster was merged to
+        # We need to check which big cluster absorbed each small one
+        # Simplest: for rows where the pitcher's hard label != any removed col,
+        # we can look up what their hard label IS and add the probability there
+        # But actually, the merge was by centroid distance, and we don't know
+        # the mapping anymore. Let's reconstruct it.
+        #
+        # Alternative simpler approach: redistribute the removed columns' mass
+        # proportionally among remaining same-hand columns.
+        # But BEST approach: since merged clusters were tiny (<8 members),
+        # just drop their columns and renormalize.
+        for col in gmm_cols_to_remove:
+            if col in all_proba.columns:
+                print(f"  Dropping merged-away probability column: {col}")
+                all_proba.drop(columns=[col], inplace=True)
+
+        # Renormalize probabilities per hand so they sum to ~1.0
+        for prefix in ["R", "L"]:
+            hand_cols = [c for c in all_proba.columns
+                         if c not in ("pitcher", "game_year") and c.startswith(prefix + "_")]
+            if hand_cols:
+                row_sums = all_proba[hand_cols].sum(axis=1)
+                # Only renormalize rows that have any probability for this hand
+                nonzero = row_sums > 0
+                for col in hand_cols:
+                    all_proba.loc[nonzero, col] = all_proba.loc[nonzero, col] / row_sums[nonzero]
+
+    # Verify final columns match final cluster IDs
+    final_proba_cols = [c for c in all_proba.columns if c not in ("pitcher", "game_year")]
+    print(f"  Final probability columns: {sorted(final_proba_cols)}")
+    print(f"  Final hard cluster IDs:    {sorted(final_cluster_ids)}")
+    missing = final_cluster_ids - set(final_proba_cols)
+    extra = set(final_proba_cols) - final_cluster_ids
+    if missing:
+        print(f"  WARNING: Missing proba columns for: {missing}")
+    if extra:
+        print(f"  WARNING: Extra proba columns (no hard assignments): {extra}")
+
     # Save probability vectors
     proba_path = os.path.join(PROCESSED_DATA_DIR, "cluster_probabilities.parquet")
     all_proba.to_parquet(proba_path, engine="pyarrow", compression="snappy")
@@ -420,9 +509,46 @@ def main():
             print(f"\n  Updated pitcher_seasons with sub-threshold assignments")
             print(f"  New total: {len(all_pitchers):,} pitcher-seasons")
 
-        # Append sub-threshold probabilities
+        # Append sub-threshold probabilities (with post-hoc column remapping)
         if sub_proba_parts:
             sub_all_proba = pd.concat(sub_proba_parts, ignore_index=True).fillna(0.0)
+
+            # Remap sub-threshold probabilities to match final cluster columns
+            # Create UT columns for sub-threshold pitchers matching post-hoc rules
+            for new_cid in final_cluster_ids:
+                if new_cid not in sub_all_proba.columns:
+                    # Find sub-threshold pitchers assigned to this post-hoc cluster
+                    sub_ut = sub_assigned[sub_assigned["cluster"] == new_cid][["pitcher", "game_year"]].copy()
+                    sub_ut["_key"] = list(zip(sub_ut["pitcher"].values, sub_ut["game_year"].values))
+                    sub_ut_keys = set(sub_ut["_key"].values)
+
+                    sub_keys = list(zip(sub_all_proba["pitcher"].values, sub_all_proba["game_year"].values))
+                    sub_all_proba[new_cid] = [1.0 if k in sub_ut_keys else 0.0 for k in sub_keys]
+
+                    # Zero out original GMM columns for these pitchers
+                    prefix = new_cid.split("_")[0]
+                    hand_gmm_cols = [c for c in sub_all_proba.columns
+                                     if c.startswith(prefix + "_") and c != new_cid
+                                     and c not in ("pitcher", "game_year")]
+                    sub_ut_mask = sub_all_proba[new_cid] == 1.0
+                    for col in hand_gmm_cols:
+                        sub_all_proba.loc[sub_ut_mask, col] = 0.0
+
+            # Drop merged-away columns from sub-threshold proba too
+            for col in list(sub_all_proba.columns):
+                if col not in ("pitcher", "game_year") and col not in final_cluster_ids:
+                    sub_all_proba.drop(columns=[col], inplace=True)
+
+            # Renormalize sub-threshold probabilities per hand
+            for prefix in ["R", "L"]:
+                hand_cols = [c for c in sub_all_proba.columns
+                             if c not in ("pitcher", "game_year") and c.startswith(prefix + "_")]
+                if hand_cols:
+                    row_sums = sub_all_proba[hand_cols].sum(axis=1)
+                    nonzero = row_sums > 0
+                    for col in hand_cols:
+                        sub_all_proba.loc[nonzero, col] = sub_all_proba.loc[nonzero, col] / row_sums[nonzero]
+
             all_proba = pd.concat([all_proba, sub_all_proba], ignore_index=True).fillna(0.0)
             all_proba.to_parquet(proba_path, engine="pyarrow", compression="snappy")
             print(f"  Updated cluster_probabilities with sub-threshold pitchers")

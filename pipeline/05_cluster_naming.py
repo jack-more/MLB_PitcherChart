@@ -238,7 +238,28 @@ def find_nearest_pitchers(
     return examples
 
 
-# Separate color palettes for RHP (warm) and LHP (cool)
+# Archetype-name-based colors: same archetype name = same color across hands.
+# 15 distinct hues spread ~24° apart on the hue wheel, high saturation + contrast.
+ARCHETYPE_COLORS = {
+    "Cutman":             "#e04040",  # Red
+    "Uncle Charlie":      "#e0a830",  # Gold
+    "Ghost":              "#7860e0",  # Violet
+    "Kitchen Sink":       "#80d040",  # Lime
+    "Split Demon":        "#d050d0",  # Magenta
+    "Yakker":             "#b050e0",  # Purple
+    "Heater-Heavy":       "#e07830",  # Orange
+    "Gardener":           "#40c868",  # Green
+    "Boomerang":          "#40c8d8",  # Cyan
+    "Undertow":           "#4060e0",  # Royal Blue
+    "Barnburner":         "#e04878",  # Hot Pink
+    "Wormburner":         "#40b898",  # Teal
+    "Knuckleball Wizard": "#50e0c8",  # Aqua
+    "Triple Threat":      "#e06050",  # Tomato
+    "Snake":              "#d0a060",  # Tan Gold
+    "Eephus Lobber":      "#a0a0a0",  # Gray
+}
+
+# Fallback palettes if archetype name not in ARCHETYPE_COLORS
 RHP_COLORS = [
     "#e63946", "#f4a261", "#e9c46a", "#d62828", "#f77f00",
     "#bc6c25", "#ff6b6b", "#ffa07a", "#ff4500", "#ff8c00",
@@ -294,22 +315,27 @@ def main():
         is_rhp = cid.startswith("R")
         hand = "RHP" if is_rhp else "LHP"
 
-        # Pick color from the appropriate palette
-        if is_rhp:
-            color = RHP_COLORS[rhp_idx % len(RHP_COLORS)]
-            rhp_idx += 1
-        else:
-            color = LHP_COLORS[lhp_idx % len(LHP_COLORS)]
-            lhp_idx += 1
-
         full_name = generate_full_name(row, hand)
         short_name = generate_short_name(row, full_name, hand)
 
-        # Force post-hoc cluster names (override medoid-based naming)
+        # Force post-hoc cluster names BEFORE color assignment
         role = _role_short(row.get("is_sp", 0))
         if cid.endswith("_UT"):
             short_name = f"Undertow {role}"
             full_name = f"The Undertow Sinker-Dominant No-Fastball Worm Burner {_role_str(row.get('is_sp', 0))}"
+
+        # Pick color by archetype name (same archetype = same color across hands)
+        # Extract the archetype base name (remove RP/SP suffix)
+        archetype_base = short_name.rsplit(" ", 1)[0] if short_name else ""
+        color = ARCHETYPE_COLORS.get(archetype_base)
+        if not color:
+            # Fallback to sequential palette
+            if is_rhp:
+                color = RHP_COLORS[rhp_idx % len(RHP_COLORS)]
+                rhp_idx += 1
+            else:
+                color = LHP_COLORS[lhp_idx % len(LHP_COLORS)]
+                lhp_idx += 1
         examples = find_nearest_pitchers(pitcher_seasons, cid, n=3)
         count = int((pitcher_seasons["cluster"] == cid).sum())
 

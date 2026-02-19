@@ -506,20 +506,24 @@
         .batter-badge .tier-chip.avg   { background: #f4a261; color: #000; }
         .batter-badge .tier-chip.below { background: #e63946; color: #fff; }
 
-        /* 3D floating badge (CSS2DObject) */
+        /* 3D floating badge label (CSS2DObject above shield) */
         .city-batter-badge {
-            background: rgba(10,10,10,0.95); border: 2px solid #888;
-            color: #fff; padding: 8px 18px; border-radius: 20px;
-            font-family: var(--font-tech); font-size: 13px; font-weight: 700;
+            background: rgba(8,8,12,0.92); border: 2px solid #555;
+            color: #fff; padding: 10px 22px; border-radius: 6px;
+            font-family: var(--font-tech); font-size: 15px; font-weight: 800;
             pointer-events: none; white-space: nowrap;
-            display: flex; align-items: center; gap: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.8), 0 0 15px rgba(255,255,255,0.15);
-            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            box-shadow: 0 6px 30px rgba(0,0,0,0.9), 0 0 20px rgba(255,255,255,0.1);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.9);
+            letter-spacing: 0.5px;
         }
-        .city-batter-badge .badge-name { color: #fff; }
+        .city-batter-badge .badge-name {
+            color: #fff; font-size: 16px; font-weight: 900;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
         .city-batter-badge .badge-tier {
-            font-size: 8px; font-weight: 900; letter-spacing: 1.2px;
-            padding: 2px 6px; border-radius: 2px;
+            font-size: 9px; font-weight: 900; letter-spacing: 2px;
+            padding: 3px 10px; border-radius: 3px;
         }
         .city-batter-badge .badge-tier.elite { background: #FFD700; color: #000; }
         .city-batter-badge .badge-tier.plus  { background: #2a9d8f; color: #fff; }
@@ -1127,6 +1131,8 @@
             catch(e) { DATA.archetypeKings = {}; }
             try { DATA.teamRosters = await loadJSON('teams_2026.json', 'team rosters', setStatus); }
             catch(e) { DATA.teamRosters = { teams: {}, rosters: {} }; }
+            try { DATA.tierShields = await loadJSON('shields/tier_shields.json', 'tier shields', setStatus); }
+            catch(e) { DATA.tierShields = {}; }
 
             // Build archetype map from cluster data (emoji + name)
             _initArchetypeMap();
@@ -2148,6 +2154,63 @@
                 });
             }
 
+            // Shield plug-in animation
+            if (_shieldAnim && _shieldGroup) {
+                const elapsed = performance.now() - _shieldAnim.startTime;
+                const t = Math.min(elapsed / _shieldAnim.duration, 1.0);
+
+                // Ease-out bounce: fast descent then gentle settle
+                const easeOutBounce = t < 0.7
+                    ? (t / 0.7) * (t / 0.7)  // accelerate in first 70%
+                    : 1.0 - Math.pow(1.0 - t, 3) * Math.cos((t - 0.7) * Math.PI * 2.5) * 0.15;
+                const progress = Math.min(easeOutBounce, 1.0);
+
+                // Interpolate Y position (drop from sky)
+                const currentY = _shieldAnim.startY + (_shieldAnim.targetY - _shieldAnim.startY) * progress;
+                _shieldGroup.position.y = currentY;
+
+                // Scale up from 0.1 to 1.0
+                const scale = 0.1 + 0.9 * progress;
+                _shieldGroup.scale.set(scale, scale, scale);
+
+                // Gentle spin during descent (360° → 0°)
+                _shieldGroup.rotation.y = (1 - progress) * Math.PI * 2;
+
+                // Pulse the ring on landing
+                const ring = _shieldGroup.children.find(c => c.userData && c.userData.isRing);
+                if (ring && t > 0.6) {
+                    const landPulse = Math.sin((t - 0.6) / 0.4 * Math.PI) * 0.4;
+                    ring.material.opacity = 0.3 + landPulse;
+                    ring.scale.set(1 + landPulse, 1 + landPulse, 1);
+                }
+
+                // Fade in label after 60% of animation
+                if (t > 0.6 && _shieldAnim.labelDiv) {
+                    _shieldAnim.labelDiv.style.opacity = String(Math.min((t - 0.6) / 0.3, 1.0));
+                }
+
+                // Animation complete
+                if (t >= 1.0) {
+                    _shieldGroup.position.y = _shieldAnim.targetY;
+                    _shieldGroup.scale.set(1, 1, 1);
+                    _shieldGroup.rotation.y = 0;
+                    if (_shieldAnim.labelDiv) _shieldAnim.labelDiv.style.opacity = '1';
+                    _shieldAnim = null;
+                }
+            }
+
+            // Gentle idle bob for settled shield
+            if (_shieldGroup && !_shieldAnim) {
+                const bob = Math.sin(performance.now() * 0.001) * 0.05;
+                _shieldGroup.position.y = 0.2 + bob;
+                // Gentle ring pulse
+                const ring = _shieldGroup.children.find(c => c.userData && c.userData.isRing);
+                if (ring) {
+                    const ringPulse = Math.sin(performance.now() * 0.002) * 0.5 + 0.5;
+                    ring.material.opacity = 0.2 + ringPulse * 0.2;
+                }
+            }
+
             if (renderer && scene && camera) {
                 renderer.render(scene, camera);
                 css2DRenderer.render(scene, camera);
@@ -2487,30 +2550,146 @@
             return                     { label: 'BELOW', cls: 'below', color: '#e63946' };
         }
 
-        // 3D floating batter badge (CSS2DObject above city)
-        let _batterBadge3D = null;
-        function buildBatterBadge3D(batter, stats) {
-            // Remove old
+        // ── 3D Shield Badge System ──
+        // Heraldic shield from shields.build, laid flat next to the map with plug-in animation
+        let _shieldGroup = null;       // THREE.Group holding shield mesh + label
+        let _shieldAnim = null;        // { startTime, duration, startY, targetY, startScale }
+        let _batterBadge3D = null;     // CSS2DObject for name label above shield
+        const _shieldTextureCache = {};  // tier → THREE.Texture (cached)
+
+        function _svgToTexture(svgString) {
+            return new Promise((resolve) => {
+                const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const img = new Image();
+                img.onload = () => {
+                    const canvas2d = document.createElement('canvas');
+                    canvas2d.width = 440;   // 2x the 220 viewBox for crisp rendering
+                    canvas2d.height = 528;  // 2x the 264 viewBox
+                    const ctx = canvas2d.getContext('2d');
+                    ctx.drawImage(img, 0, 0, 440, 528);
+                    URL.revokeObjectURL(url);
+                    const tex = new THREE.CanvasTexture(canvas2d);
+                    tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+                    tex.colorSpace = THREE.SRGBColorSpace;
+                    resolve(tex);
+                };
+                img.onerror = () => {
+                    URL.revokeObjectURL(url);
+                    resolve(null);
+                };
+                img.src = url;
+            });
+        }
+
+        async function _getShieldTexture(tierCls) {
+            if (_shieldTextureCache[tierCls]) return _shieldTextureCache[tierCls];
+            const svgData = DATA.tierShields && DATA.tierShields[tierCls];
+            if (!svgData) return null;
+            const tex = await _svgToTexture(svgData);
+            if (tex) _shieldTextureCache[tierCls] = tex;
+            return tex;
+        }
+
+        async function buildBatterBadge3D(batter, stats) {
+            // Remove old shield group
+            if (_shieldGroup) {
+                scene.remove(_shieldGroup);
+                _shieldGroup.traverse(child => {
+                    if (child.geometry) child.geometry.dispose();
+                    if (child.material) {
+                        if (child.material.map) child.material.map = null;
+                        child.material.dispose();
+                    }
+                });
+                _shieldGroup = null;
+            }
+            // Remove old CSS label
             if (_batterBadge3D) {
                 if (_batterBadge3D.element) _batterBadge3D.element.remove();
                 labelGroup.remove(_batterBadge3D);
                 _batterBadge3D = null;
             }
+            _shieldAnim = null;
+
             if (!batter || !stats) return;
 
             const tier = getBatterTier(stats.avg || 0);
+            const texture = await _getShieldTexture(tier.cls);
 
+            // Create 3D group
+            const group = new THREE.Group();
+            group.name = 'shield-badge';
+
+            // Shield mesh — flat plane with shield texture, tilted slightly toward camera
+            const shieldW = 2.0, shieldH = shieldW * (264 / 220);  // Maintain viewBox aspect ratio
+            const geo = new THREE.PlaneGeometry(shieldW, shieldH);
+            const mat = new THREE.MeshStandardMaterial({
+                map: texture || undefined,
+                color: texture ? 0xffffff : new THREE.Color(tier.color),
+                transparent: true,
+                alphaTest: 0.01,
+                side: THREE.DoubleSide,
+                metalness: 0.3,
+                roughness: 0.5,
+                emissive: new THREE.Color(tier.color),
+                emissiveIntensity: 0.15,
+            });
+            const shieldMesh = new THREE.Mesh(geo, mat);
+
+            // Tilt shield: mostly upright but leaning back ~25° (like propped on an easel)
+            shieldMesh.rotation.x = -Math.PI / 7;  // ~25° tilt back
+            shieldMesh.position.y = shieldH / 2 - 0.2;  // Center vertically above ground
+
+            group.add(shieldMesh);
+
+            // Add glow ring at the base (landing pad effect)
+            const ringGeo = new THREE.RingGeometry(0.6, 0.85, 32);
+            const ringMat = new THREE.MeshBasicMaterial({
+                color: tier.color,
+                transparent: true,
+                opacity: 0.4,
+                side: THREE.DoubleSide,
+            });
+            const ring = new THREE.Mesh(ringGeo, ringMat);
+            ring.rotation.x = -Math.PI / 2;  // Lay flat on ground
+            ring.position.y = 0.01;
+            ring.userData.isRing = true;
+            group.add(ring);
+
+            // Position: to the right of the city (positive X, slightly forward)
+            const targetX = 10.5, targetZ = 1.0, targetY = 0.2;
+            group.position.set(targetX, targetY + 12, targetZ);  // Start high up
+            group.scale.set(0.1, 0.1, 0.1);  // Start tiny
+
+            scene.add(group);
+            _shieldGroup = group;
+
+            // CSS2D label for player name + tier — floats above shield
             const div = document.createElement('div');
             div.className = 'city-batter-badge';
             div.innerHTML =
                 '<span class="badge-name">' + fmtName(batter.batter_name) + '</span>' +
                 '<span class="badge-tier ' + tier.cls + '">' + tier.label + '</span>';
+            div.style.opacity = '0';
+            div.style.transition = 'opacity 0.5s ease';
 
-            const obj = new CSS2DObject(div);
-            // Float above city center, offset toward camera
-            obj.position.set(-1, 6, 4);
-            labelGroup.add(obj);
-            _batterBadge3D = obj;
+            const labelObj = new CSS2DObject(div);
+            labelObj.position.set(targetX, targetY + shieldH + 1.2, targetZ);
+            labelGroup.add(labelObj);
+            _batterBadge3D = labelObj;
+
+            // Start plug-in animation
+            _shieldAnim = {
+                startTime: performance.now(),
+                duration: 900,  // ms
+                startY: targetY + 12,
+                targetY: targetY,
+                targetX: targetX,
+                targetZ: targetZ,
+                shieldH: shieldH,
+                labelDiv: div,
+            };
         }
 
         function spawnBatter(batter) {
