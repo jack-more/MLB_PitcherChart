@@ -286,6 +286,62 @@ body::after{
 .save-btn:active{transform:translate(2px,2px);box-shadow:none}
 .save-btn.saved{background:var(--color-black);color:var(--color-accent);border-color:var(--color-accent)}
 
+/* ═══ FANTASY TAB ═══ */
+.fantasy-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 0 6px}
+.fantasy-hdr .section-title{margin:0}
+.fantasy-toggle{display:flex;background:var(--color-black);border-radius:16px;padding:2px;gap:2px}
+.fantasy-toggle-btn{font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:5px 12px;border-radius:14px;color:#888;cursor:pointer;transition:all 0.15s;white-space:nowrap}
+.fantasy-toggle-btn.active{background:var(--color-accent);color:var(--color-black)}
+.fantasy-sort-bar{display:flex;gap:6px;overflow-x:auto;padding:4px 0 10px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.fantasy-sort-bar::-webkit-scrollbar{display:none}
+.fantasy-sort-chip{font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:5px 12px;border:2px solid var(--color-black);background:var(--color-card);cursor:pointer;transition:all 0.15s;white-space:nowrap;border-radius:12px}
+.fantasy-sort-chip.active{background:var(--color-accent);color:var(--color-black)}
+.fp-table{width:100%;background:var(--color-card);border:var(--border);box-shadow:var(--shadow);overflow:hidden}
+.fp-row{display:grid;grid-template-columns:28px 1fr 28px 44px 44px 36px 36px 32px 36px;align-items:center;gap:2px;padding:8px 6px;min-height:44px;border-bottom:1px solid #eee;font-size:11px}
+.fp-row:last-child{border-bottom:none}
+.fp-row-hdr{background:var(--color-black);color:#fff;font-family:var(--font-mono);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;min-height:32px;padding:6px 6px;border-bottom:none}
+.fp-row-hdr div{cursor:pointer;text-align:center;opacity:0.6;transition:opacity 0.15s}
+.fp-row-hdr div.active{opacity:1;color:var(--color-accent)}
+.fp-rank{font-family:var(--font-mono);font-size:10px;color:var(--color-meta);text-align:center}
+.fp-player{min-width:0}
+.fp-name{font-family:var(--font-body);font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fp-meta{font-family:var(--font-mono);font-size:8px;color:var(--color-meta);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fp-cell{font-family:var(--font-mono);font-size:11px;font-weight:600;text-align:center}
+.fp-cell.fp-ms{font-family:var(--font-display);font-size:16px}
+.fp-row.fp-elite{border-left:3px solid var(--color-elite)}
+.fp-row.fp-favorable{border-left:3px solid var(--color-favorable)}
+.fp-row.fp-neutral{border-left:3px solid var(--color-neutral)}
+.fp-row.fp-tough{border-left:3px solid var(--color-tough)}
+
+/* ═══ GAMES TAB ═══ */
+.gp-card{background:var(--color-card);border:var(--border);box-shadow:var(--shadow);margin-bottom:14px;overflow:hidden}
+.gp-header{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:14px 12px;gap:6px}
+.gp-team{text-align:center}
+.gp-team-logo{width:40px;height:40px;margin:0 auto 4px;overflow:hidden}
+.gp-team-abbr{font-family:var(--font-display);font-size:20px;letter-spacing:2px}
+.gp-team-runs{font-family:var(--font-mono);font-size:24px;font-weight:700;margin-top:2px}
+.gp-center{text-align:center}
+.gp-label{font-family:var(--font-mono);font-size:8px;color:var(--color-meta);text-transform:uppercase;letter-spacing:1px}
+.gp-spread{font-family:var(--font-display);font-size:20px;letter-spacing:1px;margin:2px 0}
+.gp-ou{font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--color-meta)}
+.gp-pick-badge{display:inline-block;font-family:var(--font-mono);font-size:9px;font-weight:700;padding:3px 10px;text-transform:uppercase;margin-top:4px;letter-spacing:0.5px}
+.gp-pick-strong{background:var(--color-accent);color:var(--color-black);border:2px solid var(--color-black)}
+.gp-pick-lean{background:var(--color-black);color:var(--color-accent);border:2px solid var(--color-accent)}
+.gp-sp{display:grid;grid-template-columns:1fr 1fr;border-top:1px dashed #ddd;padding:10px 12px;gap:12px}
+.gp-sp-side{text-align:center}
+.gp-sp-name{font-family:var(--font-body);font-size:12px;font-weight:700}
+.gp-sp-arch{display:inline-block;font-family:var(--font-mono);font-size:8px;font-weight:700;padding:2px 8px;border-radius:10px;text-transform:uppercase;margin-top:2px;letter-spacing:0.5px}
+.gp-sp-stats{font-family:var(--font-mono);font-size:9px;color:var(--color-meta);margin-top:2px}
+.gp-bar{display:flex;height:6px;width:100%;border-top:1px solid #eee}
+.gp-bar-seg{height:100%}
+.gp-detail{display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px dashed #ddd}
+.gp-detail-col{padding:8px 10px}
+.gp-detail-col:first-child{border-right:1px solid #eee}
+.gp-detail-hdr{font-family:var(--font-mono);font-size:8px;font-weight:700;color:var(--color-meta);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.gp-detail-row{display:flex;justify-content:space-between;padding:2px 0;font-family:var(--font-mono);font-size:10px}
+.gp-detail-label{color:var(--color-meta)}
+.gp-detail-val{font-weight:700}
+
 /* ═══ EMPTY STATE ═══ */
 .empty-state{text-align:center;padding:40px 20px;font-family:var(--font-mono);font-size:11px;color:var(--color-meta);text-transform:uppercase;letter-spacing:1px}
 
@@ -341,7 +397,7 @@ body::after{
 <div class="container">
 
     <!-- ═══ LINES TAB ═══ -->
-    <div class="tab-content active" id="tab-lines">
+    <div class="tab-content" id="tab-lines">
         <div class="chips" id="filter-chips">
             <div class="chip active" data-filter="all">All Games</div>
             <div class="chip" data-filter="value">Best Value</div>
@@ -363,6 +419,33 @@ body::after{
         <div id="props-container">
             <div class="empty-state">Loading game data...</div>
         </div>
+    </div>
+
+    <!-- ═══ FANTASY TAB (Weekly) ═══ -->
+    <div class="tab-content active" id="tab-fantasy">
+        <div class="fantasy-hdr">
+            <div class="section-title">WEEKLY FANTASY</div>
+        </div>
+        <div class="section-sub" id="fantasy-sub">7-day projected stat lines — built for weekly fantasy lineups</div>
+        <div class="fantasy-sort-bar" id="fantasy-sort-bar"></div>
+        <div id="fantasy-container">
+            <div class="empty-state">Loading weekly schedule...</div>
+        </div>
+    </div>
+
+    <!-- ═══ DAILY PROPS TAB ═══ -->
+    <div class="tab-content" id="tab-daily">
+        <div style="padding-top:12px">
+            <div class="section-title">DAILY PROJECTIONS</div>
+            <div class="section-sub">Today's slate — per-batter & per-game projections for prop betting</div>
+        </div>
+        <div class="slate-info">
+            <span id="daily-slate-date">Loading...</span>
+            <span id="daily-slate-count"></span>
+        </div>
+        <div class="fantasy-sort-bar" id="daily-sort-bar"></div>
+        <div id="daily-batters-container"></div>
+        <div style="margin-top:16px" id="daily-games-container"></div>
     </div>
 
     <!-- ═══ MATCHUPS TAB ═══ -->
@@ -436,10 +519,10 @@ O/U Total = Home Runs + Away Runs</div>
 
 <!-- Floating nav -->
 <nav class="nav" id="main-nav">
-    <div class="nav-tab active" data-tab="lines">Lines</div>
-    <div class="nav-tab" data-tab="props">Props</div>
+    <div class="nav-tab active" data-tab="fantasy">Fantasy</div>
+    <div class="nav-tab" data-tab="daily">Daily</div>
     <div class="nav-tab" data-tab="matchups">Matchups</div>
-    <div class="nav-tab" data-tab="trends">Trends</div>
+    <div class="nav-tab" data-tab="lines">Lines</div>
     <div class="nav-tab" data-tab="info">Info</div>
 </nav>
 
@@ -859,6 +942,7 @@ function renderSlate(allGames, slateDate) {
     renderProps();
     renderTrends();
     updateTicker();
+    renderDaily();
 }
 
 // ═══ BUILD GAME CARD ═══
@@ -1371,6 +1455,299 @@ function renderTrends() {
     container.innerHTML = html;
 }
 
+// ═══ FANTASY TAB (Weekly) ═══
+let _fantasySort = 'h';
+
+function renderFantasy() {
+    const container = document.getElementById('fantasy-container');
+    const sortBar = document.getElementById('fantasy-sort-bar');
+    const saved = getSavedBatters();
+
+    // Ensure weekly schedule is fetched
+    if (!_weeklySchedule) {
+        container.innerHTML = '<div class="empty-state">Loading weekly schedule...</div>';
+        sortBar.innerHTML = '';
+        fetchWeeklySchedule().then(() => {
+            // Project ALL known batters
+            const allIds = new Set();
+            DATA.batters.forEach(b => allIds.add(b.batter));
+            saved.forEach(s => allIds.add(s.id));
+            computeWeeklyProjections([...allIds]);
+            renderFantasy();
+        });
+        return;
+    }
+
+    // Ensure we have weekly projections for all batters
+    const allIds = new Set();
+    DATA.batters.forEach(b => allIds.add(b.batter));
+    saved.forEach(s => allIds.add(s.id));
+    const needsCompute = [...allIds].some(id => !_weeklyProjections[id]);
+    if (needsCompute) {
+        computeWeeklyProjections([...allIds]);
+    }
+
+    // Build data rows
+    const rows = [];
+    const seen = new Set();
+    const addBatter = (batterId, name) => {
+        if (seen.has(batterId)) return;
+        seen.add(batterId);
+        const wp = _weeklyProjections[batterId];
+        if (!wp || wp.games === 0) return;
+        rows.push({ batterId, name, isSaved: isBatterSaved(batterId), ...wp });
+    };
+    // Add all batters that have weekly projections
+    Object.keys(_weeklyProjections).forEach(id => {
+        const numId = parseInt(id);
+        const batter = DATA.batters.find(b => b.batter === numId);
+        if (batter) addBatter(numId, batter.batter_name);
+    });
+
+    if (rows.length === 0) {
+        container.innerHTML = '<div class="empty-state">No weekly projection data available — probable pitchers haven\'t been announced yet.</div>';
+        sortBar.innerHTML = '';
+        return;
+    }
+
+    // Sort chips — 5x5 categories: AVG, OPS, HR, R, SB, RBI
+    const sorts = [
+        { key: 'r', label: 'R' }, { key: 'hr', label: 'HR' }, { key: 'rbi', label: 'RBI' },
+        { key: 'sb', label: 'SB' }, { key: 'avg', label: 'AVG' }, { key: 'ops', label: 'OPS' },
+        { key: 'games', label: 'GP' }
+    ];
+    sortBar.innerHTML = sorts.map(s =>
+        '<div class="fantasy-sort-chip' + (_fantasySort === s.key ? ' active' : '') + '" data-fsort="' + s.key + '">' + s.label + '</div>'
+    ).join('');
+    sortBar.querySelectorAll('.fantasy-sort-chip').forEach(chip => {
+        chip.addEventListener('click', () => { _fantasySort = chip.dataset.fsort; renderFantasy(); });
+    });
+
+    // Compute OPS for each row: OBP + SLG
+    rows.forEach(r => {
+        const estAB = r.projABsum || (r.games * 3.5);
+        const obp = (r.games * 4) > 0 ? (r.projH + r.projBB) / (r.games * 4) : 0;
+        const slg = estAB > 0 ? r.projTB / estAB : 0;
+        r.ops = obp + slg;
+    });
+
+    // Sort
+    if (_fantasySort === 'r') rows.sort((a, b) => b.projR - a.projR);
+    else if (_fantasySort === 'hr') rows.sort((a, b) => b.projHR - a.projHR);
+    else if (_fantasySort === 'rbi') rows.sort((a, b) => b.projRBI - a.projRBI);
+    else if (_fantasySort === 'sb') rows.sort((a, b) => b.projSB - a.projSB);
+    else if (_fantasySort === 'avg') rows.sort((a, b) => b.projAVG - a.projAVG);
+    else if (_fantasySort === 'ops') rows.sort((a, b) => b.ops - a.ops);
+    else if (_fantasySort === 'games') rows.sort((a, b) => b.games - a.games);
+
+    let html = '<div class="fp-table">';
+    html += '<div class="fp-row fp-row-hdr">';
+    html += '<div>#</div>';
+    html += '<div style="text-align:left">PLAYER</div>';
+    html += '<div class="' + (_fantasySort === 'games' ? 'active' : '') + '">GP</div>';
+    html += '<div class="' + (_fantasySort === 'avg' ? 'active' : '') + '">AVG</div>';
+    html += '<div class="' + (_fantasySort === 'ops' ? 'active' : '') + '">OPS</div>';
+    html += '<div class="' + (_fantasySort === 'hr' ? 'active' : '') + '">HR</div>';
+    html += '<div class="' + (_fantasySort === 'r' ? 'active' : '') + '">R</div>';
+    html += '<div class="' + (_fantasySort === 'sb' ? 'active' : '') + '">SB</div>';
+    html += '<div class="' + (_fantasySort === 'rbi' ? 'active' : '') + '">RBI</div>';
+    html += '</div>';
+
+    rows.forEach((r, i) => {
+        const savedMark = r.isSaved ? ' \u2605' : '';
+        html += '<div class="fp-row">';
+        html += '<div class="fp-rank">' + (i + 1) + '</div>';
+        html += '<div class="fp-player"><div class="fp-name">' + fmtName(r.name) + savedMark + '</div>';
+        html += '<div class="fp-meta">' + r.games + 'G · MS ' + (r.avgMS || '\u2014') + '</div></div>';
+        html += '<div class="fp-cell" style="font-weight:800">' + r.games + '</div>';
+        html += '<div class="fp-cell">' + (r.projAVG > 0 ? r.projAVG.toFixed(3) : '\u2014') + '</div>';
+        html += '<div class="fp-cell">' + (r.ops > 0 ? r.ops.toFixed(3) : '\u2014') + '</div>';
+        html += '<div class="fp-cell">' + r.projHR.toFixed(1) + '</div>';
+        html += '<div class="fp-cell">' + r.projR.toFixed(1) + '</div>';
+        html += '<div class="fp-cell">' + r.projSB.toFixed(1) + '</div>';
+        html += '<div class="fp-cell">' + r.projRBI.toFixed(1) + '</div>';
+        html += '</div>';
+    });
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+// ═══ DAILY PROPS TAB ═══
+let _dailySort = 'ms';
+
+function renderDaily() {
+    const batContainer = document.getElementById('daily-batters-container');
+    const gameContainer = document.getElementById('daily-games-container');
+    const sortBar = document.getElementById('daily-sort-bar');
+    const dateEl = document.getElementById('daily-slate-date');
+    const countEl = document.getElementById('daily-slate-count');
+
+    const slateDate = document.getElementById('slate-date');
+    if (slateDate) dateEl.textContent = slateDate.textContent;
+    countEl.textContent = allGameProjections.length + ' Game' + (allGameProjections.length !== 1 ? 's' : '');
+
+    // ── BATTER PROJECTIONS (for prop betting) ──
+    if (allBatterMS.length === 0) {
+        batContainer.innerHTML = '<div class="empty-state">No lineup data available — check back closer to game time.</div>';
+        sortBar.innerHTML = '';
+        gameContainer.innerHTML = '';
+        return;
+    }
+
+    // Sort chips
+    const sorts = [
+        { key: 'ms', label: 'MS' }, { key: 'h', label: 'HITS' }, { key: 'hr', label: 'HR' },
+        { key: 'tb', label: 'TB' }, { key: 'k', label: 'K' }, { key: 'woba', label: 'wOBA' }
+    ];
+    sortBar.innerHTML = sorts.map(s =>
+        '<div class="fantasy-sort-chip' + (_dailySort === s.key ? ' active' : '') + '" data-dsort="' + s.key + '">' + s.label + '</div>'
+    ).join('');
+    sortBar.querySelectorAll('.fantasy-sort-chip').forEach(chip => {
+        chip.addEventListener('click', () => { _dailySort = chip.dataset.dsort; renderDaily(); });
+    });
+
+    // Sort batters
+    const sorted = [...allBatterMS].filter(b => b.ms.source !== 'none');
+    if (_dailySort === 'ms') sorted.sort((a, b) => b.ms.ms - a.ms.ms);
+    else if (_dailySort === 'h') sorted.sort((a, b) => b.projH - a.projH);
+    else if (_dailySort === 'hr') sorted.sort((a, b) => b.projHR - a.projHR);
+    else if (_dailySort === 'tb') sorted.sort((a, b) => b.projTB - a.projTB);
+    else if (_dailySort === 'k') sorted.sort((a, b) => a.projK - b.projK);
+    else if (_dailySort === 'woba') sorted.sort((a, b) => b.projWoba - a.projWoba);
+
+    let html = '<div class="section-title" style="font-size:16px;margin-top:4px">BATTER PROJECTIONS</div>';
+    html += '<div class="fp-table">';
+    html += '<div class="fp-row fp-row-hdr">';
+    html += '<div>#</div>';
+    html += '<div style="text-align:left">PLAYER</div>';
+    html += '<div class="' + (_dailySort === 'ms' ? 'active' : '') + '">MS</div>';
+    html += '<div class="' + (_dailySort === 'h' ? 'active' : '') + '">H</div>';
+    html += '<div class="' + (_dailySort === 'hr' ? 'active' : '') + '">HR</div>';
+    html += '<div class="' + (_dailySort === 'tb' ? 'active' : '') + '">TB</div>';
+    html += '<div class="' + (_dailySort === 'k' ? 'active' : '') + '">K</div>';
+    html += '<div class="' + (_dailySort === 'woba' ? 'active' : '') + '">wOBA</div>';
+    html += '</div>';
+
+    sorted.forEach((b, i) => {
+        const tier = msTier(b.ms.ms);
+        html += '<div class="fp-row fp-' + tier + '">';
+        html += '<div class="fp-rank">' + (i + 1) + '</div>';
+        html += '<div class="fp-player"><div class="fp-name">' + fmtName(b.name) + '</div>';
+        html += '<div class="fp-meta">' + b.team + ' vs ' + b.oppTeam + ' · ' + (b.archetype ? archName(b.archetype) : '') + '</div></div>';
+        html += '<div class="fp-cell fp-ms ' + msClass(b.ms.ms) + '">' + b.ms.ms + '</div>';
+        html += '<div class="fp-cell">' + b.projH.toFixed(1) + '</div>';
+        html += '<div class="fp-cell">' + b.projHR.toFixed(2) + '</div>';
+        html += '<div class="fp-cell">' + b.projTB.toFixed(1) + '</div>';
+        html += '<div class="fp-cell">' + b.projK.toFixed(1) + '</div>';
+        html += '<div class="fp-cell">' + b.projWoba.toFixed(3) + '</div>';
+        html += '</div>';
+    });
+    html += '</div>';
+    batContainer.innerHTML = html;
+
+    // ── GAME PROJECTIONS (spreads + totals) ──
+    if (allGameProjections.length === 0) {
+        gameContainer.innerHTML = '';
+        return;
+    }
+
+    let gHtml = '<div class="section-title" style="font-size:16px;margin-top:8px">GAME TOTALS</div>';
+    const gameSorted = [...allGameProjections].sort((a, b) => {
+        const edgeA = a.hasLineups ? Math.abs(a.spread) : -1;
+        const edgeB = b.hasLineups ? Math.abs(b.spread) : -1;
+        return edgeB - edgeA;
+    });
+    gameSorted.forEach(gp => { gHtml += buildGameProjCard(gp); });
+    gameContainer.innerHTML = gHtml;
+}
+
+function buildGameProjCard(gp) {
+    const awayColor = TEAM_COLORS[gp.awayTeam] || '#666';
+    const homeColor = TEAM_COLORS[gp.homeTeam] || '#666';
+    const favTeam = gp.spread > 0 ? gp.homeTeam : gp.awayTeam;
+    const dogTeam = gp.spread > 0 ? gp.awayTeam : gp.homeTeam;
+    const spreadAbs = Math.abs(gp.spread);
+    const strongEdge = spreadAbs >= 1.5;
+
+    let c = '<div class="gp-card">';
+
+    // Win probability bar
+    if (gp.hasLineups) {
+        const awayPct = gp.totalRuns > 0 ? (gp.awayRuns / gp.totalRuns * 100) : 50;
+        c += '<div class="gp-bar">';
+        c += '<div class="gp-bar-seg" style="width:' + awayPct + '%;background:' + awayColor + '"></div>';
+        c += '<div class="gp-bar-seg" style="width:' + (100 - awayPct) + '%;background:' + homeColor + '"></div>';
+        c += '</div>';
+    }
+
+    // Header: team logos + runs + spread
+    c += '<div class="gp-header">';
+    c += '<div class="gp-team"><div class="gp-team-logo">' + teamLogoHtml(gp.awayTeam) + '</div>';
+    c += '<div class="gp-team-abbr">' + gp.awayTeam + '</div>';
+    if (gp.hasLineups) c += '<div class="gp-team-runs" style="color:' + awayColor + '">' + gp.awayRuns.toFixed(1) + '</div>';
+    c += '</div>';
+
+    c += '<div class="gp-center">';
+    if (gp.hasLineups) {
+        c += '<div class="gp-label">PROJECTED</div>';
+        c += '<div class="gp-spread">' + favTeam + ' -' + spreadAbs.toFixed(1) + '</div>';
+        c += '<div class="gp-ou">O/U ' + gp.totalRuns.toFixed(1) + '</div>';
+        c += '<div class="gp-pick-badge ' + (strongEdge ? 'gp-pick-strong' : 'gp-pick-lean') + '">' + (strongEdge ? '\u{1F525} STRONG ' : '') + favTeam + '</div>';
+    } else {
+        c += '<div class="gp-label">LINEUPS TBD</div>';
+    }
+    c += '</div>';
+
+    c += '<div class="gp-team"><div class="gp-team-logo">' + teamLogoHtml(gp.homeTeam) + '</div>';
+    c += '<div class="gp-team-abbr">' + gp.homeTeam + '</div>';
+    if (gp.hasLineups) c += '<div class="gp-team-runs" style="color:' + homeColor + '">' + gp.homeRuns.toFixed(1) + '</div>';
+    c += '</div>';
+    c += '</div>';
+
+    // Pitchers
+    c += '<div class="gp-sp">';
+    c += '<div class="gp-sp-side">';
+    c += '<div class="gp-sp-name">' + fmtName(gp.awayPP) + '</div>';
+    if (gp.awayCluster) {
+        const cl = DATA.clusters[gp.awayCluster];
+        if (cl) c += '<div class="gp-sp-arch" style="background:' + (cl.color || '#888') + ';color:#fff">' + (cl.emoji || '') + ' ' + (cl.full_name || gp.awayCluster) + '</div>';
+    }
+    c += '</div>';
+    c += '<div class="gp-sp-side">';
+    c += '<div class="gp-sp-name">' + fmtName(gp.homePP) + '</div>';
+    if (gp.homeCluster) {
+        const cl = DATA.clusters[gp.homeCluster];
+        if (cl) c += '<div class="gp-sp-arch" style="background:' + (cl.color || '#888') + ';color:#fff">' + (cl.emoji || '') + ' ' + (cl.full_name || gp.homeCluster) + '</div>';
+    }
+    c += '</div>';
+    c += '</div>';
+
+    // Detailed team stats
+    if (gp.hasLineups && gp.awayProj && gp.homeProj) {
+        c += '<div class="gp-detail">';
+        c += '<div class="gp-detail-col">';
+        c += '<div class="gp-detail-hdr">' + gp.awayTeam + '</div>';
+        c += '<div class="gp-detail-row"><span class="gp-detail-label">Proj Runs</span><span class="gp-detail-val">' + gp.awayRuns.toFixed(2) + '</span></div>';
+        c += '<div class="gp-detail-row"><span class="gp-detail-label">Team H</span><span class="gp-detail-val">' + gp.awayProj.teamH.toFixed(1) + '</span></div>';
+        c += '<div class="gp-detail-row"><span class="gp-detail-label">Team HR</span><span class="gp-detail-val">' + gp.awayProj.teamHR.toFixed(2) + '</span></div>';
+        c += '<div class="gp-detail-row"><span class="gp-detail-label">Team K</span><span class="gp-detail-val">' + gp.awayProj.teamK.toFixed(1) + '</span></div>';
+        c += '<div class="gp-detail-row"><span class="gp-detail-label">Coverage</span><span class="gp-detail-val">' + gp.awayProj.coverage + '/' + gp.awayProj.total + '</span></div>';
+        c += '</div>';
+        c += '<div class="gp-detail-col">';
+        c += '<div class="gp-detail-hdr">' + gp.homeTeam + '</div>';
+        c += '<div class="gp-detail-row"><span class="gp-detail-label">Proj Runs</span><span class="gp-detail-val">' + gp.homeRuns.toFixed(2) + '</span></div>';
+        c += '<div class="gp-detail-row"><span class="gp-detail-label">Team H</span><span class="gp-detail-val">' + gp.homeProj.teamH.toFixed(1) + '</span></div>';
+        c += '<div class="gp-detail-row"><span class="gp-detail-label">Team HR</span><span class="gp-detail-val">' + gp.homeProj.teamHR.toFixed(2) + '</span></div>';
+        c += '<div class="gp-detail-row"><span class="gp-detail-label">Team K</span><span class="gp-detail-val">' + gp.homeProj.teamK.toFixed(1) + '</span></div>';
+        c += '<div class="gp-detail-row"><span class="gp-detail-label">Coverage</span><span class="gp-detail-val">' + gp.homeProj.coverage + '/' + gp.homeProj.total + '</span></div>';
+        c += '</div>';
+        c += '</div>';
+    }
+
+    c += '</div>';
+    return c;
+}
+
 // ═══ INFO TAB — ARCHETYPE LEGEND ═══
 function renderArchLegend() {
     const el = document.getElementById('arch-legend');
@@ -1582,7 +1959,7 @@ function computeWeeklyProjections(savedBatterIds) {
     const idSet = new Set(savedBatterIds);
     // Initialize accumulators
     const acc = {};
-    savedBatterIds.forEach(id => { acc[id] = { games: 0, projH: 0, projHR: 0, projK: 0, projTB: 0, projBB: 0, msSum: 0, msCount: 0 }; });
+    savedBatterIds.forEach(id => { acc[id] = { games: 0, projH: 0, projHR: 0, projK: 0, projTB: 0, projBB: 0, projR: 0, projRBI: 0, projSB: 0, projABsum: 0, projHforAVG: 0, msSum: 0, msCount: 0 }; });
 
     _weeklySchedule.forEach(game => {
         const awayPP = game.teams.away.probablePitcher || null;
@@ -1617,6 +1994,12 @@ function computeWeeklyProjections(savedBatterIds) {
                     acc[bid].projK += proj.projK;
                     acc[bid].projTB += proj.projTB;
                     acc[bid].projBB += proj.projBB;
+                    acc[bid].projR += proj.projR || 0;
+                    acc[bid].projRBI += proj.projRBI || 0;
+                    acc[bid].projSB += proj.projSB || 0;
+                    const estAB = 4 * (1 - (proj.projBB / 4));
+                    acc[bid].projABsum += estAB;
+                    acc[bid].projHforAVG += proj.projH;
                     if (proj.ms > 0) { acc[bid].msSum += proj.ms; acc[bid].msCount++; }
                 }
             });
@@ -1635,6 +2018,12 @@ function computeWeeklyProjections(savedBatterIds) {
                     acc[bid].projK += proj.projK;
                     acc[bid].projTB += proj.projTB;
                     acc[bid].projBB += proj.projBB;
+                    acc[bid].projR += proj.projR || 0;
+                    acc[bid].projRBI += proj.projRBI || 0;
+                    acc[bid].projSB += proj.projSB || 0;
+                    const estAB = 4 * (1 - (proj.projBB / 4));
+                    acc[bid].projABsum += estAB;
+                    acc[bid].projHforAVG += proj.projH;
                     if (proj.ms > 0) { acc[bid].msSum += proj.ms; acc[bid].msCount++; }
                 }
             });
@@ -1651,6 +2040,11 @@ function computeWeeklyProjections(savedBatterIds) {
             projK: a.projK,
             projTB: a.projTB,
             projBB: a.projBB,
+            projR: a.projR,
+            projRBI: a.projRBI,
+            projSB: a.projSB,
+            projAVG: a.projABsum > 0 ? a.projHforAVG / a.projABsum : 0,
+            projABsum: a.projABsum,
             avgMS: a.msCount > 0 ? Math.round(a.msSum / a.msCount) : 0
         };
     });
@@ -1693,14 +2087,25 @@ function projectSingleBatter(batterId, clusterId, pitcherId) {
     const tbRate = tot.PA > 0 ? tbTotal / tot.PA : 0;
     const estAB = assumedPA * (1 - bbRate);
 
+    const projH = baRate * estAB;
+    const projHR = hrRate * assumedPA;
+    const projBB = bbRate * assumedPA;
+
+    // 5x5 estimates: R, RBI, SB, AVG
+    const obpRate = tot.PA > 0 ? (tot.H + tot.BB) / tot.PA : 0;
+    const projR = (projH + projBB) * 0.33 + projHR * 1.0; // simplified scoring run rate
+    const projRBI = projHR * 1.44 + (projH - projHR) * 0.32; // empirical RBI rate
+    const projSB = assumedPA * 0.025; // ~league-avg steal attempt rate
+    const projAVG = estAB > 0 ? projH / estAB : 0;
+
     const msData = computeMS(batterId, clusterId, pitcherId);
 
     return {
-        projH: baRate * estAB,
-        projHR: hrRate * assumedPA,
+        projH, projHR,
         projK: kRate * assumedPA,
-        projBB: bbRate * assumedPA,
+        projBB,
         projTB: tbRate * assumedPA,
+        projR, projRBI, projSB, projAVG,
         ms: msData.ms
     };
 }
@@ -1727,16 +2132,20 @@ function projectSingleBatter(batterId, clusterId, pitcherId) {
         }
     }
 
-    // Scan for games (fills allBatterMS)
+    // Scan for games (fills allBatterMS + allGameProjections)
     await scanGames();
 
-    // After game data is available, compute weekly projections for saved batters
-    const saved = getSavedBatters();
-    if (saved.length > 0) {
-        await fetchWeeklySchedule();
-        computeWeeklyProjections(saved.map(s => s.id));
-        renderSavedBatters(); // re-render with projections
-    }
+    // Render the Daily tab (per-batter + game projections)
+    renderDaily();
+
+    // Fetch weekly schedule and compute ALL batter projections for Fantasy tab
+    await fetchWeeklySchedule();
+    const allBatterIds = DATA.batters.map(b => b.batter);
+    computeWeeklyProjections(allBatterIds);
+    renderFantasy();
+
+    // Re-render saved batters with weekly data
+    renderSavedBatters();
 })();
 </script>
 </body>
