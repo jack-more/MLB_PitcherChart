@@ -257,6 +257,35 @@ body::after{
 .arch-legend-stats{font-family:var(--font-mono);font-size:9px;color:var(--color-meta);text-align:right;min-width:90px}
 .arch-legend-king{font-family:var(--font-mono);font-size:9px;color:var(--color-accent);background:var(--color-black);padding:1px 6px;border-radius:8px;white-space:nowrap}
 
+/* ═══ SAVED BATTERS ═══ */
+.saved-section{margin-bottom:12px}
+.saved-hdr{display:flex;align-items:center;justify-content:space-between;padding:8px 0}
+.saved-title{font-family:var(--font-display);font-size:18px;letter-spacing:2px;text-transform:uppercase}
+.saved-clear{font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;color:var(--color-tough);cursor:pointer;letter-spacing:0.5px;padding:4px 8px;border:1.5px solid var(--color-tough);border-radius:10px;transition:all 0.15s}
+.saved-clear:active{background:var(--color-tough);color:#fff}
+.saved-scroll{display:flex;gap:10px;overflow-x:auto;padding:4px 0 8px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.saved-scroll::-webkit-scrollbar{display:none}
+.saved-card{flex-shrink:0;width:200px;background:var(--color-card);border:var(--border);box-shadow:var(--shadow);padding:10px;position:relative;cursor:pointer;transition:transform 0.1s,box-shadow 0.1s}
+.saved-card:active{transform:translate(2px,2px);box-shadow:none}
+.saved-card-name{font-family:var(--font-display);font-size:16px;letter-spacing:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.saved-card-sub{font-family:var(--font-mono);font-size:9px;color:var(--color-meta);margin-top:2px}
+.saved-card-ms{position:absolute;top:8px;right:10px;font-family:var(--font-display);font-size:24px;letter-spacing:1px}
+.saved-card-proj{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-top:6px}
+.saved-card-proj .sp{text-align:center;font-family:var(--font-mono);font-size:9px;background:var(--color-black);color:#fff;padding:3px 2px;line-height:1.3}
+.saved-card-proj .sp .sv{font-weight:700;font-size:10px;display:block}
+.saved-card-proj .sp .sl{font-size:7px;color:#999;text-transform:uppercase;letter-spacing:0.5px}
+.saved-card-week{margin-top:6px;padding-top:6px;border-top:1px dashed #ddd}
+.saved-card-week-hdr{font-family:var(--font-mono);font-size:8px;font-weight:700;color:var(--color-accent);background:var(--color-black);display:inline-block;padding:1px 6px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
+.saved-card-week-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px}
+.saved-card-week-grid .sp{text-align:center;font-family:var(--font-mono);font-size:9px;background:#f5f5f5;padding:3px 2px;line-height:1.3}
+.saved-card-week-grid .sp .sv{font-weight:700;font-size:10px;display:block}
+.saved-card-week-grid .sp .sl{font-size:7px;color:var(--color-meta);text-transform:uppercase;letter-spacing:0.5px}
+.saved-rm{position:absolute;top:2px;right:4px;width:18px;height:18px;font-size:12px;line-height:18px;text-align:center;color:#bbb;cursor:pointer;border-radius:50%;transition:all 0.15s;z-index:2}
+.saved-rm:active{background:var(--color-tough);color:#fff}
+.save-btn{display:inline-block;font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:6px 16px;border:var(--border);background:var(--color-accent);color:var(--color-black);cursor:pointer;transition:all 0.15s;margin-top:8px}
+.save-btn:active{transform:translate(2px,2px);box-shadow:none}
+.save-btn.saved{background:var(--color-black);color:var(--color-accent);border-color:var(--color-accent)}
+
 /* ═══ EMPTY STATE ═══ */
 .empty-state{text-align:center;padding:40px 20px;font-family:var(--font-mono);font-size:11px;color:var(--color-meta);text-transform:uppercase;letter-spacing:1px}
 
@@ -338,6 +367,7 @@ body::after{
 
     <!-- ═══ MATCHUPS TAB ═══ -->
     <div class="tab-content" id="tab-matchups">
+        <div id="saved-batters-section"></div>
         <input class="search-bar" id="matchup-search" type="text" placeholder="SEARCH ANY BATTER...">
         <div class="search-drop" id="matchup-drop"></div>
         <div id="matchup-profile"></div>
@@ -360,7 +390,7 @@ body::after{
         <div style="padding-top:12px">
             <div class="info-card">
                 <h2>HOW MLB SIM WORKS</h2>
-                <p>MLB SIM uses the <strong>Pitcher DNA</strong> system to classify every pitcher into one of 17 archetypes based on their pitch mix, velocity, movement, and approach. Every batter has historical performance data against each archetype — because baseball is fundamentally a 1v1 sport, the specific pitcher a batter faces defines their expected performance.</p>
+                <p>MLB SIM uses the <strong>Pitcher DNA</strong> system (Gaussian Mixture Model clustering) to classify every pitcher into one of 26 archetypes (15 RHP + 11 LHP) based on their pitch mix, velocity, movement, and approach. Every batter has historical performance data against each archetype — because baseball is fundamentally a 1v1 sport, the specific pitcher a batter faces defines their expected performance.</p>
                 <p>When lineups are released, MLB SIM projects every batter's performance based on how they've historically hit against the opposing pitcher's archetype. This produces per-game <strong>Matchup Scores</strong> that change daily depending on the starter.</p>
             </div>
             <div class="info-card">
@@ -384,7 +414,7 @@ H2H BONUS: +0-5 pts when PA >= 10
 vs specific pitcher (not just archetype)</div>
             </div>
             <div class="info-card">
-                <h2>PITCHER DNA — 17 ARCHETYPES</h2>
+                <h2>PITCHER DNA — <span id="arch-count">26</span> ARCHETYPES</h2>
                 <div id="arch-legend"></div>
             </div>
             <div class="info-card">
@@ -1140,7 +1170,11 @@ function initMatchups() {
         html += '<div class="profile-stat"><span class="val">' + obp + '</span><span class="lbl">OBP</span></div>';
         html += '<div class="profile-stat"><span class="val">' + slg + '</span><span class="lbl">SLG</span></div>';
         html += '<div class="profile-stat"><span class="val">' + wobaAvg + '</span><span class="lbl">wOBA</span></div>';
-        html += '</div></div>';
+        html += '</div>';
+        // Save button
+        const alreadySaved = isBatterSaved(batter.batter);
+        html += '<div style="text-align:right;margin-top:8px"><span class="save-btn' + (alreadySaved ? ' saved' : '') + '" id="save-batter-btn" data-bid="' + batter.batter + '" data-bname="' + (batter.batter_name || '').replace(/"/g, '&quot;') + '">' + (alreadySaved ? '\u2605 SAVED' : '\u2606 SAVE') + '</span></div>';
+        html += '</div>';
 
         // Today's matchup spotlight
         const todayMatch = allBatterMS.find(b => b.batterId === batter.batter);
@@ -1155,6 +1189,28 @@ function initMatchups() {
         }
 
         profileEl.innerHTML = html;
+
+        // Bind save button
+        const saveBtn = document.getElementById('save-batter-btn');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', async () => {
+                const bid = parseInt(saveBtn.dataset.bid);
+                const bname = saveBtn.dataset.bname;
+                if (isBatterSaved(bid)) {
+                    removeSavedBatter(bid);
+                    saveBtn.classList.remove('saved');
+                    saveBtn.textContent = '\u2606 SAVE';
+                } else {
+                    saveBatter(bid, bname);
+                    saveBtn.classList.add('saved');
+                    saveBtn.textContent = '\u2605 SAVED';
+                    // Fetch weekly projections for this batter if not already done
+                    if (!_weeklySchedule) await fetchWeeklySchedule();
+                    computeWeeklyProjections(getSavedBatters().map(s => s.id));
+                    renderSavedBatters();
+                }
+            });
+        }
 
         // Archetype breakdown grid — build enriched data
         const clusterIds = Object.keys(DATA.clusters);
@@ -1323,6 +1379,10 @@ function renderArchLegend() {
         return (ca.full_name || a).localeCompare(cb.full_name || b);
     });
 
+    // Update dynamic archetype count in Info heading
+    const cntEl = document.getElementById('arch-count');
+    if (cntEl) cntEl.textContent = clusterIds.length;
+
     let html = '';
     clusterIds.forEach(cid => {
         const cl = DATA.clusters[cid];
@@ -1390,6 +1450,261 @@ function initNav() {
     });
 }
 
+// ═══ SAVED SEARCHES ═══
+const SAVED_KEY = 'mlbsim_saved_batters';
+let _weeklySchedule = null; // cached multi-day schedule
+let _weeklyProjections = {}; // batterId → { games: int, projH, projHR, projK, projTB, projBB, avgMS }
+
+function getSavedBatters() {
+    try { return JSON.parse(localStorage.getItem(SAVED_KEY)) || []; } catch(e) { return []; }
+}
+function setSavedBatters(arr) {
+    localStorage.setItem(SAVED_KEY, JSON.stringify(arr));
+}
+function isBatterSaved(batterId) {
+    return getSavedBatters().some(s => s.id === batterId);
+}
+function saveBatter(batterId, name) {
+    const saved = getSavedBatters();
+    if (saved.some(s => s.id === batterId)) return;
+    saved.unshift({ id: batterId, name: name, savedAt: Date.now() });
+    if (saved.length > 20) saved.pop(); // cap at 20
+    setSavedBatters(saved);
+    renderSavedBatters();
+}
+function removeSavedBatter(batterId) {
+    const saved = getSavedBatters().filter(s => s.id !== batterId);
+    setSavedBatters(saved);
+    renderSavedBatters();
+}
+
+function renderSavedBatters() {
+    const section = document.getElementById('saved-batters-section');
+    const saved = getSavedBatters();
+    if (saved.length === 0) { section.innerHTML = ''; return; }
+
+    let html = '<div class="saved-section">';
+    html += '<div class="saved-hdr"><span class="saved-title">SAVED BATTERS</span>';
+    html += '<span class="saved-clear" id="clear-all-saved">CLEAR ALL</span></div>';
+    html += '<div class="saved-scroll">';
+
+    saved.forEach(s => {
+        // Find today's matchup data
+        const todayMatch = allBatterMS.find(b => b.batterId === s.id);
+        // Find weekly projection
+        const weekProj = _weeklyProjections[s.id] || null;
+
+        html += '<div class="saved-card" data-batter-id="' + s.id + '">';
+        html += '<div class="saved-rm" data-rm-id="' + s.id + '">\u00D7</div>';
+        html += '<div class="saved-card-name">' + fmtName(s.name).toUpperCase() + '</div>';
+
+        if (todayMatch) {
+            html += '<div class="saved-card-sub">' + todayMatch.team + ' vs ' + todayMatch.oppTeam + ' \u00b7 ' + (todayMatch.archetype ? archName(todayMatch.archetype) : 'TBD') + '</div>';
+            html += '<div class="saved-card-ms ' + msClass(todayMatch.ms.ms) + '">' + todayMatch.ms.ms + '</div>';
+            html += '<div class="saved-card-proj">';
+            html += '<div class="sp"><span class="sv">' + todayMatch.projH.toFixed(1) + '</span><span class="sl">H</span></div>';
+            html += '<div class="sp"><span class="sv">' + todayMatch.projHR.toFixed(2) + '</span><span class="sl">HR</span></div>';
+            html += '<div class="sp"><span class="sv">' + todayMatch.projK.toFixed(1) + '</span><span class="sl">K</span></div>';
+            html += '<div class="sp"><span class="sv">' + todayMatch.projTB.toFixed(1) + '</span><span class="sl">TB</span></div>';
+            html += '</div>';
+        } else {
+            html += '<div class="saved-card-sub">NO GAME TODAY</div>';
+        }
+
+        if (weekProj && weekProj.games > 0) {
+            html += '<div class="saved-card-week">';
+            html += '<div class="saved-card-week-hdr">' + weekProj.games + '-GAME WEEK</div>';
+            html += '<div class="saved-card-week-grid">';
+            html += '<div class="sp"><span class="sv">' + weekProj.projH.toFixed(1) + '</span><span class="sl">H</span></div>';
+            html += '<div class="sp"><span class="sv">' + weekProj.projHR.toFixed(2) + '</span><span class="sl">HR</span></div>';
+            html += '<div class="sp"><span class="sv">' + weekProj.projK.toFixed(1) + '</span><span class="sl">K</span></div>';
+            html += '<div class="sp"><span class="sv">' + weekProj.projTB.toFixed(1) + '</span><span class="sl">TB</span></div>';
+            html += '</div></div>';
+        }
+
+        html += '</div>';
+    });
+
+    html += '</div></div>';
+    section.innerHTML = html;
+
+    // Bind card clicks → select batter
+    section.querySelectorAll('.saved-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('.saved-rm')) return;
+            const batterId = parseInt(card.dataset.batterId);
+            const batter = DATA.batters.find(b => b.batter === batterId);
+            if (batter && window.selectBatter) window.selectBatter(batter);
+        });
+    });
+
+    // Bind remove buttons
+    section.querySelectorAll('.saved-rm').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            removeSavedBatter(parseInt(btn.dataset.rmId));
+        });
+    });
+
+    // Bind clear all
+    const clearBtn = document.getElementById('clear-all-saved');
+    if (clearBtn) clearBtn.addEventListener('click', () => { setSavedBatters([]); renderSavedBatters(); });
+}
+
+// ═══ WEEKLY PROJECTIONS ═══
+async function fetchWeeklySchedule() {
+    const today = new Date();
+    const end = new Date(today);
+    end.setDate(end.getDate() + 6); // 7-day window
+    const startStr = today.toISOString().split('T')[0];
+    const endStr = end.toISOString().split('T')[0];
+    try {
+        const url = 'https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=' + startStr + '&endDate=' + endStr + '&hydrate=probablePitcher,lineups';
+        const data = await (await fetch(url)).json();
+        const games = [];
+        (data.dates || []).forEach(dateObj => {
+            (dateObj.games || []).forEach(game => {
+                games.push({ ...game, displayDate: game.officialDate || dateObj.date });
+            });
+        });
+        _weeklySchedule = games;
+        return games;
+    } catch(e) {
+        console.warn('Weekly schedule fetch failed:', e);
+        _weeklySchedule = [];
+        return [];
+    }
+}
+
+function computeWeeklyProjections(savedBatterIds) {
+    if (!_weeklySchedule || _weeklySchedule.length === 0) return;
+
+    const idSet = new Set(savedBatterIds);
+    // Initialize accumulators
+    const acc = {};
+    savedBatterIds.forEach(id => { acc[id] = { games: 0, projH: 0, projHR: 0, projK: 0, projTB: 0, projBB: 0, msSum: 0, msCount: 0 }; });
+
+    _weeklySchedule.forEach(game => {
+        const awayPP = game.teams.away.probablePitcher || null;
+        const homePP = game.teams.home.probablePitcher || null;
+        const awayPS = awayPP ? DATA.pitcherSeasons.filter(p => p.pitcher === awayPP.id).sort((a, b) => b.game_year - a.game_year)[0] : null;
+        const homePS = homePP ? DATA.pitcherSeasons.filter(p => p.pitcher === homePP.id).sort((a, b) => b.game_year - a.game_year)[0] : null;
+
+        // Get lineups
+        const awayLineup = [];
+        const homeLineup = [];
+        if (game.lineups) {
+            if (game.lineups.awayPlayers) game.lineups.awayPlayers.forEach(p => { if (p.id) awayLineup.push(p.id); });
+            if (game.lineups.homePlayers) game.lineups.homePlayers.forEach(p => { if (p.id) homeLineup.push(p.id); });
+        }
+
+        // For games without lineups, try team rosters
+        const awayTeam = teamAbbr(game.teams.away.team);
+        const homeTeam = teamAbbr(game.teams.home.team);
+        let awayIds = awayLineup.length > 0 ? awayLineup : getTeamBatterIds(awayTeam);
+        let homeIds = homeLineup.length > 0 ? homeLineup : getTeamBatterIds(homeTeam);
+
+        // Project away batters vs home pitcher
+        if (homePS) {
+            const cluster = homePS.cluster;
+            awayIds.forEach(bid => {
+                if (!idSet.has(bid)) return;
+                const proj = projectSingleBatter(bid, cluster, homePP ? homePP.id : null);
+                if (proj) {
+                    acc[bid].games++;
+                    acc[bid].projH += proj.projH;
+                    acc[bid].projHR += proj.projHR;
+                    acc[bid].projK += proj.projK;
+                    acc[bid].projTB += proj.projTB;
+                    acc[bid].projBB += proj.projBB;
+                    if (proj.ms > 0) { acc[bid].msSum += proj.ms; acc[bid].msCount++; }
+                }
+            });
+        }
+
+        // Project home batters vs away pitcher
+        if (awayPS) {
+            const cluster = awayPS.cluster;
+            homeIds.forEach(bid => {
+                if (!idSet.has(bid)) return;
+                const proj = projectSingleBatter(bid, cluster, awayPP ? awayPP.id : null);
+                if (proj) {
+                    acc[bid].games++;
+                    acc[bid].projH += proj.projH;
+                    acc[bid].projHR += proj.projHR;
+                    acc[bid].projK += proj.projK;
+                    acc[bid].projTB += proj.projTB;
+                    acc[bid].projBB += proj.projBB;
+                    if (proj.ms > 0) { acc[bid].msSum += proj.ms; acc[bid].msCount++; }
+                }
+            });
+        }
+    });
+
+    _weeklyProjections = {};
+    savedBatterIds.forEach(id => {
+        const a = acc[id];
+        _weeklyProjections[id] = {
+            games: a.games,
+            projH: a.projH,
+            projHR: a.projHR,
+            projK: a.projK,
+            projTB: a.projTB,
+            projBB: a.projBB,
+            avgMS: a.msCount > 0 ? Math.round(a.msSum / a.msCount) : 0
+        };
+    });
+}
+
+function getTeamBatterIds(abbr) {
+    // Try teams_2026.json rosters (array of player IDs)
+    if (DATA.teamRosters && DATA.teamRosters.rosters && DATA.teamRosters.rosters[abbr]) {
+        const roster = DATA.teamRosters.rosters[abbr];
+        // Filter out pitchers — if roster is array of IDs, check against pitcherSeasons
+        const pitcherIds = new Set(DATA.pitcherSeasons.map(p => p.pitcher));
+        return roster.filter(id => typeof id === 'number' ? !pitcherIds.has(id) : !pitcherIds.has(id.id || id)).slice(0, 9);
+    }
+    return [];
+}
+
+function projectSingleBatter(batterId, clusterId, pitcherId) {
+    if (!clusterId) return null;
+    const assumedPA = 4;
+
+    // Try archetype match
+    const archRows = DATA.hitterVsCluster.filter(r =>
+        r.batter === batterId && String(r.cluster) === String(clusterId)
+    );
+    if (archRows.length === 0) return null;
+
+    const tot = { PA: 0, H: 0, HR: 0, BB: 0, K: 0, singles: 0, doubles: 0, triples: 0 };
+    archRows.forEach(r => {
+        tot.PA += r.PA || 0; tot.H += r.H || 0; tot.HR += r.HR || 0;
+        tot.BB += r.BB || 0; tot.K += r.K || 0;
+        tot.singles += r.singles || 0; tot.doubles += r.doubles || 0; tot.triples += r.triples || 0;
+    });
+    if (tot.PA < 5) return null;
+
+    const baRate = (tot.PA - tot.BB) > 0 ? tot.H / (tot.PA - tot.BB) : 0;
+    const bbRate = tot.PA > 0 ? tot.BB / tot.PA : 0;
+    const kRate = tot.PA > 0 ? tot.K / tot.PA : 0;
+    const hrRate = tot.PA > 0 ? tot.HR / tot.PA : 0;
+    const tbTotal = tot.singles + (tot.doubles * 2) + (tot.triples * 3) + (tot.HR * 4);
+    const tbRate = tot.PA > 0 ? tbTotal / tot.PA : 0;
+    const estAB = assumedPA * (1 - bbRate);
+
+    const msData = computeMS(batterId, clusterId, pitcherId);
+
+    return {
+        projH: baRate * estAB,
+        projHR: hrRate * assumedPA,
+        projK: kRate * assumedPA,
+        projBB: bbRate * assumedPA,
+        projTB: tbRate * assumedPA,
+        ms: msData.ms
+    };
+}
+
 // ═══ BOOT ═══
 (async function boot() {
     await loadData();
@@ -1399,6 +1714,7 @@ function initNav() {
     initChips();
     initMatchups();
     renderArchLegend();
+    renderSavedBatters(); // initial render (before game data)
 
     // Handle ?batter= deep link from cosmos
     const params = new URLSearchParams(window.location.search);
@@ -1411,8 +1727,16 @@ function initNav() {
         }
     }
 
-    // Scan for games
+    // Scan for games (fills allBatterMS)
     await scanGames();
+
+    // After game data is available, compute weekly projections for saved batters
+    const saved = getSavedBatters();
+    if (saved.length > 0) {
+        await fetchWeeklySchedule();
+        computeWeeklyProjections(saved.map(s => s.id));
+        renderSavedBatters(); // re-render with projections
+    }
 })();
 </script>
 </body>
