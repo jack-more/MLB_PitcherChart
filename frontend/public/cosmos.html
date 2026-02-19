@@ -508,22 +508,22 @@
 
         /* 3D floating badge label (CSS2DObject above shield) */
         .city-batter-badge {
-            background: rgba(8,8,12,0.92); border: 2px solid #555;
-            color: #fff; padding: 10px 22px; border-radius: 6px;
-            font-family: var(--font-tech); font-size: 15px; font-weight: 800;
+            background: rgba(8,8,12,0.85); border: 1px solid #444;
+            color: #fff; padding: 4px 10px; border-radius: 4px;
+            font-family: var(--font-tech); font-size: 10px; font-weight: 800;
             pointer-events: none; white-space: nowrap;
-            display: flex; flex-direction: column; align-items: center; gap: 6px;
-            box-shadow: 0 6px 30px rgba(0,0,0,0.9), 0 0 20px rgba(255,255,255,0.1);
-            text-shadow: 0 2px 4px rgba(0,0,0,0.9);
+            display: flex; flex-direction: row; align-items: center; gap: 6px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.8);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.9);
             letter-spacing: 0.5px;
         }
         .city-batter-badge .badge-name {
-            color: #fff; font-size: 16px; font-weight: 900;
-            text-transform: uppercase; letter-spacing: 1px;
+            color: #fff; font-size: 11px; font-weight: 900;
+            text-transform: uppercase; letter-spacing: 0.5px;
         }
         .city-batter-badge .badge-tier {
-            font-size: 9px; font-weight: 900; letter-spacing: 2px;
-            padding: 3px 10px; border-radius: 3px;
+            font-size: 7px; font-weight: 900; letter-spacing: 1.5px;
+            padding: 2px 6px; border-radius: 2px;
         }
         .city-batter-badge .badge-tier.elite { background: #FFD700; color: #000; }
         .city-batter-badge .badge-tier.plus  { background: #2a9d8f; color: #fff; }
@@ -2191,7 +2191,7 @@
                 // Ease-out cubic: fast start, smooth deceleration into dock
                 const ease = 1.0 - Math.pow(1.0 - t, 3);
 
-                // Slide X from off-screen right → docked position
+                // Slide X from off-screen left → docked position
                 const currentX = _shieldAnim.startX + (_shieldAnim.targetX - _shieldAnim.startX) * ease;
                 _shieldGroup.position.x = currentX;
 
@@ -2579,13 +2579,13 @@
         let _batterBadge3D = null;     // CSS2DObject for name label above shield
         const _shieldTextureCache = {};  // tier → THREE.Texture (cached)
 
-        // Shield dimensions: sized to fit nicely beside the city on the RIGHT.
-        // City spans roughly -16 to +16 (32 units). Shield sits just right of center.
+        // Shield dimensions: sized to fit nicely beside the city on the LEFT.
+        // City spans roughly -16 to +16 (32 units). Shield sits just left of center.
         // Shield aspect ratio: 220:264 = 0.833
-        const SHIELD_W = 14;           // X-extent of shield
-        const SHIELD_H = SHIELD_W * (264 / 220);  // Z-extent (maintains aspect ratio ~16.8)
-        const SHIELD_DOCK_X = 18 + SHIELD_W / 2;  // Right edge of city (18) + half shield = 25
-        const SHIELD_SLIDE_OFFSET = 35; // How far off-screen it starts (to the right)
+        const SHIELD_W = 20;           // X-extent of shield (bigger for visibility)
+        const SHIELD_H = SHIELD_W * (264 / 220);  // Z-extent (maintains aspect ratio ~24)
+        const SHIELD_DOCK_X = -(18 + SHIELD_W / 2);  // Left edge of city (-18) - half shield = -28
+        const SHIELD_SLIDE_OFFSET = 35; // How far off-screen it starts (to the left)
 
         function _svgToTexture(svgString) {
             return new Promise((resolve) => {
@@ -2667,16 +2667,14 @@
             const shieldMesh = new THREE.Mesh(geo, mat);
 
             // Lay flat: rotate -90° around X so the plane faces UP (like the terrain)
-            // Then rotate 180° around Y so the shield's "top" points toward negative Z
-            // (away from camera) and the pointy bottom faces the camera
+            // Shield top points toward negative Z (away from camera), pointy bottom faces camera
             shieldMesh.rotation.x = -Math.PI / 2;
-            shieldMesh.rotation.z = Math.PI;  // Flip so shield top points away from camera
             // Hover above ground — high enough to clear buildings and be visible
             shieldMesh.position.y = 0.3;
 
             group.add(shieldMesh);
 
-            // Glowing edge strip along the left side (the "USB connector" edge)
+            // Glowing edge strip along the right side (the "USB connector" edge, plugs in from left)
             const edgeGeo = new THREE.PlaneGeometry(0.3, SHIELD_H);
             const edgeMat = new THREE.MeshBasicMaterial({
                 color: tier.color,
@@ -2686,14 +2684,14 @@
             });
             const edge = new THREE.Mesh(edgeGeo, edgeMat);
             edge.rotation.x = -Math.PI / 2;
-            edge.position.set(-SHIELD_W / 2 - 0.15, 0.16, 0);
+            edge.position.set(SHIELD_W / 2 + 0.15, 0.16, 0);
             edge.userData.isEdge = true;
             group.add(edge);
 
-            // Target: docked against right edge of city
+            // Target: docked against left edge of city
             const targetX = SHIELD_DOCK_X;
             const targetZ = 0;  // Centered on the city's Z
-            const startX = targetX + SHIELD_SLIDE_OFFSET;  // Way off to the right
+            const startX = targetX - SHIELD_SLIDE_OFFSET;  // Way off to the left
 
             group.position.set(startX, 0, targetZ);
 
@@ -2710,11 +2708,11 @@
             div.style.transition = 'opacity 0.4s ease';
 
             const labelObj = new CSS2DObject(div);
-            labelObj.position.set(startX, 2.5, targetZ);  // Above shield center
+            labelObj.position.set(startX, 0.5, targetZ + SHIELD_H / 2 + 1.5);  // Below shield (toward camera)
             labelGroup.add(labelObj);
             _batterBadge3D = labelObj;
 
-            // Start USB plug-in animation (slide from right)
+            // Start USB plug-in animation (slide from left)
             _shieldAnim = {
                 startTime: performance.now(),
                 duration: 800,  // ms — fast satisfying slide
