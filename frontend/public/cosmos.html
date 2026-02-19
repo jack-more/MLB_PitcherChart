@@ -1467,30 +1467,42 @@
                 if (mesh.userData.type !== 'road-lane') return;
                 const woba = wobaByCluster[mesh.userData.forCell];
                 if (woba === undefined) {
-                    mesh.material.color.copy(ROAD_NEUTRAL);
-                    mesh.material.emissive.copy(ROAD_NEUTRAL);
-                    mesh.material.emissiveIntensity = 0.05;
-                    mesh.material.opacity = 0.5;
+                    mesh.material.color.set(0x333333);
+                    mesh.material.emissive.set(0x222222);
+                    mesh.material.emissiveIntensity = 0.02;
+                    mesh.material.opacity = 0.3;
                     mesh.material.transparent = true;
-                    mesh.userData._baseEmissive = null;
                     return;
                 }
-                let perfColor, intensity;
-                // Much brighter roads — visible at distance
-                if (woba >= 0.370) { perfColor = PERF_GREEN; intensity = 0.9 + (woba - 0.370) / 0.13 * 0.5; }
-                else if (woba >= 0.310) { perfColor = PERF_YELLOW; intensity = 0.5 + (woba - 0.310) / 0.06 * 0.4; }
-                else { perfColor = PERF_RED; intensity = 0.7 + (0.310 - woba) / 0.11 * 0.5; }
-
-                mesh.material.color.copy(perfColor);
-                mesh.material.emissive.copy(perfColor);
-                mesh.material.emissiveIntensity = intensity;
+                // Bold, static road colors — matching the buildings and ground
+                if (woba >= 0.370) {
+                    mesh.material.color.set(0x1db954);
+                    mesh.material.emissive.set(0x1db954);
+                    mesh.material.emissiveIntensity = 0.8;
+                } else if (woba >= 0.320) {
+                    mesh.material.color.set(0x4ecb71);
+                    mesh.material.emissive.set(0x4ecb71);
+                    mesh.material.emissiveIntensity = 0.6;
+                } else if (woba >= 0.290) {
+                    mesh.material.color.set(0xf0c040);
+                    mesh.material.emissive.set(0xf0c040);
+                    mesh.material.emissiveIntensity = 0.5;
+                } else if (woba >= 0.250) {
+                    mesh.material.color.set(0xe07830);
+                    mesh.material.emissive.set(0xe07830);
+                    mesh.material.emissiveIntensity = 0.6;
+                } else {
+                    mesh.material.color.set(0xd92020);
+                    mesh.material.emissive.set(0xd92020);
+                    mesh.material.emissiveIntensity = 0.8;
+                }
                 mesh.material.opacity = 1.0;
                 mesh.material.transparent = false;
-                mesh.userData._baseEmissive = intensity;
             });
         }
 
         // ── Color buildings based on batter performance ──
+        // Changes the ACTUAL building color — bold, obvious, no subtlety
         function colorBuildingsForBatter(matchups) {
             const wobaByCluster = {};
             matchups.forEach(m => {
@@ -1501,27 +1513,43 @@
                 const cid = mesh.userData.clusterId;
                 const woba = wobaByCluster[cid];
                 if (woba === undefined) {
-                    // No data — dim the building
-                    const cl = DATA.clusters[cid];
-                    if (cl) mesh.material.color.set(new THREE.Color(cl.color).multiplyScalar(0.4));
+                    // No data — ghost the building (very dark, barely visible)
+                    mesh.material.color.set(0x1a1a1a);
                     mesh.material.emissive.set(0x000000);
                     mesh.material.emissiveIntensity = 0;
+                    mesh.material.opacity = 0.3;
+                    mesh.material.transparent = true;
                     return;
                 }
-                // Restore original cluster color
-                const cl = DATA.clusters[cid];
-                if (cl) mesh.material.color.set(cl.color);
 
-                // Apply green/yellow/red glow spotlight on buildings
+                // FULL color change — the building itself becomes the performance indicator
+                mesh.material.opacity = 1.0;
+                mesh.material.transparent = false;
                 if (woba >= 0.370) {
-                    mesh.material.emissive.set(0x2a9d8f);  // Green
-                    mesh.material.emissiveIntensity = 0.35 + (woba - 0.370) / 0.13 * 0.25;
-                } else if (woba >= 0.310) {
-                    mesh.material.emissive.set(0xf4a261);  // Yellow/orange
-                    mesh.material.emissiveIntensity = 0.15 + (woba - 0.310) / 0.06 * 0.15;
+                    // ELITE — bright green building
+                    mesh.material.color.set(0x1db954);
+                    mesh.material.emissive.set(0x1db954);
+                    mesh.material.emissiveIntensity = 0.5;
+                } else if (woba >= 0.320) {
+                    // PLUS — lighter green
+                    mesh.material.color.set(0x4ecb71);
+                    mesh.material.emissive.set(0x4ecb71);
+                    mesh.material.emissiveIntensity = 0.35;
+                } else if (woba >= 0.290) {
+                    // AVG — amber
+                    mesh.material.color.set(0xf0c040);
+                    mesh.material.emissive.set(0xf0c040);
+                    mesh.material.emissiveIntensity = 0.25;
+                } else if (woba >= 0.250) {
+                    // BELOW AVG — orange
+                    mesh.material.color.set(0xe07830);
+                    mesh.material.emissive.set(0xe07830);
+                    mesh.material.emissiveIntensity = 0.35;
                 } else {
-                    mesh.material.emissive.set(0xe63946);  // Red
-                    mesh.material.emissiveIntensity = 0.30 + (0.310 - woba) / 0.11 * 0.25;
+                    // BAD — bright red building
+                    mesh.material.color.set(0xd92020);
+                    mesh.material.emissive.set(0xd92020);
+                    mesh.material.emissiveIntensity = 0.5;
                 }
             });
         }
@@ -1533,7 +1561,8 @@
                 if (cl) mesh.material.color.set(cl.color);
                 mesh.material.emissive.set(0x000000);
                 mesh.material.emissiveIntensity = 0;
-                mesh.userData._baseBuildingEmissive = null;
+                mesh.material.opacity = 1.0;
+                mesh.material.transparent = false;
             });
         }
 
@@ -2072,26 +2101,45 @@
             const batter = STATE.activeBatters[STATE.activeBatters.length - 1];
             const matchups = getMatchupData(batter);
 
-            // Neighborhood glow (green / yellow / red based on wOBA)
+            // Neighborhood color — BOLD, obvious, full color change (no subtle glow)
+            // Green = hitter crushes this archetype, Yellow = neutral, Red = hitter struggles
             neighborhoodMeshes.forEach((mesh, id) => {
                 const m = matchups.find(x => String(x.cluster) === id);
                 if (m && (m.PA || 0) >= STATE.minPA) {
                     const woba = m.wOBA || 0;
                     if (woba >= 0.370) {
-                        mesh.material.emissive.set(0x2a9d8f);
+                        // ELITE — bright green ground
+                        mesh.material.color.set(0x1db954);       // Spotify green
+                        mesh.material.emissive.set(0x1db954);
+                        mesh.material.emissiveIntensity = 0.6;
+                    } else if (woba >= 0.320) {
+                        // PLUS — lighter green
+                        mesh.material.color.set(0x4ecb71);
+                        mesh.material.emissive.set(0x4ecb71);
+                        mesh.material.emissiveIntensity = 0.4;
+                    } else if (woba >= 0.290) {
+                        // AVG — amber/yellow
+                        mesh.material.color.set(0xf0c040);
+                        mesh.material.emissive.set(0xf0c040);
                         mesh.material.emissiveIntensity = 0.35;
-                    } else if (woba >= 0.310) {
-                        mesh.material.emissive.set(0xf4a261);
-                        mesh.material.emissiveIntensity = 0.20;
+                    } else if (woba >= 0.250) {
+                        // BELOW AVG — orange
+                        mesh.material.color.set(0xe07830);
+                        mesh.material.emissive.set(0xe07830);
+                        mesh.material.emissiveIntensity = 0.4;
                     } else {
-                        mesh.material.emissive.set(0xe63946);
-                        mesh.material.emissiveIntensity = 0.35;
+                        // BAD — bright red
+                        mesh.material.color.set(0xd92020);
+                        mesh.material.emissive.set(0xd92020);
+                        mesh.material.emissiveIntensity = 0.6;
                     }
-                    mesh.material.opacity = 0.45;
+                    mesh.material.opacity = 0.65;
                 } else {
-                    mesh.material.emissive.set(mesh.material.color);
-                    mesh.material.emissiveIntensity = 0.03;
-                    mesh.material.opacity = 0.12;
+                    // No data — very dim, almost invisible
+                    mesh.material.color.set(0x333333);
+                    mesh.material.emissive.set(0x222222);
+                    mesh.material.emissiveIntensity = 0.02;
+                    mesh.material.opacity = 0.10;
                 }
             });
 
@@ -2133,81 +2181,53 @@
             requestAnimationFrame(animate);
             if (controls) controls.update();
 
-            // Pulse active roads + buildings when batter is searched
-            if (STATE.activeBatters.length > 0) {
-                _pulsePhase += 0.035;
-                const pulse = Math.sin(_pulsePhase) * 0.5 + 0.5;  // 0→1 oscillation
+            // No pulsing/blinking — colors are set once and stay static for clarity
 
-                // Pulse roads
-                if (roadGroup) roadGroup.children.forEach(mesh => {
-                    if (mesh.userData.type !== 'road-lane' || !mesh.userData._baseEmissive) return;
-                    mesh.material.emissiveIntensity = mesh.userData._baseEmissive * (0.5 + 0.5 * pulse);
-                });
-
-                // Gentle pulse on buildings that have emissive glow
-                buildingMeshes.forEach(mesh => {
-                    if (mesh.material.emissiveIntensity > 0.05) {
-                        // Store base intensity on first pulse
-                        if (!mesh.userData._baseBuildingEmissive) mesh.userData._baseBuildingEmissive = mesh.material.emissiveIntensity;
-                        mesh.material.emissiveIntensity = mesh.userData._baseBuildingEmissive * (0.7 + 0.3 * pulse);
-                    }
-                });
-            }
-
-            // Shield plug-in animation
+            // Shield USB plug-in animation (slides from right)
             if (_shieldAnim && _shieldGroup) {
                 const elapsed = performance.now() - _shieldAnim.startTime;
                 const t = Math.min(elapsed / _shieldAnim.duration, 1.0);
 
-                // Ease-out bounce: fast descent then gentle settle
-                const easeOutBounce = t < 0.7
-                    ? (t / 0.7) * (t / 0.7)  // accelerate in first 70%
-                    : 1.0 - Math.pow(1.0 - t, 3) * Math.cos((t - 0.7) * Math.PI * 2.5) * 0.15;
-                const progress = Math.min(easeOutBounce, 1.0);
+                // Ease-out cubic: fast start, smooth deceleration into dock
+                const ease = 1.0 - Math.pow(1.0 - t, 3);
 
-                // Interpolate Y position (drop from sky)
-                const currentY = _shieldAnim.startY + (_shieldAnim.targetY - _shieldAnim.startY) * progress;
-                _shieldGroup.position.y = currentY;
+                // Slide X from off-screen right → docked position
+                const currentX = _shieldAnim.startX + (_shieldAnim.targetX - _shieldAnim.startX) * ease;
+                _shieldGroup.position.x = currentX;
 
-                // Scale up from 0.1 to 1.0
-                const scale = 0.1 + 0.9 * progress;
-                _shieldGroup.scale.set(scale, scale, scale);
-
-                // Gentle spin during descent (360° → 0°)
-                _shieldGroup.rotation.y = (1 - progress) * Math.PI * 2;
-
-                // Pulse the ring on landing
-                const ring = _shieldGroup.children.find(c => c.userData && c.userData.isRing);
-                if (ring && t > 0.6) {
-                    const landPulse = Math.sin((t - 0.6) / 0.4 * Math.PI) * 0.4;
-                    ring.material.opacity = 0.3 + landPulse;
-                    ring.scale.set(1 + landPulse, 1 + landPulse, 1);
+                // Move label with shield
+                if (_shieldAnim.labelObj) {
+                    _shieldAnim.labelObj.position.x = currentX;
                 }
 
-                // Fade in label after 60% of animation
-                if (t > 0.6 && _shieldAnim.labelDiv) {
-                    _shieldAnim.labelDiv.style.opacity = String(Math.min((t - 0.6) / 0.3, 1.0));
+                // Flash the connector edge brighter as it approaches
+                const edge = _shieldGroup.children.find(c => c.userData && c.userData.isEdge);
+                if (edge) {
+                    edge.material.opacity = 0.4 + 0.6 * ease;
                 }
 
-                // Animation complete
+                // Fade in label after 50% of slide
+                if (t > 0.5 && _shieldAnim.labelDiv) {
+                    _shieldAnim.labelDiv.style.opacity = String(Math.min((t - 0.5) / 0.4, 1.0));
+                }
+
+                // Animation complete — docked
                 if (t >= 1.0) {
-                    _shieldGroup.position.y = _shieldAnim.targetY;
-                    _shieldGroup.scale.set(1, 1, 1);
-                    _shieldGroup.rotation.y = 0;
+                    _shieldGroup.position.x = _shieldAnim.targetX;
+                    if (_shieldAnim.labelObj) _shieldAnim.labelObj.position.x = _shieldAnim.targetX;
                     if (_shieldAnim.labelDiv) _shieldAnim.labelDiv.style.opacity = '1';
+                    // Brief bright flash on the connector edge then settle
+                    if (edge) edge.material.opacity = 0.5;
                     _shieldAnim = null;
                 }
             }
 
-            // Gentle idle bob for settled shield
+            // Gentle edge glow pulse on docked shield
             if (_shieldGroup && !_shieldAnim) {
-                const bob = Math.sin(performance.now() * 0.001) * 0.05;
-                _shieldGroup.position.y = 0.2 + bob;
-                // Gentle ring pulse
-                const ring = _shieldGroup.children.find(c => c.userData && c.userData.isRing);
-                if (ring) {
-                    const ringPulse = Math.sin(performance.now() * 0.002) * 0.5 + 0.5;
-                    ring.material.opacity = 0.2 + ringPulse * 0.2;
+                const edge = _shieldGroup.children.find(c => c.userData && c.userData.isEdge);
+                if (edge) {
+                    const edgePulse = Math.sin(performance.now() * 0.003) * 0.5 + 0.5;
+                    edge.material.opacity = 0.3 + edgePulse * 0.25;
                 }
             }
 
@@ -2551,11 +2571,20 @@
         }
 
         // ── 3D Shield Badge System ──
-        // Heraldic shield from shields.build, laid flat next to the map with plug-in animation
+        // Heraldic shield from shields.build — laid FLAT on the ground (face up)
+        // nearly the same size as the city plot, slides in from the RIGHT side
+        // like a USB flash drive plugging into a port.
         let _shieldGroup = null;       // THREE.Group holding shield mesh + label
-        let _shieldAnim = null;        // { startTime, duration, startY, targetY, startScale }
+        let _shieldAnim = null;        // animation state
         let _batterBadge3D = null;     // CSS2DObject for name label above shield
         const _shieldTextureCache = {};  // tier → THREE.Texture (cached)
+
+        // Shield dimensions: nearly plot-sized. City is ~32 wide, shield docks
+        // against the right edge (X=+16). Shield aspect ratio: 220:264 = 0.833
+        const SHIELD_W = 22;           // X-extent of shield (nearly as wide as half the plot)
+        const SHIELD_H = SHIELD_W * (264 / 220);  // Z-extent (maintains aspect ratio)
+        const SHIELD_DOCK_X = 16 + SHIELD_W / 2 + 0.5;  // Docked position: right edge of city + half shield + tiny gap
+        const SHIELD_SLIDE_OFFSET = 40; // How far off-screen it starts (to the right)
 
         function _svgToTexture(svgString) {
             return new Promise((resolve) => {
@@ -2564,10 +2593,10 @@
                 const img = new Image();
                 img.onload = () => {
                     const canvas2d = document.createElement('canvas');
-                    canvas2d.width = 440;   // 2x the 220 viewBox for crisp rendering
-                    canvas2d.height = 528;  // 2x the 264 viewBox
+                    canvas2d.width = 880;   // 4x the 220 viewBox for crisp rendering at large size
+                    canvas2d.height = 1056;  // 4x the 264 viewBox
                     const ctx = canvas2d.getContext('2d');
-                    ctx.drawImage(img, 0, 0, 440, 528);
+                    ctx.drawImage(img, 0, 0, 880, 1056);
                     URL.revokeObjectURL(url);
                     const tex = new THREE.CanvasTexture(canvas2d);
                     tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
@@ -2621,74 +2650,75 @@
             const group = new THREE.Group();
             group.name = 'shield-badge';
 
-            // Shield mesh — flat plane with shield texture, tilted slightly toward camera
-            const shieldW = 2.0, shieldH = shieldW * (264 / 220);  // Maintain viewBox aspect ratio
-            const geo = new THREE.PlaneGeometry(shieldW, shieldH);
+            // Shield mesh — FLAT on the ground plane (face up), nearly plot-sized
+            const geo = new THREE.PlaneGeometry(SHIELD_W, SHIELD_H);
             const mat = new THREE.MeshStandardMaterial({
                 map: texture || undefined,
                 color: texture ? 0xffffff : new THREE.Color(tier.color),
                 transparent: true,
                 alphaTest: 0.01,
                 side: THREE.DoubleSide,
-                metalness: 0.3,
-                roughness: 0.5,
+                metalness: 0.25,
+                roughness: 0.45,
                 emissive: new THREE.Color(tier.color),
-                emissiveIntensity: 0.15,
+                emissiveIntensity: 0.12,
             });
             const shieldMesh = new THREE.Mesh(geo, mat);
 
-            // Tilt shield: mostly upright but leaning back ~25° (like propped on an easel)
-            shieldMesh.rotation.x = -Math.PI / 7;  // ~25° tilt back
-            shieldMesh.position.y = shieldH / 2 - 0.2;  // Center vertically above ground
+            // Lay flat: rotate -90° around X so the plane faces UP (like the terrain)
+            shieldMesh.rotation.x = -Math.PI / 2;
+            // Hover just above ground so it doesn't z-fight with terrain
+            shieldMesh.position.y = 0.15;
 
             group.add(shieldMesh);
 
-            // Add glow ring at the base (landing pad effect)
-            const ringGeo = new THREE.RingGeometry(0.6, 0.85, 32);
-            const ringMat = new THREE.MeshBasicMaterial({
+            // Glowing edge strip along the left side (the "USB connector" edge)
+            const edgeGeo = new THREE.PlaneGeometry(0.3, SHIELD_H);
+            const edgeMat = new THREE.MeshBasicMaterial({
                 color: tier.color,
                 transparent: true,
-                opacity: 0.4,
+                opacity: 0.7,
                 side: THREE.DoubleSide,
             });
-            const ring = new THREE.Mesh(ringGeo, ringMat);
-            ring.rotation.x = -Math.PI / 2;  // Lay flat on ground
-            ring.position.y = 0.01;
-            ring.userData.isRing = true;
-            group.add(ring);
+            const edge = new THREE.Mesh(edgeGeo, edgeMat);
+            edge.rotation.x = -Math.PI / 2;
+            edge.position.set(-SHIELD_W / 2 - 0.15, 0.16, 0);
+            edge.userData.isEdge = true;
+            group.add(edge);
 
-            // Position: to the right of the city (positive X, slightly forward)
-            const targetX = 10.5, targetZ = 1.0, targetY = 0.2;
-            group.position.set(targetX, targetY + 12, targetZ);  // Start high up
-            group.scale.set(0.1, 0.1, 0.1);  // Start tiny
+            // Target: docked against right edge of city
+            const targetX = SHIELD_DOCK_X;
+            const targetZ = 0;  // Centered on the city's Z
+            const startX = targetX + SHIELD_SLIDE_OFFSET;  // Way off to the right
+
+            group.position.set(startX, 0, targetZ);
 
             scene.add(group);
             _shieldGroup = group;
 
-            // CSS2D label for player name + tier — floats above shield
+            // CSS2D label for player name + tier — floats above the shield center
             const div = document.createElement('div');
             div.className = 'city-batter-badge';
             div.innerHTML =
                 '<span class="badge-name">' + fmtName(batter.batter_name) + '</span>' +
                 '<span class="badge-tier ' + tier.cls + '">' + tier.label + '</span>';
             div.style.opacity = '0';
-            div.style.transition = 'opacity 0.5s ease';
+            div.style.transition = 'opacity 0.4s ease';
 
             const labelObj = new CSS2DObject(div);
-            labelObj.position.set(targetX, targetY + shieldH + 1.2, targetZ);
+            labelObj.position.set(startX, 2.5, targetZ);  // Above shield center
             labelGroup.add(labelObj);
             _batterBadge3D = labelObj;
 
-            // Start plug-in animation
+            // Start USB plug-in animation (slide from right)
             _shieldAnim = {
                 startTime: performance.now(),
-                duration: 900,  // ms
-                startY: targetY + 12,
-                targetY: targetY,
+                duration: 800,  // ms — fast satisfying slide
+                startX: startX,
                 targetX: targetX,
                 targetZ: targetZ,
-                shieldH: shieldH,
                 labelDiv: div,
+                labelObj: labelObj,
             };
         }
 
