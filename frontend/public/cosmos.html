@@ -2579,12 +2579,13 @@
         let _batterBadge3D = null;     // CSS2DObject for name label above shield
         const _shieldTextureCache = {};  // tier → THREE.Texture (cached)
 
-        // Shield dimensions: nearly plot-sized. City is ~32 wide, shield docks
-        // against the right edge (X=+16). Shield aspect ratio: 220:264 = 0.833
-        const SHIELD_W = 22;           // X-extent of shield (nearly as wide as half the plot)
-        const SHIELD_H = SHIELD_W * (264 / 220);  // Z-extent (maintains aspect ratio)
-        const SHIELD_DOCK_X = 16 + SHIELD_W / 2 + 0.5;  // Docked position: right edge of city + half shield + tiny gap
-        const SHIELD_SLIDE_OFFSET = 40; // How far off-screen it starts (to the right)
+        // Shield dimensions: sized to fit nicely beside the city on the RIGHT.
+        // City spans roughly -16 to +16 (32 units). Shield sits just right of center.
+        // Shield aspect ratio: 220:264 = 0.833
+        const SHIELD_W = 14;           // X-extent of shield
+        const SHIELD_H = SHIELD_W * (264 / 220);  // Z-extent (maintains aspect ratio ~16.8)
+        const SHIELD_DOCK_X = 18 + SHIELD_W / 2;  // Right edge of city (18) + half shield = 25
+        const SHIELD_SLIDE_OFFSET = 35; // How far off-screen it starts (to the right)
 
         function _svgToTexture(svgString) {
             return new Promise((resolve) => {
@@ -2666,9 +2667,12 @@
             const shieldMesh = new THREE.Mesh(geo, mat);
 
             // Lay flat: rotate -90° around X so the plane faces UP (like the terrain)
+            // Then rotate 180° around Y so the shield's "top" points toward negative Z
+            // (away from camera) and the pointy bottom faces the camera
             shieldMesh.rotation.x = -Math.PI / 2;
-            // Hover just above ground so it doesn't z-fight with terrain
-            shieldMesh.position.y = 0.15;
+            shieldMesh.rotation.z = Math.PI;  // Flip so shield top points away from camera
+            // Hover above ground — high enough to clear buildings and be visible
+            shieldMesh.position.y = 0.3;
 
             group.add(shieldMesh);
 
