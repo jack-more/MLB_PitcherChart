@@ -95,6 +95,13 @@ CLUSTER_FEATURES = [
 MIN_PITCHES_PER_SIDE = 50  # Min pitches vs a batter side for split zone features
 
 # ------------------------------------------------------------------
+# Hitter archetype clustering (09_hitter_archetypes.py)
+# ------------------------------------------------------------------
+HITTER_ARCHETYPE_K_RANGE = range(12, 22)   # Search 12-21 clusters (want > 12 archetypes)
+HITTER_MIN_PA_FOR_ARCHETYPE = 150          # Min total PA for a batter-year to qualify
+HITTER_MIN_CLUSTER_COVERAGE = 8            # Min pitcher clusters with PA >= 3
+
+# ------------------------------------------------------------------
 # Dashboard / display
 # ------------------------------------------------------------------
 MIN_PA_DISPLAY = 10  # Minimum PAs for a hitter-vs-cluster row in the UI

@@ -505,6 +505,10 @@
         .batter-badge .tier-chip.plus  { background: #2a9d8f; color: #fff; }
         .batter-badge .tier-chip.avg   { background: #f4a261; color: #000; }
         .batter-badge .tier-chip.below { background: #e63946; color: #fff; }
+        .batter-badge .archetype-badge-img {
+            height: 18px; vertical-align: middle; display: none;
+        }
+        .batter-badge .archetype-badge-img.visible { display: inline-block; }
 
         /* 3D floating badge label (CSS2DObject above shield) */
         .city-batter-badge {
@@ -908,6 +912,7 @@
         <div class="batter-badge" id="batter-badge">
             <strong id="badge-name"></strong>
             <span class="tier-chip" id="badge-tier"></span>
+            <img class="archetype-badge-img" id="badge-archetype" alt="" />
             <span id="badge-stat"></span>
         </div>
         <div id="tooltip"></div>
@@ -1133,6 +1138,8 @@
             catch(e) { DATA.teamRosters = { teams: {}, rosters: {} }; }
             try { DATA.tierShields = await loadJSON('shields/tier_shields.json', 'tier shields', setStatus); }
             catch(e) { DATA.tierShields = {}; }
+            try { DATA.hitterArchetypes = await loadJSON('hitter_archetypes.json', 'hitter archetypes', setStatus); }
+            catch(e) { DATA.hitterArchetypes = { archetypes: {}, assignments: {}, vectors: {} }; }
 
             // Build archetype map from cluster data (emoji + name)
             _initArchetypeMap();
@@ -2570,6 +2577,45 @@
             return                     { label: 'BELOW', cls: 'below', color: '#e63946' };
         }
 
+        // Batter hitter archetype (e.g. "Heater Hunter", "Archetype-Proof")
+        // Changes per year filter — uses per-year assignments for individual years,
+        // and nearest-centroid for range filters
+        function getBatterArchetype(batter) {
+            if (!DATA.hitterArchetypes || !DATA.hitterArchetypes.assignments) return null;
+            const ba = DATA.hitterArchetypes.assignments[String(batter.batter)];
+            if (!ba) return null;
+
+            let yearKey = STATE.selectedYear;
+            let archKey = null;
+
+            if (!yearKey.endsWith('+') && yearKey !== 'all') {
+                // Single year — direct lookup
+                archKey = ba[yearKey];
+            } else {
+                // Range filter: find the most recent year that matches
+                const years = Object.keys(ba).map(Number).sort((a,b) => b-a);
+                for (const y of years) {
+                    if (yearPassesFilter(y, yearKey)) {
+                        archKey = ba[String(y)];
+                        break;  // Use most recent year's archetype
+                    }
+                }
+            }
+
+            if (!archKey) return null;
+            const def = DATA.hitterArchetypes.archetypes[archKey];
+            if (!def) return null;
+
+            return {
+                key: archKey,
+                label: def.label,
+                color: def.color,
+                emoji: def.emoji,
+                description: def.description,
+                badgeUrl: def.badge_url,
+            };
+        }
+
         // ── 3D Shield Badge System ──
         // Heraldic shield from shields.build — laid FLAT on the ground (face up)
         // nearly the same size as the city plot, slides in from the RIGHT side
@@ -2584,7 +2630,7 @@
         // Shield aspect ratio: 220:264 = 0.833
         const SHIELD_W = 20;           // X-extent of shield (bigger for visibility)
         const SHIELD_H = SHIELD_W * (264 / 220);  // Z-extent (maintains aspect ratio ~24)
-        const SHIELD_DOCK_X = -(18 + SHIELD_W / 2);  // Left edge of city (-18) - half shield = -28
+        const SHIELD_DOCK_X = -(16 + SHIELD_W / 2);  // Tight against city left edge — almost plugged in
         const SHIELD_SLIDE_OFFSET = 35; // How far off-screen it starts (to the left)
 
         function _svgToTexture(svgString) {
@@ -2701,9 +2747,14 @@
             // CSS2D label for player name + tier — floats above the shield center
             const div = document.createElement('div');
             div.className = 'city-batter-badge';
+            const arch = getBatterArchetype(batter);
+            const archHtml = arch
+                ? '<img src="' + arch.badgeUrl + '" style="height:14px;margin-top:3px;display:block;" alt="' + arch.label + '" />'
+                : '';
             div.innerHTML =
                 '<span class="badge-name">' + fmtName(batter.batter_name) + '</span>' +
-                '<span class="badge-tier ' + tier.cls + '">' + tier.label + '</span>';
+                '<span class="badge-tier ' + tier.cls + '">' + tier.label + '</span>' +
+                archHtml;
             div.style.opacity = '0';
             div.style.transition = 'opacity 0.4s ease';
 
@@ -2741,6 +2792,17 @@
                 document.getElementById('batter-badge').classList.add('visible');
                 document.getElementById('batter-badge').style.borderColor = tier.color;
                 document.getElementById('led-batter').classList.add('active');
+                // Archetype badge
+                const arch = getBatterArchetype(batter);
+                const archEl = document.getElementById('badge-archetype');
+                if (arch && archEl) {
+                    archEl.src = arch.badgeUrl;
+                    archEl.alt = arch.label;
+                    archEl.title = arch.description;
+                    archEl.classList.add('visible');
+                } else if (archEl) {
+                    archEl.classList.remove('visible');
+                }
             } catch(e) { console.warn('Badge error:', e); }
 
             // Build 3D floating badge above city
@@ -2756,6 +2818,7 @@
             document.getElementById('batter-badge').classList.remove('visible');
             document.getElementById('batter-badge').style.borderColor = '#333';
             document.getElementById('led-batter').classList.remove('active');
+            try { document.getElementById('badge-archetype').classList.remove('visible'); } catch(e) {}
             buildBatterBadge3D(null, null); // Remove 3D badge
             document.getElementById('stat-panel').classList.remove('visible');
             document.getElementById('dock-best-content').innerHTML = '<span style="color:var(--text-label)">Search a batter</span>';
@@ -2778,6 +2841,17 @@
             tierEl.className = 'tier-chip ' + tier.cls;
             document.getElementById('badge-stat').textContent = fmtStatVal(STATE.selectedStat, stats.avg) + ' ' + statLabel(STATE.selectedStat) + ' \u00b7 ' + stats.pa.toLocaleString() + ' PA';
             document.getElementById('batter-badge').style.borderColor = tier.color;
+            // Update archetype badge (swaps with year filter)
+            const arch = getBatterArchetype(b);
+            const archEl = document.getElementById('badge-archetype');
+            if (arch && archEl) {
+                archEl.src = arch.badgeUrl;
+                archEl.alt = arch.label;
+                archEl.title = arch.description;
+                archEl.classList.add('visible');
+            } else if (archEl) {
+                archEl.classList.remove('visible');
+            }
             buildBatterBadge3D(b, stats);
             render();
         }
