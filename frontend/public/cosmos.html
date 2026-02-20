@@ -510,16 +510,19 @@
         }
         .batter-badge .archetype-badge-img.visible { display: inline-block; }
 
-        /* 3D floating badge label (CSS2DObject above shield) */
+        /* 3D floating badge label (CSS2DObject below shield) */
         .city-batter-badge {
             background: rgba(8,8,12,0.85); border: 1px solid #444;
-            color: #fff; padding: 4px 10px; border-radius: 4px;
+            color: #fff; padding: 5px 12px; border-radius: 4px;
             font-family: var(--font-tech); font-size: 10px; font-weight: 800;
             pointer-events: none; white-space: nowrap;
-            display: flex; flex-direction: row; align-items: center; gap: 6px;
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
             box-shadow: 0 3px 12px rgba(0,0,0,0.8);
             text-shadow: 0 1px 3px rgba(0,0,0,0.9);
             letter-spacing: 0.5px;
+        }
+        .city-batter-badge .badge-top-row {
+            display: flex; align-items: center; gap: 6px;
         }
         .city-batter-badge .badge-name {
             color: #fff; font-size: 11px; font-weight: 900;
@@ -1140,6 +1143,8 @@
             catch(e) { DATA.tierShields = {}; }
             try { DATA.hitterArchetypes = await loadJSON('hitter_archetypes.json', 'hitter archetypes', setStatus); }
             catch(e) { DATA.hitterArchetypes = { archetypes: {}, assignments: {}, vectors: {} }; }
+            try { DATA.archetypeShields = await loadJSON('shields/archetype_shields.json', 'archetype shields', setStatus); }
+            catch(e) { DATA.archetypeShields = {}; }
 
             // Build archetype map from cluster data (emoji + name)
             _initArchetypeMap();
@@ -2658,12 +2663,14 @@
             });
         }
 
-        async function _getShieldTexture(tierCls) {
-            if (_shieldTextureCache[tierCls]) return _shieldTextureCache[tierCls];
-            const svgData = DATA.tierShields && DATA.tierShields[tierCls];
+        async function _getShieldTexture(key) {
+            if (_shieldTextureCache[key]) return _shieldTextureCache[key];
+            // Check tier shields first, then archetype shields
+            const svgData = (DATA.tierShields && DATA.tierShields[key])
+                         || (DATA.archetypeShields && DATA.archetypeShields[key]);
             if (!svgData) return null;
             const tex = await _svgToTexture(svgData);
-            if (tex) _shieldTextureCache[tierCls] = tex;
+            if (tex) _shieldTextureCache[key] = tex;
             return tex;
         }
 
@@ -2691,7 +2698,12 @@
             if (!batter || !stats) return;
 
             const tier = getBatterTier(stats.avg || 0);
-            const texture = await _getShieldTexture(tier.cls);
+            const arch = getBatterArchetype(batter);
+
+            // Prefer archetype shield texture; fall back to tier shield
+            const shieldKey = arch ? arch.key : tier.cls;
+            const shieldColor = arch ? arch.color : tier.color;
+            const texture = await _getShieldTexture(shieldKey);
 
             // Create 3D group
             const group = new THREE.Group();
@@ -2701,13 +2713,13 @@
             const geo = new THREE.PlaneGeometry(SHIELD_W, SHIELD_H);
             const mat = new THREE.MeshStandardMaterial({
                 map: texture || undefined,
-                color: texture ? 0xffffff : new THREE.Color(tier.color),
+                color: texture ? 0xffffff : new THREE.Color(shieldColor),
                 transparent: true,
                 alphaTest: 0.01,
                 side: THREE.DoubleSide,
                 metalness: 0.25,
                 roughness: 0.45,
-                emissive: new THREE.Color(tier.color),
+                emissive: new THREE.Color(shieldColor),
                 emissiveIntensity: 0.12,
             });
             const shieldMesh = new THREE.Mesh(geo, mat);
@@ -2723,7 +2735,7 @@
             // Glowing edge strip along the right side (the "USB connector" edge, plugs in from left)
             const edgeGeo = new THREE.PlaneGeometry(0.3, SHIELD_H);
             const edgeMat = new THREE.MeshBasicMaterial({
-                color: tier.color,
+                color: shieldColor,
                 transparent: true,
                 opacity: 0.7,
                 side: THREE.DoubleSide,
@@ -2747,13 +2759,14 @@
             // CSS2D label for player name + tier — floats above the shield center
             const div = document.createElement('div');
             div.className = 'city-batter-badge';
-            const arch = getBatterArchetype(batter);
             const archHtml = arch
-                ? '<img src="' + arch.badgeUrl + '" style="height:14px;margin-top:3px;display:block;" alt="' + arch.label + '" />'
+                ? '<img src="' + arch.badgeUrl + '" style="height:14px;" alt="' + arch.label + '" />'
                 : '';
             div.innerHTML =
-                '<span class="badge-name">' + fmtName(batter.batter_name) + '</span>' +
-                '<span class="badge-tier ' + tier.cls + '">' + tier.label + '</span>' +
+                '<div class="badge-top-row">' +
+                    '<span class="badge-name">' + fmtName(batter.batter_name) + '</span>' +
+                    '<span class="badge-tier ' + tier.cls + '">' + tier.label + '</span>' +
+                '</div>' +
                 archHtml;
             div.style.opacity = '0';
             div.style.transition = 'opacity 0.4s ease';
