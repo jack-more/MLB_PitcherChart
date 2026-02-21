@@ -2665,9 +2665,9 @@
 
         async function _getShieldTexture(key) {
             if (_shieldTextureCache[key]) return _shieldTextureCache[key];
-            // Check tier shields first, then archetype shields
-            const svgData = (DATA.tierShields && DATA.tierShields[key])
-                         || (DATA.archetypeShields && DATA.archetypeShields[key]);
+            // Check combined archetype shields first, then tier-only shields
+            const svgData = (DATA.archetypeShields && DATA.archetypeShields[key])
+                         || (DATA.tierShields && DATA.tierShields[key]);
             if (!svgData) return null;
             const tex = await _svgToTexture(svgData);
             if (tex) _shieldTextureCache[key] = tex;
@@ -2700,8 +2700,8 @@
             const tier = getBatterTier(stats.avg || 0);
             const arch = getBatterArchetype(batter);
 
-            // Prefer archetype shield texture; fall back to tier shield
-            const shieldKey = arch ? arch.key : tier.cls;
+            // Combined archetype+tier shield; fall back to tier-only shield
+            const shieldKey = arch ? (arch.key + '_' + tier.cls) : tier.cls;
             const shieldColor = arch ? arch.color : tier.color;
             const texture = await _getShieldTexture(shieldKey);
 
