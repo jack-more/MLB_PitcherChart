@@ -34,105 +34,108 @@ FRONTEND_PUBLIC = os.path.join(PROJECT_ROOT, "frontend", "public")
 
 # ── Archetype definitions ──────────────────────────────────────────────
 ARCHETYPE_DEFS = {
+    # ── ELITE / EXOTIC colors (strengths) ─────────────────────────────
     "archetype_proof": {
         "label": "Archetype-Proof",
-        "color": "#FFD700", "emoji": "\U0001f6e1\ufe0f",
+        "color": "#E5E4E2", "emoji": "\U0001f6e1\ufe0f",  # Platinum / Diamond
         "description": "Elite against every pitcher type",
     },
     "heater_hunter": {
         "label": "Heater Hunter",
-        "color": "#FF4500", "emoji": "\U0001f525",
+        "color": "#FF2D55", "emoji": "\U0001f525",  # Hot pink / Ruby
         "description": "Destroys fastball-heavy pitchers",
     },
     "hook_smasher": {
         "label": "Hook Smasher",
-        "color": "#8B5CF6", "emoji": "\U0001fa9d",
+        "color": "#BF40BF", "emoji": "\U0001fa9d",  # Royal purple / Amethyst
         "description": "Feasts on curveball and breaking ball pitchers",
     },
     "offspeed_assassin": {
         "label": "Offspeed Assassin",
-        "color": "#06B6D4", "emoji": "\U0001f52b",
+        "color": "#00BFFF", "emoji": "\U0001f52b",  # Deep sky blue / Sapphire
         "description": "Punishes changeup and splitter pitchers",
     },
     "tunnel_buster": {
         "label": "Tunnel Buster",
-        "color": "#3B82F6", "emoji": "\U0001f513",
+        "color": "#4169E1", "emoji": "\U0001f513",  # Royal blue
         "description": "Handles deceptive mixed arsenals",
     },
     "worm_burners_nightmare": {
         "label": "Worm Burner's Nightmare",
-        "color": "#10B981", "emoji": "\U0001fab1",
+        "color": "#50C878", "emoji": "\U0001fab1",  # Emerald green
         "description": "Destroys sinker and groundball pitchers",
-    },
-    "lefty_masher": {
-        "label": "Lefty Masher",
-        "color": "#22D3EE", "emoji": "\U0001f535",
-        "description": "Dominates left-handed pitching",
-    },
-    "righty_crusher": {
-        "label": "Righty Crusher",
-        "color": "#F97316", "emoji": "\U0001f7e0",
-        "description": "Dominates right-handed pitching",
     },
     "power_surge": {
         "label": "Power Surge",
-        "color": "#DC2626", "emoji": "\u26a1",
+        "color": "#FF4500", "emoji": "\u26a1",  # Molten orange-red
         "description": "Explosive HR-driven damage",
     },
     "swiss_army_knife": {
         "label": "Swiss Army Knife",
-        "color": "#14B8A6", "emoji": "\U0001fa93",
+        "color": "#40E0D0", "emoji": "\U0001fa93",  # Turquoise
         "description": "Versatile hitter, above average across the board",
+    },
+    "breaking_ball_bandit": {
+        "label": "Breaking Ball Bandit",
+        "color": "#9966CC", "emoji": "\U0001f9b9",  # Amethyst violet
+        "description": "Exploits curveball and sweeper-heavy arsenals",
+    },
+    "same_side_slayer": {
+        "label": "Same-Side Slayer",
+        "color": "#FFD700", "emoji": "\U0001f93a",  # Gold
+        "description": "Defies the platoon advantage — crushes same-side pitching",
+    },
+    # ── NEUTRAL / STANDARD colors ─────────────────────────────────────
+    "contact_king": {
+        "label": "Contact King",
+        "color": "#77DD77", "emoji": "\U0001f451",  # Pastel green
+        "description": "Consistent contact hitter, rarely overmatched",
+    },
+    "lefty_masher": {
+        "label": "Lefty Masher",
+        "color": "#89CFF0", "emoji": "\U0001f535",  # Baby blue
+        "description": "Dominates left-handed pitching",
+    },
+    "righty_crusher": {
+        "label": "Righty Crusher",
+        "color": "#FDFD96", "emoji": "\U0001f7e0",  # Pastel yellow
+        "description": "Dominates right-handed pitching",
+    },
+    "platoon_bat": {
+        "label": "Platoon Bat",
+        "color": "#B0C4DE", "emoji": "\U0001f3cf",  # Light steel blue
+        "description": "Strong platoon profile — much better vs opposite hand",
     },
     "matchup_roulette": {
         "label": "Matchup Roulette",
-        "color": "#EC4899", "emoji": "\U0001f3b0",
+        "color": "#DDA0DD", "emoji": "\U0001f3b0",  # Plum
         "description": "Wildly volatile across pitcher types",
     },
+    # ── NEGATIVE / BRONZE-MUTED colors ────────────────────────────────
     "spin_dizzy": {
         "label": "Spin Dizzy",
-        "color": "#EF4444", "emoji": "\U0001f635",
+        "color": "#CD7F32", "emoji": "\U0001f635",  # Bronze
         "description": "Struggles against breaking stuff",
     },
     "gas_can": {
         "label": "Gas Can",
-        "color": "#9CA3AF", "emoji": "\u26fd",
+        "color": "#A97142", "emoji": "\u26fd",  # Raw umber / dark bronze
         "description": "Overpowered by fastball-dominant pitchers",
     },
     "chase_artist": {
         "label": "Chase Artist",
-        "color": "#F59E0B", "emoji": "\U0001f3a3",
+        "color": "#C19A6B", "emoji": "\U0001f3a3",  # Camel / fawn
         "description": "Expands the zone against offspeed and movement",
-    },
-    "contact_king": {
-        "label": "Contact King",
-        "color": "#84CC16", "emoji": "\U0001f451",
-        "description": "Consistent contact hitter, rarely overmatched",
-    },
-    "same_side_slayer": {
-        "label": "Same-Side Slayer",
-        "color": "#A855F7", "emoji": "\U0001f93a",
-        "description": "Defies the platoon advantage — crushes same-side pitching",
-    },
-    "platoon_bat": {
-        "label": "Platoon Bat",
-        "color": "#FB923C", "emoji": "\U0001f3cf",
-        "description": "Strong platoon profile — much better vs opposite hand",
-    },
-    "flatliner": {
-        "label": "Flatliner",
-        "color": "#6B7280", "emoji": "\U0001f4c9",
-        "description": "Below average against everything",
     },
     "streaky": {
         "label": "Streaky",
-        "color": "#78716C", "emoji": "\U0001f4ca",
+        "color": "#808069", "emoji": "\U0001f4ca",  # Dark khaki / olive drab
         "description": "Inconsistent across pitcher types",
     },
-    "breaking_ball_bandit": {
-        "label": "Breaking Ball Bandit",
-        "color": "#A855F7", "emoji": "\U0001f9b9",
-        "description": "Exploits curveball and sweeper-heavy arsenals",
+    "flatliner": {
+        "label": "Flatliner",
+        "color": "#696969", "emoji": "\U0001f4c9",  # Dim gray
+        "description": "Below average against everything",
     },
 }
 
@@ -232,18 +235,22 @@ def classify_batter(profile, stand):
     spread = best_val - worst_val
 
     # Priority-ordered classification rules
+    # Elite-tier labels first, then pitch-type specialists, then platoon/hand
+    # checks, then neutral, then negative.
 
     # 1. Archetype-Proof: elite wOBA AND good everywhere (no family < 0.85)
     if woba >= 0.370 and worst_val >= 0.85 and var < 0.06:
         return "archetype_proof"
 
-    # 2. Same-Side Slayer: crushes same-side pitching (defies platoon)
-    if stand in ("L", "R") and same_side >= 1.1 and same_side > opp_side + 0.1:
-        return "same_side_slayer"
+    # 2. Power Surge: high HR rate with good wOBA (check early — HR kings)
+    if hr_rate >= 0.045 and woba >= 0.340:
+        return "power_surge"
 
-    # 3. Platoon Bat: much better vs opposite hand
-    if stand in ("L", "R") and opp_side >= 1.1 and opp_side > same_side + 0.15:
-        return "platoon_bat"
+    # 3. Swiss Army Knife: above average everywhere, balanced
+    if woba >= 0.330 and worst_val >= 0.90 and spread < 0.2:
+        return "swiss_army_knife"
+
+    # ── Pitch-type specialists (family-based) ─────────────────────────
 
     # 4. Heater Hunter: best vs fastball, clearly above others
     if best_fam == "fastball" and fb >= 1.1 and fb > brk + 0.1 and fb > off + 0.08:
@@ -269,13 +276,17 @@ def classify_batter(profile, stand):
     if fb >= 1.05 and mov >= 1.02 and woba >= 0.310:
         return "worm_burners_nightmare"
 
-    # 10. Power Surge: high HR rate with good wOBA
-    if hr_rate >= 0.045 and woba >= 0.340:
-        return "power_surge"
+    # ── Platoon / hand-based (AFTER pitch-type specialists) ───────────
 
-    # 11. Swiss Army Knife: above average everywhere, balanced
-    if woba >= 0.330 and worst_val >= 0.90 and spread < 0.2:
-        return "swiss_army_knife"
+    # 10. Same-Side Slayer: crushes same-side pitching (defies platoon)
+    #     Requires a strong gap AND decent overall to avoid tagging scrubs
+    if stand in ("L", "R") and same_side >= 1.12 and same_side > opp_side + 0.15 and woba >= 0.300:
+        return "same_side_slayer"
+
+    # 11. Platoon Bat: much better vs opposite hand
+    #     Requires a very strong gap to earn this label (avoids false positives)
+    if stand in ("L", "R") and opp_side >= 1.12 and opp_side > same_side + 0.18 and woba >= 0.290:
+        return "platoon_bat"
 
     # 12. Lefty Masher (for switch/right hitters)
     if stand != "L" and lhp >= 1.12 and lhp > rhp + 0.12:
@@ -285,6 +296,8 @@ def classify_batter(profile, stand):
     if stand != "R" and rhp >= 1.12 and rhp > lhp + 0.12:
         return "righty_crusher"
 
+    # ── Neutral / fallback ────────────────────────────────────────────
+
     # 14. Matchup Roulette: high variance
     if var >= 0.06 and 0.28 <= woba <= 0.36:
         return "matchup_roulette"
@@ -292,6 +305,8 @@ def classify_batter(profile, stand):
     # 15. Contact King: decent wOBA, low K rate, consistent
     if woba >= 0.300 and k_rate <= 0.18 and var < 0.05:
         return "contact_king"
+
+    # ── Negative archetypes (weaknesses) ──────────────────────────────
 
     # 16. Spin Dizzy: weak vs breaking
     if worst_fam == "breaking" and brk < 0.85 and woba < 0.340:
