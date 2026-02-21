@@ -34,58 +34,58 @@ FRONTEND_PUBLIC = os.path.join(PROJECT_ROOT, "frontend", "public")
 
 # ── Archetype definitions ──────────────────────────────────────────────
 ARCHETYPE_DEFS = {
-    # ── ELITE / EXOTIC colors (strengths) ─────────────────────────────
+    # ── ELITE / EXOTIC — Platinum, Gold, Sapphire, Turquoise, Baby blue, Steel blue
     "archetype_proof": {
         "label": "Archetype-Proof",
-        "color": "#E5E4E2", "emoji": "\U0001f6e1\ufe0f",  # Platinum / Diamond
+        "color": "#E5E4E2", "emoji": "\U0001f6e1\ufe0f",  # Platinum
         "description": "Elite against every pitcher type",
     },
     "heater_hunter": {
         "label": "Heater Hunter",
-        "color": "#FF2D55", "emoji": "\U0001f525",  # Hot pink / Ruby
+        "color": "#FFD700", "emoji": "\U0001f525",  # Gold
         "description": "Destroys fastball-heavy pitchers",
     },
     "hook_smasher": {
         "label": "Hook Smasher",
-        "color": "#BF40BF", "emoji": "\U0001fa9d",  # Royal purple / Amethyst
+        "color": "#0F52BA", "emoji": "\U0001fa9d",  # Sapphire
         "description": "Feasts on curveball and breaking ball pitchers",
     },
     "offspeed_assassin": {
         "label": "Offspeed Assassin",
-        "color": "#00BFFF", "emoji": "\U0001f52b",  # Deep sky blue / Sapphire
+        "color": "#40E0D0", "emoji": "\U0001f52b",  # Turquoise
         "description": "Punishes changeup and splitter pitchers",
     },
     "tunnel_buster": {
         "label": "Tunnel Buster",
-        "color": "#4169E1", "emoji": "\U0001f513",  # Royal blue
+        "color": "#89CFF0", "emoji": "\U0001f513",  # Baby blue
         "description": "Handles deceptive mixed arsenals",
     },
     "worm_burners_nightmare": {
         "label": "Worm Burner's Nightmare",
-        "color": "#50C878", "emoji": "\U0001fab1",  # Emerald green
+        "color": "#B0C4DE", "emoji": "\U0001fab1",  # Steel blue
         "description": "Destroys sinker and groundball pitchers",
     },
     "power_surge": {
         "label": "Power Surge",
-        "color": "#FF4500", "emoji": "\u26a1",  # Molten orange-red
+        "color": "#CFB53B", "emoji": "\u26a1",  # Old gold
         "description": "Explosive HR-driven damage",
     },
     "swiss_army_knife": {
         "label": "Swiss Army Knife",
-        "color": "#40E0D0", "emoji": "\U0001fa93",  # Turquoise
+        "color": "#7EC8E3", "emoji": "\U0001fa93",  # Light steel / sky blue
         "description": "Versatile hitter, above average across the board",
     },
     "breaking_ball_bandit": {
         "label": "Breaking Ball Bandit",
-        "color": "#9966CC", "emoji": "\U0001f9b9",  # Amethyst violet
+        "color": "#5D8AA8", "emoji": "\U0001f9b9",  # Air Force blue / steel
         "description": "Exploits curveball and sweeper-heavy arsenals",
     },
     "same_side_slayer": {
         "label": "Same-Side Slayer",
-        "color": "#FFD700", "emoji": "\U0001f93a",  # Gold
+        "color": "#ACE1AF", "emoji": "\U0001f93a",  # Celadon / pale turquoise-green
         "description": "Defies the platoon advantage — crushes same-side pitching",
     },
-    # ── NEUTRAL / STANDARD colors ─────────────────────────────────────
+    # ── STANDARD — Green to yellow range ──────────────────────────────
     "contact_king": {
         "label": "Contact King",
         "color": "#77DD77", "emoji": "\U0001f451",  # Pastel green
@@ -93,7 +93,7 @@ ARCHETYPE_DEFS = {
     },
     "lefty_masher": {
         "label": "Lefty Masher",
-        "color": "#89CFF0", "emoji": "\U0001f535",  # Baby blue
+        "color": "#BFFF00", "emoji": "\U0001f535",  # Lime / chartreuse
         "description": "Dominates left-handed pitching",
     },
     "righty_crusher": {
@@ -103,15 +103,15 @@ ARCHETYPE_DEFS = {
     },
     "platoon_bat": {
         "label": "Platoon Bat",
-        "color": "#B0C4DE", "emoji": "\U0001f3cf",  # Light steel blue
+        "color": "#DAA520", "emoji": "\U0001f3cf",  # Goldenrod
         "description": "Strong platoon profile — much better vs opposite hand",
     },
     "matchup_roulette": {
         "label": "Matchup Roulette",
-        "color": "#DDA0DD", "emoji": "\U0001f3b0",  # Plum
+        "color": "#ADDFAD", "emoji": "\U0001f3b0",  # Light moss green
         "description": "Wildly volatile across pitcher types",
     },
-    # ── NEGATIVE / BRONZE-MUTED colors ────────────────────────────────
+    # ── BRONZE / MUTED — Browns, olives, grays ───────────────────────
     "spin_dizzy": {
         "label": "Spin Dizzy",
         "color": "#CD7F32", "emoji": "\U0001f635",  # Bronze
@@ -129,7 +129,7 @@ ARCHETYPE_DEFS = {
     },
     "streaky": {
         "label": "Streaky",
-        "color": "#808069", "emoji": "\U0001f4ca",  # Dark khaki / olive drab
+        "color": "#808069", "emoji": "\U0001f4ca",  # Olive drab
         "description": "Inconsistent across pitcher types",
     },
     "flatliner": {
