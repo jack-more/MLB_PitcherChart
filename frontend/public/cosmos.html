@@ -772,6 +772,59 @@
         .history-item .h-remove:hover { color: var(--accent-orange); opacity: 1; }
         .history-empty { font-size: 11px; color: #666; font-family: var(--font-tech); text-align: center; padding: 16px 0; font-weight: 600; }
 
+        /* ═══ HITTER DNA PANEL ═══ */
+        .hitter-dna-panel {
+            position: absolute; top: var(--header-h); right: 0; width: 310px;
+            max-height: 520px; overflow-y: auto;
+            background: rgba(14,14,18,0.97); border: 1px solid #333;
+            border-radius: 0 0 0 6px; z-index: 150;
+            box-shadow: -4px 4px 16px rgba(0,0,0,0.5);
+            transform: translateX(100%); opacity: 0;
+            transition: all 0.25s cubic-bezier(0.19,1,0.22,1);
+            padding: 12px 14px;
+        }
+        .hitter-dna-panel.visible { transform: translateX(0); opacity: 1; }
+        .hdna-title {
+            font-size: 10px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1.5px; color: var(--accent-orange); margin-bottom: 10px;
+            font-family: var(--font-tech);
+        }
+        .hdna-section-label {
+            font-size: 8px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 2px; color: #666; margin-bottom: 6px;
+            font-family: var(--font-tech);
+        }
+        .hdna-tier-row {
+            display: flex; align-items: center; gap: 8px;
+            padding: 6px 8px; margin-bottom: 3px; border-radius: 3px;
+            border-left: 4px solid transparent;
+            font-family: var(--font-tech); font-size: 11px;
+            background: rgba(255,255,255,0.02);
+        }
+        .hdna-tier-row:hover { background: rgba(255,255,255,0.05); }
+        .hdna-tier-label { font-weight: 800; letter-spacing: 1px; min-width: 50px; }
+        .hdna-tier-threshold { font-size: 9px; color: #999; flex: 1; }
+        .hdna-tier-desc { font-size: 8px; color: #666; text-align: right; }
+        .hdna-group-label {
+            font-size: 7px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 2px; color: #555; margin: 8px 0 4px;
+            font-family: var(--font-tech);
+        }
+        .hdna-arch-row {
+            display: flex; align-items: center; gap: 7px;
+            padding: 4px 6px; margin-bottom: 2px; border-radius: 3px;
+            font-family: var(--font-tech); font-size: 10px; color: #ccc;
+            transition: background 0.1s;
+        }
+        .hdna-arch-row:hover { background: rgba(255,255,255,0.05); }
+        .hdna-arch-dot {
+            width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+            box-shadow: 0 0 4px rgba(255,255,255,0.1);
+        }
+        .hdna-arch-emoji { font-size: 12px; flex-shrink: 0; }
+        .hdna-arch-label { font-weight: 700; font-size: 10px; white-space: nowrap; }
+        .hdna-arch-desc { font-size: 8px; color: #777; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
         ::-webkit-scrollbar { width: 3px; height: 3px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #aaa; border-radius: 2px; }
@@ -819,7 +872,7 @@
         <div class="header-controls">
             <div class="key key-dark" id="simlab-toggle" style="height:30px;padding:0 14px;font-size:10px;letter-spacing:1.5px;font-weight:700;font-family:'Anton',sans-serif;background:#080808;color:#FFEA00;border:none;cursor:pointer;border-radius:4px;box-shadow:0 0 8px rgba(255,234,0,0.3),0 0 20px rgba(255,234,0,0.12);animation:simGlow 2s ease-in-out infinite;display:flex;align-items:center;gap:6px;transform:skewX(-5deg);"><span style="font-size:13px;">⚡</span> MLB SIM</div>
             <div class="key key-dark" id="history-toggle" style="height:28px;padding:0 10px;font-size:9px;letter-spacing:0.5px;">HISTORY</div>
-            <a href="cosmos-mobile.html" class="key key-dark" style="height:28px;padding:0 10px;font-size:9px;letter-spacing:0.5px;text-decoration:none;display:flex;align-items:center;gap:4px;">📱 Mobile</a>
+            <div class="key key-dark" id="hitter-dna-toggle" style="height:28px;padding:0 10px;font-size:9px;letter-spacing:0.5px;cursor:pointer;display:flex;align-items:center;gap:4px;">🛡️ HITTER DNA</div>
             <div class="led active" id="led-data"></div>
             <div class="led" id="led-batter"></div>
             <div class="led" id="led-scan"></div>
@@ -832,6 +885,14 @@
             <span class="h-clear" id="history-clear">CLEAR ALL</span>
         </div>
         <div id="history-content"></div>
+    </div>
+
+    <div class="hitter-dna-panel" id="hitter-dna-panel">
+        <div class="hdna-title">Hitter Levels & Archetypes</div>
+        <div class="hdna-section-label">TIER LEVELS</div>
+        <div id="hdna-tiers"></div>
+        <div class="hdna-section-label" style="margin-top:12px;">ARCHETYPES</div>
+        <div id="hdna-archetypes"></div>
     </div>
 
     <aside id="sidebar">
@@ -4177,6 +4238,60 @@
             if (historyPanel.classList.contains('visible')) renderHistory();
         });
 
+        // ── Hitter DNA panel ──────────────────────────────────────────
+        const hdnaPanel = document.getElementById('hitter-dna-panel');
+        document.getElementById('hitter-dna-toggle').addEventListener('click', () => {
+            hdnaPanel.classList.toggle('visible');
+            if (hdnaPanel.classList.contains('visible')) renderHitterDNA();
+        });
+
+        function renderHitterDNA() {
+            // ── Tier levels ──
+            const tiersEl = document.getElementById('hdna-tiers');
+            const tiers = [
+                { label: 'ELITE', color: '#FFD700', threshold: '\u2265 .370 wOBA', desc: '4-layer heraldry' },
+                { label: 'PLUS',  color: '#2a9d8f', threshold: '\u2265 .320 wOBA', desc: '3-layer heraldry' },
+                { label: 'AVG',   color: '#f4a261', threshold: '\u2265 .290 wOBA', desc: '2-layer heraldry' },
+                { label: 'BELOW', color: '#e63946', threshold: '< .290 wOBA',      desc: 'Basic shield' },
+            ];
+            tiersEl.innerHTML = tiers.map(t =>
+                '<div class="hdna-tier-row" style="border-left-color:' + t.color + ';">' +
+                    '<span class="hdna-tier-label" style="color:' + t.color + ';">' + t.label + '</span>' +
+                    '<span class="hdna-tier-threshold">' + t.threshold + '</span>' +
+                    '<span class="hdna-tier-desc">' + t.desc + '</span>' +
+                '</div>'
+            ).join('');
+
+            // ── Archetypes ──
+            const archEl = document.getElementById('hdna-archetypes');
+            if (!DATA.hitterArchetypes || !DATA.hitterArchetypes.archetypes) {
+                archEl.innerHTML = '<div style="font-size:9px;color:#666;padding:8px;">Loading...</div>';
+                return;
+            }
+            const archetypes = DATA.hitterArchetypes.archetypes;
+            const keys = Object.keys(archetypes);
+            // Group boundaries: exotic (first 10), standard (next 5), bronze (rest)
+            const groups = [
+                { label: 'EXOTIC', start: 0 },
+                { label: 'STANDARD', start: 10 },
+                { label: 'BRONZE', start: 15 },
+            ];
+            let html = '';
+            for (let i = 0; i < keys.length; i++) {
+                const grp = groups.find(g => g.start === i);
+                if (grp) html += '<div class="hdna-group-label">' + grp.label + '</div>';
+                const a = archetypes[keys[i]];
+                html +=
+                    '<div class="hdna-arch-row">' +
+                        '<span class="hdna-arch-dot" style="background:' + a.color + ';"></span>' +
+                        '<span class="hdna-arch-emoji">' + a.emoji + '</span>' +
+                        '<span class="hdna-arch-label">' + a.label + '</span>' +
+                        '<span class="hdna-arch-desc">' + a.description + '</span>' +
+                    '</div>';
+            }
+            archEl.innerHTML = html;
+        }
+
         document.getElementById('history-clear').addEventListener('click', () => {
             STATE.savedSearches = [];
             localStorage.setItem('pfx_saved', JSON.stringify(STATE.savedSearches));
@@ -4222,6 +4337,7 @@
         document.addEventListener('mousedown', (e) => {
             if (!e.target.closest('.search-box') && !e.target.closest('.search-dropdown')) searchDrop.classList.remove('visible');
             if (!e.target.closest('.history-panel') && !e.target.closest('#history-toggle')) historyPanel.classList.remove('visible');
+            if (!e.target.closest('.hitter-dna-panel') && !e.target.closest('#hitter-dna-toggle')) hdnaPanel.classList.remove('visible');
         });
 
         function fmtName(name) {
