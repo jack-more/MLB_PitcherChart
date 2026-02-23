@@ -938,24 +938,22 @@ def generate_html(daily_data):
         </div>
     </div>
 
-    <!-- ═══ TRENDS TAB ═══ -->
-    <div class="tab-content" id="tab-trends">
+    <!-- ═══ WEEKLY PROJECTIONS TAB ═══ -->
+    <div class="tab-content" id="tab-weekly">
         <div style="padding-top:12px">
-            <div class="section-title">TOP MATCHUP SCORES</div>
-            <div class="section-sub">Today's top batter-vs-archetype matchups ranked by MS</div>
+            <div class="section-title">WEEKLY PROJECTIONS</div>
+            <div class="section-sub">7-day matchup outlook — projected starters and batter MS by series</div>
         </div>
-        <div class="picks-container">
-            {trends_html}
-        </div>
+        <div class="empty-state">WEEKLY PROJECTIONS COMING SOON — AVAILABLE WHEN REGULAR SEASON STARTS</div>
     </div>
 
     <!-- ═══ FANTASY TAB ═══ -->
     <div class="tab-content" id="tab-fantasy">
         <div style="padding-top:12px">
             <div class="section-title">WEEKLY FANTASY</div>
-            <div class="section-sub">7-day projected matchup scores — built for weekly fantasy lineups</div>
+            <div class="section-sub">7-day projected stat lines — built for weekly fantasy lineups</div>
         </div>
-        <div class="empty-state">WEEKLY PROJECTIONS COMING SOON — AVAILABLE WHEN REGULAR SEASON STARTS</div>
+        <div class="empty-state">WEEKLY FANTASY COMING SOON — AVAILABLE WHEN REGULAR SEASON STARTS</div>
     </div>
 
     <!-- ═══ INFO TAB ═══ -->
@@ -1015,7 +1013,7 @@ O/U Total = Home Runs + Away Runs</div>
 <nav class="nav">
     <div class="nav-tab active" data-tab="lines">Lines</div>
     <div class="nav-tab" data-tab="daily">Daily</div>
-    <div class="nav-tab" data-tab="trends">Trends</div>
+    <div class="nav-tab" data-tab="weekly">Weekly</div>
     <div class="nav-tab" data-tab="fantasy">Fantasy</div>
     <div class="nav-tab" data-tab="info">Info</div>
 </nav>
