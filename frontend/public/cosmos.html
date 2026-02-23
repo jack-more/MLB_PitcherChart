@@ -829,6 +829,7 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #aaa; border-radius: 2px; }
     </style>
+    <link rel="stylesheet" href="https://morellosims.com/morello-auth.css">
 </head>
 <body>
 
@@ -876,6 +877,7 @@
             <div class="led active" id="led-data"></div>
             <div class="led" id="led-batter"></div>
             <div class="led" id="led-scan"></div>
+            <div class="status-indicators" style="display:flex;align-items:center;"></div>
         </div>
     </header>
 
@@ -4966,5 +4968,11 @@ if(PRESELECT){selectBatter(PRESELECT)}
         boot();
     })();
     </script>
+
+    <!-- Firebase SDK + Morello Auth -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://morellosims.com/morello-auth.js"></script>
 </body>
 </html>

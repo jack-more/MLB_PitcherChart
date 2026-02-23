@@ -361,6 +361,7 @@ body::after{
 
 /* ═══ TEAM COLORS ═══ */
 </style>
+<link rel="stylesheet" href="https://morellosims.com/morello-auth.css">
 </head>
 <body>
 
@@ -377,7 +378,7 @@ body::after{
             <div class="logo">MLB SIM</div>
             <span class="byline">by Jack Morello</span>
         </div>
-        <div style="display:flex;align-items:center;gap:8px">
+        <div class="status-indicators" style="display:flex;align-items:center;gap:8px">
             <a href="cosmos.html" class="atlas-btn">ATLAS</a>
             <div class="status-dot" id="status-dot"></div>
         </div>
@@ -2148,5 +2149,11 @@ function projectSingleBatter(batterId, clusterId, pitcherId) {
     renderSavedBatters();
 })();
 </script>
+
+<!-- Firebase SDK + Morello Auth -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<script src="https://morellosims.com/morello-auth.js"></script>
 </body>
 </html>
