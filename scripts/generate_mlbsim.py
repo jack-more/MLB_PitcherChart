@@ -114,7 +114,7 @@ def render_run_bar(game):
     away_color = TEAM_COLORS.get(away, "#666")
     home_color = TEAM_COLORS.get(home, "#666")
 
-    return f'''<div class="run-bar">
+    return f'''<div class="run-bar ma-premium">
   <div class="run-bar-seg" style="width:{away_pct:.0f}%;background:{away_color}">{away_runs:.1f}</div>
   <div class="run-bar-seg" style="width:{home_pct:.0f}%;background:{home_color}">{home_runs:.1f}</div>
 </div>'''
@@ -149,7 +149,7 @@ def render_card_header(game):
     <div class="team-logo"><img src="{away_logo}" alt="{_esc(away)}" style="width:100%;height:100%;object-fit:contain"></div>
     <div class="team-abbr">{_esc(away)}</div>
   </div>
-  <div class="card-center">
+  <div class="card-center ma-premium">
     <div class="proj-label">SPREAD</div>
     <div class="spread">{spread_display}</div>
     <div class="ou-line">{total_display}</div>
@@ -403,7 +403,7 @@ def render_game_card(game, game_idx):
             direction = "OVER" if total_edge > 0 else "UNDER"
             parts.append(f"Total Edge: {direction} {abs(total_edge):.1f}")
         if parts:
-            edge_html = f'<div class="edge-bar">{" · ".join(parts)}</div>'
+            edge_html = f'<div class="edge-bar ma-premium">{" · ".join(parts)}</div>'
 
     game_time = game.get("game_time_et", "")
     venue = game.get("venue", "")
@@ -465,7 +465,7 @@ def render_top_picks(games):
 
     return f'''<div class="section-title">TODAY'S EDGES</div>
 <div class="section-sub">Games with projected spread/total edge</div>
-<div class="picks-container">{rows}</div>'''
+<div class="picks-container ma-premium">{rows}</div>'''
 
 
 def render_trends(games):
@@ -1003,7 +1003,7 @@ def generate_html(daily_data):
                     <tr><td class="tier-label" style="color:var(--color-neutral)">55-69</td><td>Neutral — roughly league-average</td></tr>
                     <tr><td class="tier-label" style="color:var(--color-tough)">40-54</td><td>Tough Matchup — historically struggles vs this archetype</td></tr>
                 </table>
-                <div class="formula-block">MS FORMULA (wOBA-based):
+                <div class="formula-block ma-premium">MS FORMULA (wOBA-based):
 wOBA >= .400  →  MS 90-99
 wOBA .370-.399 →  MS 80-89
 wOBA .340-.369 →  MS 70-79
@@ -1017,7 +1017,7 @@ vs specific pitcher (not just archetype)</div>
             <div class="info-card">
                 <h2>PROJECTION METHODOLOGY</h2>
                 <p>Team runs are projected using the <strong>BaseRuns</strong> formula, a context-neutral run estimator:</p>
-                <div class="formula-block">A = H + BB - HR
+                <div class="formula-block ma-premium">A = H + BB - HR
 B = 1.02 × (1.4×TB - 0.6×H + 0.1×BB)
 C = PA - H - BB
 D = HR
