@@ -1,0 +1,251 @@
+name: Daily MLB Pipeline
+
+on:
+  schedule:
+    # ── MORNING LINEUP CHECK: 9:00 AM ET = 1:00 PM UTC ──
+    # RotoWire usually has lineups by 9-10 AM. First run of the day.
+    - cron: '0 13 * * *'
+
+    # ── PRE-GAME UPDATE: 12:30 PM ET = 4:30 PM UTC ──
+    # Final lineup confirm + fresh odds for afternoon games (1 PM+ starts)
+    - cron: '30 16 * * *'
+
+    # ── EVENING UPDATE: 6:00 PM ET = 10:00 PM UTC ──
+    # Night game slate update (7 PM+ starts). Final lines for evening action.
+    - cron: '0 22 * * *'
+
+    # ── SETTLEMENT: 10:00 AM ET = 2:00 PM UTC ──
+    # Grade yesterday's picks (most games final by morning)
+    - cron: '0 14 * * *'
+
+  workflow_dispatch:
+    inputs:
+      full_pipeline:
+        description: 'Run full pipeline (collect + matchups + bullpen + generate)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+      settle_only:
+        description: 'Run settlement only (grade picks + settle blog)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+env:
+  ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+
+jobs:
+  # ═══════════════════════════════════════════════════════
+  # JOB 1: UPDATE LINES
+  # Runs the full daily pipeline: collect → matchups → bullpen → generate
+  # ═══════════════════════════════════════════════════════
+  update-lines:
+    if: github.event.schedule != '0 14 * * *' && inputs.settle_only != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout MLB_PitcherChart
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install requests beautifulsoup4 python-dotenv
+
+      - name: Create data directory
+        run: mkdir -p data/daily
+
+      - name: Run collect_daily.py
+        run: python scripts/collect_daily.py
+
+      - name: Run compute_matchups.py
+        run: python scripts/compute_matchups.py
+
+      - name: Run predict_bullpen.py
+        run: python scripts/predict_bullpen.py
+
+      - name: Run generate_mlbsim.py
+        run: python scripts/generate_mlbsim.py
+
+      - name: Commit and push
+        run: |
+          DATE=$(TZ='America/New_York' date '+%b %d %I:%M %p ET')
+          git config user.name "MLB Pipeline Bot"
+          git config user.email "noreply@github.com"
+          git add data/daily/ frontend/public/mlbsim.html
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "Auto-update MLB lines — ${DATE}"
+          git push
+
+  # ═══════════════════════════════════════════════════════
+  # JOB 2: SYNC TO MORELLOSIMS
+  # Copy mlbsim.html to MORELLOSIMS/mlbsim/ and inject auth
+  # ═══════════════════════════════════════════════════════
+  sync-to-morellosims:
+    needs: update-lines
+    if: github.event.schedule != '0 14 * * *' && inputs.settle_only != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout MLB_PitcherChart
+        uses: actions/checkout@v4
+
+      - name: Checkout MORELLOSIMS
+        uses: actions/checkout@v4
+        with:
+          repository: jack-more/MORELLOSIMS
+          token: ${{ secrets.MORELLOSIMS_PAT }}
+          path: morellosims
+
+      - name: Copy mlbsim.html to MORELLOSIMS
+        run: |
+          mkdir -p morellosims/mlbsim
+          cp frontend/public/mlbsim.html morellosims/mlbsim/index.html
+
+      - name: Inject auth into mlbsim
+        run: |
+          FILE="morellosims/mlbsim/index.html"
+
+          # Add morello-auth.css before </head>
+          sed -i 's|</head>|    <link rel="stylesheet" href="../morello-auth.css">\n</head>|' "$FILE"
+
+          # Add data-ma-theme="mlb" to body
+          sed -i 's|<body>|<body data-ma-theme="mlb">|' "$FILE"
+
+          # Add Firebase SDK + auth JS before </body>
+          sed -i 's|</body>|\n    <!-- Firebase SDK + Morello Auth -->\n    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>\n    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>\n    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>\n    <script src="../morello-auth.js" data-ma-theme="mlb"></script>\n</body>|' "$FILE"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4 python-dotenv
+
+      - name: Run update_blog.py
+        run: python scripts/update_blog.py morellosims/index.html
+        continue-on-error: true
+
+      - name: Commit and push to MORELLOSIMS
+        run: |
+          DATE=$(TZ='America/New_York' date '+%b %d %I:%M %p ET')
+          cd morellosims
+          git config user.name "MLB Pipeline Bot"
+          git config user.email "noreply@github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "Auto-sync MLB SIM — ${DATE}"
+          git push
+
+  # ═══════════════════════════════════════════════════════
+  # JOB 3: GRADE PICKS
+  # Run settlement: fetch scores, grade W/L/P, save results
+  # ═══════════════════════════════════════════════════════
+  grade-picks:
+    if: github.event.schedule == '0 14 * * *' || inputs.settle_only == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout MLB_PitcherChart
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4 python-dotenv
+
+      - name: Run grade_picks.py
+        run: python scripts/grade_picks.py
+
+      - name: Commit settlement results
+        run: |
+          DATE=$(TZ='America/New_York' date '+%b %d %I:%M %p ET')
+          git config user.name "MLB Pipeline Bot"
+          git config user.email "noreply@github.com"
+          git add data/daily/settlement_results.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "Grade MLB picks — ${DATE}"
+          git push
+
+  # ═══════════════════════════════════════════════════════
+  # JOB 4: SETTLE MORELLOSIMS
+  # Patch blog with W/L/P results, FINAL scores, bankroll
+  # ═══════════════════════════════════════════════════════
+  settle-morellosims:
+    needs: grade-picks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout MLB_PitcherChart
+        uses: actions/checkout@v4
+
+      - name: Checkout MORELLOSIMS
+        uses: actions/checkout@v4
+        with:
+          repository: jack-more/MORELLOSIMS
+          token: ${{ secrets.MORELLOSIMS_PAT }}
+          path: morellosims
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4 python-dotenv
+
+      - name: Run settle_blog.py
+        run: python scripts/settle_blog.py data/daily/settlement_results.json morellosims/index.html
+
+      - name: Sync fresh mlbsim dashboard
+        run: |
+          mkdir -p morellosims/mlbsim
+          cp frontend/public/mlbsim.html morellosims/mlbsim/index.html
+
+          FILE="morellosims/mlbsim/index.html"
+
+          # Inject auth
+          sed -i 's|</head>|    <link rel="stylesheet" href="../morello-auth.css">\n</head>|' "$FILE"
+          sed -i 's|<body>|<body data-ma-theme="mlb">|' "$FILE"
+          sed -i 's|</body>|\n    <!-- Firebase SDK + Morello Auth -->\n    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>\n    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>\n    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>\n    <script src="../morello-auth.js" data-ma-theme="mlb"></script>\n</body>|' "$FILE"
+
+      - name: Commit and push to MORELLOSIMS
+        run: |
+          DATE=$(TZ='America/New_York' date '+%b %d %I:%M %p ET')
+          cd morellosims
+          git config user.name "MLB Pipeline Bot"
+          git config user.email "noreply@github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "Settle MLB picks — ${DATE}"
+          git push

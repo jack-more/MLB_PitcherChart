@@ -18,7 +18,7 @@ import json
 import os
 import sys
 import html as html_lib
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -92,6 +92,97 @@ def _pct(val):
     if val is None:
         return "—"
     return f"{float(val)*100:.0f}%"
+
+
+# ═══════════════════════════════════════════════════════════
+# DATA FLATTENING (compute_matchups.py → render-ready)
+# ═══════════════════════════════════════════════════════════
+
+def flatten_game(game):
+    """Transform compute_matchups.py nested output into the flat
+    structure that render_*() functions expect.
+
+    Bridges:
+      away_proj.runs        → away_projected_runs
+      edges.spread.edge     → edge.spread_edge
+      edges (picks)         → picks[]
+      away_proj.batter_details → away_lineup (enriched with MS)
+      away_proj.lineup_pct  → away_coverage.pct
+      game_time_utc         → game_time_et
+    """
+    # 1. Projected runs
+    game["away_projected_runs"] = game.get("away_proj", {}).get("runs", 0)
+    game["home_projected_runs"] = game.get("home_proj", {}).get("runs", 0)
+
+    # 2. Flatten edges → edge dict
+    edges = game.get("edges", {})
+    flat_edge = {}
+    if "spread" in edges:
+        flat_edge["spread_edge"] = edges["spread"]["edge"]
+    if "total" in edges:
+        flat_edge["total_edge"] = edges["total"]["edge"]
+    game["edge"] = flat_edge
+
+    # 3. Build per-game picks list from edges
+    picks = []
+    if edges.get("spread", {}).get("is_pick"):
+        se = edges["spread"]
+        picks.append({
+            "type": "spread",
+            "label": f"{se['side']} {se['market']:+.1f}",
+            "edge": se["edge"],
+            "strength": "strong" if se.get("is_strong") else "lean",
+        })
+    if edges.get("total", {}).get("is_pick"):
+        te = edges["total"]
+        picks.append({
+            "type": "total",
+            "label": f"{'OVER' if te['direction'] == 'over' else 'UNDER'} {te['market']}",
+            "edge": te["edge"],
+            "strength": "strong" if te.get("is_strong") else "lean",
+        })
+    game["picks"] = picks
+
+    # 4. Flatten lineup: merge batter_details MS into lineup entries
+    for side in ("away", "home"):
+        details = game.get(f"{side}_proj", {}).get("batter_details", [])
+        if details:
+            enriched = []
+            for bd in details:
+                ms_data = bd.get("ms", {})
+                rng = ms_data.get("range", [0, 0])
+                enriched.append({
+                    "id": bd.get("id"),
+                    "name": bd.get("name", ""),
+                    "pos": bd.get("pos", ""),
+                    "bats": bd.get("bats", ""),
+                    "ms": ms_data.get("ms", 0),
+                    "woba": ms_data.get("woba", 0),
+                    "pa": ms_data.get("pa", 0),
+                    "k_pct": ms_data.get("k_pct"),
+                    "source": bd.get("source", "none"),
+                    "ms_range": {"low": rng[0], "high": rng[1]} if rng else None,
+                })
+            game[f"{side}_lineup"] = enriched
+
+    # 5. Flatten coverage
+    for side in ("away", "home"):
+        proj = game.get(f"{side}_proj", {})
+        game[f"{side}_coverage"] = {
+            "pct": proj.get("lineup_pct", 0),
+            "known": proj.get("coverage", 0),
+            "total": proj.get("total", 0),
+        }
+
+    # 6. Convert UTC game time to ET
+    utc_str = game.get("game_time_utc", "")
+    if utc_str:
+        try:
+            utc_dt = datetime.fromisoformat(utc_str.replace("Z", "+00:00"))
+            et_dt = utc_dt.astimezone(timezone(timedelta(hours=-4)))  # EDT
+            game["game_time_et"] = et_dt.strftime("%-I:%M %p ET")
+        except Exception:
+            game["game_time_et"] = ""
 
 
 # ═══════════════════════════════════════════════════════════
@@ -830,6 +921,11 @@ def generate_html(daily_data):
     """Generate the complete self-contained HTML page."""
     games = daily_data.get("games", [])
     slate_date = daily_data.get("slate_date", "")
+
+    # Flatten nested compute_matchups.py output → render-ready structure
+    for game in games:
+        flatten_game(game)
+
     is_spring = any(g.get("is_spring_training") for g in games)
 
     # Format date for display
