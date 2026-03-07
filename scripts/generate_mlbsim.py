@@ -459,12 +459,27 @@ def render_bullpen_section(game, side, game_idx):
 </div>'''
 
 
+def render_affiliate_buttons():
+    """Render Kalshi + BetHOG affiliate buttons for a game card."""
+    k_link = "https://kalshi.com/sign-up/?referral=88acd325-1cbe-44b0-9358-f0cf92cf9fc7"
+    h_link = "https://bethog.com/r/alphamale"
+    return f'''<div class="affiliate-row">
+  <a href="{k_link}" target="_blank" rel="noopener" class="aff-btn aff-kalshi">
+    <span class="aff-name">KALSHI</span><span class="aff-cta">TRADE NOW</span>
+  </a>
+  <a href="{h_link}" target="_blank" rel="noopener" class="aff-btn aff-bethog">
+    <span class="aff-name">BetHOG</span><span class="aff-cta">BET NOW</span>
+  </a>
+</div>'''
+
+
 def render_game_card(game, game_idx):
     """Render a complete game card."""
     badge = render_game_type_badge(game)
     run_bar = render_run_bar(game)
     header = render_card_header(game)
     sp_block = render_sp_block(game)
+    affiliate = render_affiliate_buttons()
     lineup = render_lineup_grid(game, game_idx)
 
     # Bullpen sections
@@ -513,6 +528,7 @@ def render_game_card(game, game_idx):
   {edge_html}
   {sp_block}
   {meta_html}
+  {affiliate}
   {lineup}
   {bp_html}
 </div>'''
@@ -714,6 +730,16 @@ body::after{
 
 /* Game metadata */
 .game-meta{font-family:var(--font-mono);font-size:9px;color:var(--color-meta);text-align:center;padding:4px 12px;letter-spacing:0.5px}
+
+/* Affiliate buttons */
+.affiliate-row{display:flex;gap:8px;padding:8px 12px;justify-content:center}
+.aff-btn{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:6px;text-decoration:none;font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:0.5px;transition:all 0.15s;border:1.5px solid}
+.aff-btn:active{transform:scale(0.97)}
+.aff-kalshi{background:#00C48010;border-color:#00C48060;color:#00C480}
+.aff-kalshi .aff-cta{color:#00C480;opacity:0.7;font-weight:400}
+.aff-bethog{background:#FF6B0010;border-color:#FF6B0060;color:#FF6B00}
+.aff-bethog .aff-cta{color:#FF6B00;opacity:0.7;font-weight:400}
+.aff-name{font-weight:700;text-transform:uppercase}
 
 /* Edge bar */
 .edge-bar{background:var(--color-accent);color:var(--color-black);font-family:var(--font-mono);font-size:10px;font-weight:700;text-align:center;padding:4px;letter-spacing:0.5px;text-transform:uppercase}
