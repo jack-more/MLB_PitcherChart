@@ -673,7 +673,8 @@ body::after{
 }
 
 /* ═══ HEADER ═══ */
-.header{position:sticky;top:0;z-index:100;background:var(--color-bg)}
+.header{position:sticky;top:0;z-index:200;background:var(--color-bg);isolation:isolate}
+.header::before{content:'';position:absolute;inset:0;background:var(--color-bg);z-index:-1}
 .brand-row{display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
 .logo{font-family:var(--font-display);font-size:28px;color:var(--color-accent);background:var(--color-black);padding:4px 14px;transform:skewX(-5deg);display:inline-block;letter-spacing:2px;line-height:1.1}
 .byline{font-family:var(--font-body);font-size:11px;font-weight:400;color:#555;letter-spacing:0.5px;font-style:italic}
