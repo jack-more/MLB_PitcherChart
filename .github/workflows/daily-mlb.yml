@@ -2,19 +2,19 @@ name: Daily MLB Pipeline
 
 on:
   schedule:
-    # ── MORNING LINEUP CHECK: 9:00 AM ET = 1:00 PM UTC ──
-    # RotoWire usually has lineups by 9-10 AM. First run of the day.
-    - cron: '0 13 * * *'
+    # ── MORNING UPDATE: 5:30 AM PST / 8:30 AM ET = 1:30 PM UTC ──
+    # First daily stats refresh. RotoWire lineups + fresh odds.
+    - cron: '30 13 * * *'
 
-    # ── PRE-GAME UPDATE: 12:30 PM ET = 4:30 PM UTC ──
-    # Final lineup confirm + fresh odds for afternoon games (1 PM+ starts)
-    - cron: '30 16 * * *'
+    # ── PRE-GAME UPDATE: 10:00 AM PST / 1:00 PM ET = 6:00 PM UTC ──
+    # Second daily stats refresh. Final lineup confirm + fresh odds.
+    - cron: '0 18 * * *'
 
-    # ── EVENING UPDATE: 6:00 PM ET = 10:00 PM UTC ──
+    # ── EVENING UPDATE: 3:00 PM PST / 6:00 PM ET = 10:00 PM UTC ──
     # Night game slate update (7 PM+ starts). Final lines for evening action.
     - cron: '0 22 * * *'
 
-    # ── SETTLEMENT: 10:00 AM ET = 2:00 PM UTC ──
+    # ── SETTLEMENT: 7:00 AM PST / 10:00 AM ET = 2:00 PM UTC ──
     # Grade yesterday's picks (most games final by morning)
     - cron: '0 14 * * *'
 
@@ -36,6 +36,9 @@ on:
         options:
           - 'false'
           - 'true'
+
+permissions:
+  contents: write
 
 env:
   ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
@@ -66,17 +69,17 @@ jobs:
       - name: Create data directory
         run: mkdir -p data/daily
 
-      - name: Run collect_daily.py
-        run: python scripts/collect_daily.py
-
-      - name: Run compute_matchups.py
-        run: python scripts/compute_matchups.py
-
-      - name: Run predict_bullpen.py
-        run: python scripts/predict_bullpen.py
-
-      - name: Run generate_mlbsim.py
-        run: python scripts/generate_mlbsim.py
+      - name: Run MLB pipeline (with retry)
+        run: |
+          for attempt in 1 2 3; do
+            echo "=== MLB pipeline attempt $attempt/3 ==="
+            python scripts/collect_daily.py && \
+            python scripts/compute_matchups.py && \
+            python scripts/predict_bullpen.py && \
+            python scripts/generate_mlbsim.py && break
+            echo "Attempt $attempt failed, waiting 60s before retry..."
+            sleep 60
+          done
 
       - name: Commit and push
         run: |
