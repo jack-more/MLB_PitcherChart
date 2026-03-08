@@ -678,8 +678,7 @@ body::after{
 .brand-row{display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
 .logo{font-family:var(--font-display);font-size:28px;color:var(--color-accent);background:var(--color-black);padding:4px 14px;transform:skewX(-5deg);display:inline-block;letter-spacing:2px;line-height:1.1}
 .byline{font-family:var(--font-body);font-size:11px;font-weight:400;color:#555;letter-spacing:0.5px;font-style:italic}
-.atlas-btn{font-family:var(--font-mono);font-size:9px;font-weight:700;color:var(--color-meta);text-decoration:none;letter-spacing:1px;padding:4px 10px;border:1.5px solid var(--color-meta);border-radius:12px;transition:all 0.15s}
-.atlas-btn:active{background:var(--color-black);color:#fff}
+/* atlas-btn removed — now in global site nav via morello-auth.js */
 .status-dot{width:12px;height:12px;border-radius:50%;background:var(--color-accent);animation:pulse 2s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(255,234,0,0.4)}50%{opacity:0.7;box-shadow:0 0 0 8px rgba(255,234,0,0)}}
 
@@ -1042,8 +1041,7 @@ def generate_html(daily_data):
             <div class="logo">MLB SIM</div>
             <span class="byline">by Jack Morello</span>
         </div>
-        <div style="display:flex;align-items:center;gap:8px">
-            <a href="cosmos.html" class="atlas-btn">ATLAS</a>
+        <div class="status-indicators" style="display:flex;align-items:center;gap:6px">
             <div class="status-dot"></div>
         </div>
     </div>
