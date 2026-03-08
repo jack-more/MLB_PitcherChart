@@ -1,6 +1,9 @@
 data/raw/
 data/cache/
 data/processed/
+# Daily pipeline intermediates (but NOT the output JSONs)
+data/daily/odds_cache.json
+data/daily/lineup_cache.json
 models/*.joblib
 models/*.html
 __pycache__/

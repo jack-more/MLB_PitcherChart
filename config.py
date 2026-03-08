@@ -12,6 +12,8 @@ PROCESSED_DATA_DIR = os.path.join(PROJECT_ROOT, "data", "processed")
 CACHE_DIR = os.path.join(PROJECT_ROOT, "data", "cache")
 MODELS_DIR = os.path.join(PROJECT_ROOT, "models")
 FRONTEND_DATA_DIR = os.path.join(PROJECT_ROOT, "frontend", "src", "data")
+DAILY_DATA_DIR = os.path.join(PROJECT_ROOT, "data", "daily")
+FRONTEND_PUBLIC_DIR = os.path.join(PROJECT_ROOT, "frontend", "public")
 
 # ------------------------------------------------------------------
 # Seasons

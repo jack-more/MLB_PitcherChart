@@ -92,9 +92,18 @@ def export_all():
     df = pd.read_parquet(ps_path)
     print(f"  Loaded {len(df)} pitcher-seasons from global parquet")
 
-    # Filter to qualified pitcher-seasons (>= 300 pitches)
-    qualified = df[df["total_pitches"] >= 300].copy()
-    print(f"  Qualified (>=300 pitches): {len(qualified)} pitcher-seasons")
+    # Filter to qualified pitcher-seasons:
+    #   MLB: >= 300 pitches    MiLB: >= 200 pitches (shorter seasons)
+    if "source" in df.columns:
+        mlb_mask = (df["source"] != "milb") & (df["total_pitches"] >= 300)
+        milb_mask = (df["source"] == "milb") & (df["total_pitches"] >= 200)
+        qualified = df[mlb_mask | milb_mask].copy()
+        n_milb = milb_mask.sum()
+        print(f"  Qualified: {len(qualified)} pitcher-seasons "
+              f"(MLB>=300, MiLB>=200 [{n_milb} MiLB])")
+    else:
+        qualified = df[df["total_pitches"] >= 300].copy()
+        print(f"  Qualified (>=300 pitches): {len(qualified)} pitcher-seasons")
 
     # Load soft probabilities
     proba_df = None
