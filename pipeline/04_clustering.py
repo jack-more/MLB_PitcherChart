@@ -555,6 +555,41 @@ def main():
     else:
         print("\nNo sub-threshold pitcher file found — skipping nearest-cluster assignment.")
 
+    # ── Apply cluster merges (consolidate redundant clusters) ──
+    from config import CLUSTER_MERGES
+    if CLUSTER_MERGES:
+        print(f"\n{'='*60}")
+        print(f"  APPLYING CLUSTER MERGES")
+        print(f"{'='*60}")
+
+        ps_path = os.path.join(PROCESSED_DATA_DIR, "pitcher_seasons.parquet")
+        ps = pd.read_parquet(ps_path)
+        n_before = ps["cluster"].nunique()
+
+        for old_cid, new_cid in CLUSTER_MERGES.items():
+            n_moved = (ps["cluster"] == old_cid).sum()
+            if n_moved > 0:
+                ps.loc[ps["cluster"] == old_cid, "cluster"] = new_cid
+                print(f"  {old_cid} -> {new_cid}: {n_moved} pitcher-seasons merged")
+
+        n_after = ps["cluster"].nunique()
+        ps.to_parquet(ps_path, engine="pyarrow", compression="snappy")
+        print(f"  Clusters: {n_before} -> {n_after}")
+
+        # Also merge in cluster_probabilities.parquet
+        proba_path = os.path.join(PROCESSED_DATA_DIR, "cluster_probabilities.parquet")
+        if os.path.exists(proba_path):
+            proba = pd.read_parquet(proba_path)
+            for old_cid, new_cid in CLUSTER_MERGES.items():
+                if old_cid in proba.columns and new_cid in proba.columns:
+                    proba[new_cid] = proba[new_cid] + proba[old_cid]
+                    proba.drop(columns=[old_cid], inplace=True)
+                    print(f"  Merged probabilities: {old_cid} -> {new_cid}")
+                elif old_cid in proba.columns:
+                    proba.rename(columns={old_cid: new_cid}, inplace=True)
+                    print(f"  Renamed probability column: {old_cid} -> {new_cid}")
+            proba.to_parquet(proba_path, engine="pyarrow", compression="snappy")
+
     print("\nClustering complete!")
 
 

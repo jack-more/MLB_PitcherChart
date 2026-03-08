@@ -151,6 +151,15 @@ def main():
     milb_assigned = pd.concat(parts, ignore_index=True)
     milb_assigned["source"] = "milb"
 
+    # Apply cluster merges (same as MLB pipeline)
+    from config import CLUSTER_MERGES
+    if CLUSTER_MERGES:
+        for old_cid, new_cid in CLUSTER_MERGES.items():
+            n_moved = (milb_assigned["cluster"] == old_cid).sum()
+            if n_moved > 0:
+                milb_assigned.loc[milb_assigned["cluster"] == old_cid, "cluster"] = new_cid
+                print(f"  Merge: {old_cid} -> {new_cid} ({n_moved} MiLB pitchers)")
+
     # Save standalone MiLB file
     milb_out = os.path.join(PROCESSED_DATA_DIR, "milb_pitcher_seasons.parquet")
     milb_assigned.to_parquet(milb_out, engine="pyarrow", compression="snappy")

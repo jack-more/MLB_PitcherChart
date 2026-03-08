@@ -44,6 +44,7 @@ def _get_top_pitches(row: pd.Series, n: int = 3) -> list:
 
 
 def _role_str(is_sp: float) -> str:
+    """Role string — kept for internal logic but NOT appended to archetype names."""
     if is_sp > 0.55:
         return "Starter"
     elif is_sp < 0.35:
@@ -52,6 +53,7 @@ def _role_str(is_sp: float) -> str:
 
 
 def _role_short(is_sp: float) -> str:
+    """Role abbreviation — kept for internal logic but NOT appended to archetype names."""
     if is_sp > 0.55:
         return "SP"
     elif is_sp < 0.35:
@@ -89,7 +91,6 @@ def generate_full_name(row: pd.Series, hand: str = "RHP") -> str:
     then secondary modifiers (outcome, velocity, groundball tendency).
     """
     t = _score_traits(row)
-    role = _role_str(t["is_sp"])
     parts = ["The"]
 
     # --- Primary identity: what makes this cluster's PITCH MIX unique ---
@@ -121,10 +122,8 @@ def generate_full_name(row: pd.Series, hand: str = "RHP") -> str:
         parts.append("Triple Threat")
     elif t["cu"] > 0.15 and t["fc"] > 0.12:
         parts.append("Cutter-Curve Craftsman")
-    elif t["cu"] > 0.12 and t["is_sp"] > 0.55:
-        parts.append("Uncle Charlie")
     elif t["cu"] > 0.12:
-        parts.append("Yakker Specialist")
+        parts.append("Uncle Charlie")
     elif t["fc"] > 0.15:
         parts.append("Cutman Specialist")
     elif t["ff"] + t["si"] > 0.55 and t["whiff"] > 0.25:
@@ -147,57 +146,54 @@ def generate_full_name(row: pd.Series, hand: str = "RHP") -> str:
     elif t["gb"] < 0.41:
         parts.append("Flyball Daredevil")
 
-    parts.append(role)
     return " ".join(parts)
 
 
 def generate_short_name(row: pd.Series, full_name: str, hand: str = "RHP") -> str:
-    """Create a punchy 2-4 word label. Every cluster MUST get a unique name."""
+    """Create a punchy 2-4 word label. Every cluster MUST get a unique name.
+    No SP/RP suffix — a pitcher's stuff is their stuff regardless of role."""
     t = _score_traits(row)
-    role = _role_short(t["is_sp"])
 
     # Ordered by most exotic/distinctive pitch trait first
     if t["kn"] > 0.10:
-        return f"Knuckleball Wizard {role}"
+        return "Knuckleball Wizard"
     if t["fs"] > 0.15:
-        return f"Split Demon {role}"
+        return "Split Demon"
     if t["kc"] > 0.15:
-        return f"Uncle Charlie {role}"
+        return "Uncle Charlie"
     # Undertow BEFORE Boomerang — no-FF sinker identity takes priority
     if t["si"] > 0.35 and t["ff"] < 0.05:
-        return f"Undertow {role}"
+        return "Undertow"
     if t["st"] > 0.20:
-        return f"Boomerang {role}"
+        return "Boomerang"
     if t["ch"] > 0.20:
-        return f"Ghost {role}"
+        return "Ghost"
     if t["si"] > 0.35 and t["fc"] > 0.15:
-        return f"Sinker-Cutter {role}"
+        return "Sinker-Cutter"
     if t["si"] > 0.35 and t["sl"] > 0.18:
         if hand == "LHP":
-            return f"Gardener {role}"
-        return f"Snake {role}"
+            return "Gardener"
+        return "Snake"
     if t["si"] > 0.35:
-        return f"Wormburner {role}"
+        return "Wormburner"
     if t["ff"] > 0.45 and t["sl"] > 0.30:
-        return f"Barnburner {role}"
+        return "Barnburner"
     if t["ff"] > 0.40 and t["sl"] > 0.15 and t["cu"] > 0.10:
-        return f"Triple Threat {role}"
+        return "Triple Threat"
     if t["cu"] > 0.15 and t["fc"] > 0.12:
-        return f"Cutter-Curve Craftsman {role}"
-    if t["cu"] > 0.12 and t["is_sp"] > 0.55:
-        return f"Uncle Charlie {role}"
+        return "Cutter-Curve Craftsman"
     if t["cu"] > 0.12:
-        return f"Yakker {role}"
+        return "Uncle Charlie"
     if t["fc"] > 0.15:
-        return f"Cutman {role}"
+        return "Cutman"
     if t["ff"] + t["si"] > 0.55 and t["whiff"] > 0.25:
-        return f"Barnburner {role}"
+        return "Barnburner"
     if t["ff"] + t["si"] > 0.55:
-        return f"Heater-Heavy {role}"
+        return "Heater-Heavy"
     if t["ch"] + t["fs"] > 0.15:
-        return f"Ghost {role}"
+        return "Ghost"
 
-    return f"Kitchen Sink {role}"
+    return "Kitchen Sink"
 
 
 def find_nearest_pitchers(
@@ -319,10 +315,9 @@ def main():
         short_name = generate_short_name(row, full_name, hand)
 
         # Force post-hoc cluster names BEFORE color assignment
-        role = _role_short(row.get("is_sp", 0))
         if cid.endswith("_UT"):
-            short_name = f"Undertow {role}"
-            full_name = f"The Undertow Sinker-Dominant No-Fastball Worm Burner {_role_str(row.get('is_sp', 0))}"
+            short_name = "Undertow"
+            full_name = "The Undertow Sinker-Dominant No-Fastball Worm Burner"
 
         # Pick color by archetype name (same archetype = same color across hands)
         # Extract the archetype base name (remove RP/SP suffix)
@@ -343,9 +338,8 @@ def main():
         cluster_members = pitcher_seasons[pitcher_seasons["cluster"] == cid]
         avg_pitches = cluster_members["total_pitches"].mean() if len(cluster_members) > 0 else 0
         if avg_pitches < 100:
-            role = _role_short(row.get("is_sp", 0))
-            short_name = f"Eephus Lobber {role}"
-            full_name = f"The Eephus Lobber (Position Player) {_role_str(row.get('is_sp', 0))}"
+            short_name = "Eephus Lobber"
+            full_name = "The Eephus Lobber (Position Player)"
 
         # PCA position from medoid pitcher (real pitcher, not phantom average)
         pca_pos = {

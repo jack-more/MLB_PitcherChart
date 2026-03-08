@@ -97,6 +97,16 @@ CLUSTER_FEATURES = [
 MIN_PITCHES_PER_SIDE = 50  # Min pitches vs a batter side for split zone features
 
 # ------------------------------------------------------------------
+# Cluster merges — applied after GMM to consolidate redundant clusters
+# Maps old cluster ID → target cluster ID (pitchers get reassigned)
+# ------------------------------------------------------------------
+CLUSTER_MERGES = {
+    "R_5": "R_6",   # Kitchen Sink duplicates → merge into R_6 (larger, 1093 pitchers)
+    "R_10": "R_9",  # Uncle Charlie duplicates → merge into R_9 (same outcome profile)
+    "L_9": "L_3",   # 3-pitcher junk cluster → absorb into L_3 (largest LHP cluster)
+}
+
+# ------------------------------------------------------------------
 # Hitter archetype clustering (09_hitter_archetypes.py)
 # ------------------------------------------------------------------
 HITTER_ARCHETYPE_K_RANGE = range(12, 22)   # Search 12-21 clusters (want > 12 archetypes)
