@@ -106,8 +106,19 @@ class AtlasData:
         for b in batters:
             self.batter_index[b.get("batter")] = b.get("batter_name", "Unknown")
 
+        # Batter overall: batter_id → [all rows across ALL clusters/years]
+        # Used as fallback when opposing pitcher has no cluster assignment
+        self.batter_overall = {}
+        for row in hvc:
+            bid = row.get("batter")
+            if bid is not None:
+                if bid not in self.batter_overall:
+                    self.batter_overall[bid] = []
+                self.batter_overall[bid].append(row)
+
         print(f"[ATLAS] Indexed: {len(self.ps_index)} pitchers, "
-              f"{len(self.hvc_index)} batter-cluster combos, {len(self.batter_index)} batters")
+              f"{len(self.hvc_index)} batter-cluster combos, {len(self.batter_index)} batters, "
+              f"{len(self.batter_overall)} batters (overall fallback)")
 
 
 # ═══════════════════════════════════════════════════════════
@@ -125,47 +136,8 @@ def get_pitcher_cluster(pitcher_id: int, atlas: AtlasData):
     return str(ps.get("cluster", "")), ps.get("archetype", "")
 
 
-def compute_ms(batter_id: int, cluster_id: str, atlas: AtlasData) -> dict:
-    """Compute Matchup Score (40-99) for a batter vs a pitcher archetype.
-
-    Enhanced over JS version with recency weighting.
-
-    Returns dict with: ms, range, woba, k_pct, bb_pct, pa, source
-    """
-    if cluster_id is None or batter_id is None:
-        return {"ms": 0, "range": [0, 0], "woba": 0, "k_pct": 0, "bb_pct": 0, "pa": 0, "source": "none"}
-
-    key = (batter_id, cluster_id)
-    arch_rows = atlas.hvc_index.get(key, [])
-
-    if not arch_rows:
-        return {"ms": 0, "range": [0, 0], "woba": 0, "k_pct": 0, "bb_pct": 0, "pa": 0, "source": "none"}
-
-    # Weighted averages with recency boost
-    max_year = max(r.get("game_year", 0) for r in arch_rows)
-    tot_pa_w = 0
-    woba_sum = 0
-    k_sum = 0
-    bb_sum = 0
-
-    for r in arch_rows:
-        weight = RECENCY_WEIGHT if r.get("game_year", 0) == max_year else 1.0
-        pa = (r.get("PA") or 0) * weight
-        tot_pa_w += pa
-        woba_sum += (r.get("wOBA") or 0) * pa
-        k_sum += (r.get("K_pct") or 0) * pa
-        bb_sum += (r.get("BB_pct") or 0) * pa
-
-    raw_pa = sum(r.get("PA", 0) for r in arch_rows)
-
-    if tot_pa_w < MIN_PA_FOR_MS:
-        return {"ms": 0, "range": [0, 0], "woba": 0, "k_pct": 0, "bb_pct": 0, "pa": raw_pa, "source": "none"}
-
-    woba = woba_sum / tot_pa_w
-    k_pct = k_sum / tot_pa_w
-    bb_pct = bb_sum / tot_pa_w
-
-    # wOBA → 40-99 scale (same breakpoints as JS)
+def _woba_to_ms(woba: float) -> int:
+    """Convert wOBA to Matchup Score (40-99 scale)."""
     if woba >= 0.400:
         ms = 90 + min(9, round((woba - 0.400) * 100))
     elif woba >= 0.370:
@@ -178,23 +150,102 @@ def compute_ms(batter_id: int, cluster_id: str, atlas: AtlasData) -> dict:
         ms = 50 + round((woba - 0.270) / 0.040 * 9)
     else:
         ms = 40 + round(max(0, woba - 0.200) / 0.070 * 9)
+    return max(40, min(99, ms))
 
-    ms = max(40, min(99, ms))
 
-    # Confidence range based on sample size
-    spread = 4 if raw_pa >= 50 else (8 if raw_pa >= 20 else 14)
-    floor_ms = max(40, ms - spread)
-    ceiling_ms = min(99, ms + spread)
+def _weighted_stats(rows: list, recency_weight: float = RECENCY_WEIGHT):
+    """Compute PA-weighted stats across rows with recency boost.
 
-    return {
-        "ms": ms,
-        "range": [floor_ms, ceiling_ms],
-        "woba": round(woba, 3),
-        "k_pct": round(k_pct, 3),
-        "bb_pct": round(bb_pct, 3),
-        "pa": raw_pa,
-        "source": "archetype",
-    }
+    Returns (woba, k_pct, bb_pct, raw_pa, weighted_pa) or None if insufficient data.
+    """
+    if not rows:
+        return None
+
+    max_year = max(r.get("game_year", 0) for r in rows)
+    tot_pa_w = 0
+    woba_sum = 0
+    k_sum = 0
+    bb_sum = 0
+
+    for r in rows:
+        weight = recency_weight if r.get("game_year", 0) == max_year else 1.0
+        pa = (r.get("PA") or 0) * weight
+        tot_pa_w += pa
+        woba_sum += (r.get("wOBA") or 0) * pa
+        k_sum += (r.get("K_pct") or 0) * pa
+        bb_sum += (r.get("BB_pct") or 0) * pa
+
+    raw_pa = sum(r.get("PA", 0) for r in rows)
+
+    if tot_pa_w < MIN_PA_FOR_MS:
+        return None
+
+    return (
+        woba_sum / tot_pa_w,
+        k_sum / tot_pa_w,
+        bb_sum / tot_pa_w,
+        raw_pa,
+        tot_pa_w,
+    )
+
+
+def compute_ms(batter_id: int, cluster_id: str, atlas: AtlasData) -> dict:
+    """Compute Matchup Score (40-99) for a batter vs a pitcher archetype.
+
+    Enhanced over JS version with recency weighting.
+    Falls back to batter's overall (cross-archetype) stats when cluster_id
+    is None (opposing pitcher not in ATLAS).
+
+    Returns dict with: ms, range, woba, k_pct, bb_pct, pa, source
+    """
+    _zero = {"ms": 0, "range": [0, 0], "woba": 0, "k_pct": 0, "bb_pct": 0, "pa": 0, "source": "none"}
+
+    if batter_id is None:
+        return _zero
+
+    # ── Primary path: archetype-specific lookup ──
+    if cluster_id is not None:
+        key = (batter_id, cluster_id)
+        arch_rows = atlas.hvc_index.get(key, [])
+
+        if arch_rows:
+            stats = _weighted_stats(arch_rows)
+            if stats:
+                woba, k_pct, bb_pct, raw_pa, _ = stats
+                ms = _woba_to_ms(woba)
+                spread = 4 if raw_pa >= 50 else (8 if raw_pa >= 20 else 14)
+                return {
+                    "ms": ms,
+                    "range": [max(40, ms - spread), min(99, ms + spread)],
+                    "woba": round(woba, 3),
+                    "k_pct": round(k_pct, 3),
+                    "bb_pct": round(bb_pct, 3),
+                    "pa": raw_pa,
+                    "source": "archetype",
+                }
+
+    # ── Fallback: batter's overall stats across ALL archetypes ──
+    # Used when pitcher has no cluster (uncharted) or batter has no data
+    # for this specific cluster but does have data vs other clusters.
+    overall_rows = atlas.batter_overall.get(batter_id, [])
+    if overall_rows:
+        stats = _weighted_stats(overall_rows)
+        if stats:
+            woba, k_pct, bb_pct, raw_pa, _ = stats
+            ms = _woba_to_ms(woba)
+            # Wider confidence range for fallback (less precise without archetype)
+            spread = 10 if raw_pa >= 100 else (14 if raw_pa >= 40 else 18)
+            return {
+                "ms": ms,
+                "range": [max(40, ms - spread), min(99, ms + spread)],
+                "woba": round(woba, 3),
+                "k_pct": round(k_pct, 3),
+                "bb_pct": round(bb_pct, 3),
+                "pa": raw_pa,
+                "source": "overall",  # Flagged so UI can distinguish
+            }
+
+    return _zero
 
 
 def ms_tier(ms: int) -> str:
@@ -259,16 +310,30 @@ def project_team(lineup, opposing_pitcher_id: int, atlas: AtlasData, pa_override
         proj = {"h": 0, "hr": 0, "k": 0, "bb": 0, "tb": 0, "woba": 0, "sb": 0, "cs": 0}
         source = "none"
 
+        # Determine which rows to use: archetype-specific or overall fallback
+        data_rows = None
+        data_source = "none"
+
         if batter_id and cluster_id:
             key = (batter_id, cluster_id)
             arch_rows = atlas.hvc_index.get(key, [])
-
             if arch_rows:
+                data_rows = arch_rows
+                data_source = "archetype"
+
+        # Fallback: use batter's overall stats across ALL clusters
+        if data_rows is None and batter_id:
+            overall_rows = atlas.batter_overall.get(batter_id, [])
+            if overall_rows:
+                data_rows = overall_rows
+                data_source = "overall"
+
+        if data_rows:
                 tot = {"PA": 0, "H": 0, "HR": 0, "BB": 0, "K": 0,
                        "singles": 0, "doubles": 0, "triples": 0}
                 woba_weighted = 0
 
-                for r in arch_rows:
+                for r in data_rows:
                     for field in tot:
                         tot[field] += r.get(field, 0)
                     woba_weighted += (r.get("wOBA", 0)) * (r.get("PA", 0))
@@ -290,7 +355,7 @@ def project_team(lineup, opposing_pitcher_id: int, atlas: AtlasData, pa_override
                     proj["bb"] = round(bb_rate * assumed_pa, 3)
                     proj["tb"] = round(tb_rate * assumed_pa, 3)
                     proj["woba"] = round(woba_weighted / pa_total, 3) if pa_total > 0 else 0
-                    source = "archetype"
+                    source = data_source
                     coverage += 1
 
         # Compute MS for this batter
