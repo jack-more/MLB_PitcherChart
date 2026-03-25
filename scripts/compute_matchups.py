@@ -26,6 +26,7 @@ from scripts.daily_config import (
     FRONTEND_PUBLIC, DAILY_LINEUPS_FILE, DAILY_GAMES_FILE,
     MIN_PA_FOR_MS, MIN_PA_FOR_H2H, RECENCY_WEIGHT, DEFAULT_PA_PER_BATTER,
     EDGE_THRESHOLD_SPREAD, EDGE_THRESHOLD_TOTAL, STRONG_EDGE_MULTIPLIER,
+    CONF_ST_CAP,
 )
 
 
@@ -378,6 +379,15 @@ def project_team(lineup, opposing_pitcher_id: int, atlas: AtlasData, pa_override
         team_cs += proj["cs"]
         team_pa += assumed_pa
 
+        # Compute batter's overall (career) wOBA as baseline
+        overall_woba = 0
+        overall_rows = atlas.batter_overall.get(batter_id, [])
+        if overall_rows:
+            ow_pa = sum(r.get("PA", 0) for r in overall_rows)
+            ow_woba = sum((r.get("wOBA", 0)) * (r.get("PA", 0)) for r in overall_rows)
+            if ow_pa > 0:
+                overall_woba = round(ow_woba / ow_pa, 3)
+
         batter_details.append({
             "id": batter_id,
             "name": batter_name,
@@ -386,6 +396,7 @@ def project_team(lineup, opposing_pitcher_id: int, atlas: AtlasData, pa_override
             "proj": proj,
             "source": source,
             "ms": ms_data,
+            "overall_woba": overall_woba,
             "tier": ms_tier(ms_data["ms"]) if ms_data["ms"] > 0 else "unknown",
         })
 
@@ -440,6 +451,10 @@ def compute_game(game: dict, atlas: AtlasData) -> dict:
             game[f"{side}_pitcher"]["whiff_rate"] = ps.get("whiff_rate", 0)
             game[f"{side}_pitcher"]["groundball_rate"] = ps.get("groundball_rate", 0)
             game[f"{side}_pitcher"]["avg_velo_FF"] = ps.get("avg_velo_FF", 0)
+
+            # Correct handedness from atlas (MLB API sometimes missing pitchHand)
+            if "is_rhp" in ps:
+                game[f"{side}_pitcher"]["throws"] = "R" if ps["is_rhp"] else "L"
 
             # Cluster profile
             cluster_profile = atlas.clusters.get(cluster_id, {})
@@ -514,7 +529,109 @@ def compute_game(game: dict, atlas: AtlasData) -> dict:
         else:
             game[f"{side}_avg_ms"] = 0
 
+    # Compute confidence scores
+    game["confidence"] = compute_confidence(game)
+
     return game
+
+
+# ═══════════════════════════════════════════════════════════
+# CONFIDENCE SCORING (1-10 scale, matches NBA SIM pattern)
+# ═══════════════════════════════════════════════════════════
+
+def _conf_color(conf: int) -> str:
+    """Map 1-10 confidence to color (matches NBA SIM palette)."""
+    if conf >= 8:
+        return "#00FF55"   # Green
+    elif conf >= 6:
+        return "#7FFF00"   # Lime
+    elif conf >= 4:
+        return "#FFD600"   # Yellow
+    elif conf >= 2:
+        return "#FF8C00"   # Orange
+    else:
+        return "#FF3333"   # Red
+
+
+def _conf_label(conf: int, side: str) -> str:
+    """Generate confidence label for spread pick."""
+    if conf >= 8:
+        return f"TAKE {side}"
+    elif conf >= 5:
+        return f"LEAN {side}"
+    else:
+        return "TOSS-UP"
+
+
+def _conf_label_ou(conf: int, direction: str) -> str:
+    """Generate confidence label for O/U pick."""
+    dir_str = direction.upper()
+    if conf >= 8:
+        return f"TAKE {dir_str}"
+    elif conf >= 5:
+        return f"LEAN {dir_str}"
+    else:
+        return "TOSS-UP"
+
+
+def compute_confidence(game: dict) -> dict:
+    """Compute confidence scores (1-10) for spread and O/U picks.
+
+    MLB confidence factors:
+      1. Edge magnitude (primary) — bigger edge = higher confidence
+      2. Coverage quality — % of lineup batters with archetype data
+      3. Lineup status — confirmed vs expected
+      4. Spring training discount — ST caps confidence at CONF_ST_CAP
+
+    MLB edges are smaller than NBA (1-3 runs vs 3-10 pts), so calibration
+    differs: edge 1.0 run -> ~5, edge 2.0 -> ~8, edge 3.0 -> 10.
+    """
+    edges = game.get("edges", {})
+    is_st = game.get("is_spring_training", False)
+
+    # Average coverage across both lineups
+    away_cov = game.get("away_proj", {}).get("lineup_pct", 0)
+    home_cov = game.get("home_proj", {}).get("lineup_pct", 0)
+    avg_coverage = (away_cov + home_cov) / 2  # 0-100
+
+    # Coverage factor: scales from 0.6 (0% coverage) to 1.0 (100% coverage)
+    coverage_factor = 0.6 + 0.4 * (avg_coverage / 100)
+
+    # Lineup status bonus
+    lineup_status = game.get("lineup_status", "expected")
+    status_bonus = 1 if lineup_status == "confirmed" else 0
+
+    result = {}
+
+    # ── Spread confidence ──
+    if "spread" in edges:
+        spread_edge = abs(edges["spread"]["edge"])
+        # MLB calibration: edge 1.0 -> ~5, edge 2.0 -> ~8, edge 3.0+ -> 10
+        base_conf = min(10, max(1, round(spread_edge * 2.5 + 2.5)))
+        adj_conf = base_conf * coverage_factor + status_bonus
+        spread_conf = max(1, min(10, round(adj_conf)))
+        if is_st:
+            spread_conf = min(spread_conf, CONF_ST_CAP)
+
+        result["spread_conf"] = spread_conf
+        result["spread_conf_color"] = _conf_color(spread_conf)
+        result["spread_conf_label"] = _conf_label(spread_conf, edges["spread"]["side"])
+
+    # ── Total (O/U) confidence ──
+    if "total" in edges:
+        total_edge = abs(edges["total"]["edge"])
+        # MLB totals: edge 1.5 -> ~3, edge 3.0 -> ~4, edge 6.0 -> ~6
+        base_conf = min(10, max(1, round(total_edge / 1.5 + 2)))
+        adj_conf = base_conf * coverage_factor + status_bonus
+        total_conf = max(1, min(10, round(adj_conf)))
+        if is_st:
+            total_conf = min(total_conf, CONF_ST_CAP)
+
+        result["total_conf"] = total_conf
+        result["total_conf_color"] = _conf_color(total_conf)
+        result["total_conf_label"] = _conf_label_ou(total_conf, edges["total"]["direction"])
+
+    return result
 
 
 # ═══════════════════════════════════════════════════════════
@@ -522,10 +639,7 @@ def compute_game(game: dict, atlas: AtlasData) -> dict:
 # ═══════════════════════════════════════════════════════════
 
 def select_top_picks(games: list, max_picks: int = 5) -> list:
-    """Select the best daily picks based on edge strength.
-
-    Returns list of pick dicts with game reference, edge details, confidence.
-    """
+    """Select the best daily picks based on confidence and edge strength."""
     candidates = []
 
     for game in games:
@@ -533,10 +647,12 @@ def select_top_picks(games: list, max_picks: int = 5) -> list:
             continue
 
         edges = game.get("edges", {})
+        conf = game.get("confidence", {})
 
         # Spread picks
         if edges.get("spread", {}).get("is_pick"):
             se = edges["spread"]
+            spread_conf = conf.get("spread_conf", 5)
             candidates.append({
                 "type": "spread",
                 "matchup": f"{game['away_team']} @ {game['home_team']}",
@@ -545,6 +661,9 @@ def select_top_picks(games: list, max_picks: int = 5) -> list:
                 "line": se["market"],
                 "projected": se["projected"],
                 "edge": abs(se["edge"]),
+                "confidence": spread_conf,
+                "conf_color": conf.get("spread_conf_color", "#FFD600"),
+                "conf_label": conf.get("spread_conf_label", ""),
                 "is_strong": se.get("is_strong", False),
                 "is_spring_training": game.get("is_spring_training", False),
             })
@@ -552,6 +671,7 @@ def select_top_picks(games: list, max_picks: int = 5) -> list:
         # Total picks
         if edges.get("total", {}).get("is_pick"):
             te = edges["total"]
+            total_conf = conf.get("total_conf", 5)
             candidates.append({
                 "type": "total",
                 "matchup": f"{game['away_team']} @ {game['home_team']}",
@@ -560,12 +680,15 @@ def select_top_picks(games: list, max_picks: int = 5) -> list:
                 "line": te["market"],
                 "projected": te["projected"],
                 "edge": abs(te["edge"]),
+                "confidence": total_conf,
+                "conf_color": conf.get("total_conf_color", "#FFD600"),
+                "conf_label": conf.get("total_conf_label", ""),
                 "is_strong": te.get("is_strong", False),
                 "is_spring_training": game.get("is_spring_training", False),
             })
 
-    # Sort by edge size (descending)
-    candidates.sort(key=lambda x: x["edge"], reverse=True)
+    # Sort by confidence first, then edge as tiebreaker
+    candidates.sort(key=lambda x: (x.get("confidence", 0), x["edge"]), reverse=True)
     return candidates[:max_picks]
 
 
