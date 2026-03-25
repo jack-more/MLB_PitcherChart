@@ -517,7 +517,7 @@ def render_affiliate_buttons():
 
 
 def render_model_breakdown(game):
-    """Render model factor breakdown (wOBA, archetype, MS, BaseRuns)."""
+    """Render model factor breakdown with all adjustments."""
     away = game.get("away_team", "???")
     home = game.get("home_team", "???")
     away_proj = game.get("away_proj", {})
@@ -526,6 +526,8 @@ def render_model_breakdown(game):
     home_runs = game.get("home_projected_runs", home_proj.get("runs", 0))
     away_sp = game.get("away_pitcher", {})
     home_sp = game.get("home_pitcher", {})
+    away_adj = away_proj.get("adjustments", {})
+    home_adj = home_proj.get("adjustments", {})
 
     # Compute lineup avg wOBA from batter details
     def avg_woba(proj):
@@ -551,32 +553,39 @@ def render_model_breakdown(game):
     else:
         woba_edge = f"{home} +.{int(abs(woba_diff)*1000):03d}"
 
-    # Archetypes
-    away_arch = away_sp.get("archetype", "—")
-    home_arch = home_sp.get("archetype", "—")
+    # Tier row (opposing pitcher tiers — away lineup faces home SP and vice versa)
+    away_tier = away_adj.get("tier", "—")
+    home_tier = home_adj.get("tier", "—")
+    away_tier_mult = away_adj.get("tier_mult", 1.0)
+    home_tier_mult = home_adj.get("tier_mult", 1.0)
 
-    # Avg MS
-    away_ms = game.get("away_avg_ms", 0)
-    home_ms = game.get("home_avg_ms", 0)
-    ms_diff = away_ms - home_ms
-    if abs(ms_diff) < 2:
-        ms_edge = "EVEN"
-    elif ms_diff > 0:
-        ms_edge = f"{away} +{ms_diff:.0f}"
+    # RE24
+    away_re24 = away_adj.get("re24", 0)
+    home_re24 = home_adj.get("re24", 0)
+    re24_diff = away_re24 - home_re24
+    if abs(re24_diff) < 0.1:
+        re24_edge = "EVEN"
+    elif re24_diff > 0:
+        re24_edge = f"{away} +{re24_diff:.1f}"
     else:
-        ms_edge = f"{home} +{abs(ms_diff):.0f}"
+        re24_edge = f"{home} +{abs(re24_diff):.1f}"
 
-    # Venue
-    venue = game.get("venue", "")
+    # OAA
+    away_oaa = away_adj.get("oaa", 0)
+    home_oaa = home_adj.get("oaa", 0)
+
+    # Park
+    park_mult = away_adj.get("park_mult", 1.0)
 
     # Tags
     tags = []
-    if away_arch and away_arch != "—":
-        tags.append(f'<span class="model-tag tag-arch">vs {_esc(away_arch)}</span>')
-    if home_arch and home_arch != "—":
-        tags.append(f'<span class="model-tag tag-arch">vs {_esc(home_arch)}</span>')
-    if venue:
-        tags.append(f'<span class="model-tag tag-venue">{_esc(venue)}</span>')
+    if park_mult != 1.0:
+        venue = game.get("venue", "")
+        tags.append(f'<span class="model-tag tag-venue">{_esc(venue)} {park_mult:.2f}×</span>')
+    if away_tier and away_tier != "—":
+        tags.append(f'<span class="model-tag tag-arch">vs {_esc(away_tier)}</span>')
+    if home_tier and home_tier != "—":
+        tags.append(f'<span class="model-tag tag-arch">vs {_esc(home_tier)}</span>')
 
     return f'''<div class="model-breakdown">
     <div class="model-row">
@@ -590,22 +599,29 @@ def render_model_breakdown(game):
       <span class="model-edge-sm">{woba_edge}</span>
     </div>
     <div class="model-row">
-      <span class="model-label">ARCH</span>
-      <span class="model-val">{_esc(away_arch)}</span>
+      <span class="model-label">TIER</span>
+      <span class="model-val">{_esc(away_tier)} ({away_tier_mult:.2f}×)</span>
       <div class="model-mid-spacer"></div>
-      <span class="model-val">{_esc(home_arch)}</span>
+      <span class="model-val">{_esc(home_tier)} ({home_tier_mult:.2f}×)</span>
       <span class="model-edge-sm"></span>
     </div>
     <div class="model-row">
-      <span class="model-label">MS</span>
-      <span class="model-val">{_esc(away)} {away_ms:.0f}</span>
+      <span class="model-label">RE24</span>
+      <span class="model-val">{_esc(away)} {away_re24:+.1f}</span>
       <div class="model-mid-spacer"></div>
-      <span class="model-val">{_esc(home)} {home_ms:.0f}</span>
-      <span class="model-edge-sm">{ms_edge}</span>
+      <span class="model-val">{_esc(home)} {home_re24:+.1f}</span>
+      <span class="model-edge-sm">{re24_edge}</span>
+    </div>
+    <div class="model-row">
+      <span class="model-label">OAA</span>
+      <span class="model-val">{_esc(away)} {away_oaa:+.2f}</span>
+      <div class="model-mid-spacer"></div>
+      <span class="model-val">{_esc(home)} {home_oaa:+.2f}</span>
+      <span class="model-edge-sm"></span>
     </div>
     <div class="model-row model-formula-row ma-premium">
       <span class="model-label">MODEL</span>
-      <span class="model-formula">wOBA×Archetype → BaseRuns = <strong>{_esc(away)} {away_runs:.1f} — {_esc(home)} {home_runs:.1f}</strong></span>
+      <span class="model-formula">BaseRuns(wOBA×Tier) + RE24 + OAA + Park + BP = <strong>{_esc(away)} {away_runs:.1f} — {_esc(home)} {home_runs:.1f}</strong></span>
     </div>
     <div class="model-row model-tags">
       {"".join(tags)}

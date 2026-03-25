@@ -45,6 +45,13 @@ class AtlasData:
         self.batter_index = {}      # batter_id → name
         self.hitter_archetypes = {} # batter_id → archetype info
         self.baserunning = {}       # batter_id → {sb_per_pa, cs_per_pa, ...}
+        # Adjustment data (from backtest pipeline)
+        self.pitcher_tiers = {}     # pitcher_id → {tier, effective_multiplier, ...}
+        self.re24_data = {}         # "batterId_year" → {RE24_above_avg, ...}
+        self.team_oaa = {}          # team_abbr → {year → {infield_oaa, outfield_oaa}}
+        self.park_factors = {}      # team_abbr → park_mult
+        self.team_bullpen = {}      # team_abbr → {runs_per_ip, ...}
+        self.sp_innings = {}        # pitcher_id → avg_ip_per_gs
 
     def load(self):
         """Load all data files from frontend/public/."""
@@ -83,6 +90,97 @@ class AtlasData:
             print(f"  batter_baserunning.json: {len(self.baserunning)} batters")
         else:
             print("  batter_baserunning.json: NOT FOUND (SB/CS will use league avg)")
+
+        # ── Load adjustment data (backtest-proven factors) ──
+        def _load_optional(filename):
+            path = os.path.join(FRONTEND_PUBLIC, filename)
+            if os.path.exists(path):
+                with open(path) as f:
+                    data = json.load(f)
+                print(f"  {filename}: {len(data)} records")
+                return data
+            print(f"  {filename}: NOT FOUND (skipping)")
+            return {}
+
+        # Pitcher tiers: keyed "pitcherId_year" → {tier, effective_multiplier, ...}
+        # Index by pitcher ID (most recent year)
+        raw_tiers = _load_optional("pitcher_tiers.json")
+        if isinstance(raw_tiers, dict):
+            for key, t in raw_tiers.items():
+                pid = t.get("pitcher")
+                if pid:
+                    if pid not in self.pitcher_tiers or t.get("game_year", 0) > self.pitcher_tiers[pid].get("game_year", 0):
+                        self.pitcher_tiers[pid] = t
+
+        # RE24: keyed "batterId_year" → {RE24_above_avg, ...}
+        raw_re24 = _load_optional("hitter_re24.json")
+        if isinstance(raw_re24, dict):
+            self.re24_data = raw_re24
+
+        # Team OAA: keyed "TeamName_year" → {regressed_infield, regressed_outfield}
+        # OAA uses short names (Giants, Yankees) not full (San Francisco Giants)
+        raw_oaa = _load_optional("team_oaa.json")
+        if isinstance(raw_oaa, dict):
+            from scripts.mlb_teams import ABBR_TO_FULL_NAME
+            # Build short name → abbr (e.g., "Giants" → "SF")
+            short_to_abbr = {}
+            for abbr, full in ABBR_TO_FULL_NAME.items():
+                # Extract last word(s) as short name
+                parts = full.split()
+                short = parts[-1] if len(parts) <= 3 else " ".join(parts[-2:])
+                short_to_abbr[short] = abbr
+                # Also try just last word
+                short_to_abbr[parts[-1]] = abbr
+            # Manual overrides for tricky names
+            short_to_abbr["Blue Jays"] = "TOR"
+            short_to_abbr["White Sox"] = "CWS"
+            short_to_abbr["Red Sox"] = "BOS"
+            short_to_abbr["D-backs"] = "ARI"
+
+            for key, o in raw_oaa.items():
+                team_name = o.get("team", "")
+                year_val = o.get("year", 0)
+                abbr = short_to_abbr.get(team_name, "")
+                if abbr and year_val >= 2024:
+                    if abbr not in self.team_oaa or year_val > self.team_oaa[abbr].get("year", 0):
+                        self.team_oaa[abbr] = {
+                            "infield_oaa": o.get("regressed_infield", 0),
+                            "outfield_oaa": o.get("regressed_outfield", 0),
+                            "year": year_val,
+                        }
+
+        # Park factors: keyed by team ABBR → {per_team_multiplier, ...}
+        raw_park = _load_optional("park_factors.json")
+        if isinstance(raw_park, dict):
+            for abbr, p in raw_park.items():
+                if isinstance(p, dict):
+                    self.park_factors[abbr] = p.get("per_team_multiplier", 1.0)
+                else:
+                    self.park_factors[abbr] = float(p)
+
+        # Team bullpen: keyed "TEAM_year" → {runs_per_ip, above_avg_runs_per_ip}
+        raw_bp = _load_optional("team_bullpen.json")
+        if isinstance(raw_bp, dict):
+            for key, b in raw_bp.items():
+                team = b.get("team", "")
+                year_val = b.get("year", 0)
+                if team and year_val >= 2024:
+                    if team not in self.team_bullpen or year_val > self.team_bullpen[team].get("year", 0):
+                        self.team_bullpen[team] = b
+
+        # SP innings: keyed "pitcherId_year" → {ip_per_gs, ...}
+        raw_sp = _load_optional("sp_innings.json")
+        if isinstance(raw_sp, dict):
+            for key, s in raw_sp.items():
+                # Extract pitcher ID from key (e.g., "519242_2024")
+                parts = key.split("_")
+                if len(parts) >= 2:
+                    try:
+                        pid = int(parts[0])
+                        if pid not in self.sp_innings or s.get("year", 0) > self.sp_innings.get(pid, {}).get("year", 0):
+                            self.sp_innings[pid] = s
+                    except ValueError:
+                        pass
 
         # ── Build indexes ──
         # Pitcher: most recent season
@@ -285,22 +383,27 @@ def base_runs(team_h, team_hr, team_bb, team_tb, team_pa, team_sb=0, team_cs=0):
 # PROJECT TEAM (port of JS projectTeam)
 # ═══════════════════════════════════════════════════════════
 
-def project_team(lineup, opposing_pitcher_id: int, atlas: AtlasData, pa_override: int = None):
+def project_team(lineup, opposing_pitcher_id: int, atlas: AtlasData,
+                  pa_override: int = None,
+                  batting_team: str = "", opposing_team: str = "",
+                  venue_team: str = "", year: int = 2026):
     """Project team offense against opposing pitcher using ATLAS matchups.
 
-    Args:
-        lineup: list of dicts with "id" key (MLBAM batter IDs)
-        opposing_pitcher_id: MLBAM ID of opposing pitcher
-        atlas: loaded AtlasData
-        pa_override: assumed PA per batter (default from config)
+    Applies full model adjustments (backtest-proven):
+      1. Pitcher tier multiplier (hit suppression/inflation)
+      2. RE24 bonus (baserunning/context value)
+      3. OAA defense adjustment (opposing team's fielding)
+      4. Park factor (venue run environment)
+      5. Bullpen adjustment (opposing bullpen quality)
 
-    Returns dict with: runs, coverage, total, batter_details, team_stats
+    Returns dict with: runs, coverage, total, batter_details, team_stats, adjustments
     """
     cluster_id, archetype = get_pitcher_cluster(opposing_pitcher_id, atlas) if opposing_pitcher_id else (None, None)
     assumed_pa = pa_override or DEFAULT_PA_PER_BATTER
 
     team_h, team_hr, team_bb, team_k, team_tb, team_pa = 0, 0, 0, 0, 0, 0
     team_sb, team_cs = 0, 0
+    team_re24 = 0
     coverage = 0
     batter_details = []
 
@@ -370,6 +473,25 @@ def project_team(lineup, opposing_pitcher_id: int, atlas: AtlasData, pa_override
             proj["sb"] = round(br["sb_per_pa"] * assumed_pa, 4)
             proj["cs"] = round(br["cs_per_pa"] * assumed_pa, 4)
 
+        # ── Tier adjustment: opposing pitcher quality scales hits ──
+        tier_mult = 1.0
+        if opposing_pitcher_id and opposing_pitcher_id in atlas.pitcher_tiers:
+            pt = atlas.pitcher_tiers[opposing_pitcher_id]
+            tier_mult = pt.get("effective_multiplier", 1.0)
+        if tier_mult != 1.0:
+            proj["h"] *= tier_mult
+            proj["hr"] *= tier_mult
+            proj["tb"] *= tier_mult
+
+        # ── RE24 bonus: per-batter baserunning/context value ──
+        re24_bonus = 0
+        if batter_id:
+            re24_rec = atlas.re24_data.get(f"{batter_id}_{year}")
+            if not re24_rec:
+                re24_rec = atlas.re24_data.get(f"{batter_id}_{year - 1}")
+            if re24_rec:
+                re24_bonus = re24_rec.get("RE24_above_avg", 0) * assumed_pa
+
         team_h += proj["h"]
         team_hr += proj["hr"]
         team_bb += proj["bb"]
@@ -378,6 +500,7 @@ def project_team(lineup, opposing_pitcher_id: int, atlas: AtlasData, pa_override
         team_sb += proj["sb"]
         team_cs += proj["cs"]
         team_pa += assumed_pa
+        team_re24 += re24_bonus
 
         # Compute batter's overall (career) wOBA as baseline
         overall_woba = 0
@@ -400,7 +523,59 @@ def project_team(lineup, opposing_pitcher_id: int, atlas: AtlasData, pa_override
             "tier": ms_tier(ms_data["ms"]) if ms_data["ms"] > 0 else "unknown",
         })
 
+    # ── OAA defense adjustment: opposing team's fielding reduces hits ──
+    oaa_adj = 0
+    oaa_data = atlas.team_oaa.get(opposing_team, {})
+    if oaa_data:
+        infield_oaa = oaa_data.get("infield_oaa", 0)
+        outfield_oaa = oaa_data.get("outfield_oaa", 0)
+        # GB-weighted defense factor (use opposing pitcher's GB rate if available)
+        opp_ps = atlas.ps_index.get(opposing_pitcher_id, {})
+        gb_rate = opp_ps.get("groundball_rate", 0.45)
+        defense_factor = gb_rate * infield_oaa + (1.0 - gb_rate) * outfield_oaa
+        if defense_factor != 0:
+            hit_mult = max(0.8, min(1.2, 1.0 - defense_factor * 0.005))
+            oaa_adj = team_h * (hit_mult - 1.0)
+            team_h *= hit_mult
+
     runs = round(base_runs(team_h, team_hr, team_bb, team_tb, team_pa, team_sb, team_cs), 2)
+
+    # ── RE24 bonus: lineup baserunning/context value ──
+    re24_adj = round(team_re24, 3)
+    runs += team_re24
+
+    # ── Park factor: venue run environment ──
+    park_mult = 1.0
+    park_data = atlas.park_factors.get(venue_team)
+    if isinstance(park_data, (int, float)):
+        park_mult = park_data
+    elif isinstance(park_data, dict):
+        park_mult = park_data.get("park_mult", park_data.get("factor", 1.0))
+    park_adj = runs * (park_mult - 1.0)
+    runs *= park_mult
+
+    # ── Bullpen adjustment: opposing bullpen quality ──
+    bp_adj = 0
+    bp_data = atlas.team_bullpen.get(opposing_team, {})
+    if bp_data:
+        bp_runs_per_ip = bp_data.get("runs_per_ip", 0)
+        bp_above_avg = bp_data.get("above_avg_runs_per_ip", 0)
+        # SP innings: how many innings does opposing SP cover?
+        sp_ip = 5.85
+        sp_data = atlas.sp_innings.get(opposing_pitcher_id)
+        if isinstance(sp_data, dict):
+            sp_ip = sp_data.get("ip_per_gs", 5.85)
+        bp_ip = max(0, 9.0 - sp_ip)
+        if bp_above_avg != 0:
+            bp_adj = bp_ip * bp_above_avg
+            runs += bp_adj
+
+    runs = round(max(0, runs), 2)
+
+    # Get tier info for display
+    tier_info = atlas.pitcher_tiers.get(opposing_pitcher_id, {})
+    tier_name = tier_info.get("tier", "—")
+    tier_mult_val = tier_info.get("effective_multiplier", 1.0)
 
     return {
         "runs": runs,
@@ -422,6 +597,15 @@ def project_team(lineup, opposing_pitcher_id: int, atlas: AtlasData, pa_override
             "id": opposing_pitcher_id,
             "cluster": cluster_id,
             "archetype": archetype,
+        },
+        "adjustments": {
+            "tier": tier_name,
+            "tier_mult": round(tier_mult_val, 3),
+            "re24": round(re24_adj, 3),
+            "oaa": round(oaa_adj, 3),
+            "park_mult": round(park_mult, 3),
+            "park_adj": round(park_adj, 3),
+            "bp_adj": round(bp_adj, 3),
         },
     }
 
@@ -465,19 +649,27 @@ def compute_game(game: dict, atlas: AtlasData) -> dict:
             game[f"{side}_pitcher"]["archetype"] = None
 
     # Project teams (home lineup vs away pitcher, away lineup vs home pitcher)
+    away_team = game.get("away_team", "")
+    home_team = game.get("home_team", "")
     has_lineups = bool(away_lineup) and bool(home_lineup)
 
+    empty_proj = {"runs": 0, "coverage": 0, "total": 0, "lineup_pct": 0,
+                  "batter_details": [], "team_stats": {}, "opposing_pitcher": {},
+                  "adjustments": {}}
+
     if has_lineups and home_pitcher_id:
-        away_proj = project_team(away_lineup, home_pitcher_id, atlas)
+        away_proj = project_team(away_lineup, home_pitcher_id, atlas,
+                                 batting_team=away_team, opposing_team=home_team,
+                                 venue_team=home_team)
     else:
-        away_proj = {"runs": 0, "coverage": 0, "total": 0, "lineup_pct": 0,
-                      "batter_details": [], "team_stats": {}, "opposing_pitcher": {}}
+        away_proj = dict(empty_proj)
 
     if has_lineups and away_pitcher_id:
-        home_proj = project_team(home_lineup, away_pitcher_id, atlas)
+        home_proj = project_team(home_lineup, away_pitcher_id, atlas,
+                                 batting_team=home_team, opposing_team=away_team,
+                                 venue_team=home_team)
     else:
-        home_proj = {"runs": 0, "coverage": 0, "total": 0, "lineup_pct": 0,
-                      "batter_details": [], "team_stats": {}, "opposing_pitcher": {}}
+        home_proj = dict(empty_proj)
 
     game["away_proj"] = away_proj
     game["home_proj"] = home_proj
