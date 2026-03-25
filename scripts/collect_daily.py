@@ -26,13 +26,13 @@ from bs4 import BeautifulSoup
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from scripts.daily_config import (
-    MLB_API_BASE, ODDS_API_BASE, ODDS_API_KEY, ODDS_SPORT,
+    MLB_API_BASE,
     ROTOWIRE_URL, USER_AGENT, REQUEST_TIMEOUT,
     FRONTEND_PUBLIC, DAILY_DATA_DIR,
-    DAILY_LINEUPS_FILE, NAME_ID_CACHE_FILE, ODDS_CACHE_FILE,
+    DAILY_LINEUPS_FILE, NAME_ID_CACHE_FILE,
 )
 from scripts.mlb_teams import (
-    TEAM_ID_TO_ABBR, ABBR_TO_TEAM_ID, ODDS_TEAM_MAP, normalize_abbr,
+    TEAM_ID_TO_ABBR, ABBR_TO_TEAM_ID, normalize_abbr,
 )
 
 
@@ -166,10 +166,80 @@ def resolve_player_id(name: str, name_index: dict, cache: dict) -> int | None:
 # SOURCE 1: ROTOWIRE SCRAPER
 # ═══════════════════════════════════════════════════════════
 
+def _parse_rotowire_odds(lineup_div, home_abbr: str, away_abbr: str) -> dict:
+    """Extract odds from a RotoWire lineup card.
+
+    RotoWire embeds composite lines in .lineup__odds-item spans:
+      LINE: "BAL -140"  (favorite team + moneyline)
+      O/U:  "9.5 Runs"  (total)
+
+    Returns dict with spread, total, home_ml, away_ml (matching Odds API format).
+    """
+    import re
+
+    odds = {}
+    odds_div = lineup_div.select_one(".lineup__odds")
+    if not odds_div:
+        return odds
+
+    for item in odds_div.select(".lineup__odds-item"):
+        label_el = item.select_one("b")
+        if not label_el:
+            continue
+        label = label_el.get_text(strip=True).upper()
+
+        # Prefer composite (consensus) line, fall back to fanduel/betmgm
+        value_text = ""
+        for src in ["composite", "fanduel", "betmgm", "draftkings", "pointsbet"]:
+            span = item.select_one(f"span.{src}")
+            if span:
+                t = span.get_text(strip=True)
+                if t and t != "–" and t != "-":
+                    value_text = t
+                    break
+
+        if not value_text:
+            continue
+
+        if label == "LINE":
+            # Format: "BAL -140" or "NYY +120"
+            m = re.match(r"([A-Z]{2,3})\s*([+-]?\d+)", value_text)
+            if m:
+                fav_team = normalize_abbr(m.group(1))
+                fav_ml = int(m.group(2))
+                # Derive the other side's moneyline (approximate)
+                if fav_ml < 0:
+                    dog_ml = int(abs(fav_ml) * 0.8) if abs(fav_ml) <= 150 else int(abs(fav_ml) * 0.7)
+                else:
+                    dog_ml = -int(fav_ml * 1.25) if fav_ml <= 150 else -int(fav_ml * 1.4)
+
+                if fav_team == home_abbr:
+                    odds["home_ml"] = fav_ml
+                    odds["away_ml"] = dog_ml
+                else:
+                    odds["away_ml"] = fav_ml
+                    odds["home_ml"] = dog_ml
+
+                # Derive run-line spread from moneyline
+                # Standard MLB run line is -1.5 for favorite
+                if fav_team == home_abbr:
+                    odds["spread"] = -1.5
+                else:
+                    odds["spread"] = 1.5
+
+        elif label == "O/U":
+            # Format: "9.5 Runs" or "8.5"
+            m = re.search(r"([\d.]+)", value_text)
+            if m:
+                odds["total"] = float(m.group(1))
+
+    return odds
+
+
 def scrape_rotowire():
     """Scrape RotoWire daily lineups page.
 
-    Returns list of game dicts with team names, batting orders, pitchers.
+    Returns list of game dicts with team names, batting orders, pitchers, and odds.
     """
     print("[RotoWire] Fetching daily lineups...")
     try:
@@ -249,6 +319,9 @@ def scrape_rotowire():
         game["game_time"] = time_el.get_text(strip=True) if time_el else ""
         game["weather"] = weather_el.get_text(strip=True) if weather_el else ""
         game["umpire"] = umpire_el.get_text(strip=True) if umpire_el else ""
+
+        # ── Odds (from RotoWire composite line) ──
+        game["odds"] = _parse_rotowire_odds(lineup_div, game["home_team"], game["away_team"])
 
         games.append(game)
 
@@ -347,110 +420,14 @@ def fetch_mlb_schedule(date_str: str):
 
 
 # ═══════════════════════════════════════════════════════════
-# SOURCE 3: THE ODDS API
-# ═══════════════════════════════════════════════════════════
-
-def fetch_odds():
-    """Fetch MLB odds (spreads + totals + moneylines) from The Odds API.
-
-    Returns dict keyed by (home_abbr, away_abbr) → {spread, total, home_ml, away_ml}
-    """
-    if not ODDS_API_KEY:
-        print("[Odds API] No API key set — skipping")
-        return {}
-
-    print("[Odds API] Fetching MLB odds...")
-    url = f"{ODDS_API_BASE}/sports/{ODDS_SPORT}/odds"
-    params = {
-        "apiKey": ODDS_API_KEY,
-        "regions": "us",
-        "markets": "h2h,spreads,totals",
-        "oddsFormat": "american",
-    }
-
-    try:
-        resp = requests.get(url, params=params, timeout=REQUEST_TIMEOUT)
-        resp.raise_for_status()
-        data = resp.json()
-        remaining = resp.headers.get("x-requests-remaining", "?")
-        print(f"[Odds API] Fetched {len(data)} games — {remaining} requests remaining")
-    except requests.exceptions.HTTPError as e:
-        print(f"[Odds API] Failed to fetch: {e.response.status_code} {e.response.reason}")
-        return {}
-    except Exception as e:
-        print(f"[Odds API] Failed to fetch: {e}")
-        return {}
-
-    lines = {}
-    for game in data:
-        home_full = game.get("home_team", "")
-        away_full = game.get("away_team", "")
-        home_abbr = ODDS_TEAM_MAP.get(home_full, "")
-        away_abbr = ODDS_TEAM_MAP.get(away_full, "")
-
-        if not home_abbr or not away_abbr:
-            continue
-
-        spreads, totals, home_mls, away_mls = [], [], [], []
-
-        for bk in game.get("bookmakers", []):
-            for market in bk.get("markets", []):
-                if market["key"] == "spreads":
-                    for outcome in market.get("outcomes", []):
-                        if ODDS_TEAM_MAP.get(outcome.get("name"), "") == home_abbr:
-                            pt = outcome.get("point")
-                            if pt is not None:
-                                spreads.append(float(pt))
-                elif market["key"] == "totals":
-                    for outcome in market.get("outcomes", []):
-                        if outcome.get("name") == "Over":
-                            pt = outcome.get("point")
-                            if pt is not None:
-                                totals.append(float(pt))
-                elif market["key"] == "h2h":
-                    for outcome in market.get("outcomes", []):
-                        abbr = ODDS_TEAM_MAP.get(outcome.get("name"), "")
-                        price = outcome.get("price")
-                        if abbr == home_abbr and price:
-                            home_mls.append(price)
-                        elif abbr == away_abbr and price:
-                            away_mls.append(price)
-
-        result = {}
-        if spreads:
-            result["spread"] = round(sum(spreads) / len(spreads) * 2) / 2
-        if totals:
-            result["total"] = round(sum(totals) / len(totals) * 2) / 2
-        if home_mls:
-            result["home_ml"] = round(sum(home_mls) / len(home_mls))
-        if away_mls:
-            result["away_ml"] = round(sum(away_mls) / len(away_mls))
-
-        if result:
-            lines[(home_abbr, away_abbr)] = result
-
-    # Cache odds
-    try:
-        cache = {f"{k[0]}|{k[1]}": v for k, v in lines.items()}
-        cache["_fetched"] = datetime.now(timezone.utc).isoformat()
-        with open(ODDS_CACHE_FILE, "w") as f:
-            json.dump(cache, f, indent=2)
-    except Exception:
-        pass
-
-    return lines
-
-
-# ═══════════════════════════════════════════════════════════
 # MERGE ALL SOURCES
 # ═══════════════════════════════════════════════════════════
 
-def merge_sources(rotowire_games, mlb_games, odds_lines, name_index, name_cache):
-    """Merge RotoWire, MLB API, and Odds API data into unified game objects.
+def merge_sources(rotowire_games, mlb_games, name_index, name_cache):
+    """Merge RotoWire and MLB API data into unified game objects.
 
     MLB API is the backbone (has IDs, game_pk, game_type).
-    RotoWire supplements with confirmed batting orders.
-    Odds API adds betting lines.
+    RotoWire supplements with confirmed batting orders and odds.
     """
     # Index RotoWire games by (away, home) for matching
     rw_index = {}
@@ -528,9 +505,8 @@ def merge_sources(rotowire_games, mlb_games, odds_lines, name_index, name_cache)
                 game[f"{side}_lineup"] = []
                 game["lineup_status"] = "tbd"
 
-        # ── Odds ──
-        odds = odds_lines.get((game["home_team"], game["away_team"]), {})
-        game["odds"] = odds
+        # ── Odds (scraped from RotoWire) ──
+        game["odds"] = rw.get("odds", {})
 
         # ── Metadata from RotoWire ──
         game["weather"] = rw.get("weather", "")
@@ -585,8 +561,6 @@ def main():
     rotowire_games = scrape_rotowire()
     time.sleep(0.5)  # Rate limit
     mlb_games = fetch_mlb_schedule(date_str)
-    time.sleep(0.5)
-    odds_lines = fetch_odds()
 
     # If MLB API found no games for today, try next few days (spring training gaps)
     if not mlb_games:
@@ -601,8 +575,9 @@ def main():
             time.sleep(0.3)
 
     # ── Merge ──
-    print(f"\n[Merge] Combining {len(rotowire_games)} RotoWire + {len(mlb_games)} MLB API + {len(odds_lines)} odds lines...")
-    merged = merge_sources(rotowire_games, mlb_games, odds_lines, name_index, name_cache)
+    odds_count = sum(1 for g in rotowire_games if g.get("odds"))
+    print(f"\n[Merge] Combining {len(rotowire_games)} RotoWire (w/ {odds_count} odds) + {len(mlb_games)} MLB API...")
+    merged = merge_sources(rotowire_games, mlb_games, name_index, name_cache)
 
     # ── Save ──
     output = {

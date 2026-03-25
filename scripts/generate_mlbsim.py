@@ -25,6 +25,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from scripts.daily_config import (
     FRONTEND_PUBLIC, DAILY_GAMES_FILE, DAILY_DATA_DIR,
     EDGE_THRESHOLD_SPREAD, EDGE_THRESHOLD_TOTAL, STRONG_EDGE_MULTIPLIER,
+    CONF_ST_CAP,
 )
 from scripts.mlb_teams import TEAM_COLORS, ABBR_TO_FULL_NAME, team_logo_url
 
@@ -123,7 +124,8 @@ def flatten_game(game):
         flat_edge["total_edge"] = edges["total"]["edge"]
     game["edge"] = flat_edge
 
-    # 3. Build per-game picks list from edges
+    # 3. Build per-game picks list from edges with confidence
+    conf = game.get("confidence", {})
     picks = []
     if edges.get("spread", {}).get("is_pick"):
         se = edges["spread"]
@@ -132,6 +134,8 @@ def flatten_game(game):
             "label": f"{se['side']} {se['market']:+.1f}",
             "edge": se["edge"],
             "strength": "strong" if se.get("is_strong") else "lean",
+            "confidence": conf.get("spread_conf", 0),
+            "conf_color": conf.get("spread_conf_color", "#FFD600"),
         })
     if edges.get("total", {}).get("is_pick"):
         te = edges["total"]
@@ -140,8 +144,14 @@ def flatten_game(game):
             "label": f"{'OVER' if te['direction'] == 'over' else 'UNDER'} {te['market']}",
             "edge": te["edge"],
             "strength": "strong" if te.get("is_strong") else "lean",
+            "confidence": conf.get("total_conf", 0),
+            "conf_color": conf.get("total_conf_color", "#FFD600"),
         })
     game["picks"] = picks
+
+    # 3b. Flatten confidence scores to game level for data attributes
+    game["spread_conf"] = conf.get("spread_conf", 0)
+    game["spread_conf_color"] = conf.get("spread_conf_color", "#FFD600")
 
     # 4. Flatten lineup: merge batter_details MS into lineup entries
     for side in ("away", "home"):
@@ -158,6 +168,7 @@ def flatten_game(game):
                     "bats": bd.get("bats", ""),
                     "ms": ms_data.get("ms", 0),
                     "woba": ms_data.get("woba", 0),
+                    "overall_woba": bd.get("overall_woba", 0),
                     "pa": ms_data.get("pa", 0),
                     "k_pct": ms_data.get("k_pct"),
                     "source": bd.get("source", "none"),
@@ -222,15 +233,21 @@ def render_card_header(game):
     spread_display = format_spread(spread_val) if spread_val is not None else "—"
     total_display = f"O/U {format_total(total_val)}" if total_val is not None else ""
 
-    # Pick badge
+    # Pick badge with confidence pill
     pick_html = ""
     picks = game.get("picks", [])
     for pick in picks:
-        pick_type = pick.get("type", "")
         pick_label = _esc(pick.get("label", ""))
-        strength = pick.get("strength", "lean")
-        badge_class = "sim-pick" if strength == "strong" else "sim-pick"
-        pick_html += f'<div class="{badge_class}">{pick_label}</div>'
+        conf_val = pick.get("confidence", 0)
+        conf_color = pick.get("conf_color", "#FFD600")
+        pick_type = pick.get("type", "")
+        type_label = "SPREAD" if pick_type == "spread" else "O/U"
+
+        conf_pill = ""
+        if conf_val > 0:
+            conf_pill = f' <span class="mc-conf-num" style="color:{conf_color}">{conf_val}</span>'
+
+        pick_html += f'<div class="sim-pick"><span class="pick-type-label">{type_label}</span> {pick_label}{conf_pill}</div>'
 
     away_logo = team_logo_url(away)
     home_logo = team_logo_url(home)
@@ -311,6 +328,7 @@ def render_batter_row(batter, order_num):
     name = batter.get("name", "Unknown")
     ms = batter.get("ms", 0)
     woba = batter.get("woba", 0)
+    overall_woba = batter.get("overall_woba", 0)
     pa = batter.get("pa", 0)
     k_pct = batter.get("k_pct")
     pos = batter.get("pos", "")
@@ -324,18 +342,40 @@ def render_batter_row(batter, order_num):
         ms_display = str(int(ms)) if ms else "—"
         ms_cls = ms_class(ms) if ms else ""
 
-    # Build stats line
-    stats_parts = []
+    # Build position/hand line
+    info_parts = []
     if pos:
-        stats_parts.append(pos)
+        info_parts.append(pos)
     if bats:
-        stats_parts.append(f"{bats}")
-    if woba and not is_nri:
-        stats_parts.append(f".{int(woba*1000):03d}")
-    if pa and not is_nri:
-        stats_parts.append(f"{pa}PA")
+        info_parts.append(bats)
+    info_str = " · ".join(info_parts)
 
-    stats_str = " · ".join(stats_parts)
+    # Build wOBA comparison row
+    woba_html = ""
+    if not is_nri:
+        if overall_woba and woba:
+            diff = woba - overall_woba
+            if diff > 0.015:
+                arrow_cls = "up"
+                arrow_char = "▲"
+                vs_cls = "hot"
+            elif diff < -0.015:
+                arrow_cls = "down"
+                arrow_char = "▼"
+                vs_cls = "cold"
+            else:
+                arrow_cls = "flat"
+                arrow_char = "→"
+                vs_cls = "neutral"
+            pa_str = f'<span class="woba-pa">{int(pa)}PA</span>' if pa else ""
+            woba_html = f'''<div class="batter-woba">
+    <span class="woba-base">.{int(overall_woba*1000):03d}</span>
+    <span class="woba-dna">🧬</span>
+    <span class="woba-vs {vs_cls}">.{int(woba*1000):03d}</span>
+    {pa_str}
+  </div>'''
+        elif woba:
+            woba_html = f'<div class="batter-woba"><span class="woba-vs neutral">.{int(woba*1000):03d}</span></div>'
 
     # Range
     range_str = ""
@@ -350,9 +390,10 @@ def render_batter_row(batter, order_num):
     <span class="batter-ms {ms_cls}">{ms_display}</span>
   </div>
   <div class="batter-bottom">
-    <span class="batter-stats">{stats_str}</span>
+    <span class="batter-stats">{info_str}</span>
     <span class="batter-range">{range_str}</span>
   </div>
+  {woba_html}
 </div>'''
 
 
@@ -475,12 +516,110 @@ def render_affiliate_buttons():
 </div>'''
 
 
+def render_model_breakdown(game):
+    """Render model factor breakdown (wOBA, archetype, MS, BaseRuns)."""
+    away = game.get("away_team", "???")
+    home = game.get("home_team", "???")
+    away_proj = game.get("away_proj", {})
+    home_proj = game.get("home_proj", {})
+    away_runs = game.get("away_projected_runs", away_proj.get("runs", 0))
+    home_runs = game.get("home_projected_runs", home_proj.get("runs", 0))
+    away_sp = game.get("away_pitcher", {})
+    home_sp = game.get("home_pitcher", {})
+
+    # Compute lineup avg wOBA from batter details
+    def avg_woba(proj):
+        details = proj.get("batter_details", [])
+        wobas = [d.get("ms", {}).get("woba", 0) for d in details if d.get("ms", {}).get("woba")]
+        return sum(wobas) / len(wobas) if wobas else 0
+
+    away_woba = avg_woba(away_proj)
+    home_woba = avg_woba(home_proj)
+
+    # wOBA bar
+    woba_total = away_woba + home_woba or 1
+    away_pct = int(away_woba / woba_total * 100)
+    home_pct = 100 - away_pct
+    away_color = TEAM_COLORS.get(away, "#333")
+    home_color = TEAM_COLORS.get(home, "#333")
+
+    woba_diff = away_woba - home_woba
+    if abs(woba_diff) < 0.005:
+        woba_edge = "EVEN"
+    elif woba_diff > 0:
+        woba_edge = f"{away} +.{int(abs(woba_diff)*1000):03d}"
+    else:
+        woba_edge = f"{home} +.{int(abs(woba_diff)*1000):03d}"
+
+    # Archetypes
+    away_arch = away_sp.get("archetype", "—")
+    home_arch = home_sp.get("archetype", "—")
+
+    # Avg MS
+    away_ms = game.get("away_avg_ms", 0)
+    home_ms = game.get("home_avg_ms", 0)
+    ms_diff = away_ms - home_ms
+    if abs(ms_diff) < 2:
+        ms_edge = "EVEN"
+    elif ms_diff > 0:
+        ms_edge = f"{away} +{ms_diff:.0f}"
+    else:
+        ms_edge = f"{home} +{abs(ms_diff):.0f}"
+
+    # Venue
+    venue = game.get("venue", "")
+
+    # Tags
+    tags = []
+    if away_arch and away_arch != "—":
+        tags.append(f'<span class="model-tag tag-arch">vs {_esc(away_arch)}</span>')
+    if home_arch and home_arch != "—":
+        tags.append(f'<span class="model-tag tag-arch">vs {_esc(home_arch)}</span>')
+    if venue:
+        tags.append(f'<span class="model-tag tag-venue">{_esc(venue)}</span>')
+
+    return f'''<div class="model-breakdown">
+    <div class="model-row">
+      <span class="model-label">wOBA</span>
+      <span class="model-val">{_esc(away)} .{int(away_woba*1000):03d}</span>
+      <div class="model-bar-mini">
+        <div class="model-bar-away" style="width:{away_pct}%;background:{away_color}"></div>
+        <div class="model-bar-home" style="width:{home_pct}%;background:{home_color}"></div>
+      </div>
+      <span class="model-val">{_esc(home)} .{int(home_woba*1000):03d}</span>
+      <span class="model-edge-sm">{woba_edge}</span>
+    </div>
+    <div class="model-row">
+      <span class="model-label">ARCH</span>
+      <span class="model-val">{_esc(away_arch)}</span>
+      <div class="model-mid-spacer"></div>
+      <span class="model-val">{_esc(home_arch)}</span>
+      <span class="model-edge-sm"></span>
+    </div>
+    <div class="model-row">
+      <span class="model-label">MS</span>
+      <span class="model-val">{_esc(away)} {away_ms:.0f}</span>
+      <div class="model-mid-spacer"></div>
+      <span class="model-val">{_esc(home)} {home_ms:.0f}</span>
+      <span class="model-edge-sm">{ms_edge}</span>
+    </div>
+    <div class="model-row model-formula-row ma-premium">
+      <span class="model-label">MODEL</span>
+      <span class="model-formula">wOBA×Archetype → BaseRuns = <strong>{_esc(away)} {away_runs:.1f} — {_esc(home)} {home_runs:.1f}</strong></span>
+    </div>
+    <div class="model-row model-tags">
+      {"".join(tags)}
+    </div>
+  </div>'''
+
+
 def render_game_card(game, game_idx):
     """Render a complete game card."""
     badge = render_game_type_badge(game)
     run_bar = render_run_bar(game)
     header = render_card_header(game)
     sp_block = render_sp_block(game)
+    model_breakdown = render_model_breakdown(game)
     affiliate = render_affiliate_buttons()
     lineup = render_lineup_grid(game, game_idx)
 
@@ -523,12 +662,17 @@ def render_game_card(game, game_idx):
     meta_str = " · ".join(meta_parts)
     meta_html = f'<div class="game-meta">{_esc(meta_str)}</div>' if meta_str else ""
 
-    return f'''<div class="game-card">
+    # Data attributes for sorting/filtering
+    card_conf = game.get("spread_conf", 0)
+    card_edge = abs(edge_data.get("spread_edge", 0)) if edge_data else 0
+
+    return f'''<div class="game-card" data-conf="{card_conf}" data-edge="{card_edge:.1f}">
   {badge}
   {run_bar}
   {header}
   {edge_html}
   {sp_block}
+  {model_breakdown}
   {meta_html}
   {affiliate}
   {lineup}
@@ -552,21 +696,28 @@ def render_top_picks(games):
     if not picks:
         return '<div class="empty-state">NO STRONG EDGES TODAY</div>'
 
-    # Sort by edge magnitude
-    picks.sort(key=lambda p: abs(p.get("edge", 0)), reverse=True)
+    # Sort by confidence first, then edge magnitude
+    picks.sort(key=lambda p: (p.get("confidence", 0), abs(p.get("edge", 0))), reverse=True)
 
     rows = ""
     for i, pick in enumerate(picks):
         label = _esc(pick.get("label", ""))
         matchup = _esc(pick.get("matchup", ""))
         edge = pick.get("edge", 0)
+        conf_val = pick.get("confidence", 0)
+        conf_color = pick.get("conf_color", "#FFD600")
         strength = pick.get("strength", "lean")
         pick_cls = "gp-pick-strong" if strength == "strong" else "gp-pick-lean"
+        premium_cls = " ma-premium" if conf_val >= 9 else ""
 
-        rows += f'''<div class="pick-row">
+        conf_pill = ""
+        if conf_val > 0:
+            conf_pill = f' <span class="mc-conf-num" style="color:{conf_color}">{conf_val}</span>'
+
+        rows += f'''<div class="pick-row{premium_cls}">
   <div class="pick-rank">{i+1}</div>
   <div class="pick-info">
-    <div class="pick-label {pick_cls}">{label}</div>
+    <div class="pick-label {pick_cls}">{label}{conf_pill}</div>
     <div class="pick-matchup">{matchup}</div>
   </div>
   <div class="pick-edge">{edge:+.1f}</div>
@@ -612,14 +763,23 @@ def render_trends(games):
         ms = int(b.get("ms", 0))
         ms_cls = ms_class(ms)
         woba = b.get("woba", 0)
+        overall_woba = b.get("overall_woba", 0)
         opp = _esc(b.get("opp", ""))
         vs = _esc(b.get("vs_pitcher", ""))
+
+        # Show baseline → matchup wOBA
+        if overall_woba and woba:
+            woba_str = f".{int(overall_woba*1000):03d}→.{int(woba*1000):03d}"
+        elif woba:
+            woba_str = f".{int(woba*1000):03d}"
+        else:
+            woba_str = "—"
 
         rows += f'''<div class="trend-row">
   <div class="trend-rank">{i+1}</div>
   <div class="trend-info">
     <div class="trend-name">{name}</div>
-    <div class="trend-meta">{team} vs {vs} ({opp}) · .{int(woba*1000):03d} wOBA</div>
+    <div class="trend-meta">{team} vs {vs} ({opp}) · {woba_str} wOBA</div>
   </div>
   <div class="trend-right">
     <div class="trend-ms {ms_cls}">{ms}</div>
@@ -717,6 +877,8 @@ body::after{
 .card-center .spread{font-family:var(--font-mono);font-size:18px;font-weight:700}
 .card-center .ou-line{font-family:var(--font-mono);font-size:10px;color:var(--color-meta);margin-top:2px}
 .sim-pick{display:inline-block;background:var(--color-accent);color:var(--color-black);border:var(--border);font-family:var(--font-mono);font-size:10px;font-weight:700;padding:3px 10px;margin-top:4px;text-transform:uppercase}
+.pick-type-label{font-size:8px;letter-spacing:1px;opacity:0.6;margin-right:2px}
+.mc-conf-num{font-family:var(--font-mono);font-size:10px;font-weight:800;background:rgba(0,0,0,0.15);padding:1px 5px;border-radius:3px;letter-spacing:0.5px;margin-left:4px}
 
 /* SP matchup */
 .sp-block{display:grid;grid-template-columns:1fr auto 1fr;padding:12px;gap:8px;border-top:1px dashed #ddd}
@@ -759,14 +921,22 @@ body::after{
 .lineup-col-hdr{font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;color:var(--color-meta);padding:4px 0 6px;letter-spacing:1px;border-bottom:1px solid #ddd;margin-bottom:4px}
 
 /* Batter row */
-.batter-row{min-height:44px;padding:4px 0;border-bottom:1px solid #eee}
-.batter-top{display:flex;align-items:baseline;justify-content:space-between}
-.batter-order{font-family:var(--font-mono);font-size:10px;color:var(--color-meta);margin-right:4px;min-width:14px}
-.batter-name{font-family:var(--font-body);font-size:12px;font-weight:700;flex:1}
-.batter-ms{font-family:var(--font-display);font-size:18px;letter-spacing:1px}
-.batter-bottom{display:flex;align-items:baseline;justify-content:space-between;margin-top:1px}
-.batter-stats{font-family:var(--font-mono);font-size:9px;color:var(--color-meta)}
-.batter-range{font-family:var(--font-mono);font-size:9px;color:#bbb}
+.batter-row{min-height:68px;padding:8px 0;border-bottom:1px solid #eee}
+.batter-top{display:flex;align-items:center;justify-content:space-between}
+.batter-order{font-family:var(--font-mono);font-size:12px;color:var(--color-meta);margin-right:6px;min-width:16px}
+.batter-name{font-family:var(--font-body);font-size:15px;font-weight:700;flex:1}
+.batter-ms{font-family:var(--font-display);font-size:24px;letter-spacing:1px}
+.batter-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:3px}
+.batter-stats{font-family:var(--font-mono);font-size:11px;color:var(--color-meta)}
+.batter-range{font-family:var(--font-mono);font-size:10px;color:#bbb}
+.batter-woba{display:flex;align-items:center;gap:4px;font-family:var(--font-mono);font-size:13px;margin-top:3px}
+.woba-base{color:#888;font-size:13px}
+.woba-dna{font-size:11px;margin:0 2px}
+.woba-vs{font-weight:700;font-size:14px}
+.woba-vs.hot{color:var(--color-elite)}
+.woba-vs.cold{color:var(--color-tough)}
+.woba-vs.neutral{color:#555}
+.woba-pa{color:#bbb;font-size:10px;margin-left:3px}
 
 /* MS colors */
 .ms-elite{color:var(--color-elite);text-shadow:0 0 8px rgba(0,163,52,0.3)}
@@ -781,6 +951,25 @@ body::after{
 
 /* No lineups */
 .tbd-block{text-align:center;padding:16px;font-family:var(--font-mono);font-size:10px;color:var(--color-meta);text-transform:uppercase;letter-spacing:1px}
+
+/* ═══ MODEL BREAKDOWN ═══ */
+.model-breakdown{margin:4px 12px 6px;padding:8px 10px;background:rgba(0,0,0,0.03);border-radius:8px;border:1px solid rgba(0,0,0,0.06)}
+.model-row{display:flex;align-items:center;gap:6px;margin-bottom:5px;font-family:var(--font-mono);font-size:10px}
+.model-row:last-child{margin-bottom:0}
+.model-label{font-weight:700;color:rgba(0,0,0,0.45);min-width:40px;text-transform:uppercase;font-size:9px;letter-spacing:0.5px}
+.model-val{font-weight:600;color:rgba(0,0,0,0.7);min-width:50px;text-align:center;font-size:10px}
+.model-bar-mini{flex:1;height:8px;display:flex;border-radius:4px;overflow:hidden;border:1px solid rgba(0,0,0,0.15)}
+.model-bar-away,.model-bar-home{height:100%;transition:width 0.5s ease}
+.model-mid-spacer{flex:1}
+.model-edge-sm{font-weight:700;color:rgba(0,0,0,0.55);font-size:9px;min-width:50px;text-align:right}
+.model-formula-row{margin-top:4px;padding-top:5px;border-top:1px dashed rgba(0,0,0,0.10)}
+.model-formula{font-family:var(--font-mono);font-size:9px;font-weight:600;color:rgba(0,0,0,0.55);flex:1;text-align:center}
+.model-formula strong{color:rgba(0,0,0,0.85);font-size:10px}
+.model-tags{display:flex;gap:6px;flex-wrap:wrap}
+.model-tag{font-family:var(--font-mono);font-size:8px;font-weight:700;letter-spacing:0.5px;padding:2px 8px;border-radius:10px;text-transform:uppercase}
+.tag-arch{background:rgba(255,234,0,0.15);color:#a89800}
+.tag-ms{background:rgba(0,163,52,0.12);color:#00a334}
+.tag-venue{background:rgba(0,120,255,0.12);color:#0078ff}
 
 /* ═══ BULLPEN SECTION ═══ */
 .bp-toggle{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border-top:1px dashed #ddd;font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;color:var(--color-meta);cursor:pointer;letter-spacing:1px;user-select:none}
@@ -903,11 +1092,18 @@ document.querySelectorAll('.chip').forEach(chip => {
     document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
     chip.classList.add('active');
     const filter = chip.getAttribute('data-filter');
-    document.querySelectorAll('.game-card').forEach(card => {
+    const cards = Array.from(document.querySelectorAll('.game-card'));
+    const parent = cards[0]?.parentNode;
+    if (filter === 'value' && parent) {
+      cards.sort((a, b) => parseInt(b.dataset.conf || '0') - parseInt(a.dataset.conf || '0'));
+      cards.forEach(c => parent.appendChild(c));
+    }
+    cards.forEach(card => {
       if (filter === 'all') {
         card.style.display = '';
       } else if (filter === 'value') {
-        card.style.display = card.querySelector('.edge-bar') ? '' : 'none';
+        const conf = parseInt(card.dataset.conf || '0');
+        card.style.display = (conf > 0 || card.querySelector('.edge-bar')) ? '' : 'none';
       } else if (filter === 'st') {
         card.style.display = card.querySelector('.st-badge') ? '' : 'none';
       } else if (filter === 'regular') {
