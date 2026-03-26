@@ -802,62 +802,38 @@ def compute_game(game: dict, atlas: AtlasData) -> dict:
             }
 
             # ── RUN LINE EDGE ──
-            # Away -1.5: covers when away wins by 2+
-            # Home +1.5: covers when home wins OR away wins by exactly 1
-            away_rl_cover = win_prob_to_rl_cover_prob(model_away_wp)
-            home_rl_cover = 1 - away_rl_cover  # home +1.5
+            # Only compute if real RL odds are available from odds source
+            rl_odds_data = odds.get("spread_odds", {})
+            if rl_odds_data.get("away_price") and rl_odds_data.get("home_price"):
+                away_rl_price = rl_odds_data["away_price"]
+                home_rl_price = rl_odds_data["home_price"]
+                away_rl_point = rl_odds_data.get("away_point", 1.5)
+                home_rl_point = rl_odds_data.get("home_point", -1.5)
 
-            # Estimate run line odds from ML (standard MLB adjustment)
-            # Favorite -1.5 gets ~+1.5 odds shift, dog +1.5 gets ~-1.5 shift
-            # Without actual RL pricing, estimate: -1.5 adds ~120 to ML, +1.5 subtracts ~120
-            if market_spread is not None:
-                # Standard MLB run line odds estimation:
-                # Favorite -1.5: typically +130 to +160 range (gets plus money)
-                # Underdog +1.5: typically -150 to -190 range (pays for protection)
-                # Approximate: shift ML by ~120 points, but clamp to realistic range
-                if market_spread < 0:
-                    # Home is favorite
-                    fav_ml, dog_ml_val = home_ml, away_ml
-                    fav_side, dog_side = home_team, away_team
-                    fav_wp, dog_wp = model_home_wp, model_away_wp
+                away_rl_cover = win_prob_to_rl_cover_prob(model_away_wp) if away_rl_point < 0 else (1 - win_prob_to_rl_cover_prob(model_home_wp))
+                home_rl_cover = 1 - away_rl_cover
+
+                away_rl_decimal = ml_to_decimal(away_rl_price)
+                home_rl_decimal = ml_to_decimal(home_rl_price)
+                away_rl_ev = round((away_rl_cover * away_rl_decimal) - 1, 4)
+                home_rl_ev = round((home_rl_cover * home_rl_decimal) - 1, 4)
+
+                if away_rl_ev > home_rl_ev:
+                    rl_side = away_team
+                    rl_ev = away_rl_ev
+                    rl_label = f"{away_team} {away_rl_point:+.1f}"
+                    rl_odds_val = away_rl_price
                 else:
-                    # Away is favorite
-                    fav_ml, dog_ml_val = away_ml, home_ml
-                    fav_side, dog_side = away_team, home_team
-                    fav_wp, dog_wp = model_away_wp, model_home_wp
-
-                # Estimate RL odds: favorite -1.5 gets boosted, dog +1.5 gets worse
-                fav_rl_odds = max(100, fav_ml + 130)  # -1.5 always plus money, floor at +100
-                dog_rl_odds = min(-110, dog_ml_val - 130)  # +1.5 always minus money, ceiling at -110
-
-                fav_rl_cover = win_prob_to_rl_cover_prob(fav_wp)
-                dog_rl_cover = 1 - fav_rl_cover
-
-                fav_rl_decimal = ml_to_decimal(fav_rl_odds)
-                dog_rl_decimal = ml_to_decimal(dog_rl_odds)
-                fav_rl_ev = round((fav_rl_cover * fav_rl_decimal) - 1, 4) if fav_rl_decimal else 0
-                dog_rl_ev = round((dog_rl_cover * dog_rl_decimal) - 1, 4) if dog_rl_decimal else 0
-
-                # Pick best RL side
-                if fav_rl_ev > dog_rl_ev:
-                    rl_side = fav_side
-                    rl_ev = fav_rl_ev
-                    rl_cover = fav_rl_cover
-                    rl_label = f"{fav_side} -1.5"
-                    rl_odds = fav_rl_odds
-                else:
-                    rl_side = dog_side
-                    rl_ev = dog_rl_ev
-                    rl_cover = dog_rl_cover
-                    rl_label = f"{dog_side} +1.5"
-                    rl_odds = dog_rl_odds
+                    rl_side = home_team
+                    rl_ev = home_rl_ev
+                    rl_label = f"{home_team} {home_rl_point:+.1f}"
+                    rl_odds_val = home_rl_price
 
                 game["edges"]["rl"] = {
                     "side": rl_side,
                     "label": rl_label,
-                    "est_odds": rl_odds,
+                    "odds": rl_odds_val,
                     "ev": round(rl_ev * 100, 1),
-                    "cover_prob": round(rl_cover * 100, 1),
                     "is_pick": rl_ev > 0.02,
                     "is_strong": rl_ev > 0.05,
                 }

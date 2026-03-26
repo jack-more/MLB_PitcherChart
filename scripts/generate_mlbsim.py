@@ -118,25 +118,30 @@ def flatten_game(game):
     # 2. Flatten edges → edge dict
     edges = game.get("edges", {})
     flat_edge = {}
-    if "spread" in edges:
-        flat_edge["spread_edge"] = edges["spread"]["edge"]
+    if "ml" in edges:
+        flat_edge["ml_ev"] = edges["ml"]["ev"]
     if "total" in edges:
         flat_edge["total_edge"] = edges["total"]["edge"]
     game["edge"] = flat_edge
 
-    # 3. Build per-game picks list from edges with confidence
+    # 3. Build per-game picks list — ML first (baseball is a ML sport)
     conf = game.get("confidence", {})
     picks = []
-    if edges.get("spread", {}).get("is_pick"):
-        se = edges["spread"]
+
+    # ML pick (primary)
+    if edges.get("ml", {}).get("is_pick"):
+        ml = edges["ml"]
+        odds_str = f"{int(ml['odds']):+d}" if ml.get("odds") else ""
         picks.append({
-            "type": "spread",
-            "label": f"{se['side']} {se['market']:+.1f}",
-            "edge": se["edge"],
-            "strength": "strong" if se.get("is_strong") else "lean",
+            "type": "ml",
+            "label": f"{ml['side']} ML ({odds_str})",
+            "edge": ml["ev"],
+            "strength": "strong" if ml.get("is_strong") else "lean",
             "confidence": conf.get("spread_conf", 0),
             "conf_color": conf.get("spread_conf_color", "#FFD600"),
         })
+
+    # O/U pick
     if edges.get("total", {}).get("is_pick"):
         te = edges["total"]
         picks.append({
@@ -223,17 +228,26 @@ def render_run_bar(game):
 
 
 def render_card_header(game):
-    """Render the team logos + spread center block."""
+    """Render the team logos + ML/odds center block."""
     away = game.get("away_team", "???")
     home = game.get("home_team", "???")
     odds = game.get("odds", {})
+    model_wp = game.get("model_wp", {})
 
-    spread_val = odds.get("spread")
+    # ML display
+    away_ml = odds.get("away_ml")
+    home_ml = odds.get("home_ml")
+    away_ml_str = format_ml(away_ml) if away_ml is not None else "—"
+    home_ml_str = format_ml(home_ml) if home_ml is not None else "—"
+
+    # Model win probability
+    away_wp = model_wp.get("away", 50)
+    home_wp = model_wp.get("home", 50)
+
     total_val = odds.get("total")
-    spread_display = format_spread(spread_val) if spread_val is not None else "—"
     total_display = f"O/U {format_total(total_val)}" if total_val is not None else ""
 
-    # Pick badge with confidence pill
+    # Pick badges with confidence
     pick_html = ""
     picks = game.get("picks", [])
     for pick in picks:
@@ -241,7 +255,7 @@ def render_card_header(game):
         conf_val = pick.get("confidence", 0)
         conf_color = pick.get("conf_color", "#FFD600")
         pick_type = pick.get("type", "")
-        type_label = "SPREAD" if pick_type == "spread" else "O/U"
+        type_label = "ML" if pick_type == "ml" else "O/U"
 
         conf_pill = ""
         if conf_val > 0:
@@ -256,16 +270,18 @@ def render_card_header(game):
   <div class="team-block">
     <div class="team-logo"><img src="{away_logo}" alt="{_esc(away)}" style="width:100%;height:100%;object-fit:contain"></div>
     <div class="team-abbr">{_esc(away)}</div>
+    <div class="team-ml">{away_ml_str}</div>
   </div>
   <div class="card-center ma-premium">
-    <div class="proj-label">SPREAD</div>
-    <div class="spread">{spread_display}</div>
+    <div class="proj-label">WIN PROB</div>
+    <div class="spread">{away_wp:.0f}% — {home_wp:.0f}%</div>
     <div class="ou-line">{total_display}</div>
     {pick_html}
   </div>
   <div class="team-block">
     <div class="team-logo"><img src="{home_logo}" alt="{_esc(home)}" style="width:100%;height:100%;object-fit:contain"></div>
     <div class="team-abbr">{_esc(home)}</div>
+    <div class="team-ml">{home_ml_str}</div>
   </div>
 </div>'''
 
@@ -653,20 +669,23 @@ def render_game_card(game, game_idx):
   {bp_home}
 </div>'''
 
-    # Edge info
+    # Edge info — ML-first
     edge_html = ""
+    edges = game.get("edges", {})
     edge_data = game.get("edge", {})
-    if edge_data:
-        spread_edge = edge_data.get("spread_edge")
-        total_edge = edge_data.get("total_edge")
-        parts = []
-        if spread_edge and abs(spread_edge) >= EDGE_THRESHOLD_SPREAD:
-            parts.append(f"Spread Edge: {spread_edge:+.1f}")
-        if total_edge and abs(total_edge) >= EDGE_THRESHOLD_TOTAL:
-            direction = "OVER" if total_edge > 0 else "UNDER"
-            parts.append(f"Total Edge: {direction} {abs(total_edge):.1f}")
-        if parts:
-            edge_html = f'<div class="edge-bar ma-premium">{" · ".join(parts)}</div>'
+    parts = []
+    ml_edge = edges.get("ml", {})
+    if ml_edge.get("is_pick"):
+        parts.append(f"ML Edge: {ml_edge['side']} +{ml_edge['ev']:.1f}% EV")
+    rl_edge = edges.get("rl", {})
+    if rl_edge.get("is_pick"):
+        parts.append(f"RL: {rl_edge['label']} +{rl_edge['ev']:.1f}% EV")
+    total_edge = edge_data.get("total_edge")
+    if total_edge and abs(total_edge) >= EDGE_THRESHOLD_TOTAL:
+        direction = "OVER" if total_edge > 0 else "UNDER"
+        parts.append(f"Total: {direction} {abs(total_edge):.1f}")
+    if parts:
+        edge_html = f'<div class="edge-bar ma-premium">{" · ".join(parts)}</div>'
 
     game_time = game.get("game_time_et", "")
     venue = game.get("venue", "")
@@ -680,7 +699,7 @@ def render_game_card(game, game_idx):
 
     # Data attributes for sorting/filtering
     card_conf = game.get("spread_conf", 0)
-    card_edge = abs(edge_data.get("spread_edge", 0)) if edge_data else 0
+    card_edge = ml_edge.get("ev", 0) if ml_edge else 0
 
     return f'''<div class="game-card" data-conf="{card_conf}" data-edge="{card_edge:.1f}">
   {badge}
@@ -888,6 +907,7 @@ body::after{
 .team-block{text-align:center}
 .team-logo{width:48px;height:48px;margin:0 auto 4px;overflow:hidden}
 .team-abbr{font-family:var(--font-display);font-size:24px;letter-spacing:2px;text-transform:uppercase}
+.team-ml{font-family:var(--font-mono);font-size:12px;color:var(--color-meta);margin-top:2px;text-align:center}
 .card-center{text-align:center}
 .card-center .proj-label{font-family:var(--font-display);font-size:10px;color:var(--color-meta);letter-spacing:2px;text-transform:uppercase}
 .card-center .spread{font-family:var(--font-mono);font-size:18px;font-weight:700}
