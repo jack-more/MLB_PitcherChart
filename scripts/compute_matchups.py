@@ -681,52 +681,204 @@ def compute_game(game: dict, atlas: AtlasData) -> dict:
     game["proj_total"] = round(away_runs + home_runs, 1)
     game["proj_spread"] = round(home_runs - away_runs, 1)  # Negative = home favored
 
-    # Edge vs market
+    # ═══ ML-FIRST EDGE ENGINE ═══
     odds = game.get("odds", {})
     game["edges"] = {}
 
-    if "spread" in odds and has_lineups:
-        market_spread = odds["spread"]  # Home team spread (positive = home getting points)
-        proj_spread = game["proj_spread"]  # home - away (negative = away favored)
+    away_team = game.get("away_team", "")
+    home_team = game.get("home_team", "")
 
-        # The spread edge is how much the underdog covers by.
-        # market_spread = 1.5 means home getting +1.5
-        # proj_spread = -1.3 means away wins by 1.3
-        # Home covers if: proj_spread + market_spread > 0 (i.e., -1.3 + 1.5 = 0.2, covers by 0.2)
-        # Away covers if: proj_spread + market_spread < 0
-        cover_margin = round(proj_spread + market_spread, 1)  # positive = home covers, negative = away covers
-        spread_edge = round(abs(cover_margin), 1)
-
-        if cover_margin > 0:
-            # Home team covers the spread
-            pick_side = game["home_team"]
-        elif cover_margin < 0:
-            # Away team covers the spread
-            pick_side = game["away_team"]
+    def ml_to_implied_prob(ml):
+        """Convert American odds to implied probability (no-vig)."""
+        if ml is None:
+            return None
+        ml = float(ml)
+        if ml < 0:
+            return abs(ml) / (abs(ml) + 100)
         else:
-            pick_side = game["home_team"]
+            return 100 / (ml + 100)
 
-        game["edges"]["spread"] = {
-            "edge": spread_edge,
-            "cover_margin": cover_margin,
-            "market": market_spread,
-            "projected": proj_spread,
-            "is_pick": spread_edge >= EDGE_THRESHOLD_SPREAD,
-            "is_strong": spread_edge >= EDGE_THRESHOLD_SPREAD * STRONG_EDGE_MULTIPLIER,
-            "side": pick_side,
-        }
+    def ml_to_decimal(ml):
+        """Convert American odds to decimal odds."""
+        if ml is None:
+            return None
+        ml = float(ml)
+        if ml < 0:
+            return 1 + 100 / abs(ml)
+        else:
+            return 1 + ml / 100
 
-    if "total" in odds and has_lineups:
-        market_total = odds["total"]
-        proj_total = game["proj_total"]
-        total_edge = round(proj_total - market_total, 1)
-        game["edges"]["total"] = {
-            "edge": total_edge,
-            "market": market_total,
-            "projected": proj_total,
-            "is_pick": abs(total_edge) >= EDGE_THRESHOLD_TOTAL,
-            "is_strong": abs(total_edge) >= EDGE_THRESHOLD_TOTAL * STRONG_EDGE_MULTIPLIER,
-            "direction": "over" if total_edge > 0 else "under",
+    def run_diff_to_win_prob(run_diff):
+        """Convert projected run differential to win probability.
+
+        Based on MLB historical data: ~50% of games decided by 1 run,
+        Pythagorean expectation with exponent 1.83.
+        run_diff is away - home (positive = away favored).
+        """
+        import math
+        if run_diff == 0:
+            return 0.5
+        # Average MLB game: ~4.5 runs per team
+        avg_runs = 4.5
+        away_runs = avg_runs + run_diff / 2
+        home_runs = avg_runs - run_diff / 2
+        away_runs = max(away_runs, 1.0)
+        home_runs = max(home_runs, 1.0)
+        # Pythagorean win% (exponent 1.83 for MLB)
+        return away_runs ** 1.83 / (away_runs ** 1.83 + home_runs ** 1.83)
+
+    def win_prob_to_rl_cover_prob(win_prob):
+        """Estimate run line (-1.5) cover probability from win probability.
+
+        In MLB, ~58% of wins are by 2+ runs historically.
+        So P(cover -1.5) ≈ win_prob × 0.58
+        P(cover +1.5) ≈ (1 - win_prob) + win_prob × 0.42  [lose + win by 1]
+        """
+        WIN_BY_2_PLUS_RATE = 0.58
+        return win_prob * WIN_BY_2_PLUS_RATE
+
+    if has_lineups:
+        away_ml = odds.get("away_ml")
+        home_ml = odds.get("home_ml")
+        market_spread = odds.get("spread")
+        market_total = odds.get("total")
+
+        # Model win probability from projected run differential
+        run_diff = away_runs - home_runs  # positive = away favored
+        model_away_wp = run_diff_to_win_prob(run_diff)
+        model_home_wp = 1 - model_away_wp
+
+        # Market implied probabilities (remove vig by normalizing)
+        if away_ml is not None and home_ml is not None:
+            raw_away = ml_to_implied_prob(away_ml)
+            raw_home = ml_to_implied_prob(home_ml)
+            vig = raw_away + raw_home  # e.g., 1.05
+            market_away_wp = raw_away / vig
+            market_home_wp = raw_home / vig
+
+            # ── MONEYLINE EDGE ──
+            # EV = (model_prob × decimal_payout) - 1
+            away_decimal = ml_to_decimal(away_ml)
+            home_decimal = ml_to_decimal(home_ml)
+            away_ml_ev = round((model_away_wp * away_decimal) - 1, 4)
+            home_ml_ev = round((model_home_wp * home_decimal) - 1, 4)
+
+            # ML edge = model probability - market probability
+            away_ml_edge = round(model_away_wp - market_away_wp, 4)
+            home_ml_edge = round(model_home_wp - market_home_wp, 4)
+
+            # Pick the side with positive EV
+            if away_ml_ev > home_ml_ev and away_ml_ev > 0:
+                ml_side = away_team
+                ml_edge = away_ml_edge
+                ml_ev = away_ml_ev
+                ml_odds = away_ml
+                ml_model_wp = model_away_wp
+                ml_market_wp = market_away_wp
+            elif home_ml_ev > 0:
+                ml_side = home_team
+                ml_edge = home_ml_edge
+                ml_ev = home_ml_ev
+                ml_odds = home_ml
+                ml_model_wp = model_home_wp
+                ml_market_wp = market_home_wp
+            else:
+                ml_side = away_team if away_ml_ev > home_ml_ev else home_team
+                ml_edge = max(away_ml_edge, home_ml_edge)
+                ml_ev = max(away_ml_ev, home_ml_ev)
+                ml_odds = away_ml if away_ml_ev > home_ml_ev else home_ml
+                ml_model_wp = model_away_wp if away_ml_ev > home_ml_ev else model_home_wp
+                ml_market_wp = market_away_wp if away_ml_ev > home_ml_ev else market_home_wp
+
+            game["edges"]["ml"] = {
+                "side": ml_side,
+                "odds": ml_odds,
+                "edge": round(ml_edge * 100, 1),  # as percentage points
+                "ev": round(ml_ev * 100, 1),  # EV as percentage
+                "model_wp": round(ml_model_wp * 100, 1),
+                "market_wp": round(ml_market_wp * 100, 1),
+                "is_pick": ml_ev > 0.02,  # Need 2%+ EV to flag
+                "is_strong": ml_ev > 0.05,  # 5%+ EV is strong
+            }
+
+            # ── RUN LINE EDGE ──
+            # Away -1.5: covers when away wins by 2+
+            # Home +1.5: covers when home wins OR away wins by exactly 1
+            away_rl_cover = win_prob_to_rl_cover_prob(model_away_wp)
+            home_rl_cover = 1 - away_rl_cover  # home +1.5
+
+            # Estimate run line odds from ML (standard MLB adjustment)
+            # Favorite -1.5 gets ~+1.5 odds shift, dog +1.5 gets ~-1.5 shift
+            # Without actual RL pricing, estimate: -1.5 adds ~120 to ML, +1.5 subtracts ~120
+            if market_spread is not None:
+                # Standard MLB run line odds estimation:
+                # Favorite -1.5: typically +130 to +160 range (gets plus money)
+                # Underdog +1.5: typically -150 to -190 range (pays for protection)
+                # Approximate: shift ML by ~120 points, but clamp to realistic range
+                if market_spread < 0:
+                    # Home is favorite
+                    fav_ml, dog_ml_val = home_ml, away_ml
+                    fav_side, dog_side = home_team, away_team
+                    fav_wp, dog_wp = model_home_wp, model_away_wp
+                else:
+                    # Away is favorite
+                    fav_ml, dog_ml_val = away_ml, home_ml
+                    fav_side, dog_side = away_team, home_team
+                    fav_wp, dog_wp = model_away_wp, model_home_wp
+
+                # Estimate RL odds: favorite -1.5 gets boosted, dog +1.5 gets worse
+                fav_rl_odds = max(100, fav_ml + 130)  # -1.5 always plus money, floor at +100
+                dog_rl_odds = min(-110, dog_ml_val - 130)  # +1.5 always minus money, ceiling at -110
+
+                fav_rl_cover = win_prob_to_rl_cover_prob(fav_wp)
+                dog_rl_cover = 1 - fav_rl_cover
+
+                fav_rl_decimal = ml_to_decimal(fav_rl_odds)
+                dog_rl_decimal = ml_to_decimal(dog_rl_odds)
+                fav_rl_ev = round((fav_rl_cover * fav_rl_decimal) - 1, 4) if fav_rl_decimal else 0
+                dog_rl_ev = round((dog_rl_cover * dog_rl_decimal) - 1, 4) if dog_rl_decimal else 0
+
+                # Pick best RL side
+                if fav_rl_ev > dog_rl_ev:
+                    rl_side = fav_side
+                    rl_ev = fav_rl_ev
+                    rl_cover = fav_rl_cover
+                    rl_label = f"{fav_side} -1.5"
+                    rl_odds = fav_rl_odds
+                else:
+                    rl_side = dog_side
+                    rl_ev = dog_rl_ev
+                    rl_cover = dog_rl_cover
+                    rl_label = f"{dog_side} +1.5"
+                    rl_odds = dog_rl_odds
+
+                game["edges"]["rl"] = {
+                    "side": rl_side,
+                    "label": rl_label,
+                    "est_odds": rl_odds,
+                    "ev": round(rl_ev * 100, 1),
+                    "cover_prob": round(rl_cover * 100, 1),
+                    "is_pick": rl_ev > 0.02,
+                    "is_strong": rl_ev > 0.05,
+                }
+
+        # ── TOTAL (O/U) EDGE ──
+        if market_total is not None:
+            proj_total = game["proj_total"]
+            total_edge = round(proj_total - market_total, 1)
+            game["edges"]["total"] = {
+                "edge": total_edge,
+                "market": market_total,
+                "projected": proj_total,
+                "is_pick": abs(total_edge) >= EDGE_THRESHOLD_TOTAL,
+                "is_strong": abs(total_edge) >= EDGE_THRESHOLD_TOTAL * STRONG_EDGE_MULTIPLIER,
+                "direction": "over" if total_edge > 0 else "under",
+            }
+
+        # Store model probabilities on game for display
+        game["model_wp"] = {
+            "away": round(model_away_wp * 100, 1),
+            "home": round(model_home_wp * 100, 1),
         }
 
     # Average MS for each lineup
@@ -812,12 +964,11 @@ def compute_confidence(game: dict) -> dict:
 
     result = {}
 
-    # ── Spread confidence ──
-    if "spread" in edges:
-        spread_edge = edges["spread"]["edge"]  # Already abs from cover_margin
-        # MLB calibration: 0.2 run edge = 1-2, 0.5 = 3, 1.0 = 5, 2.0 = 8, 3.0+ = 10
-        # Realistic MLB edges are 0.2-2.0 runs. Anything under 0.5 is noise.
-        base_conf = min(10, max(1, round(spread_edge * 3.0 + 1.0)))
+    # ── ML confidence (primary) ──
+    if "ml" in edges:
+        ml_ev = edges["ml"]["ev"]  # EV as percentage (e.g., 5.0 = 5%)
+        # MLB calibration: 2% EV = 3, 5% = 5, 8% = 7, 12%+ = 10
+        base_conf = min(10, max(1, round(ml_ev * 0.7 + 1.5)))
         adj_conf = base_conf * coverage_factor + status_bonus
         spread_conf = max(1, min(10, round(adj_conf)))
         if is_st:
@@ -825,7 +976,7 @@ def compute_confidence(game: dict) -> dict:
 
         result["spread_conf"] = spread_conf
         result["spread_conf_color"] = _conf_color(spread_conf)
-        result["spread_conf_label"] = _conf_label(spread_conf, edges["spread"]["side"])
+        result["spread_conf_label"] = _conf_label(spread_conf, edges["ml"]["side"])
 
     # ── Total (O/U) confidence ──
     if "total" in edges:
