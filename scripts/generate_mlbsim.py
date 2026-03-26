@@ -680,10 +680,11 @@ def render_game_card(game, game_idx):
     rl_edge = edges.get("rl", {})
     if rl_edge.get("is_pick"):
         parts.append(f"RL: {rl_edge['label']} +{rl_edge['ev']:.1f}% EV")
-    total_edge = edge_data.get("total_edge")
-    if total_edge and abs(total_edge) >= EDGE_THRESHOLD_TOTAL:
-        direction = "OVER" if total_edge > 0 else "UNDER"
-        parts.append(f"Total: {direction} {abs(total_edge):.1f}")
+    # O/U disabled until totals are calibrated
+    # total_edge = edge_data.get("total_edge")
+    # if total_edge and abs(total_edge) >= EDGE_THRESHOLD_TOTAL:
+    #     direction = "OVER" if total_edge > 0 else "UNDER"
+    #     parts.append(f"Total: {direction} {abs(total_edge):.1f}")
     if parts:
         edge_html = f'<div class="edge-bar ma-premium">{" · ".join(parts)}</div>'
 

@@ -839,6 +839,8 @@ def compute_game(game: dict, atlas: AtlasData) -> dict:
                 }
 
         # ── TOTAL (O/U) EDGE ──
+        # Disabled: projected totals are not calibrated (model overshoots by ~3 runs).
+        # Will re-enable after RE24 scaling and total calibration are implemented.
         if market_total is not None:
             proj_total = game["proj_total"]
             total_edge = round(proj_total - market_total, 1)
@@ -846,8 +848,8 @@ def compute_game(game: dict, atlas: AtlasData) -> dict:
                 "edge": total_edge,
                 "market": market_total,
                 "projected": proj_total,
-                "is_pick": abs(total_edge) >= EDGE_THRESHOLD_TOTAL,
-                "is_strong": abs(total_edge) >= EDGE_THRESHOLD_TOTAL * STRONG_EDGE_MULTIPLIER,
+                "is_pick": False,  # disabled until calibrated
+                "is_strong": False,
                 "direction": "over" if total_edge > 0 else "under",
             }
 
