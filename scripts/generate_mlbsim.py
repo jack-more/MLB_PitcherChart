@@ -301,7 +301,7 @@ def render_sp_block(game):
 
     def sp_side(sp):
         name = sp.get("name", "TBD")
-        arch = sp.get("archetype", "")
+        arch = sp.get("archetype_short", "") or sp.get("archetype", "")
         throws = sp.get("throws", "?")
         cluster = sp.get("cluster", "")
         is_nri = sp.get("source") == "nri"
@@ -491,7 +491,7 @@ def render_bullpen_section(game, side, game_idx):
     for rp in predicted:
         name = rp.get("name", "Unknown")
         role = rp.get("role", "")
-        arch = rp.get("archetype", "")
+        arch = rp.get("archetype_short", "") or rp.get("archetype", "")
         avail_score = rp.get("availability", 0)
         exp_ip = rp.get("expected_ip", 0)
         exp_inn = rp.get("expected_inning", 0)
@@ -901,10 +901,8 @@ body::after{
 .chip:active{transform:translate(2px,2px);box-shadow:none}
 
 /* ═══ SLATE INFO ═══ */
-.sort-bar{display:flex;align-items:center;gap:8px;padding:8px 0 4px;font-family:var(--font-mono)}
-.sort-label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--color-meta);font-weight:700}
-.sort-btn{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:5px 12px;border-radius:14px;border:1.5px solid rgba(0,0,0,0.12);background:transparent;color:var(--color-meta);cursor:pointer;transition:all 0.15s}
-.sort-btn.active{background:var(--color-text);color:var(--color-bg);border-color:var(--color-text)}
+.chip-divider{width:1px;height:20px;background:rgba(0,0,0,0.15);margin:0 4px;flex-shrink:0}
+.sort-label{font-family:var(--font-mono);font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--color-meta);font-weight:700;white-space:nowrap;align-self:center}
 .slate-info{display:flex;justify-content:space-between;align-items:center;padding:4px 0 10px;font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--color-meta);letter-spacing:1px}
 
 /* ═══ GAME CARD ═══ */
@@ -1135,9 +1133,9 @@ document.querySelectorAll('.filter-btn').forEach(tab => {
 });
 
 // ═══ FILTER CHIPS ═══
-document.querySelectorAll('.chip').forEach(chip => {
+document.querySelectorAll('.chip[data-filter]').forEach(chip => {
   chip.addEventListener('click', () => {
-    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.chip[data-filter]').forEach(c => c.classList.remove('active'));
     chip.classList.add('active');
     const filter = chip.getAttribute('data-filter');
     const cards = Array.from(document.querySelectorAll('.game-card'));
@@ -1184,15 +1182,22 @@ function toggleBullpen(idx) {
 }
 
 // ═══ SORT GAMES ═══
-function sortGames(mode) {
+function sortGames(mode, el) {
   const container = document.querySelector('#tab-lines');
   if (!container) return;
   const cards = Array.from(container.querySelectorAll('.game-card'));
   if (!cards.length) return;
 
-  // Update active button
-  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector('.sort-btn[onclick*="' + mode + '"]')?.classList.add('active');
+  // Update active sort chip (only the sort chips after the divider)
+  const divider = document.querySelector('.chip-divider');
+  if (divider) {
+    let sib = divider.nextElementSibling;
+    while (sib) {
+      if (sib.classList.contains('chip')) sib.classList.remove('active');
+      sib = sib.nextElementSibling;
+    }
+  }
+  if (el) el.classList.add('active');
 
   // Sort
   cards.sort((a, b) => {
@@ -1270,11 +1275,11 @@ def generate_html(daily_data):
     trends_html = render_trends(games)
 
     # Determine filter chips
-    filter_chips = '<div class="chip active" data-filter="all">All Games</div>'
+    filter_chips = ''
     if num_st > 0 and num_reg > 0:
         filter_chips += '<div class="chip" data-filter="st">Spring Training</div>'
         filter_chips += '<div class="chip" data-filter="regular">Regular Season</div>'
-    filter_chips += '<div class="chip" data-filter="value">Best Value</div>'
+    # Best Value filter removed — sort by Value does the same thing
 
     # Spring training disclaimer
     st_disclaimer = ""
@@ -1335,12 +1340,9 @@ def generate_html(daily_data):
     <div class="tab-content active" id="tab-lines">
         <div class="chips">
             {filter_chips}
-        </div>
-        <div class="sort-bar">
-            <span class="sort-label">SORT BY:</span>
-            <button class="sort-btn active" onclick="sortGames('time')">Time</button>
-            <button class="sort-btn" onclick="sortGames('value')">Value</button>
-            <button class="sort-btn" onclick="sortGames('confidence')">Confidence</button>
+            <div class="chip active" onclick="sortGames('time', this)">Time</div>
+            <div class="chip" onclick="sortGames('value', this)">Value</div>
+            <div class="chip" onclick="sortGames('confidence', this)">Confidence</div>
         </div>
         <div class="slate-info">
             <span>{display_date} SLATE</span>
