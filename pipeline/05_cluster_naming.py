@@ -43,6 +43,18 @@ def _get_top_pitches(row: pd.Series, n: int = 3) -> list:
     return sorted(pitches, key=lambda x: x[1], reverse=True)[:n]
 
 
+# Manual name overrides — applied AFTER auto-naming to fix known misclassifications
+# These take priority over the rule-based naming system
+CLUSTER_NAME_OVERRIDES = {
+    "R_6": "Barnburner",           # FF=44% + SL=34% — two-pitch demon
+    "R_7": "CutCurve",             # FC=26% + CU=12% — cutter-curve profile
+    "R_13": "Kitchen Sink Plus",   # 9 pitch types — Skenes, Darvish, Kirby
+    "R_12": "Kitchen Sink",        # 7 pitch types — diverse mix
+    "L_0": "CutCurve",             # FC=20% + ST=18% — cutter + breaking ball
+    "L_4": "Split Demon",          # FS=13% — splitter variant, not Triple Threat
+}
+
+
 def _role_str(is_sp: float) -> str:
     """Role string — kept for internal logic but NOT appended to archetype names."""
     if is_sp > 0.55:
@@ -253,6 +265,8 @@ ARCHETYPE_COLORS = {
     "Triple Threat":      "#e06050",  # Tomato
     "Snake":              "#d0a060",  # Tan Gold
     "Eephus Lobber":      "#a0a0a0",  # Gray
+    "CutCurve":           "#c0392b",  # Crimson
+    "Kitchen Sink Plus":  "#27ae60",  # Emerald
 }
 
 # Fallback palettes if archetype name not in ARCHETYPE_COLORS
@@ -270,20 +284,33 @@ LHP_COLORS = [
 
 def main():
     from scipy.spatial.distance import cdist
+    from config import CLUSTER_MERGES
 
     # Load data
     data_path = os.path.join(PROCESSED_DATA_DIR, "pitcher_seasons.parquet")
     pitcher_seasons = pd.read_parquet(data_path)
+
+    # Apply cluster merges before naming
+    if CLUSTER_MERGES:
+        print(f"Applying {len(CLUSTER_MERGES)} cluster merges...")
+        for old_cid, new_cid in CLUSTER_MERGES.items():
+            n = (pitcher_seasons["cluster"] == old_cid).sum()
+            if n > 0:
+                pitcher_seasons.loc[pitcher_seasons["cluster"] == old_cid, "cluster"] = new_cid
+                print(f"  {old_cid} → {new_cid} ({n} pitcher-seasons)")
+        # Save merged parquet
+        pitcher_seasons.to_parquet(data_path, index=False)
+        print()
 
     # Load meta
     meta_path = os.path.join(MODELS_DIR, "kmeans_meta.json")
     meta = json.load(open(meta_path)) if os.path.exists(meta_path) else {}
     features_used = meta.get("features", CLUSTER_FEATURES)
 
-    # Build medoid rows: for each cluster, find the actual pitcher closest
-    # to geometric medoid (minimizes total distance to all other members)
+    # Build medoid rows (for PCA position + examples) AND cluster averages (for naming)
     cluster_ids = sorted(pitcher_seasons["cluster"].unique())
     medoid_rows = {}
+    cluster_avg_rows = {}
     for cid in cluster_ids:
         members = pitcher_seasons[pitcher_seasons["cluster"] == cid]
         if len(members) == 0:
@@ -297,6 +324,15 @@ def main():
             total_dists = dist_matrix.sum(axis=1)
             medoid_rows[cid] = members.iloc[int(np.argmin(total_dists))]
 
+        # Cluster average for naming — uses the actual group profile, not one pitcher
+        avg_series = members[feature_cols].mean()
+        # Carry over non-feature cols that naming needs
+        for col in ["whiff_rate", "groundball_rate", "avg_velo_FF", "spin_overall",
+                     "avg_extension", "is_rhp", "is_sp"]:
+            if col not in avg_series.index and col in members.columns:
+                avg_series[col] = members[col].mean()
+        cluster_avg_rows[cid] = avg_series
+
     print(f"Naming {len(cluster_ids)} clusters ({sum(1 for c in cluster_ids if c.startswith('R'))} RHP, "
           f"{sum(1 for c in cluster_ids if c.startswith('L'))} LHP)...\n")
 
@@ -307,12 +343,14 @@ def main():
     for cid in cluster_ids:
         if cid not in medoid_rows:
             continue
-        row = medoid_rows[cid]
+        row = medoid_rows[cid]  # used for PCA position + representative stats
+        avg_row = cluster_avg_rows.get(cid, row)  # used for naming
         is_rhp = cid.startswith("R")
         hand = "RHP" if is_rhp else "LHP"
 
-        full_name = generate_full_name(row, hand)
-        short_name = generate_short_name(row, full_name, hand)
+        # Name based on cluster AVERAGE pitch mix, not the medoid
+        full_name = generate_full_name(avg_row, hand)
+        short_name = generate_short_name(avg_row, full_name, hand)
 
         # Force post-hoc cluster names BEFORE color assignment
         if cid.endswith("_UT"):
@@ -367,10 +405,88 @@ def main():
             **pca_pos,
         }
 
+    # ── MANUAL OVERRIDES — apply curated names FIRST ──
+    for cid, override_name in CLUSTER_NAME_OVERRIDES.items():
+        if cid in profiles:
+            old_name = profiles[cid]["short_name"]
+            profiles[cid]["short_name"] = override_name
+            profiles[cid]["full_name"] = profiles[cid]["full_name"].replace(old_name, override_name, 1)
+            if override_name in ARCHETYPE_COLORS:
+                profiles[cid]["color"] = ARCHETYPE_COLORS[override_name]
+
+    # ── DISAMBIGUATION: add prefix only when duplicates remain within same hand ──
+    from collections import defaultdict
+    name_groups = defaultdict(list)
+    for cid, prof in profiles.items():
+        key = (prof["hand"], prof["short_name"])
+        name_groups[key].append(cid)
+
+    for (hand, base_name), cids in name_groups.items():
+        if len(cids) <= 1:
+            continue
+
+        cluster_stats = []
+        for cid in cids:
+            members = pitcher_seasons[pitcher_seasons["cluster"] == cid]
+            cluster_stats.append({
+                "cid": cid,
+                "velo": members["avg_velo_FF"].mean(),
+                "whiff": members["whiff_rate"].mean(),
+                "gb": members["groundball_rate"].mean(),
+                "count": len(members),
+            })
+
+        velo_range = max(s["velo"] for s in cluster_stats) - min(s["velo"] for s in cluster_stats)
+        whiff_range = max(s["whiff"] for s in cluster_stats) - min(s["whiff"] for s in cluster_stats)
+        gb_range = max(s["gb"] for s in cluster_stats) - min(s["gb"] for s in cluster_stats)
+
+        for s in cluster_stats:
+            prefix = ""
+            if velo_range >= 1.0:
+                if s["velo"] == max(cs["velo"] for cs in cluster_stats):
+                    prefix = "Power"
+                elif s["velo"] == min(cs["velo"] for cs in cluster_stats):
+                    prefix = "Crafty"
+                else:
+                    prefix = f"{s['velo']:.0f}mph"
+            elif whiff_range >= 0.02:
+                if s["whiff"] == max(cs["whiff"] for cs in cluster_stats):
+                    prefix = "Strikeout"
+                elif s["whiff"] == min(cs["whiff"] for cs in cluster_stats):
+                    prefix = "Contact"
+                else:
+                    prefix = "Mid"
+            elif gb_range >= 0.02:
+                if s["gb"] == max(cs["gb"] for cs in cluster_stats):
+                    prefix = "Groundball"
+                elif s["gb"] == min(cs["gb"] for cs in cluster_stats):
+                    prefix = "Flyball"
+                else:
+                    prefix = "Mid"
+            else:
+                if s["count"] == max(cs["count"] for cs in cluster_stats):
+                    prefix = "Primary"
+                else:
+                    prefix = "Alt"
+
+            new_name = f"{prefix} {base_name}"
+            profiles[s["cid"]]["short_name"] = new_name
+            old_full = profiles[s["cid"]]["full_name"]
+            profiles[s["cid"]]["full_name"] = old_full.replace(f"The {base_name}", f"The {new_name}", 1)
+
+    # Print final assignments
+    for cid in sorted(profiles.keys()):
+        prof = profiles[cid]
+        hand = prof["hand"]
+        short_name = prof["short_name"]
+        count = prof["pitcher_count"]
+        row = medoid_rows.get(cid)
+        examples_list = prof.get("example_pitchers", [])
         print(f"  {cid} [{hand}]: {short_name}")
-        print(f"    Full: {full_name}")
-        print(f"    Medoid: {row.get('player_name', '?')}")
-        print(f"    Examples: {', '.join(examples)}")
+        print(f"    Full: {prof['full_name']}")
+        if row is not None:
+            print(f"    Medoid: {row.get('player_name', '?')}")
+        print(f"    Examples: {', '.join(examples_list)}")
         print(f"    Count: {count}")
         print()
 
