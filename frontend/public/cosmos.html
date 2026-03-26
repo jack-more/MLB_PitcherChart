@@ -1383,9 +1383,23 @@
         }
 
         // ── Road Network (Voronoi edges + central boulevard) ──
-        const ROAD_WIDTH = 0.10;
-        const ROAD_DEFAULT = 0x666666;
-        const ROAD_SEGS = 10;
+        const ROAD_WIDTH = 0.22;
+        const SIDEWALK_WIDTH = 0.06;
+        const ROAD_BASE_LIFT = 0.03;     // Minimal lift on flat ground
+        // Adaptive road height: checks a tight radius around the point
+        // to clear steep terrain without floating on flat areas
+        function getRoadY(x, z) {
+            const d = 0.18;  // tight neighbor check
+            const h  = getTerrainHeight(x, z);
+            const hN = getTerrainHeight(x, z - d);
+            const hS = getTerrainHeight(x, z + d);
+            const hE = getTerrainHeight(x + d, z);
+            const hW = getTerrainHeight(x - d, z);
+            return Math.max(h, hN, hS, hE, hW) + ROAD_BASE_LIFT;
+        }
+        const ROAD_DEFAULT = 0x444444;
+        const SIDEWALK_COLOR = 0x999999;
+        const ROAD_SEGS = 48;
         const PERF_GREEN  = new THREE.Color(0x2a9d8f);
         const PERF_YELLOW = new THREE.Color(0xf4a261);
         const PERF_RED    = new THREE.Color(0xe63946);
@@ -1411,6 +1425,27 @@
                 }
             });
             return [...edgeMap.values()];
+        }
+
+        let _cachedEdges = null;  // Voronoi edges cached for building exclusion
+
+        // Distance from point (px,pz) to line segment (ax,az)-(bx,bz)
+        function distToSegment(px, pz, ax, az, bx, bz) {
+            const dx = bx - ax, dz = bz - az;
+            const lenSq = dx * dx + dz * dz;
+            if (lenSq === 0) return Math.sqrt((px-ax)**2 + (pz-az)**2);
+            let t = ((px - ax) * dx + (pz - az) * dz) / lenSq;
+            t = Math.max(0, Math.min(1, t));
+            const nx = ax + t * dx, nz = az + t * dz;
+            return Math.sqrt((px - nx)**2 + (pz - nz)**2);
+        }
+
+        function nearRoad(px, pz, margin) {
+            if (!_cachedEdges) return false;
+            for (const e of _cachedEdges) {
+                if (distToSegment(px, pz, e.v1.x, e.v1.z, e.v2.x, e.v2.z) < margin) return true;
+            }
+            return false;
         }
 
         function buildRibbonGeometry(points, width) {
@@ -1452,84 +1487,401 @@
             if (!cells) return;
 
             const edges = extractVoronoiEdges(cells);
+            _cachedEdges = edges;  // Cache for building exclusion
             const defaultMat = new THREE.MeshStandardMaterial({
                 color: ROAD_DEFAULT,
                 emissive: new THREE.Color(ROAD_DEFAULT),
                 emissiveIntensity: 0.05,
-                roughness: 0.6,
+                roughness: 0.7,
                 side: THREE.DoubleSide,
-                transparent: true,
-                opacity: 0.8,
             });
+            const sidewalkMat = new THREE.MeshStandardMaterial({
+                color: SIDEWALK_COLOR,
+                roughness: 0.95,
+                side: THREE.DoubleSide,
+            });
+            const dashMat = new THREE.MeshStandardMaterial({
+                color: 0xdddddd, roughness: 0.5,
+            });
+            const dashGeo = new THREE.BoxGeometry(0.015, 0.008, 0.06);
 
             edges.forEach(edge => {
                 const { v1, v2, cellA, cellB } = edge;
-                // Subdivide for terrain following
                 const pts = [];
                 for (let t = 0; t <= 1; t += 1 / ROAD_SEGS) {
                     const x = v1.x + (v2.x - v1.x) * t;
                     const z = v1.z + (v2.z - v1.z) * t;
-                    pts.push(new THREE.Vector3(x, getTerrainHeight(x, z) + 0.02, z));
+                    pts.push(new THREE.Vector3(x, getRoadY(x, z), z));
                 }
 
-                // Perpendicular offset for dual-lane
                 const dx = v2.x - v1.x, dz = v2.z - v1.z;
                 const len = Math.sqrt(dx*dx + dz*dz) || 1;
                 const perpX = -dz / len, perpZ = dx / len;
-                const offset = ROAD_WIDTH * 0.55;
-                const halfW = ROAD_WIDTH * 0.45;
+                const laneOffset = ROAD_WIDTH * 0.28;
+                const laneW = ROAD_WIDTH * 0.44;
+
+                // Full road bed (single wider ribbon underneath)
+                const roadBed = new THREE.Mesh(
+                    buildRibbonGeometry(pts, ROAD_WIDTH),
+                    defaultMat.clone()
+                );
+                roadBed.userData = { type: 'road-bed' };
+                roadGroup.add(roadBed);
 
                 // Lane A (toward cellA)
-                const ptsA = pts.map(p => new THREE.Vector3(p.x + perpX*offset, p.y, p.z + perpZ*offset));
+                const ptsA = pts.map(p => new THREE.Vector3(p.x + perpX*laneOffset, p.y + 0.002, p.z + perpZ*laneOffset));
                 const matA = defaultMat.clone();
-                const meshA = new THREE.Mesh(buildRibbonGeometry(ptsA, halfW), matA);
+                const meshA = new THREE.Mesh(buildRibbonGeometry(ptsA, laneW), matA);
                 meshA.userData = { type: 'road-lane', forCell: cellA, partner: cellB };
                 roadGroup.add(meshA);
 
-                // Lane B (toward cellB) — only if shared edge
+                // Lane B (toward cellB)
                 if (cellB) {
-                    const ptsB = pts.map(p => new THREE.Vector3(p.x - perpX*offset, p.y, p.z - perpZ*offset));
+                    const ptsB = pts.map(p => new THREE.Vector3(p.x - perpX*laneOffset, p.y + 0.002, p.z - perpZ*laneOffset));
                     const matB = defaultMat.clone();
-                    const meshB = new THREE.Mesh(buildRibbonGeometry(ptsB, halfW), matB);
+                    const meshB = new THREE.Mesh(buildRibbonGeometry(ptsB, laneW), matB);
                     meshB.userData = { type: 'road-lane', forCell: cellB, partner: cellA };
                     roadGroup.add(meshB);
                 }
+
+                // Sidewalks — two strips along outer edges of road
+                const swOuter = ROAD_WIDTH / 2 + SIDEWALK_WIDTH / 2;
+                const ptsSW1 = pts.map(p => new THREE.Vector3(p.x + perpX*swOuter, p.y + 0.005, p.z + perpZ*swOuter));
+                const ptsSW2 = pts.map(p => new THREE.Vector3(p.x - perpX*swOuter, p.y + 0.005, p.z - perpZ*swOuter));
+                roadGroup.add(new THREE.Mesh(buildRibbonGeometry(ptsSW1, SIDEWALK_WIDTH), sidewalkMat.clone()));
+                roadGroup.add(new THREE.Mesh(buildRibbonGeometry(ptsSW2, SIDEWALK_WIDTH), sidewalkMat.clone()));
+
+                // Center lane dashes (white)
+                if (len > 0.5) {
+                    const dashSpacing = 0.3;
+                    for (let d = 0.15; d < len - 0.15; d += dashSpacing) {
+                        const t = d / len;
+                        const px = v1.x + dx * t, pz2 = v1.z + dz * t;
+                        const py = getRoadY(px, pz2) + 0.01;
+                        const dash = new THREE.Mesh(dashGeo, dashMat);
+                        dash.position.set(px, py, pz2);
+                        dash.rotation.y = Math.atan2(dx, dz);
+                        roadGroup.add(dash);
+                    }
+                }
             });
 
-            // Central boulevard at X≈0
+            // ── Access roads: connect each cluster centroid to nearest road edge ──
+            // This ensures corner/edge clusters always have a visible road
+            const centroidMap = {};
+            Object.entries(cells).forEach(([id, poly]) => {
+                if (poly.length < 3) return;
+                const cx = poly.reduce((s, p) => s + p.x, 0) / poly.length;
+                const cz = poly.reduce((s, p) => s + p.z, 0) / poly.length;
+                centroidMap[id] = { x: cx, z: cz };
+            });
+
+            // For each cluster, find nearest neighbor centroid and draw a road
+            const connectedPairs = new Set();
+            Object.keys(centroidMap).forEach(id => {
+                const c = centroidMap[id];
+                let bestDist = Infinity, bestId = null;
+                Object.keys(centroidMap).forEach(otherId => {
+                    if (otherId === id) return;
+                    const o = centroidMap[otherId];
+                    const d = (c.x - o.x) ** 2 + (c.z - o.z) ** 2;
+                    if (d < bestDist) { bestDist = d; bestId = otherId; }
+                });
+                if (!bestId) return;
+                const pairKey = [id, bestId].sort().join('|');
+                if (connectedPairs.has(pairKey)) return; // Already connected
+                connectedPairs.add(pairKey);
+
+                const o = centroidMap[bestId];
+                const adx = o.x - c.x, adz = o.z - c.z;
+                const alen = Math.sqrt(adx*adx + adz*adz) || 1;
+
+                // Build terrain-following road between the two centroids
+                const accessPts = [];
+                const accessSegs = Math.max(4, Math.floor(alen / 0.3));
+                for (let t = 0; t <= 1; t += 1 / accessSegs) {
+                    const ax = c.x + adx * t, az = c.z + adz * t;
+                    accessPts.push(new THREE.Vector3(ax, getRoadY(ax, az), az));
+                }
+
+                // Road surface
+                const accessMat = defaultMat.clone();
+                roadGroup.add(new THREE.Mesh(buildRibbonGeometry(accessPts, ROAD_WIDTH * 0.8), accessMat));
+
+                // Sidewalks
+                const aPerpX = -adz / alen, aPerpZ = adx / alen;
+                const aSwOff = ROAD_WIDTH * 0.4 + SIDEWALK_WIDTH / 2;
+                const aSW1 = accessPts.map(p => new THREE.Vector3(p.x + aPerpX*aSwOff, p.y + 0.005, p.z + aPerpZ*aSwOff));
+                const aSW2 = accessPts.map(p => new THREE.Vector3(p.x - aPerpX*aSwOff, p.y + 0.005, p.z - aPerpZ*aSwOff));
+                roadGroup.add(new THREE.Mesh(buildRibbonGeometry(aSW1, SIDEWALK_WIDTH), sidewalkMat.clone()));
+                roadGroup.add(new THREE.Mesh(buildRibbonGeometry(aSW2, SIDEWALK_WIDTH), sidewalkMat.clone()));
+            });
+
+            // Central highway
             buildCentralBoulevard();
         }
 
         function buildCentralBoulevard() {
-            const BLVD_WIDTH = 0.25;
-            const pts = [];
-            for (let z = -15; z <= 15; z += 0.4) {
-                pts.push(new THREE.Vector3(0, getTerrainHeight(0, z) + 0.025, z));
-            }
-            const geo = buildRibbonGeometry(pts, BLVD_WIDTH);
-            const mat = new THREE.MeshStandardMaterial({
-                color: 0x666666,
-                emissive: new THREE.Color(0x666666),
-                emissiveIntensity: 0.08,
-                roughness: 0.5,
-                side: THREE.DoubleSide,
-            });
-            const mesh = new THREE.Mesh(geo, mat);
-            mesh.userData = { type: 'boulevard' };
-            roadGroup.add(mesh);
+            // ── HIGHWAY — Lefty/Righty divider ──
+            const HWY_TOTAL = 1.4;      // Total highway width
+            const LANE_W = 0.28;         // Each lane
+            const MEDIAN_W = 0.12;       // Concrete median barrier
+            const SHOULDER_W = 0.08;     // Outer shoulder
+            const BARRIER_H = 0.06;      // Jersey barrier height
+            const STEP = 0.25;           // Sample density along Z
 
-            // Orange center dashes
-            const dashMat = new THREE.MeshStandardMaterial({
-                color: 0xff6600, emissive: 0xff6600, emissiveIntensity: 0.4,
-            });
-            for (let z = -15; z < 15; z += 0.9) {
-                const y = getTerrainHeight(0, z) + 0.04;
-                const dGeo = new THREE.BoxGeometry(0.03, 0.02, 0.35);
-                const dash = new THREE.Mesh(dGeo, dashMat);
-                dash.position.set(0, y, z);
-                dash.userData = { type: 'boulevard-dash' };
-                roadGroup.add(dash);
+            // Sample points along Z axis
+            const pts = [];
+            for (let z = -16; z <= 16; z += STEP) {
+                pts.push(new THREE.Vector3(0, getRoadY(0, z), z));
             }
+
+            // Full asphalt bed (dark)
+            const asphaltMat = new THREE.MeshStandardMaterial({
+                color: 0x2a2a2a, roughness: 0.75, side: THREE.DoubleSide,
+            });
+            roadGroup.add(new THREE.Mesh(buildRibbonGeometry(pts, HWY_TOTAL), asphaltMat));
+
+            // Individual lanes (slightly lighter) — 2 lanes each side
+            const laneMat = new THREE.MeshStandardMaterial({
+                color: 0x333333, roughness: 0.7, side: THREE.DoubleSide,
+            });
+            const laneOffsets = [
+                -MEDIAN_W/2 - LANE_W/2,           // Left inner lane
+                -MEDIAN_W/2 - LANE_W - LANE_W/2,  // Left outer lane
+                 MEDIAN_W/2 + LANE_W/2,            // Right inner lane
+                 MEDIAN_W/2 + LANE_W + LANE_W/2,   // Right outer lane
+            ];
+            laneOffsets.forEach(off => {
+                const lanePts = pts.map(p => new THREE.Vector3(p.x + off, p.y + 0.003, p.z));
+                roadGroup.add(new THREE.Mesh(buildRibbonGeometry(lanePts, LANE_W * 0.95), laneMat.clone()));
+            });
+
+            // Concrete median barrier (orange — the divider)
+            const medianMat = new THREE.MeshStandardMaterial({
+                color: 0xcc5500, emissive: 0xff6600, emissiveIntensity: 0.3,
+                roughness: 0.5,
+            });
+            const barrierGeo = new THREE.BoxGeometry(MEDIAN_W, BARRIER_H, STEP * 0.85);
+            for (let z = -15; z <= 15; z += STEP) {
+                const y = getRoadY(0, z) + BARRIER_H / 2;
+                const barrier = new THREE.Mesh(barrierGeo, medianMat);
+                barrier.position.set(0, y, z);
+                barrier.castShadow = true;
+                barrier.userData = { type: 'highway-barrier' };
+                roadGroup.add(barrier);
+            }
+
+            // Outer guard rails (concrete shoulders)
+            const guardMat = new THREE.MeshStandardMaterial({
+                color: 0x888888, roughness: 0.8,
+            });
+            const guardGeo = new THREE.BoxGeometry(0.04, 0.035, STEP * 0.9);
+            const outerEdge = HWY_TOTAL / 2 - SHOULDER_W / 2;
+            for (let z = -15; z <= 15; z += STEP) {
+                const y = getRoadY(0, z) + 0.018;
+                [-1, 1].forEach(side => {
+                    const g = new THREE.Mesh(guardGeo, guardMat);
+                    g.position.set(side * outerEdge, y, z);
+                    g.castShadow = true;
+                    roadGroup.add(g);
+                });
+            }
+
+            // White lane dashes between lanes (each side gets a dashed center line)
+            const dashMat = new THREE.MeshStandardMaterial({
+                color: 0xdddddd, roughness: 0.5,
+            });
+            const dashGeo = new THREE.BoxGeometry(0.02, 0.008, 0.12);
+            const dashX = [
+                -MEDIAN_W/2 - LANE_W,   // Between left lanes
+                 MEDIAN_W/2 + LANE_W,    // Between right lanes
+            ];
+            for (const dx of dashX) {
+                for (let z = -15; z < 15; z += 0.45) {
+                    const y = getRoadY(0, z) + 0.008;
+                    const dash = new THREE.Mesh(dashGeo, dashMat);
+                    dash.position.set(dx, y, z);
+                    roadGroup.add(dash);
+                }
+            }
+
+            // Solid white edge lines (outer edge of each travel direction)
+            const edgeLineMat = new THREE.MeshStandardMaterial({
+                color: 0xcccccc, roughness: 0.5, side: THREE.DoubleSide,
+            });
+            const edgeLineX = [
+                -MEDIAN_W/2 - LANE_W * 2 - 0.01,  // Left outer edge
+                -MEDIAN_W/2 + 0.01,                  // Left inner edge
+                 MEDIAN_W/2 - 0.01,                  // Right inner edge
+                 MEDIAN_W/2 + LANE_W * 2 + 0.01,   // Right outer edge
+            ];
+            edgeLineX.forEach(ex => {
+                const linePts = pts.map(p => new THREE.Vector3(p.x + ex, p.y + 0.006, p.z));
+                roadGroup.add(new THREE.Mesh(buildRibbonGeometry(linePts, 0.015), edgeLineMat.clone()));
+            });
+        }
+
+        // ── Cars on streets ──
+        const CAR_COLORS = [0xee3333, 0x3366ee, 0xeeeeee, 0x222222, 0xcccc33, 0x33bb77, 0xee8833, 0x8844cc];
+        const CAR_BODY_GEO = new THREE.BoxGeometry(0.06, 0.025, 0.10);
+        const CAR_CABIN_GEO = new THREE.BoxGeometry(0.045, 0.02, 0.055);
+
+        function buildCars() {
+            // Clear old
+            while (carGroup.children.length) {
+                const c = carGroup.children[0];
+                if (c.geometry) c.geometry.dispose();
+                if (c.material) { if (Array.isArray(c.material)) c.material.forEach(m=>m.dispose()); else c.material.dispose(); }
+                carGroup.remove(c);
+            }
+            carMeshes.length = 0;
+
+            const cells = getVoronoiCells();
+            if (!cells) return;
+
+            const edges = extractVoronoiEdges(cells);
+            let carIdx = 0;
+
+            edges.forEach(edge => {
+                const { v1, v2, cellA, cellB } = edge;
+                const dx = v2.x - v1.x, dz = v2.z - v1.z;
+                const len = Math.sqrt(dx*dx + dz*dz);
+                if (len < 1.0) return; // Skip very short edges
+
+                const perpX = -dz / len, perpZ = dx / len;
+                const angle = Math.atan2(dx, dz);
+
+                // Place 1-3 cars per road edge depending on length
+                const numCars = Math.min(3, Math.max(1, Math.floor(len / 1.5)));
+                for (let c = 0; c < numCars; c++) {
+                    const t = 0.2 + (c / numCars) * 0.6 + (Math.random() - 0.5) * 0.1;
+                    const lane = (c % 2 === 0) ? 1 : -1;
+                    const laneOff = ROAD_WIDTH * 0.25 * lane;
+                    const cx = v1.x + dx * t + perpX * laneOff;
+                    const cz = v1.z + dz * t + perpZ * laneOff;
+                    const cy = getRoadY(cx, cz) + 0.02;
+
+                    const colorHex = CAR_COLORS[carIdx % CAR_COLORS.length];
+                    carIdx++;
+
+                    // Car body
+                    const bodyMat = new THREE.MeshStandardMaterial({
+                        color: colorHex, metalness: 0.4, roughness: 0.35,
+                    });
+                    const body = new THREE.Mesh(CAR_BODY_GEO, bodyMat);
+                    body.position.set(cx, cy, cz);
+                    body.rotation.y = angle + (lane < 0 ? Math.PI : 0);
+                    body.castShadow = true;
+                    body.userData = {
+                        type: 'car', cellA, cellB,
+                        _baseColor: colorHex,
+                    };
+                    carGroup.add(body);
+                    carMeshes.push(body);
+
+                    // Cabin (windowed top)
+                    const cabinMat = new THREE.MeshStandardMaterial({
+                        color: 0x88bbdd, metalness: 0.6, roughness: 0.2,
+                        transparent: true, opacity: 0.7,
+                    });
+                    const cabin = new THREE.Mesh(CAR_CABIN_GEO, cabinMat);
+                    cabin.position.set(cx, cy + 0.02, cz);
+                    cabin.rotation.y = angle + (lane < 0 ? Math.PI : 0);
+                    carGroup.add(cabin);
+                }
+            });
+
+            // Cars on the highway (4 lanes, spread across)
+            const hwyLanes = [-0.48, -0.20, 0.20, 0.48]; // Approximate lane centers
+            for (let z = -12; z < 12; z += 1.8) {
+                const laneIdx = Math.floor(Math.abs(z * 7.3)) % hwyLanes.length;
+                const cx = hwyLanes[laneIdx];
+                const cz = z + (Math.abs((z * 31.7) % 1) - 0.5) * 0.6;
+                const cy = getRoadY(cx, cz) + 0.025;
+                const colorHex = CAR_COLORS[carIdx % CAR_COLORS.length];
+                carIdx++;
+
+                const bodyMat = new THREE.MeshStandardMaterial({
+                    color: colorHex, metalness: 0.4, roughness: 0.35,
+                });
+                const body = new THREE.Mesh(CAR_BODY_GEO, bodyMat);
+                body.position.set(cx, cy, cz);
+                body.rotation.y = cx > 0 ? 0 : Math.PI;
+                body.castShadow = true;
+                body.userData = { type: 'car', cellA: null, cellB: null, _baseColor: colorHex };
+                carGroup.add(body);
+                carMeshes.push(body);
+
+                const cabinMat = new THREE.MeshStandardMaterial({
+                    color: 0x88bbdd, metalness: 0.6, roughness: 0.2,
+                    transparent: true, opacity: 0.7,
+                });
+                const cabin = new THREE.Mesh(CAR_CABIN_GEO, cabinMat);
+                cabin.position.set(cx, cy + 0.02, cz);
+                cabin.rotation.y = cx > 0 ? 0 : Math.PI;
+                carGroup.add(cabin);
+            }
+        }
+
+        function colorCarsForBatter(matchups) {
+            const wobaByCluster = {};
+            matchups.forEach(m => {
+                if ((m.PA || 0) >= STATE.minPA) wobaByCluster[m.cluster] = m.wOBA || 0;
+            });
+
+            carMeshes.forEach(mesh => {
+                const { cellA, cellB } = mesh.userData;
+                // Use the wOBA of whichever cell the car is in (cellA by default)
+                let woba = wobaByCluster[cellA];
+                if (woba === undefined && cellB) woba = wobaByCluster[cellB];
+                // Blend if both cells have data
+                if (wobaByCluster[cellA] !== undefined && wobaByCluster[cellB] !== undefined) {
+                    woba = (wobaByCluster[cellA] + wobaByCluster[cellB]) / 2;
+                }
+
+                if (woba === undefined) {
+                    mesh.material.color.set(0x333333);
+                    mesh.material.emissive.set(0x000000);
+                    mesh.material.opacity = 0.4;
+                    mesh.material.transparent = true;
+                    return;
+                }
+
+                mesh.material.opacity = 1.0;
+                mesh.material.transparent = false;
+                if (woba >= 0.370) {
+                    mesh.material.color.set(0x1db954);
+                    mesh.material.emissive.set(0x1db954);
+                    mesh.material.emissiveIntensity = 0.6;
+                } else if (woba >= 0.320) {
+                    mesh.material.color.set(0x4ecb71);
+                    mesh.material.emissive.set(0x4ecb71);
+                    mesh.material.emissiveIntensity = 0.4;
+                } else if (woba >= 0.290) {
+                    mesh.material.color.set(0xf0c040);
+                    mesh.material.emissive.set(0xf0c040);
+                    mesh.material.emissiveIntensity = 0.3;
+                } else if (woba >= 0.250) {
+                    mesh.material.color.set(0xe07830);
+                    mesh.material.emissive.set(0xe07830);
+                    mesh.material.emissiveIntensity = 0.4;
+                } else {
+                    mesh.material.color.set(0xd92020);
+                    mesh.material.emissive.set(0xd92020);
+                    mesh.material.emissiveIntensity = 0.6;
+                }
+            });
+        }
+
+        function resetCarColors() {
+            carMeshes.forEach(mesh => {
+                mesh.material.color.set(mesh.userData._baseColor);
+                mesh.material.emissive.set(0x000000);
+                mesh.material.emissiveIntensity = 0;
+                mesh.material.opacity = 1.0;
+                mesh.material.transparent = false;
+            });
         }
 
         function colorRoadsForBatter(matchups) {
@@ -1578,6 +1930,18 @@
 
         // ── Color buildings based on batter performance ──
         // Changes the ACTUAL building color — bold, obvious, no subtlety
+        // Helper to set all side materials on a building (handles multi-material arrays)
+        function _setBuildingSideMats(mesh, fn) {
+            if (Array.isArray(mesh.material)) {
+                mesh.material.forEach((mat, i) => {
+                    if (i === 2 || i === 3) return; // skip roof/bottom
+                    fn(mat);
+                });
+            } else {
+                fn(mesh.material);
+            }
+        }
+
         function colorBuildingsForBatter(matchups) {
             const wobaByCluster = {};
             matchups.forEach(m => {
@@ -1588,44 +1952,33 @@
                 const cid = mesh.userData.clusterId;
                 const woba = wobaByCluster[cid];
                 if (woba === undefined) {
-                    // No data — ghost the building (very dark, barely visible)
-                    mesh.material.color.set(0x1a1a1a);
-                    mesh.material.emissive.set(0x000000);
-                    mesh.material.emissiveIntensity = 0;
-                    mesh.material.opacity = 0.3;
-                    mesh.material.transparent = true;
+                    _setBuildingSideMats(mesh, mat => {
+                        mat.color.set(0x1a1a1a);
+                        mat.emissive.set(0x000000);
+                        mat.emissiveIntensity = 0;
+                        mat.opacity = 0.3;
+                        mat.transparent = true;
+                        if (mat.map) { mat.map = null; mat.needsUpdate = true; }
+                    });
                     return;
                 }
 
-                // FULL color change — the building itself becomes the performance indicator
-                mesh.material.opacity = 1.0;
-                mesh.material.transparent = false;
-                if (woba >= 0.370) {
-                    // ELITE — bright green building
-                    mesh.material.color.set(0x1db954);
-                    mesh.material.emissive.set(0x1db954);
-                    mesh.material.emissiveIntensity = 0.5;
-                } else if (woba >= 0.320) {
-                    // PLUS — lighter green
-                    mesh.material.color.set(0x4ecb71);
-                    mesh.material.emissive.set(0x4ecb71);
-                    mesh.material.emissiveIntensity = 0.35;
-                } else if (woba >= 0.290) {
-                    // AVG — amber
-                    mesh.material.color.set(0xf0c040);
-                    mesh.material.emissive.set(0xf0c040);
-                    mesh.material.emissiveIntensity = 0.25;
-                } else if (woba >= 0.250) {
-                    // BELOW AVG — orange
-                    mesh.material.color.set(0xe07830);
-                    mesh.material.emissive.set(0xe07830);
-                    mesh.material.emissiveIntensity = 0.35;
-                } else {
-                    // BAD — bright red building
-                    mesh.material.color.set(0xd92020);
-                    mesh.material.emissive.set(0xd92020);
-                    mesh.material.emissiveIntensity = 0.5;
-                }
+                let perfColor;
+                let emInt;
+                if (woba >= 0.370) { perfColor = 0x1db954; emInt = 0.5; }
+                else if (woba >= 0.320) { perfColor = 0x4ecb71; emInt = 0.35; }
+                else if (woba >= 0.290) { perfColor = 0xf0c040; emInt = 0.25; }
+                else if (woba >= 0.250) { perfColor = 0xe07830; emInt = 0.35; }
+                else { perfColor = 0xd92020; emInt = 0.5; }
+
+                _setBuildingSideMats(mesh, mat => {
+                    mat.color.set(perfColor);
+                    mat.emissive.set(perfColor);
+                    mat.emissiveIntensity = emInt;
+                    mat.opacity = 1.0;
+                    mat.transparent = false;
+                    if (mat.map) { mat.map = null; mat.needsUpdate = true; }
+                });
             });
         }
 
@@ -1633,11 +1986,17 @@
             buildingMeshes.forEach(mesh => {
                 const cid = mesh.userData.clusterId;
                 const cl = DATA.clusters[cid];
-                if (cl) mesh.material.color.set(cl.color);
-                mesh.material.emissive.set(0x000000);
-                mesh.material.emissiveIntensity = 0;
-                mesh.material.opacity = 1.0;
-                mesh.material.transparent = false;
+                const baseColor = mesh.userData._baseColor || (cl ? new THREE.Color(cl.color) : new THREE.Color(0x666666));
+                const winTex = mesh.userData._winTex || null;
+                _setBuildingSideMats(mesh, mat => {
+                    mat.color.copy(baseColor.clone().lerp(new THREE.Color(0xffffff), 0.25));
+                    mat.emissive.set(0x000000);
+                    mat.emissiveIntensity = 0;
+                    mat.opacity = 1.0;
+                    mat.transparent = false;
+                    if (winTex && !mat.map) { mat.map = winTex; }
+                    mat.needsUpdate = true;
+                });
             });
         }
 
@@ -1655,10 +2014,11 @@
 
         // ── Three.js Scene ──
         let scene, camera, renderer, css2DRenderer, controls;
-        let neighborhoodGroup, buildingGroup, labelGroup, routeGroup, roadGroup;
+        let neighborhoodGroup, buildingGroup, labelGroup, routeGroup, roadGroup, carGroup;
         const neighborhoodMeshes = new Map(); // clusterId → Mesh
         const buildingMeshes = [];            // all building meshes for raycaster
         const buildingData = new Map();       // mesh.uuid → { pitchers, clusterId }
+        const carMeshes = [];                 // all car meshes for performance coloring
         const labelObjects = new Map();       // clusterId → { obj: Sprite }
         let _voronoiCache = null, _voronoiCacheKey = '';
         let _buildingCache = null, _buildingCacheKey = '';
@@ -1754,6 +2114,10 @@
             roadGroup = new THREE.Group();
             roadGroup.name = 'roads';
             scene.add(roadGroup);
+
+            carGroup = new THREE.Group();
+            carGroup.name = 'cars';
+            scene.add(carGroup);
         }
 
         function resizeCanvas() {
@@ -1903,6 +2267,55 @@
             });
         }
 
+        // ── Window texture generator for buildings ──
+        const _windowTexCache = new Map();
+        function makeWindowTexture(baseColor, floors, widthPx) {
+            const key = baseColor.getHexString() + '|' + floors + '|' + widthPx;
+            if (_windowTexCache.has(key)) return _windowTexCache.get(key).clone();
+            const h = floors * 24;
+            const w = widthPx || 64;
+            const c = document.createElement('canvas');
+            c.width = w; c.height = h;
+            const ctx = c.getContext('2d');
+            // Wall base — slightly lighter than cluster color
+            const wall = baseColor.clone().lerp(new THREE.Color(0xffffff), 0.25);
+            ctx.fillStyle = '#' + wall.getHexString();
+            ctx.fillRect(0, 0, w, h);
+            // Subtle horizontal floor lines
+            ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+            ctx.lineWidth = 1;
+            for (let f = 1; f < floors; f++) {
+                const fy = f * 24;
+                ctx.beginPath(); ctx.moveTo(0, fy); ctx.lineTo(w, fy); ctx.stroke();
+            }
+            // Windows — dark with slight blue tint
+            const cols = Math.max(2, Math.floor(w / 16));
+            const winW = 8, winH = 12, padX = (w - cols * winW) / (cols + 1), padY = 4;
+            for (let f = 0; f < floors; f++) {
+                for (let col = 0; col < cols; col++) {
+                    const wx = padX + col * (winW + padX);
+                    const wy = f * 24 + padY;
+                    // Randomly lit or dark windows
+                    const lit = Math.random() > 0.35;
+                    ctx.fillStyle = lit ? 'rgba(180,220,255,0.7)' : 'rgba(20,25,35,0.8)';
+                    ctx.fillRect(wx, wy, winW, winH);
+                    // Window frame
+                    ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+                    ctx.lineWidth = 0.5;
+                    ctx.strokeRect(wx, wy, winW, winH);
+                }
+            }
+            // Roof edge line
+            ctx.fillStyle = 'rgba(0,0,0,0.2)';
+            ctx.fillRect(0, 0, w, 2);
+            const tex = new THREE.CanvasTexture(c);
+            tex.wrapS = THREE.RepeatWrapping;
+            tex.wrapT = THREE.RepeatWrapping;
+            tex.minFilter = THREE.LinearFilter;
+            _windowTexCache.set(key, tex);
+            return tex;
+        }
+
         // ── Build Buildings (confined to Voronoi zones, on terrain) ──
         function buildBuildings() {
             // Clear old
@@ -1913,7 +2326,7 @@
             const cells = getVoronoiCells();
             if (!cells || !DATA.pitcherSeasons) return;
 
-            const SLOT_SIZE = 0.35; // Tighter grid for clean packing inside Voronoi
+            const SLOT_SIZE = 0.55; // Bigger grid = wider buildings
 
             // Group pitchers by cluster
             const clusterPitchers = {};
@@ -1932,42 +2345,36 @@
                 const poly = cells[clusterId];
                 if (!poly || poly.length < 3) return;
 
-                // Inset polygon 10% so buildings don't touch street edges
                 const inset = insetPolygon(poly, 0.10);
-
-                // Compute bounding box of the inset polygon
                 let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
                 inset.forEach(p => {
                     minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x);
                     minZ = Math.min(minZ, p.z); maxZ = Math.max(maxZ, p.z);
                 });
 
-                // Create grid slots INSIDE the polygon
+                const HWY_CLEARANCE = 0.9; // Half-highway + buffer
+                const ROAD_CLEARANCE = ROAD_WIDTH / 2 + SIDEWALK_WIDTH + 0.12; // Keep buildings off roads
                 const slots = [];
                 for (let x = minX; x <= maxX; x += SLOT_SIZE) {
                     for (let z = minZ; z <= maxZ; z += SLOT_SIZE) {
-                        if (pointInPolygon({ x, z }, inset)) {
-                            slots.push({ x, z });
+                        let sx = x;
+                        // Push buildings aside from highway instead of removing
+                        if (Math.abs(sx) < HWY_CLEARANCE) {
+                            sx = sx >= 0 ? HWY_CLEARANCE : -HWY_CLEARANCE;
                         }
+                        // Skip slots too close to Voronoi edge roads
+                        if (nearRoad(sx, z, ROAD_CLEARANCE)) continue;
+                        if (pointInPolygon({ x: sx, z }, inset)) slots.push({ x: sx, z });
                     }
                 }
-
                 if (slots.length === 0) return;
 
-                // Sort slots from center outward — buildings fill from core
                 const cx = inset.reduce((s, p) => s + p.x, 0) / inset.length;
                 const cz = inset.reduce((s, p) => s + p.z, 0) / inset.length;
-                slots.sort((a, b) => {
-                    const da = (a.x - cx) ** 2 + (a.z - cz) ** 2;
-                    const db = (b.x - cx) ** 2 + (b.z - cz) ** 2;
-                    return da - db;
-                });
+                slots.sort((a, b) => ((a.x-cx)**2+(a.z-cz)**2) - ((b.x-cx)**2+(b.z-cz)**2));
 
-                // Distribute pitchers across slots (round-robin, center-first)
                 const slotPitchers = slots.map(() => []);
-                pitchers.forEach((ps, i) => {
-                    slotPitchers[i % slots.length].push(ps);
-                });
+                pitchers.forEach((ps, i) => { slotPitchers[i % slots.length].push(ps); });
 
                 const color = new THREE.Color(cl.color);
 
@@ -1977,25 +2384,49 @@
                     const count = pList.length;
                     const avgVelo = pList.reduce((s, p) => s + (p.avg_velo_FF || 90), 0) / count;
 
-                    // Height: 85mph→~0.2, 95mph→~2.2, 100+mph→3.0
-                    const height = Math.max(0.2, (avgVelo - 82) / 18 * 3.0);
-                    // Footprint: scales with sqrt of pitcher count
-                    const footprint = Math.min(SLOT_SIZE * 0.85, 0.12 + Math.sqrt(count) * 0.06);
+                    // Height: compressed range so buildings aren't needles
+                    // 82mph → 0.3, 95mph → 1.0, 100mph → 1.5
+                    const height = Math.max(0.3, Math.min(1.5, (avgVelo - 82) / 18 * 1.5));
 
-                    // Building base sits on terrain surface
+                    // Footprint: wide enough to look like a real building
+                    // Min 0.28, scales with pitcher count, never wider than slot
+                    const baseFootprint = Math.min(SLOT_SIZE * 0.88, 0.28 + Math.sqrt(count) * 0.05);
+
+                    // Vary aspect ratio per-building for visual interest
+                    const seed = Math.abs(((slot.x * 73.7 + slot.z * 137.3) * 1000) % 1000) / 1000;
+                    const aspect = 0.75 + seed * 0.5; // 0.75 – 1.25
+                    const fpX = baseFootprint * Math.min(aspect, 1.12);
+                    const fpZ = baseFootprint * Math.min(2 - aspect, 1.12);
+
                     const terrainY = getTerrainHeight(slot.x, slot.z);
+                    const floors = Math.max(1, Math.round(height / 0.25));
 
-                    const geo = new THREE.BoxGeometry(footprint, height, footprint);
-                    const mat = new THREE.MeshStandardMaterial({
-                        color: color,
-                        metalness: 0.25,
-                        roughness: 0.65,
+                    // Window texture on sides
+                    const winTex = makeWindowTexture(color, floors, 64);
+                    const roofColor = color.clone().lerp(new THREE.Color(0x444444), 0.25);
+
+                    const sideMat = new THREE.MeshStandardMaterial({
+                        map: winTex,
+                        metalness: 0.15,
+                        roughness: 0.7,
                     });
-                    const mesh = new THREE.Mesh(geo, mat);
+                    const roofMat = new THREE.MeshStandardMaterial({
+                        color: roofColor,
+                        metalness: 0.2,
+                        roughness: 0.8,
+                    });
+                    // 6-face material: [+x, -x, +y(roof), -y(bottom), +z, -z]
+                    const mats = [sideMat, sideMat, roofMat, roofMat, sideMat, sideMat];
+
+                    const geo = new THREE.BoxGeometry(fpX, height, fpZ);
+                    const mesh = new THREE.Mesh(geo, mats);
                     mesh.position.set(slot.x, terrainY + height / 2, slot.z);
                     mesh.castShadow = true;
                     mesh.receiveShadow = true;
-                    mesh.userData = { type: 'building', clusterId, pitchers: pList };
+                    mesh.userData = {
+                        type: 'building', clusterId, pitchers: pList,
+                        _baseColor: color.clone(), _roofColor: roofColor.clone(), _winTex: winTex,
+                    };
                     buildingGroup.add(mesh);
                     buildingMeshes.push(mesh);
                     buildingData.set(mesh.uuid, { pitchers: pList, clusterId });
@@ -2169,6 +2600,7 @@
                 });
                 resetRoadColors();
                 resetBuildingColors();
+                resetCarColors();
                 buildBatterBadge3D(null, null);
                 return;
             }
@@ -2218,9 +2650,10 @@
                 }
             });
 
-            // Color roads AND buildings based on hitter performance
+            // Color roads, buildings AND cars based on hitter performance
             colorRoadsForBatter(matchups);
             colorBuildingsForBatter(matchups);
+            colorCarsForBatter(matchups);
 
             // Build 3D batter badge
             const stats = getFilteredBatterStats(batter);
@@ -2233,8 +2666,9 @@
             _voronoiCache = null; // Force recompute
             buildTerrain();        // FIRST: terrain heightfield (everything depends on it)
             buildNeighborhoods();  // Project onto terrain
-            buildBuildings();      // Confined to Voronoi + on terrain
-            buildRoads();          // Voronoi edge roads + central boulevard
+            buildRoads();          // Voronoi edge roads + central boulevard (caches edges for building exclusion)
+            buildBuildings();      // Confined to Voronoi + avoids road edges
+            buildCars();           // Cars on streets
             buildLabels();         // Terrain-aware Y
             buildRoutes();         // Terrain-aware endpoints
         }

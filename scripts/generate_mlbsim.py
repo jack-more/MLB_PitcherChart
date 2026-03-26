@@ -139,6 +139,8 @@ def flatten_game(game):
             "strength": "strong" if ml.get("is_strong") else "lean",
             "confidence": conf.get("spread_conf", 0),
             "conf_color": conf.get("spread_conf_color", "#FFD600"),
+            "value": conf.get("value_rating", 0),
+            "value_color": conf.get("value_color", "#FFD600"),
         })
 
     # O/U pick
@@ -154,9 +156,11 @@ def flatten_game(game):
         })
     game["picks"] = picks
 
-    # 3b. Flatten confidence scores to game level for data attributes
+    # 3b. Flatten confidence + value scores to game level for data attributes
     game["spread_conf"] = conf.get("spread_conf", 0)
     game["spread_conf_color"] = conf.get("spread_conf_color", "#FFD600")
+    game["value_rating"] = conf.get("value_rating", 0)
+    game["value_color"] = conf.get("value_color", "#FFD600")
 
     # 4. Flatten lineup: merge batter_details MS into lineup entries
     for side in ("away", "home"):
@@ -247,21 +251,25 @@ def render_card_header(game):
     total_val = odds.get("total")
     total_display = f"O/U {format_total(total_val)}" if total_val is not None else ""
 
-    # Pick badges with confidence
+    # Pick badges with confidence + value pills
     pick_html = ""
     picks = game.get("picks", [])
     for pick in picks:
         pick_label = _esc(pick.get("label", ""))
         conf_val = pick.get("confidence", 0)
         conf_color = pick.get("conf_color", "#FFD600")
+        value_val = pick.get("value", 0)
+        value_color = pick.get("value_color", "#FFD600")
         pick_type = pick.get("type", "")
         type_label = "ML" if pick_type == "ml" else "O/U"
 
-        conf_pill = ""
+        pills = ""
         if conf_val > 0:
-            conf_pill = f' <span class="mc-conf-num" style="color:{conf_color}">{conf_val}</span>'
+            pills += f' <span class="mc-conf-num" style="color:{conf_color}" title="Confidence (win probability)">C:{conf_val}</span>'
+        if value_val > 0:
+            pills += f' <span class="mc-conf-num" style="color:{value_color}" title="Value (EV vs odds)">V:{value_val}</span>'
 
-        pick_html += f'<div class="sim-pick"><span class="pick-type-label">{type_label}</span> {pick_label}{conf_pill}</div>'
+        pick_html += f'<div class="sim-pick"><span class="pick-type-label">{type_label}</span> {pick_label}{pills}</div>'
 
     away_logo = team_logo_url(away)
     home_logo = team_logo_url(home)
@@ -698,9 +706,10 @@ def render_game_card(game, game_idx):
 
     # Data attributes for sorting/filtering
     card_conf = game.get("spread_conf", 0)
+    card_value = game.get("value_rating", 0)
     card_edge = ml_edge.get("ev", 0) if ml_edge else 0
 
-    return f'''<div class="game-card" data-conf="{card_conf}" data-edge="{card_edge:.1f}">
+    return f'''<div class="game-card" data-conf="{card_conf}" data-value="{card_value}" data-edge="{card_edge:.1f}">
   {badge}
   {run_bar}
   {header}
@@ -892,6 +901,10 @@ body::after{
 .chip:active{transform:translate(2px,2px);box-shadow:none}
 
 /* ═══ SLATE INFO ═══ */
+.sort-bar{display:flex;align-items:center;gap:8px;padding:8px 0 4px;font-family:var(--font-mono)}
+.sort-label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--color-meta);font-weight:700}
+.sort-btn{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:5px 12px;border-radius:14px;border:1.5px solid rgba(0,0,0,0.12);background:transparent;color:var(--color-meta);cursor:pointer;transition:all 0.15s}
+.sort-btn.active{background:var(--color-text);color:var(--color-bg);border-color:var(--color-text)}
 .slate-info{display:flex;justify-content:space-between;align-items:center;padding:4px 0 10px;font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--color-meta);letter-spacing:1px}
 
 /* ═══ GAME CARD ═══ */
@@ -1169,6 +1182,32 @@ function toggleBullpen(idx) {
     if (toggle) toggle.classList.toggle('open');
   }
 }
+
+// ═══ SORT GAMES ═══
+function sortGames(mode) {
+  const container = document.querySelector('#tab-lines');
+  if (!container) return;
+  const cards = Array.from(container.querySelectorAll('.game-card'));
+  if (!cards.length) return;
+
+  // Update active button
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.sort-btn[onclick*="' + mode + '"]')?.classList.add('active');
+
+  // Sort
+  cards.sort((a, b) => {
+    if (mode === 'value') {
+      return (parseFloat(b.dataset.value) || 0) - (parseFloat(a.dataset.value) || 0);
+    } else if (mode === 'confidence') {
+      return (parseFloat(b.dataset.conf) || 0) - (parseFloat(a.dataset.conf) || 0);
+    }
+    return 0; // time = original order
+  });
+
+  // Re-insert in sorted order
+  const parent = cards[0].parentNode;
+  cards.forEach(card => parent.appendChild(card));
+}
 '''
 
 
@@ -1296,6 +1335,12 @@ def generate_html(daily_data):
     <div class="tab-content active" id="tab-lines">
         <div class="chips">
             {filter_chips}
+        </div>
+        <div class="sort-bar">
+            <span class="sort-label">SORT BY:</span>
+            <button class="sort-btn active" onclick="sortGames('time')">Time</button>
+            <button class="sort-btn" onclick="sortGames('value')">Value</button>
+            <button class="sort-btn" onclick="sortGames('confidence')">Confidence</button>
         </div>
         <div class="slate-info">
             <span>{display_date} SLATE</span>

@@ -101,11 +101,16 @@ MIN_PITCHES_PER_SIDE = 50  # Min pitches vs a batter side for split zone feature
 # Maps old cluster ID → target cluster ID (pitchers get reassigned)
 # ------------------------------------------------------------------
 CLUSTER_MERGES = {
+<<<<<<< Updated upstream
     "R_10": "R_11",  # Ghost merge → single Ghost cluster
     "R_14": "R_7",   # CutCurve merge → R_7 is primary CutCurve
     "R_9": "R_12",   # Kitchen Sink merge → R_12 is primary Kitchen Sink
     "L_8": "L_7",    # Kitchen Sink merge → L_7 is primary
     "L_9": "L_3",    # 3-pitcher junk cluster → absorb into L_3
+=======
+    "R_5": "R_6",   # Kitchen Sink duplicates → merge into R_6 (larger, 1093 pitchers)
+    "L_9": "L_3",   # 3-pitcher junk cluster → absorb into L_3 (largest LHP cluster)
+>>>>>>> Stashed changes
 }
 
 # ------------------------------------------------------------------

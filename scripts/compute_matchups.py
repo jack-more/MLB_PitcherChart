@@ -942,11 +942,11 @@ def compute_confidence(game: dict) -> dict:
 
     result = {}
 
-    # ── ML confidence (primary) ──
+    # ── ML confidence (based on model win probability) ──
     if "ml" in edges:
-        ml_ev = edges["ml"]["ev"]  # EV as percentage (e.g., 5.0 = 5%)
-        # MLB calibration: 2% EV = 2, 5% = 4, 10% = 6, 15% = 8, 20%+ = 10
-        base_conf = min(10, max(1, round(ml_ev * 0.4 + 1.2)))
+        ml_wp = edges["ml"]["model_wp"]  # Win probability as percentage (e.g., 75.0)
+        # Confidence from WP: 50% = 1, 55% = 3, 60% = 5, 65% = 6, 70% = 7, 75% = 8, 80%+ = 10
+        base_conf = min(10, max(1, round((ml_wp - 50) * 0.3 + 1)))
         adj_conf = base_conf * coverage_factor + status_bonus
         spread_conf = max(1, min(10, round(adj_conf)))
         if is_st:
@@ -955,6 +955,18 @@ def compute_confidence(game: dict) -> dict:
         result["spread_conf"] = spread_conf
         result["spread_conf_color"] = _conf_color(spread_conf)
         result["spread_conf_label"] = _conf_label(spread_conf, edges["ml"]["side"])
+
+        # ── Value rating (based on EV — gap between model and market) ──
+        ml_ev = edges["ml"]["ev"]  # EV as percentage (e.g., 15.0 = 15%)
+        # Value from EV: 2% = 2, 5% = 3, 10% = 5, 15% = 7, 20%+ = 9
+        base_value = min(10, max(1, round(ml_ev * 0.4 + 1.2)))
+        adj_value = base_value * coverage_factor + status_bonus
+        value_rating = max(1, min(10, round(adj_value)))
+        if is_st:
+            value_rating = min(value_rating, CONF_ST_CAP)
+
+        result["value_rating"] = value_rating
+        result["value_color"] = _conf_color(value_rating)
 
     # ── Total (O/U) confidence ──
     if "total" in edges:
