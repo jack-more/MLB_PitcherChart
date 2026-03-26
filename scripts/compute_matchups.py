@@ -945,8 +945,8 @@ def compute_confidence(game: dict) -> dict:
     # ── ML confidence (primary) ──
     if "ml" in edges:
         ml_ev = edges["ml"]["ev"]  # EV as percentage (e.g., 5.0 = 5%)
-        # MLB calibration: 2% EV = 3, 5% = 5, 8% = 7, 12%+ = 10
-        base_conf = min(10, max(1, round(ml_ev * 0.7 + 1.5)))
+        # MLB calibration: 2% EV = 2, 5% = 4, 10% = 6, 15% = 8, 20%+ = 10
+        base_conf = min(10, max(1, round(ml_ev * 0.4 + 1.2)))
         adj_conf = base_conf * coverage_factor + status_bonus
         spread_conf = max(1, min(10, round(adj_conf)))
         if is_st:
