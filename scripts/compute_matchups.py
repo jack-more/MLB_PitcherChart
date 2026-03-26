@@ -686,17 +686,34 @@ def compute_game(game: dict, atlas: AtlasData) -> dict:
     game["edges"] = {}
 
     if "spread" in odds and has_lineups:
-        market_spread = odds["spread"]  # Home team spread
-        proj_spread = game["proj_spread"]
-        # Edge: positive means our model thinks home team is better than market
-        spread_edge = round(proj_spread - market_spread, 1)
+        market_spread = odds["spread"]  # Home team spread (positive = home getting points)
+        proj_spread = game["proj_spread"]  # home - away (negative = away favored)
+
+        # The spread edge is how much the underdog covers by.
+        # market_spread = 1.5 means home getting +1.5
+        # proj_spread = -1.3 means away wins by 1.3
+        # Home covers if: proj_spread + market_spread > 0 (i.e., -1.3 + 1.5 = 0.2, covers by 0.2)
+        # Away covers if: proj_spread + market_spread < 0
+        cover_margin = round(proj_spread + market_spread, 1)  # positive = home covers, negative = away covers
+        spread_edge = round(abs(cover_margin), 1)
+
+        if cover_margin > 0:
+            # Home team covers the spread
+            pick_side = game["home_team"]
+        elif cover_margin < 0:
+            # Away team covers the spread
+            pick_side = game["away_team"]
+        else:
+            pick_side = game["home_team"]
+
         game["edges"]["spread"] = {
             "edge": spread_edge,
+            "cover_margin": cover_margin,
             "market": market_spread,
             "projected": proj_spread,
-            "is_pick": abs(spread_edge) >= EDGE_THRESHOLD_SPREAD,
-            "is_strong": abs(spread_edge) >= EDGE_THRESHOLD_SPREAD * STRONG_EDGE_MULTIPLIER,
-            "side": game["home_team"] if spread_edge < 0 else game["away_team"],
+            "is_pick": spread_edge >= EDGE_THRESHOLD_SPREAD,
+            "is_strong": spread_edge >= EDGE_THRESHOLD_SPREAD * STRONG_EDGE_MULTIPLIER,
+            "side": pick_side,
         }
 
     if "total" in odds and has_lineups:
@@ -797,9 +814,10 @@ def compute_confidence(game: dict) -> dict:
 
     # ── Spread confidence ──
     if "spread" in edges:
-        spread_edge = abs(edges["spread"]["edge"])
-        # MLB calibration: edge 1.0 -> ~5, edge 2.0 -> ~8, edge 3.0+ -> 10
-        base_conf = min(10, max(1, round(spread_edge * 2.5 + 2.5)))
+        spread_edge = edges["spread"]["edge"]  # Already abs from cover_margin
+        # MLB calibration: 0.2 run edge = 1-2, 0.5 = 3, 1.0 = 5, 2.0 = 8, 3.0+ = 10
+        # Realistic MLB edges are 0.2-2.0 runs. Anything under 0.5 is noise.
+        base_conf = min(10, max(1, round(spread_edge * 3.0 + 1.0)))
         adj_conf = base_conf * coverage_factor + status_bonus
         spread_conf = max(1, min(10, round(adj_conf)))
         if is_st:
