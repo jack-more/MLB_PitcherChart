@@ -522,12 +522,10 @@ def render_affiliate_buttons():
     h_link = "https://bethog.com/r/alphamale"
     return f'''<div class="affiliate-row">
   <a href="{k_link}" target="_blank" rel="noopener" class="aff-btn aff-kalshi">
-    <img src="https://kalshi.com/logo192.png" alt="Kalshi" style="height:18px;border-radius:3px;">
     <span class="aff-name">KALSHI</span><span class="aff-cta">TRADE NOW</span>
   </a>
   <a href="{h_link}" target="_blank" rel="noopener" class="aff-btn aff-bethog">
-    <img src="https://www.bethog.com/logo-mini.svg" alt="BetHOG" style="height:18px;filter:invert(0.5) sepia(1) saturate(5) hue-rotate(10deg);">
-    <span class="aff-name">BetHOG</span><span class="aff-cta">BET NOW</span>
+    <span class="aff-name">BETHOG</span><span class="aff-cta">BET NOW</span>
   </a>
 </div>'''
 
