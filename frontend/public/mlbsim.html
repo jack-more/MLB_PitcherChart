@@ -70,10 +70,8 @@ body::after{
 .chip:active{transform:translate(2px,2px);box-shadow:none}
 
 /* ═══ SLATE INFO ═══ */
-.sort-bar{display:flex;align-items:center;gap:8px;padding:8px 0 4px;font-family:var(--font-mono)}
-.sort-label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--color-meta);font-weight:700}
-.sort-btn{font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:5px 12px;border-radius:14px;border:1.5px solid rgba(0,0,0,0.12);background:transparent;color:var(--color-meta);cursor:pointer;transition:all 0.15s}
-.sort-btn.active{background:var(--color-text);color:var(--color-bg);border-color:var(--color-text)}
+.chip-divider{width:1px;height:20px;background:rgba(0,0,0,0.15);margin:0 4px;flex-shrink:0}
+.sort-label{font-family:var(--font-mono);font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--color-meta);font-weight:700;white-space:nowrap;align-self:center}
 .slate-info{display:flex;justify-content:space-between;align-items:center;padding:4px 0 10px;font-family:var(--font-mono);font-size:10px;text-transform:uppercase;color:var(--color-meta);letter-spacing:1px}
 
 /* ═══ GAME CARD ═══ */
@@ -313,20 +311,17 @@ body::after{
     <!-- ═══ LINES TAB ═══ -->
     <div class="tab-content active" id="tab-lines">
         <div class="chips">
-            <div class="chip active" data-filter="all">All Games</div><div class="chip" data-filter="value">Best Value</div>
-        </div>
-        <div class="sort-bar">
-            <span class="sort-label">SORT BY:</span>
-            <button class="sort-btn active" onclick="sortGames('time')">Time</button>
-            <button class="sort-btn" onclick="sortGames('value')">Value</button>
-            <button class="sort-btn" onclick="sortGames('confidence')">Confidence</button>
+            
+            <div class="chip active" onclick="sortGames('time', this)">Time</div>
+            <div class="chip" onclick="sortGames('value', this)">Value</div>
+            <div class="chip" onclick="sortGames('confidence', this)">Confidence</div>
         </div>
         <div class="slate-info">
             <span>MAR 26 SLATE</span>
             <span>11 GAMES</span>
         </div>
         
-        <div class="game-card" data-conf="3" data-value="2" data-edge="-3.5">
+        <div class="game-card" data-conf="2" data-value="1" data-edge="-3.5">
   
   <div class="run-bar ma-premium">
   <div class="run-bar-seg" style="width:49%;background:#27251F">4.3</div>
@@ -354,7 +349,7 @@ body::after{
   <div class="sp-block">
   <div class="sp-side">
       <div class="sp-name">Paul Skenes</div>
-      <span class="arch-badge">Uncle Charlie</span>
+      <span class="arch-badge">Kitchen Sink Plus</span>
       <div class="sp-stats">RHP</div>
     </div>
   <div class="sp-vs">VS</div>
@@ -439,18 +434,18 @@ body::after{
 </div><div class="batter-row">
   <div class="batter-top">
     <span class="batter-order">2</span>
-    <span class="batter-name">Brandon Lowe</span>
-    <span class="batter-ms ms-elite">86</span>
+    <span class="batter-name">Spencer Horwitz</span>
+    <span class="batter-ms ms-neutral">55</span>
   </div>
   <div class="batter-bottom">
-    <span class="batter-stats">2B · L</span>
-    <span class="batter-range">82-90</span>
+    <span class="batter-stats">1B · L</span>
+    <span class="batter-range">51-59</span>
   </div>
   <div class="batter-woba">
-    <span class="woba-base">.354</span>
+    <span class="woba-base">.352</span>
     <span class="woba-dna">🧬</span>
-    <span class="woba-vs hot">.392</span>
-    <span class="woba-pa">394PA</span>
+    <span class="woba-vs cold">.291</span>
+    <span class="woba-pa">81PA</span>
   </div>
 </div><div class="batter-row">
   <div class="batter-top">
@@ -503,11 +498,27 @@ body::after{
 </div><div class="batter-row">
   <div class="batter-top">
     <span class="batter-order">6</span>
+    <span class="batter-name">Brandon Lowe</span>
+    <span class="batter-ms ms-elite">86</span>
+  </div>
+  <div class="batter-bottom">
+    <span class="batter-stats">2B · L</span>
+    <span class="batter-range">82-90</span>
+  </div>
+  <div class="batter-woba">
+    <span class="woba-base">.354</span>
+    <span class="woba-dna">🧬</span>
+    <span class="woba-vs hot">.392</span>
+    <span class="woba-pa">394PA</span>
+  </div>
+</div><div class="batter-row">
+  <div class="batter-top">
+    <span class="batter-order">7</span>
     <span class="batter-name">Jared Triolo</span>
     <span class="batter-ms ms-tough">47</span>
   </div>
   <div class="batter-bottom">
-    <span class="batter-stats">SS · R</span>
+    <span class="batter-stats">3B · R</span>
     <span class="batter-range">43-51</span>
   </div>
   <div class="batter-woba">
@@ -518,28 +529,12 @@ body::after{
   </div>
 </div><div class="batter-row">
   <div class="batter-top">
-    <span class="batter-order">7</span>
-    <span class="batter-name">Spencer Horwitz</span>
-    <span class="batter-ms ms-neutral">55</span>
-  </div>
-  <div class="batter-bottom">
-    <span class="batter-stats">1B · L</span>
-    <span class="batter-range">51-59</span>
-  </div>
-  <div class="batter-woba">
-    <span class="woba-base">.352</span>
-    <span class="woba-dna">🧬</span>
-    <span class="woba-vs cold">.291</span>
-    <span class="woba-pa">81PA</span>
-  </div>
-</div><div class="batter-row">
-  <div class="batter-top">
     <span class="batter-order">8</span>
     <span class="batter-name">Nick Gonzales</span>
     <span class="batter-ms ms-favorable">84</span>
   </div>
   <div class="batter-bottom">
-    <span class="batter-stats">3B · R</span>
+    <span class="batter-stats">SS · R</span>
     <span class="batter-range">80-88</span>
   </div>
   <div class="batter-woba">
@@ -624,7 +619,7 @@ body::after{
     <span class="batter-ms ms-favorable">84</span>
   </div>
   <div class="batter-bottom">
-    <span class="batter-stats">1B · S</span>
+    <span class="batter-stats">DH · S</span>
     <span class="batter-range">80-88</span>
   </div>
   <div class="batter-woba">
@@ -656,7 +651,7 @@ body::after{
     <span class="batter-ms ms-tough">48</span>
   </div>
   <div class="batter-bottom">
-    <span class="batter-stats">DH · L</span>
+    <span class="batter-stats">1B · L</span>
     <span class="batter-range">40-56</span>
   </div>
   <div class="batter-woba">
@@ -712,123 +707,12 @@ body::after{
     <div class="coverage cov-good">ATLAS: 89% COVERED (8/9)</div>
   </div>
 </div>
-  <div class="bp-toggle" onclick="toggleBullpen(0)">
-  <span>BULLPEN PREDICTIONS</span>
-  <span class="arrow" id="bp-arrow-0">▼</span>
-</div>
-<div class="bp-container" id="bullpen-0">
-  <div class="bp-section">
-  <div class="bp-header">
-    <span class="bp-team">PIT PEN</span>
-    <span class="bp-meta-hdr">SP ~2.0 IP · 7.0 IP needed · 12/12 avail</span>
-    <span class="bp-confidence bp-conf-high">HIGH</span>
-  </div>
-  <div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Sisk, Evan</div>
-    <div class="bp-meta">Boomerang · ~1IP · Inn 4 MS 67</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Skenes, Paul</div>
-    <div class="bp-meta">Uncle Charlie · ~1IP · Inn 5 MS 70</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">MID</div>
-  <div class="bp-info">
-    <div class="bp-name">Soto, Gregory</div>
-    <div class="bp-meta">Undertow · ~2IP · Inn 6 MS 72</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">MID</div>
-  <div class="bp-info">
-    <div class="bp-name">Chandler, Bubba</div>
-    <div class="bp-meta">Triple Threat · ~2IP · Inn 7 MS 75</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">LON</div>
-  <div class="bp-info">
-    <div class="bp-name">Nicolas, Kyle</div>
-    <div class="bp-meta">Triple Threat · ~2IP · Inn 8 MS 75</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">CLO</div>
-  <div class="bp-info">
-    <div class="bp-name">Montgomery, Mason</div>
-    <div class="bp-meta">Barnburner · ~1IP · Inn 3 MS 76</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div>
-</div>
-  <div class="bp-section">
-  <div class="bp-header">
-    <span class="bp-team">NYM PEN</span>
-    <span class="bp-meta-hdr">SP ~5.5 IP · 3.5 IP needed · 13/13 avail</span>
-    <span class="bp-confidence bp-conf-high">HIGH</span>
-  </div>
-  <div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Núñez, Dedniel</div>
-    <div class="bp-meta">Triple Threat · ~1IP · Inn 7 MS 68</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Garrett, Reed</div>
-    <div class="bp-meta">Heater-Heavy · ~1IP · Inn 8 MS 74</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">MID</div>
-  <div class="bp-info">
-    <div class="bp-name">Minter, A.J.</div>
-    <div class="bp-meta">Cutman · ~2IP · Inn 9 MS 71</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">CLO</div>
-  <div class="bp-info">
-    <div class="bp-name">Williams, Devin</div>
-    <div class="bp-meta">Kitchen Sink · ~1IP · Inn 6 MS 77</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div>
-</div>
-</div>
-</div><div class="game-card" data-conf="10" data-value="9" data-edge="17.6">
+  
+</div><div class="game-card" data-conf="9" data-value="8" data-edge="15.0">
   
   <div class="run-bar ma-premium">
   <div class="run-bar-seg" style="width:34%;background:#27251F">2.9</div>
-  <div class="run-bar-seg" style="width:66%;background:#FFC52F">5.7</div>
+  <div class="run-bar-seg" style="width:66%;background:#FFC52F">5.5</div>
 </div>
   <div class="card-header">
   <div class="team-block">
@@ -838,9 +722,9 @@ body::after{
   </div>
   <div class="card-center ma-premium">
     <div class="proj-label">WIN PROB</div>
-    <div class="spread">24% — 76%</div>
+    <div class="spread">25% — 75%</div>
     <div class="ou-line">O/U 8.0</div>
-    <div class="sim-pick"><span class="pick-type-label">ML</span> MIL ML (-186) <span class="mc-conf-num" style="color:#00FF55" title="Confidence (win probability)">C:10</span> <span class="mc-conf-num" style="color:#00FF55" title="Value (EV vs odds)">V:9</span></div>
+    <div class="sim-pick"><span class="pick-type-label">ML</span> MIL ML (-186) <span class="mc-conf-num" style="color:#00FF55" title="Confidence (win probability)">C:9</span> <span class="mc-conf-num" style="color:#00FF55" title="Value (EV vs odds)">V:8</span></div>
   </div>
   <div class="team-block">
     <div class="team-logo"><img src="https://www.mlbstatic.com/team-logos/158.svg" alt="MIL" style="width:100%;height:100%;object-fit:contain"></div>
@@ -848,11 +732,11 @@ body::after{
     <div class="team-ml">-186</div>
   </div>
 </div>
-  <div class="edge-bar ma-premium">ML Edge: MIL +17.6% EV</div>
+  <div class="edge-bar ma-premium">ML Edge: MIL +15.0% EV</div>
   <div class="sp-block">
   <div class="sp-side">
       <div class="sp-name">Shane Smith</div>
-      <span class="arch-badge">Yakker</span>
+      <span class="arch-badge">Boomerang</span>
       <div class="sp-stats">RHP</div>
     </div>
   <div class="sp-vs">VS</div>
@@ -867,11 +751,11 @@ body::after{
       <span class="model-label">wOBA</span>
       <span class="model-val">CWS .336</span>
       <div class="model-bar-mini">
-        <div class="model-bar-away" style="width:50%;background:#27251F"></div>
-        <div class="model-bar-home" style="width:50%;background:#FFC52F"></div>
+        <div class="model-bar-away" style="width:51%;background:#27251F"></div>
+        <div class="model-bar-home" style="width:49%;background:#FFC52F"></div>
       </div>
-      <span class="model-val">MIL .328</span>
-      <span class="model-edge-sm">CWS +.007</span>
+      <span class="model-val">MIL .320</span>
+      <span class="model-edge-sm">CWS +.016</span>
     </div>
     <div class="model-row">
       <span class="model-label">TIER</span>
@@ -884,8 +768,8 @@ body::after{
       <span class="model-label">RE24</span>
       <span class="model-val">CWS -0.1</span>
       <div class="model-mid-spacer"></div>
-      <span class="model-val">MIL +0.3</span>
-      <span class="model-edge-sm">MIL +0.4</span>
+      <span class="model-val">MIL +0.5</span>
+      <span class="model-edge-sm">MIL +0.6</span>
     </div>
     <div class="model-row">
       <span class="model-label">OAA</span>
@@ -896,7 +780,7 @@ body::after{
     </div>
     <div class="model-row model-formula-row ma-premium">
       <span class="model-label">MODEL</span>
-      <span class="model-formula">BaseRuns(wOBA×Tier) + RE24 + OAA + Park + BP = <strong>CWS 2.9 — MIL 5.7</strong></span>
+      <span class="model-formula">BaseRuns(wOBA×Tier) + RE24 + OAA + Park + BP = <strong>CWS 2.9 — MIL 5.5</strong></span>
     </div>
     <div class="model-row model-tags">
       <span class="model-tag tag-venue">American Family Field 0.97×</span><span class="model-tag tag-arch">vs T1_Apex</span><span class="model-tag tag-arch">vs T3_Standard</span>
@@ -1065,6 +949,22 @@ body::after{
     <div class="batter-row">
   <div class="batter-top">
     <span class="batter-order">1</span>
+    <span class="batter-name">Jackson Chourio</span>
+    <span class="batter-ms ms-tough">49</span>
+  </div>
+  <div class="batter-bottom">
+    <span class="batter-stats">CF · R</span>
+    <span class="batter-range">45-53</span>
+  </div>
+  <div class="batter-woba">
+    <span class="woba-base">.347</span>
+    <span class="woba-dna">🧬</span>
+    <span class="woba-vs cold">.270</span>
+    <span class="woba-pa">235PA</span>
+  </div>
+</div><div class="batter-row">
+  <div class="batter-top">
+    <span class="batter-order">2</span>
     <span class="batter-name">Brice Turang</span>
     <span class="batter-ms ms-neutral">68</span>
   </div>
@@ -1080,7 +980,7 @@ body::after{
   </div>
 </div><div class="batter-row">
   <div class="batter-top">
-    <span class="batter-order">2</span>
+    <span class="batter-order">3</span>
     <span class="batter-name">William Contreras</span>
     <span class="batter-ms ms-neutral">61</span>
   </div>
@@ -1096,7 +996,7 @@ body::after{
   </div>
 </div><div class="batter-row">
   <div class="batter-top">
-    <span class="batter-order">3</span>
+    <span class="batter-order">4</span>
     <span class="batter-name">Christian Yelich</span>
     <span class="batter-ms ms-favorable">84</span>
   </div>
@@ -1112,7 +1012,7 @@ body::after{
   </div>
 </div><div class="batter-row">
   <div class="batter-top">
-    <span class="batter-order">4</span>
+    <span class="batter-order">5</span>
     <span class="batter-name">Andrew Vaughn</span>
     <span class="batter-ms ms-neutral">64</span>
   </div>
@@ -1128,7 +1028,7 @@ body::after{
   </div>
 </div><div class="batter-row">
   <div class="batter-top">
-    <span class="batter-order">5</span>
+    <span class="batter-order">6</span>
     <span class="batter-name">Jake Bauers</span>
     <span class="batter-ms ms-favorable">80</span>
   </div>
@@ -1144,7 +1044,7 @@ body::after{
   </div>
 </div><div class="batter-row">
   <div class="batter-top">
-    <span class="batter-order">6</span>
+    <span class="batter-order">7</span>
     <span class="batter-name">Sal Frelick</span>
     <span class="batter-ms ms-favorable">74</span>
   </div>
@@ -1160,35 +1060,19 @@ body::after{
   </div>
 </div><div class="batter-row">
   <div class="batter-top">
-    <span class="batter-order">7</span>
-    <span class="batter-name">David Hamilton</span>
-    <span class="batter-ms ms-tough">49</span>
-  </div>
-  <div class="batter-bottom">
-    <span class="batter-stats">3B · L</span>
-    <span class="batter-range">45-53</span>
-  </div>
-  <div class="batter-woba">
-    <span class="woba-base">.292</span>
-    <span class="woba-dna">🧬</span>
-    <span class="woba-vs cold">.269</span>
-    <span class="woba-pa">126PA</span>
-  </div>
-</div><div class="batter-row">
-  <div class="batter-top">
     <span class="batter-order">8</span>
-    <span class="batter-name">Garrett Mitchell</span>
-    <span class="batter-ms ms-favorable">77</span>
+    <span class="batter-name">Luis Rengifo</span>
+    <span class="batter-ms ms-tough">54</span>
   </div>
   <div class="batter-bottom">
-    <span class="batter-stats">CF · L</span>
-    <span class="batter-range">73-81</span>
+    <span class="batter-stats">3B · S</span>
+    <span class="batter-range">50-58</span>
   </div>
   <div class="batter-woba">
-    <span class="woba-base">.386</span>
+    <span class="woba-base">.352</span>
     <span class="woba-dna">🧬</span>
-    <span class="woba-vs cold">.365</span>
-    <span class="woba-pa">93PA</span>
+    <span class="woba-vs cold">.286</span>
+    <span class="woba-pa">388PA</span>
   </div>
 </div><div class="batter-row">
   <div class="batter-top">
@@ -1210,141 +1094,12 @@ body::after{
     <div class="coverage cov-good">ATLAS: 100% COVERED (9/9)</div>
   </div>
 </div>
-  <div class="bp-toggle" onclick="toggleBullpen(1)">
-  <span>BULLPEN PREDICTIONS</span>
-  <span class="arrow" id="bp-arrow-1">▼</span>
-</div>
-<div class="bp-container" id="bullpen-1">
-  <div class="bp-section">
-  <div class="bp-header">
-    <span class="bp-team">CWS PEN</span>
-    <span class="bp-meta-hdr">SP ~2.0 IP · 7.0 IP needed · 15/15 avail</span>
-    <span class="bp-confidence bp-conf-high">HIGH</span>
-  </div>
-  <div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Domínguez, Seranthony</div>
-    <div class="bp-meta">Heater-Heavy · ~1IP · Inn 4 MS 62</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Taylor, Grant</div>
-    <div class="bp-meta">Kitchen Sink · ~1IP · Inn 5 MS 72</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">MID</div>
-  <div class="bp-info">
-    <div class="bp-name">González, Wikelman</div>
-    <div class="bp-meta">Yakker · ~2IP · Inn 6 MS 67</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">MID</div>
-  <div class="bp-info">
-    <div class="bp-name">Eisert, Brandon</div>
-    <div class="bp-meta">Barnburner · ~2IP · Inn 7 MS 60</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">LON</div>
-  <div class="bp-info">
-    <div class="bp-name">Leasure, Jordan</div>
-    <div class="bp-meta">Split Demon · ~2IP · Inn 8 MS 63</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">CLO</div>
-  <div class="bp-info">
-    <div class="bp-name">Berroa, Prelander</div>
-    <div class="bp-meta">Kitchen Sink · ~1IP · Inn 3 MS 62</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div>
-</div>
-  <div class="bp-section">
-  <div class="bp-header">
-    <span class="bp-team">MIL PEN</span>
-    <span class="bp-meta-hdr">SP ~2.0 IP · 7.0 IP needed · 12/12 avail</span>
-    <span class="bp-confidence bp-conf-high">HIGH</span>
-  </div>
-  <div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Uribe, Abner</div>
-    <div class="bp-meta">Undertow · ~1IP · Inn 4 MS 57</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Zastryzny, Rob</div>
-    <div class="bp-meta">Boomerang · ~1IP · Inn 5 MS 60</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">MID</div>
-  <div class="bp-info">
-    <div class="bp-name">Misiorowski, Jacob</div>
-    <div class="bp-meta">Triple Threat · ~2IP · Inn 6 MS 71</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">MID</div>
-  <div class="bp-info">
-    <div class="bp-name">Anderson, Grant</div>
-    <div class="bp-meta">Yakker · ~2IP · Inn 7 MS 57</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">LON</div>
-  <div class="bp-info">
-    <div class="bp-name">Ashby, Aaron</div>
-    <div class="bp-meta">Undertow · ~2IP · Inn 8 MS 69</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">CLO</div>
-  <div class="bp-info">
-    <div class="bp-name">Megill, Trevor</div>
-    <div class="bp-meta">Ghost · ~1IP · Inn 3 MS 65</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div>
-</div>
-</div>
-</div><div class="game-card" data-conf="2" data-value="10" data-edge="28.8">
+  
+</div><div class="game-card" data-conf="5" data-value="1" data-edge="-6.5">
   
   <div class="run-bar ma-premium">
-  <div class="run-bar-seg" style="width:50%;background:#AB0003">5.2</div>
-  <div class="run-bar-seg" style="width:50%;background:#0E3386">5.2</div>
+  <div class="run-bar-seg" style="width:42%;background:#AB0003">4.1</div>
+  <div class="run-bar-seg" style="width:58%;background:#0E3386">5.6</div>
 </div>
   <div class="card-header">
   <div class="team-block">
@@ -1354,9 +1109,9 @@ body::after{
   </div>
   <div class="card-center ma-premium">
     <div class="proj-label">WIN PROB</div>
-    <div class="spread">50% — 50%</div>
+    <div class="spread">35% — 65%</div>
     <div class="ou-line">O/U 8.0</div>
-    <div class="sim-pick"><span class="pick-type-label">ML</span> WSH ML (+157) <span class="mc-conf-num" style="color:#FF8C00" title="Confidence (win probability)">C:2</span> <span class="mc-conf-num" style="color:#00FF55" title="Value (EV vs odds)">V:10</span></div>
+    
   </div>
   <div class="team-block">
     <div class="team-logo"><img src="https://www.mlbstatic.com/team-logos/112.svg" alt="CHC" style="width:100%;height:100%;object-fit:contain"></div>
@@ -1364,30 +1119,30 @@ body::after{
     <div class="team-ml">-225</div>
   </div>
 </div>
-  <div class="edge-bar ma-premium">ML Edge: WSH +28.8% EV</div>
+  
   <div class="sp-block">
   <div class="sp-side">
       <div class="sp-name">Cade Cavalli</div>
-      <span class="arch-badge">Ghost</span>
+      <span class="arch-badge">Uncle Charlie</span>
       <div class="sp-stats">RHP</div>
     </div>
   <div class="sp-vs">VS</div>
   <div class="sp-side">
       <div class="sp-name">Matthew Boyd</div>
-      <span class="arch-badge">Uncle Charlie</span>
+      <span class="arch-badge">Triple Threat</span>
       <div class="sp-stats">LHP</div>
     </div>
 </div>
   <div class="model-breakdown">
     <div class="model-row">
       <span class="model-label">wOBA</span>
-      <span class="model-val">WSH .361</span>
+      <span class="model-val">WSH .357</span>
       <div class="model-bar-mini">
-        <div class="model-bar-away" style="width:53%;background:#AB0003"></div>
-        <div class="model-bar-home" style="width:47%;background:#0E3386"></div>
+        <div class="model-bar-away" style="width:51%;background:#AB0003"></div>
+        <div class="model-bar-home" style="width:49%;background:#0E3386"></div>
       </div>
-      <span class="model-val">CHC .311</span>
-      <span class="model-edge-sm">WSH +.050</span>
+      <span class="model-val">CHC .330</span>
+      <span class="model-edge-sm">WSH +.027</span>
     </div>
     <div class="model-row">
       <span class="model-label">TIER</span>
@@ -1398,21 +1153,21 @@ body::after{
     </div>
     <div class="model-row">
       <span class="model-label">RE24</span>
-      <span class="model-val">WSH -0.3</span>
+      <span class="model-val">WSH -0.1</span>
       <div class="model-mid-spacer"></div>
-      <span class="model-val">CHC +0.4</span>
-      <span class="model-edge-sm">CHC +0.7</span>
+      <span class="model-val">CHC +0.3</span>
+      <span class="model-edge-sm">CHC +0.4</span>
     </div>
     <div class="model-row">
       <span class="model-label">OAA</span>
-      <span class="model-val">WSH -0.44</span>
+      <span class="model-val">WSH -0.38</span>
       <div class="model-mid-spacer"></div>
-      <span class="model-val">CHC +0.31</span>
+      <span class="model-val">CHC +0.34</span>
       <span class="model-edge-sm"></span>
     </div>
     <div class="model-row model-formula-row ma-premium">
       <span class="model-label">MODEL</span>
-      <span class="model-formula">BaseRuns(wOBA×Tier) + RE24 + OAA + Park + BP = <strong>WSH 5.2 — CHC 5.2</strong></span>
+      <span class="model-formula">BaseRuns(wOBA×Tier) + RE24 + OAA + Park + BP = <strong>WSH 4.1 — CHC 5.6</strong></span>
     </div>
     <div class="model-row model-tags">
       <span class="model-tag tag-venue">Wrigley Field 0.97×</span><span class="model-tag tag-arch">vs T3_Standard</span><span class="model-tag tag-arch">vs T4_Fringe</span>
@@ -1437,86 +1192,6 @@ body::after{
     <div class="batter-row">
   <div class="batter-top">
     <span class="batter-order">1</span>
-    <span class="batter-name">James Wood</span>
-    <span class="batter-ms ms-favorable">70</span>
-  </div>
-  <div class="batter-bottom">
-    <span class="batter-stats">LF · L</span>
-    <span class="batter-range">66-74</span>
-  </div>
-  <div class="batter-woba">
-    <span class="woba-base">.361</span>
-    <span class="woba-dna">🧬</span>
-    <span class="woba-vs cold">.341</span>
-    <span class="woba-pa">53PA</span>
-  </div>
-</div><div class="batter-row">
-  <div class="batter-top">
-    <span class="batter-order">2</span>
-    <span class="batter-name">Andres Chaparro</span>
-    <span class="batter-ms ms-elite">95</span>
-  </div>
-  <div class="batter-bottom">
-    <span class="batter-stats">1B · R</span>
-    <span class="batter-range">81-99</span>
-  </div>
-  <div class="batter-woba">
-    <span class="woba-base">.281</span>
-    <span class="woba-dna">🧬</span>
-    <span class="woba-vs hot">.446</span>
-    <span class="woba-pa">12PA</span>
-  </div>
-</div><div class="batter-row">
-  <div class="batter-top">
-    <span class="batter-order">3</span>
-    <span class="batter-name">Brady House</span>
-    <span class="batter-ms ms-tough">47</span>
-  </div>
-  <div class="batter-bottom">
-    <span class="batter-stats">3B · R</span>
-    <span class="batter-range">40-61</span>
-  </div>
-  <div class="batter-woba">
-    <span class="woba-base">.255</span>
-    <span class="woba-dna">🧬</span>
-    <span class="woba-vs neutral">.255</span>
-    <span class="woba-pa">18PA</span>
-  </div>
-</div><div class="batter-row">
-  <div class="batter-top">
-    <span class="batter-order">4</span>
-    <span class="batter-name">Daylen Lile</span>
-    <span class="batter-ms ms-elite">97</span>
-  </div>
-  <div class="batter-bottom">
-    <span class="batter-stats">DH · L</span>
-    <span class="batter-range">83-99</span>
-  </div>
-  <div class="batter-woba">
-    <span class="woba-base">.375</span>
-    <span class="woba-dna">🧬</span>
-    <span class="woba-vs hot">.475</span>
-    <span class="woba-pa">7PA</span>
-  </div>
-</div><div class="batter-row">
-  <div class="batter-top">
-    <span class="batter-order">5</span>
-    <span class="batter-name">Joey Wiemer</span>
-    <span class="batter-ms ms-elite">88</span>
-  </div>
-  <div class="batter-bottom">
-    <span class="batter-stats">RF · R</span>
-    <span class="batter-range">80-96</span>
-  </div>
-  <div class="batter-woba">
-    <span class="woba-base">.289</span>
-    <span class="woba-dna">🧬</span>
-    <span class="woba-vs hot">.398</span>
-    <span class="woba-pa">32PA</span>
-  </div>
-</div><div class="batter-row">
-  <div class="batter-top">
-    <span class="batter-order">6</span>
     <span class="batter-name">CJ Abrams</span>
     <span class="batter-ms ms-tough">41</span>
   </div>
@@ -1532,23 +1207,82 @@ body::after{
   </div>
 </div><div class="batter-row">
   <div class="batter-top">
-    <span class="batter-order">7</span>
-    <span class="batter-name">Nasim Nunez</span>
-    <span class="batter-ms ms-elite">94</span>
+    <span class="batter-order">2</span>
+    <span class="batter-name">Jacob Young</span>
+    <span class="batter-ms ms-neutral">65</span>
   </div>
   <div class="batter-bottom">
-    <span class="batter-stats">2B · S</span>
-    <span class="batter-range">80-99</span>
+    <span class="batter-stats">CF · R</span>
+    <span class="batter-range">57-73</span>
   </div>
   <div class="batter-woba">
-    <span class="woba-base">.439</span>
+    <span class="woba-base">.302</span>
     <span class="woba-dna">🧬</span>
-    <span class="woba-vs neutral">.444</span>
-    <span class="woba-pa">10PA</span>
+    <span class="woba-vs hot">.327</span>
+    <span class="woba-pa">44PA</span>
   </div>
 </div><div class="batter-row">
   <div class="batter-top">
-    <span class="batter-order">8</span>
+    <span class="batter-order">3</span>
+    <span class="batter-name">James Wood</span>
+    <span class="batter-ms ms-favorable">70</span>
+  </div>
+  <div class="batter-bottom">
+    <span class="batter-stats">LF · L</span>
+    <span class="batter-range">66-74</span>
+  </div>
+  <div class="batter-woba">
+    <span class="woba-base">.361</span>
+    <span class="woba-dna">🧬</span>
+    <span class="woba-vs cold">.341</span>
+    <span class="woba-pa">53PA</span>
+  </div>
+</div><div class="batter-row">
+  <div class="batter-top">
+    <span class="batter-order">4</span>
+    <span class="batter-name">Daylen Lile</span>
+    <span class="batter-ms ms-elite">97</span>
+  </div>
+  <div class="batter-bottom">
+    <span class="batter-stats">RF · L</span>
+    <span class="batter-range">83-99</span>
+  </div>
+  <div class="batter-woba">
+    <span class="woba-base">.375</span>
+    <span class="woba-dna">🧬</span>
+    <span class="woba-vs hot">.475</span>
+    <span class="woba-pa">7PA</span>
+  </div>
+</div><div class="batter-row">
+  <div class="batter-top">
+    <span class="batter-order">5</span>
+    <span class="batter-name">Andres Chaparro</span>
+    <span class="batter-ms ms-elite">95</span>
+  </div>
+  <div class="batter-bottom">
+    <span class="batter-stats">DH · R</span>
+    <span class="batter-range">81-99</span>
+  </div>
+  <div class="batter-woba">
+    <span class="woba-base">.281</span>
+    <span class="woba-dna">🧬</span>
+    <span class="woba-vs hot">.446</span>
+    <span class="woba-pa">12PA</span>
+  </div>
+</div><div class="batter-row">
+  <div class="batter-top">
+    <span class="batter-order">6</span>
+    <span class="batter-name">Luis Garcia</span>
+    <span class="batter-ms ">—</span>
+  </div>
+  <div class="batter-bottom">
+    <span class="batter-stats">1B · L</span>
+    <span class="batter-range">0-0</span>
+  </div>
+  
+</div><div class="batter-row">
+  <div class="batter-top">
+    <span class="batter-order">7</span>
     <span class="batter-name">Keibert Ruiz</span>
     <span class="batter-ms ms-favorable">78</span>
   </div>
@@ -1564,22 +1298,38 @@ body::after{
   </div>
 </div><div class="batter-row">
   <div class="batter-top">
-    <span class="batter-order">9</span>
-    <span class="batter-name">Jacob Young</span>
-    <span class="batter-ms ms-neutral">65</span>
+    <span class="batter-order">8</span>
+    <span class="batter-name">Brady House</span>
+    <span class="batter-ms ms-tough">47</span>
   </div>
   <div class="batter-bottom">
-    <span class="batter-stats">CF · R</span>
-    <span class="batter-range">57-73</span>
+    <span class="batter-stats">3B · R</span>
+    <span class="batter-range">40-61</span>
   </div>
   <div class="batter-woba">
-    <span class="woba-base">.302</span>
+    <span class="woba-base">.255</span>
     <span class="woba-dna">🧬</span>
-    <span class="woba-vs hot">.327</span>
-    <span class="woba-pa">44PA</span>
+    <span class="woba-vs neutral">.255</span>
+    <span class="woba-pa">18PA</span>
+  </div>
+</div><div class="batter-row">
+  <div class="batter-top">
+    <span class="batter-order">9</span>
+    <span class="batter-name">Nasim Nunez</span>
+    <span class="batter-ms ms-elite">94</span>
+  </div>
+  <div class="batter-bottom">
+    <span class="batter-stats">2B · S</span>
+    <span class="batter-range">80-99</span>
+  </div>
+  <div class="batter-woba">
+    <span class="woba-base">.439</span>
+    <span class="woba-dna">🧬</span>
+    <span class="woba-vs neutral">.444</span>
+    <span class="woba-pa">10PA</span>
   </div>
 </div>
-    <div class="coverage cov-good">ATLAS: 100% COVERED (9/9)</div>
+    <div class="coverage cov-good">ATLAS: 89% COVERED (8/9)</div>
   </div>
   <div class="lineup-col">
     <div class="lineup-col-hdr">CHC LINEUP</div>
@@ -1602,18 +1352,18 @@ body::after{
 </div><div class="batter-row">
   <div class="batter-top">
     <span class="batter-order">2</span>
-    <span class="batter-name">Alex Bregman</span>
-    <span class="batter-ms ms-elite">85</span>
+    <span class="batter-name">Nico Hoerner</span>
+    <span class="batter-ms ms-neutral">56</span>
   </div>
   <div class="batter-bottom">
-    <span class="batter-stats">3B · R</span>
-    <span class="batter-range">81-89</span>
+    <span class="batter-stats">2B · R</span>
+    <span class="batter-range">52-60</span>
   </div>
   <div class="batter-woba">
-    <span class="woba-base">.374</span>
+    <span class="woba-base">.337</span>
     <span class="woba-dna">🧬</span>
-    <span class="woba-vs neutral">.385</span>
-    <span class="woba-pa">301PA</span>
+    <span class="woba-vs cold">.295</span>
+    <span class="woba-pa">109PA</span>
   </div>
 </div><div class="batter-row">
   <div class="batter-top">
@@ -1634,6 +1384,22 @@ body::after{
 </div><div class="batter-row">
   <div class="batter-top">
     <span class="batter-order">4</span>
+    <span class="batter-name">Alex Bregman</span>
+    <span class="batter-ms ms-elite">85</span>
+  </div>
+  <div class="batter-bottom">
+    <span class="batter-stats">3B · R</span>
+    <span class="batter-range">81-89</span>
+  </div>
+  <div class="batter-woba">
+    <span class="woba-base">.374</span>
+    <span class="woba-dna">🧬</span>
+    <span class="woba-vs neutral">.385</span>
+    <span class="woba-pa">301PA</span>
+  </div>
+</div><div class="batter-row">
+  <div class="batter-top">
+    <span class="batter-order">5</span>
     <span class="batter-name">Pete Crow-Armstrong</span>
     <span class="batter-ms ms-tough">44</span>
   </div>
@@ -1646,22 +1412,6 @@ body::after{
     <span class="woba-dna">🧬</span>
     <span class="woba-vs cold">.231</span>
     <span class="woba-pa">38PA</span>
-  </div>
-</div><div class="batter-row">
-  <div class="batter-top">
-    <span class="batter-order">5</span>
-    <span class="batter-name">Nico Hoerner</span>
-    <span class="batter-ms ms-neutral">56</span>
-  </div>
-  <div class="batter-bottom">
-    <span class="batter-stats">2B · R</span>
-    <span class="batter-range">52-60</span>
-  </div>
-  <div class="batter-woba">
-    <span class="woba-base">.337</span>
-    <span class="woba-dna">🧬</span>
-    <span class="woba-vs cold">.295</span>
-    <span class="woba-pa">109PA</span>
   </div>
 </div><div class="batter-row">
   <div class="batter-top">
@@ -1714,118 +1464,25 @@ body::after{
 </div><div class="batter-row">
   <div class="batter-top">
     <span class="batter-order">9</span>
-    <span class="batter-name">Matt Shaw</span>
-    <span class="batter-ms ms-tough">40</span>
+    <span class="batter-name">Michael Conforto</span>
+    <span class="batter-ms ms-favorable">76</span>
   </div>
   <div class="batter-bottom">
-    <span class="batter-stats">RF · R</span>
-    <span class="batter-range">40-54</span>
+    <span class="batter-stats">RF · L</span>
+    <span class="batter-range">72-80</span>
   </div>
   <div class="batter-woba">
-    <span class="woba-base">.327</span>
+    <span class="woba-base">.352</span>
     <span class="woba-dna">🧬</span>
-    <span class="woba-vs cold">.196</span>
-    <span class="woba-pa">12PA</span>
+    <span class="woba-vs neutral">.361</span>
+    <span class="woba-pa">354PA</span>
   </div>
 </div>
     <div class="coverage cov-good">ATLAS: 89% COVERED (8/9)</div>
   </div>
 </div>
-  <div class="bp-toggle" onclick="toggleBullpen(2)">
-  <span>BULLPEN PREDICTIONS</span>
-  <span class="arrow" id="bp-arrow-2">▼</span>
-</div>
-<div class="bp-container" id="bullpen-2">
-  <div class="bp-section">
-  <div class="bp-header">
-    <span class="bp-team">WSH PEN</span>
-    <span class="bp-meta-hdr">SP ~5.5 IP · 3.5 IP needed · 12/12 avail</span>
-    <span class="bp-confidence bp-conf-high">HIGH</span>
-  </div>
-  <div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Ribalta, Orlando</div>
-    <div class="bp-meta">Kitchen Sink · ~1IP · Inn 7 MS 64</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Schultz, Paxton</div>
-    <div class="bp-meta">Kitchen Sink · ~1IP · Inn 8 MS 78</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">MID</div>
-  <div class="bp-info">
-    <div class="bp-name">Varland, Gus</div>
-    <div class="bp-meta">Kitchen Sink · ~2IP · Inn 9 MS 64</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">CLO</div>
-  <div class="bp-info">
-    <div class="bp-name">Beeter, Clayton</div>
-    <div class="bp-meta">Kitchen Sink · ~1IP · Inn 6 MS 64</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div>
-</div>
-  <div class="bp-section">
-  <div class="bp-header">
-    <span class="bp-team">CHC PEN</span>
-    <span class="bp-meta-hdr">SP ~5.5 IP · 3.5 IP needed · 12/12 avail</span>
-    <span class="bp-confidence bp-conf-high">HIGH</span>
-  </div>
-  <div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Palencia, Daniel</div>
-    <div class="bp-meta">Heater-Heavy · ~1IP · Inn 7 MS 66</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Harvey, Hunter</div>
-    <div class="bp-meta">Heater-Heavy · ~1IP · Inn 8 MS 66</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">MID</div>
-  <div class="bp-info">
-    <div class="bp-name">Little, Luke</div>
-    <div class="bp-meta">Boomerang · ~2IP · Inn 9 MS 47</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">CLO</div>
-  <div class="bp-info">
-    <div class="bp-name">Maton, Phil</div>
-    <div class="bp-meta">Kitchen Sink · ~1IP · Inn 6 MS 62</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div>
-</div>
-</div>
-</div><div class="game-card" data-conf="3" data-value="7" data-edge="12.7">
+  
+</div><div class="game-card" data-conf="2" data-value="6" data-edge="12.7">
   
   <div class="run-bar ma-premium">
   <div class="run-bar-seg" style="width:52%;background:#002B5C">5.1</div>
@@ -1841,7 +1498,7 @@ body::after{
     <div class="proj-label">WIN PROB</div>
     <div class="spread">53% — 47%</div>
     <div class="ou-line">O/U 8.0</div>
-    <div class="sim-pick"><span class="pick-type-label">ML</span> MIN ML (+112) <span class="mc-conf-num" style="color:#FF8C00" title="Confidence (win probability)">C:3</span> <span class="mc-conf-num" style="color:#7FFF00" title="Value (EV vs odds)">V:7</span></div>
+    <div class="sim-pick"><span class="pick-type-label">ML</span> MIN ML (+112) <span class="mc-conf-num" style="color:#FF8C00" title="Confidence (win probability)">C:2</span> <span class="mc-conf-num" style="color:#7FFF00" title="Value (EV vs odds)">V:6</span></div>
   </div>
   <div class="team-block">
     <div class="team-logo"><img src="https://www.mlbstatic.com/team-logos/110.svg" alt="BAL" style="width:100%;height:100%;object-fit:contain"></div>
@@ -1853,13 +1510,13 @@ body::after{
   <div class="sp-block">
   <div class="sp-side">
       <div class="sp-name">Joe Ryan</div>
-      <span class="arch-badge">Heater-Heavy</span>
+      <span class="arch-badge">Kitchen Sink</span>
       <div class="sp-stats">RHP</div>
     </div>
   <div class="sp-vs">VS</div>
   <div class="sp-side">
       <div class="sp-name">Trevor Rogers</div>
-      <span class="arch-badge">Kitchen Sink</span>
+      <span class="arch-badge">Boomerang</span>
       <div class="sp-stats">LHP</div>
     </div>
 </div>
@@ -2006,7 +1663,7 @@ body::after{
     <span class="batter-ms ms-neutral">56</span>
   </div>
   <div class="batter-bottom">
-    <span class="batter-stats">DH · S</span>
+    <span class="batter-stats">1B · S</span>
     <span class="batter-range">52-60</span>
   </div>
   <div class="batter-woba">
@@ -2018,22 +1675,6 @@ body::after{
 </div><div class="batter-row">
   <div class="batter-top">
     <span class="batter-order">7</span>
-    <span class="batter-name">Victor Caratini</span>
-    <span class="batter-ms ms-elite">91</span>
-  </div>
-  <div class="batter-bottom">
-    <span class="batter-stats">1B · S</span>
-    <span class="batter-range">83-99</span>
-  </div>
-  <div class="batter-woba">
-    <span class="woba-base">.319</span>
-    <span class="woba-dna">🧬</span>
-    <span class="woba-vs hot">.407</span>
-    <span class="woba-pa">39PA</span>
-  </div>
-</div><div class="batter-row">
-  <div class="batter-top">
-    <span class="batter-order">8</span>
     <span class="batter-name">Royce Lewis</span>
     <span class="batter-ms ms-elite">99</span>
   </div>
@@ -2046,6 +1687,22 @@ body::after{
     <span class="woba-dna">🧬</span>
     <span class="woba-vs hot">.509</span>
     <span class="woba-pa">28PA</span>
+  </div>
+</div><div class="batter-row">
+  <div class="batter-top">
+    <span class="batter-order">8</span>
+    <span class="batter-name">Victor Caratini</span>
+    <span class="batter-ms ms-elite">91</span>
+  </div>
+  <div class="batter-bottom">
+    <span class="batter-stats">DH · S</span>
+    <span class="batter-range">83-99</span>
+  </div>
+  <div class="batter-woba">
+    <span class="woba-base">.319</span>
+    <span class="woba-dna">🧬</span>
+    <span class="woba-vs hot">.407</span>
+    <span class="woba-pa">39PA</span>
   </div>
 </div><div class="batter-row">
   <div class="batter-top">
@@ -2071,22 +1728,6 @@ body::after{
     <div class="batter-row">
   <div class="batter-top">
     <span class="batter-order">1</span>
-    <span class="batter-name">Taylor Ward</span>
-    <span class="batter-ms ms-neutral">68</span>
-  </div>
-  <div class="batter-bottom">
-    <span class="batter-stats">LF · R</span>
-    <span class="batter-range">64-72</span>
-  </div>
-  <div class="batter-woba">
-    <span class="woba-base">.343</span>
-    <span class="woba-dna">🧬</span>
-    <span class="woba-vs neutral">.337</span>
-    <span class="woba-pa">207PA</span>
-  </div>
-</div><div class="batter-row">
-  <div class="batter-top">
-    <span class="batter-order">2</span>
     <span class="batter-name">Gunnar Henderson</span>
     <span class="batter-ms ms-elite">91</span>
   </div>
@@ -2099,6 +1740,22 @@ body::after{
     <span class="woba-dna">🧬</span>
     <span class="woba-vs hot">.412</span>
     <span class="woba-pa">205PA</span>
+  </div>
+</div><div class="batter-row">
+  <div class="batter-top">
+    <span class="batter-order">2</span>
+    <span class="batter-name">Adley Rutschman</span>
+    <span class="batter-ms ms-favorable">72</span>
+  </div>
+  <div class="batter-bottom">
+    <span class="batter-stats">C · S</span>
+    <span class="batter-range">68-76</span>
+  </div>
+  <div class="batter-woba">
+    <span class="woba-base">.341</span>
+    <span class="woba-dna">🧬</span>
+    <span class="woba-vs neutral">.345</span>
+    <span class="woba-pa">177PA</span>
   </div>
 </div><div class="batter-row">
   <div class="batter-top">
@@ -2119,18 +1776,18 @@ body::after{
 </div><div class="batter-row">
   <div class="batter-top">
     <span class="batter-order">4</span>
-    <span class="batter-name">Adley Rutschman</span>
-    <span class="batter-ms ms-favorable">72</span>
+    <span class="batter-name">Taylor Ward</span>
+    <span class="batter-ms ms-neutral">68</span>
   </div>
   <div class="batter-bottom">
-    <span class="batter-stats">C · S</span>
-    <span class="batter-range">68-76</span>
+    <span class="batter-stats">LF · R</span>
+    <span class="batter-range">64-72</span>
   </div>
   <div class="batter-woba">
-    <span class="woba-base">.341</span>
+    <span class="woba-base">.343</span>
     <span class="woba-dna">🧬</span>
-    <span class="woba-vs neutral">.345</span>
-    <span class="woba-pa">177PA</span>
+    <span class="woba-vs neutral">.337</span>
+    <span class="woba-pa">207PA</span>
   </div>
 </div><div class="batter-row">
   <div class="batter-top">
@@ -2167,22 +1824,6 @@ body::after{
 </div><div class="batter-row">
   <div class="batter-top">
     <span class="batter-order">7</span>
-    <span class="batter-name">Colton Cowser</span>
-    <span class="batter-ms ms-favorable">72</span>
-  </div>
-  <div class="batter-bottom">
-    <span class="batter-stats">CF · L</span>
-    <span class="batter-range">68-76</span>
-  </div>
-  <div class="batter-woba">
-    <span class="woba-base">.310</span>
-    <span class="woba-dna">🧬</span>
-    <span class="woba-vs hot">.348</span>
-    <span class="woba-pa">108PA</span>
-  </div>
-</div><div class="batter-row">
-  <div class="batter-top">
-    <span class="batter-order">8</span>
     <span class="batter-name">Coby Mayo</span>
     <span class="batter-ms ms-tough">40</span>
   </div>
@@ -2195,6 +1836,22 @@ body::after{
     <span class="woba-dna">🧬</span>
     <span class="woba-vs cold">.176</span>
     <span class="woba-pa">35PA</span>
+  </div>
+</div><div class="batter-row">
+  <div class="batter-top">
+    <span class="batter-order">8</span>
+    <span class="batter-name">Colton Cowser</span>
+    <span class="batter-ms ms-favorable">72</span>
+  </div>
+  <div class="batter-bottom">
+    <span class="batter-stats">CF · L</span>
+    <span class="batter-range">68-76</span>
+  </div>
+  <div class="batter-woba">
+    <span class="woba-base">.310</span>
+    <span class="woba-dna">🧬</span>
+    <span class="woba-vs hot">.348</span>
+    <span class="woba-pa">108PA</span>
   </div>
 </div><div class="batter-row">
   <div class="batter-top">
@@ -2216,101 +1873,8 @@ body::after{
     <div class="coverage cov-good">ATLAS: 100% COVERED (9/9)</div>
   </div>
 </div>
-  <div class="bp-toggle" onclick="toggleBullpen(3)">
-  <span>BULLPEN PREDICTIONS</span>
-  <span class="arrow" id="bp-arrow-3">▼</span>
-</div>
-<div class="bp-container" id="bullpen-3">
-  <div class="bp-section">
-  <div class="bp-header">
-    <span class="bp-team">MIN PEN</span>
-    <span class="bp-meta-hdr">SP ~5.5 IP · 3.5 IP needed · 9/9 avail</span>
-    <span class="bp-confidence bp-conf-high">HIGH</span>
-  </div>
-  <div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Festa, David</div>
-    <div class="bp-meta">Kitchen Sink · ~1IP · Inn 7 MS 63</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Kowar, Jackson</div>
-    <div class="bp-meta">Kitchen Sink · ~1IP · Inn 8 MS 63</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">MID</div>
-  <div class="bp-info">
-    <div class="bp-name">Adams, Travis</div>
-    <div class="bp-meta">Kitchen Sink · ~2IP · Inn 9 MS 59</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">CLO</div>
-  <div class="bp-info">
-    <div class="bp-name">Orze, Eric</div>
-    <div class="bp-meta">Split Demon · ~1IP · Inn 6 MS 66</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div>
-</div>
-  <div class="bp-section">
-  <div class="bp-header">
-    <span class="bp-team">BAL PEN</span>
-    <span class="bp-meta-hdr">SP ~5.5 IP · 3.5 IP needed · 12/12 avail</span>
-    <span class="bp-confidence bp-conf-high">HIGH</span>
-  </div>
-  <div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Bautista, Félix</div>
-    <div class="bp-meta">Undertow · ~1IP · Inn 7 MS 71</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Helsley, Ryan</div>
-    <div class="bp-meta">Kitchen Sink · ~1IP · Inn 8 MS 67</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">MID</div>
-  <div class="bp-info">
-    <div class="bp-name">Selby, Colin</div>
-    <div class="bp-meta">Undertow · ~2IP · Inn 9 MS 71</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">CLO</div>
-  <div class="bp-info">
-    <div class="bp-name">Hiraldo, Yaramil</div>
-    <div class="bp-meta">Kitchen Sink · ~1IP · Inn 6 MS 68</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div>
-</div>
-</div>
-</div><div class="game-card" data-conf="2" data-value="2" data-edge="-6.5">
+  
+</div><div class="game-card" data-conf="1" data-value="1" data-edge="-6.5">
   
   <div class="run-bar ma-premium">
   <div class="run-bar-seg" style="width:55%;background:#BD3039">3.1</div>
@@ -2338,13 +1902,13 @@ body::after{
   <div class="sp-block">
   <div class="sp-side">
       <div class="sp-name">Garrett Crochet</div>
-      <span class="arch-badge">Boomerang</span>
+      <span class="arch-badge">CutCurve</span>
       <div class="sp-stats">LHP</div>
     </div>
   <div class="sp-vs">VS</div>
   <div class="sp-side">
       <div class="sp-name">Andrew Abbott</div>
-      <span class="arch-badge">Boomerang</span>
+      <span class="arch-badge">CutCurve</span>
       <div class="sp-stats">LHP</div>
     </div>
 </div>
@@ -2411,7 +1975,7 @@ body::after{
     <span class="batter-ms ms-tough">40</span>
   </div>
   <div class="batter-bottom">
-    <span class="batter-stats">LF · L</span>
+    <span class="batter-stats">DH · L</span>
     <span class="batter-range">40-54</span>
   </div>
   <div class="batter-woba">
@@ -2443,7 +2007,7 @@ body::after{
     <span class="batter-ms ms-tough">46</span>
   </div>
   <div class="batter-bottom">
-    <span class="batter-stats">DH · L</span>
+    <span class="batter-stats">LF · L</span>
     <span class="batter-range">42-50</span>
   </div>
   <div class="batter-woba">
@@ -2471,22 +2035,6 @@ body::after{
 </div><div class="batter-row">
   <div class="batter-top">
     <span class="batter-order">5</span>
-    <span class="batter-name">Caleb Durbin</span>
-    <span class="batter-ms ms-tough">40</span>
-  </div>
-  <div class="batter-bottom">
-    <span class="batter-stats">3B · R</span>
-    <span class="batter-range">40-54</span>
-  </div>
-  <div class="batter-woba">
-    <span class="woba-base">.333</span>
-    <span class="woba-dna">🧬</span>
-    <span class="woba-vs cold">.123</span>
-    <span class="woba-pa">12PA</span>
-  </div>
-</div><div class="batter-row">
-  <div class="batter-top">
-    <span class="batter-order">6</span>
     <span class="batter-name">Wilyer Abreu</span>
     <span class="batter-ms ms-tough">42</span>
   </div>
@@ -2499,6 +2047,22 @@ body::after{
     <span class="woba-dna">🧬</span>
     <span class="woba-vs cold">.217</span>
     <span class="woba-pa">18PA</span>
+  </div>
+</div><div class="batter-row">
+  <div class="batter-top">
+    <span class="batter-order">6</span>
+    <span class="batter-name">Caleb Durbin</span>
+    <span class="batter-ms ms-tough">40</span>
+  </div>
+  <div class="batter-bottom">
+    <span class="batter-stats">3B · R</span>
+    <span class="batter-range">40-54</span>
+  </div>
+  <div class="batter-woba">
+    <span class="woba-base">.333</span>
+    <span class="woba-dna">🧬</span>
+    <span class="woba-vs cold">.123</span>
+    <span class="woba-pa">12PA</span>
   </div>
 </div><div class="batter-row">
   <div class="batter-top">
@@ -2519,22 +2083,6 @@ body::after{
 </div><div class="batter-row">
   <div class="batter-top">
     <span class="batter-order">8</span>
-    <span class="batter-name">Carlos Narvaez</span>
-    <span class="batter-ms ms-tough">41</span>
-  </div>
-  <div class="batter-bottom">
-    <span class="batter-stats">C · R</span>
-    <span class="batter-range">40-49</span>
-  </div>
-  <div class="batter-woba">
-    <span class="woba-base">.321</span>
-    <span class="woba-dna">🧬</span>
-    <span class="woba-vs cold">.208</span>
-    <span class="woba-pa">30PA</span>
-  </div>
-</div><div class="batter-row">
-  <div class="batter-top">
-    <span class="batter-order">9</span>
     <span class="batter-name">Ceddanne Rafaela</span>
     <span class="batter-ms ms-tough">47</span>
   </div>
@@ -2547,6 +2095,22 @@ body::after{
     <span class="woba-dna">🧬</span>
     <span class="woba-vs cold">.253</span>
     <span class="woba-pa">78PA</span>
+  </div>
+</div><div class="batter-row">
+  <div class="batter-top">
+    <span class="batter-order">9</span>
+    <span class="batter-name">Carlos Narvaez</span>
+    <span class="batter-ms ms-tough">41</span>
+  </div>
+  <div class="batter-bottom">
+    <span class="batter-stats">C · R</span>
+    <span class="batter-range">40-49</span>
+  </div>
+  <div class="batter-woba">
+    <span class="woba-base">.321</span>
+    <span class="woba-dna">🧬</span>
+    <span class="woba-vs cold">.208</span>
+    <span class="woba-pa">30PA</span>
   </div>
 </div>
     <div class="coverage cov-good">ATLAS: 100% COVERED (9/9)</div>
@@ -2701,105 +2265,12 @@ body::after{
     <div class="coverage cov-good">ATLAS: 89% COVERED (8/9)</div>
   </div>
 </div>
-  <div class="bp-toggle" onclick="toggleBullpen(4)">
-  <span>BULLPEN PREDICTIONS</span>
-  <span class="arrow" id="bp-arrow-4">▼</span>
-</div>
-<div class="bp-container" id="bullpen-4">
-  <div class="bp-section">
-  <div class="bp-header">
-    <span class="bp-team">BOS PEN</span>
-    <span class="bp-meta-hdr">SP ~5.5 IP · 3.5 IP needed · 8/8 avail</span>
-    <span class="bp-confidence bp-conf-high">HIGH</span>
-  </div>
-  <div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Chapman, Aroldis</div>
-    <div class="bp-meta">Split Demon · ~1IP · Inn 7 MS 71</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Early, Connelly</div>
-    <div class="bp-meta">Kitchen Sink · ~1IP · Inn 8 MS 75</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">MID</div>
-  <div class="bp-info">
-    <div class="bp-name">Whitlock, Garrett</div>
-    <div class="bp-meta">Undertow · ~2IP · Inn 9 MS 64</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">CLO</div>
-  <div class="bp-info">
-    <div class="bp-name">Morán, Jovani</div>
-    <div class="bp-meta">Barnburner · ~1IP · Inn 6 MS 72</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div>
-</div>
-  <div class="bp-section">
-  <div class="bp-header">
-    <span class="bp-team">CIN PEN</span>
-    <span class="bp-meta-hdr">SP ~5.5 IP · 3.5 IP needed · 10/10 avail</span>
-    <span class="bp-confidence bp-conf-high">HIGH</span>
-  </div>
-  <div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Moll, Sam</div>
-    <div class="bp-meta">Kitchen Sink · ~1IP · Inn 7 MS 70</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Burns, Chase</div>
-    <div class="bp-meta">Triple Threat · ~1IP · Inn 8 MS 75</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">MID</div>
-  <div class="bp-info">
-    <div class="bp-name">Ashcraft, Graham</div>
-    <div class="bp-meta">Kitchen Sink · ~2IP · Inn 9 MS 70</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">CLO</div>
-  <div class="bp-info">
-    <div class="bp-name">Phillips, Connor</div>
-    <div class="bp-meta">Yakker · ~1IP · Inn 6 MS 69</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div>
-</div>
-</div>
-</div><div class="game-card" data-conf="6" data-value="2" data-edge="-4.2">
+  
+</div><div class="game-card" data-conf="6" data-value="2" data-edge="1.9">
   
   <div class="run-bar ma-premium">
-  <div class="run-bar-seg" style="width:44%;background:#BA0021">4.8</div>
-  <div class="run-bar-seg" style="width:56%;background:#002D62">5.9</div>
+  <div class="run-bar-seg" style="width:42%;background:#BA0021">4.5</div>
+  <div class="run-bar-seg" style="width:58%;background:#002D62">6.1</div>
 </div>
   <div class="card-header">
   <div class="team-block">
@@ -2809,7 +2280,7 @@ body::after{
   </div>
   <div class="card-center ma-premium">
     <div class="proj-label">WIN PROB</div>
-    <div class="spread">38% — 62%</div>
+    <div class="spread">34% — 66%</div>
     <div class="ou-line">O/U 8.0</div>
     
   </div>
@@ -2829,20 +2300,20 @@ body::after{
   <div class="sp-vs">VS</div>
   <div class="sp-side">
       <div class="sp-name">Hunter Brown</div>
-      <span class="arch-badge">Ghost</span>
+      <span class="arch-badge">Uncle Charlie</span>
       <div class="sp-stats">RHP</div>
     </div>
 </div>
   <div class="model-breakdown">
     <div class="model-row">
       <span class="model-label">wOBA</span>
-      <span class="model-val">LAA .359</span>
+      <span class="model-val">LAA .339</span>
       <div class="model-bar-mini">
-        <div class="model-bar-away" style="width:50%;background:#BA0021"></div>
-        <div class="model-bar-home" style="width:50%;background:#002D62"></div>
+        <div class="model-bar-away" style="width:49%;background:#BA0021"></div>
+        <div class="model-bar-home" style="width:51%;background:#002D62"></div>
       </div>
-      <span class="model-val">HOU .352</span>
-      <span class="model-edge-sm">LAA +.006</span>
+      <span class="model-val">HOU .351</span>
+      <span class="model-edge-sm">HOU +.012</span>
     </div>
     <div class="model-row">
       <span class="model-label">TIER</span>
@@ -2853,21 +2324,21 @@ body::after{
     </div>
     <div class="model-row">
       <span class="model-label">RE24</span>
-      <span class="model-val">LAA -0.1</span>
+      <span class="model-val">LAA +0.1</span>
       <div class="model-mid-spacer"></div>
-      <span class="model-val">HOU +0.1</span>
-      <span class="model-edge-sm">HOU +0.2</span>
+      <span class="model-val">HOU +0.2</span>
+      <span class="model-edge-sm">EVEN</span>
     </div>
     <div class="model-row">
       <span class="model-label">OAA</span>
-      <span class="model-val">LAA -0.37</span>
+      <span class="model-val">LAA -0.36</span>
       <div class="model-mid-spacer"></div>
-      <span class="model-val">HOU +0.71</span>
+      <span class="model-val">HOU +0.72</span>
       <span class="model-edge-sm"></span>
     </div>
     <div class="model-row model-formula-row ma-premium">
       <span class="model-label">MODEL</span>
-      <span class="model-formula">BaseRuns(wOBA×Tier) + RE24 + OAA + Park + BP = <strong>LAA 4.8 — HOU 5.9</strong></span>
+      <span class="model-formula">BaseRuns(wOBA×Tier) + RE24 + OAA + Park + BP = <strong>LAA 4.5 — HOU 6.1</strong></span>
     </div>
     <div class="model-row model-tags">
       <span class="model-tag tag-arch">vs T2_Core</span><span class="model-tag tag-arch">vs T3_Standard</span>
@@ -3020,18 +2491,18 @@ body::after{
 </div><div class="batter-row">
   <div class="batter-top">
     <span class="batter-order">9</span>
-    <span class="batter-name">Oswald Peraza</span>
-    <span class="batter-ms ms-elite">99</span>
+    <span class="batter-name">Adam Frazier</span>
+    <span class="batter-ms ms-favorable">72</span>
   </div>
   <div class="batter-bottom">
-    <span class="batter-stats">2B · R</span>
-    <span class="batter-range">85-99</span>
+    <span class="batter-stats">2B · L</span>
+    <span class="batter-range">68-76</span>
   </div>
   <div class="batter-woba">
-    <span class="woba-base">.259</span>
+    <span class="woba-base">.327</span>
     <span class="woba-dna">🧬</span>
-    <span class="woba-vs hot">.536</span>
-    <span class="woba-pa">13PA</span>
+    <span class="woba-vs hot">.348</span>
+    <span class="woba-pa">272PA</span>
   </div>
 </div>
     <div class="coverage cov-good">ATLAS: 100% COVERED (9/9)</div>
@@ -3041,18 +2512,18 @@ body::after{
     <div class="batter-row">
   <div class="batter-top">
     <span class="batter-order">1</span>
-    <span class="batter-name">Jose Altuve</span>
-    <span class="batter-ms ms-neutral">65</span>
+    <span class="batter-name">Jeremy Pena</span>
+    <span class="batter-ms ms-neutral">58</span>
   </div>
   <div class="batter-bottom">
-    <span class="batter-stats">2B · R</span>
-    <span class="batter-range">61-69</span>
+    <span class="batter-stats">SS · R</span>
+    <span class="batter-range">54-62</span>
   </div>
   <div class="batter-woba">
-    <span class="woba-base">.389</span>
+    <span class="woba-base">.336</span>
     <span class="woba-dna">🧬</span>
-    <span class="woba-vs cold">.326</span>
-    <span class="woba-pa">428PA</span>
+    <span class="woba-vs cold">.304</span>
+    <span class="woba-pa">112PA</span>
   </div>
 </div><div class="batter-row">
   <div class="batter-top">
@@ -3073,27 +2544,11 @@ body::after{
 </div><div class="batter-row">
   <div class="batter-top">
     <span class="batter-order">3</span>
-    <span class="batter-name">Isaac Paredes</span>
-    <span class="batter-ms ms-neutral">62</span>
-  </div>
-  <div class="batter-bottom">
-    <span class="batter-stats">3B · R</span>
-    <span class="batter-range">58-66</span>
-  </div>
-  <div class="batter-woba">
-    <span class="woba-base">.345</span>
-    <span class="woba-dna">🧬</span>
-    <span class="woba-vs cold">.316</span>
-    <span class="woba-pa">134PA</span>
-  </div>
-</div><div class="batter-row">
-  <div class="batter-top">
-    <span class="batter-order">4</span>
     <span class="batter-name">Carlos Correa</span>
     <span class="batter-ms ms-elite">91</span>
   </div>
   <div class="batter-bottom">
-    <span class="batter-stats">SS · R</span>
+    <span class="batter-stats">3B · R</span>
     <span class="batter-range">87-95</span>
   </div>
   <div class="batter-woba">
@@ -3104,39 +2559,7 @@ body::after{
   </div>
 </div><div class="batter-row">
   <div class="batter-top">
-    <span class="batter-order">5</span>
-    <span class="batter-name">Joey Loperfido</span>
-    <span class="batter-ms ms-elite">93</span>
-  </div>
-  <div class="batter-bottom">
-    <span class="batter-stats">LF · L</span>
-    <span class="batter-range">85-99</span>
-  </div>
-  <div class="batter-woba">
-    <span class="woba-base">.313</span>
-    <span class="woba-dna">🧬</span>
-    <span class="woba-vs hot">.432</span>
-    <span class="woba-pa">22PA</span>
-  </div>
-</div><div class="batter-row">
-  <div class="batter-top">
-    <span class="batter-order">6</span>
-    <span class="batter-name">Cam Smith</span>
-    <span class="batter-ms ms-tough">40</span>
-  </div>
-  <div class="batter-bottom">
-    <span class="batter-stats">RF · R</span>
-    <span class="batter-range">40-48</span>
-  </div>
-  <div class="batter-woba">
-    <span class="woba-base">.308</span>
-    <span class="woba-dna">🧬</span>
-    <span class="woba-vs cold">.171</span>
-    <span class="woba-pa">24PA</span>
-  </div>
-</div><div class="batter-row">
-  <div class="batter-top">
-    <span class="batter-order">7</span>
+    <span class="batter-order">4</span>
     <span class="batter-name">Christian Walker</span>
     <span class="batter-ms ms-elite">85</span>
   </div>
@@ -3152,7 +2575,39 @@ body::after{
   </div>
 </div><div class="batter-row">
   <div class="batter-top">
-    <span class="batter-order">8</span>
+    <span class="batter-order">5</span>
+    <span class="batter-name">Jose Altuve</span>
+    <span class="batter-ms ms-neutral">65</span>
+  </div>
+  <div class="batter-bottom">
+    <span class="batter-stats">2B · R</span>
+    <span class="batter-range">61-69</span>
+  </div>
+  <div class="batter-woba">
+    <span class="woba-base">.389</span>
+    <span class="woba-dna">🧬</span>
+    <span class="woba-vs cold">.326</span>
+    <span class="woba-pa">428PA</span>
+  </div>
+</div><div class="batter-row">
+  <div class="batter-top">
+    <span class="batter-order">6</span>
+    <span class="batter-name">Jake Meyers</span>
+    <span class="batter-ms ms-neutral">57</span>
+  </div>
+  <div class="batter-bottom">
+    <span class="batter-stats">CF · R</span>
+    <span class="batter-range">53-61</span>
+  </div>
+  <div class="batter-woba">
+    <span class="woba-base">.312</span>
+    <span class="woba-dna">🧬</span>
+    <span class="woba-vs neutral">.302</span>
+    <span class="woba-pa">74PA</span>
+  </div>
+</div><div class="batter-row">
+  <div class="batter-top">
+    <span class="batter-order">7</span>
     <span class="batter-name">Yainer Diaz</span>
     <span class="batter-ms ms-favorable">72</span>
   </div>
@@ -3168,123 +2623,46 @@ body::after{
   </div>
 </div><div class="batter-row">
   <div class="batter-top">
-    <span class="batter-order">9</span>
-    <span class="batter-name">Jake Meyers</span>
-    <span class="batter-ms ms-neutral">57</span>
+    <span class="batter-order">8</span>
+    <span class="batter-name">Joey Loperfido</span>
+    <span class="batter-ms ms-elite">93</span>
   </div>
   <div class="batter-bottom">
-    <span class="batter-stats">CF · R</span>
-    <span class="batter-range">53-61</span>
+    <span class="batter-stats">LF · L</span>
+    <span class="batter-range">85-99</span>
   </div>
   <div class="batter-woba">
-    <span class="woba-base">.312</span>
+    <span class="woba-base">.313</span>
     <span class="woba-dna">🧬</span>
-    <span class="woba-vs neutral">.302</span>
-    <span class="woba-pa">74PA</span>
+    <span class="woba-vs hot">.432</span>
+    <span class="woba-pa">22PA</span>
+  </div>
+</div><div class="batter-row">
+  <div class="batter-top">
+    <span class="batter-order">9</span>
+    <span class="batter-name">Cam Smith</span>
+    <span class="batter-ms ms-tough">40</span>
+  </div>
+  <div class="batter-bottom">
+    <span class="batter-stats">RF · R</span>
+    <span class="batter-range">40-48</span>
+  </div>
+  <div class="batter-woba">
+    <span class="woba-base">.308</span>
+    <span class="woba-dna">🧬</span>
+    <span class="woba-vs cold">.171</span>
+    <span class="woba-pa">24PA</span>
   </div>
 </div>
     <div class="coverage cov-good">ATLAS: 100% COVERED (9/9)</div>
   </div>
 </div>
-  <div class="bp-toggle" onclick="toggleBullpen(5)">
-  <span>BULLPEN PREDICTIONS</span>
-  <span class="arrow" id="bp-arrow-5">▼</span>
-</div>
-<div class="bp-container" id="bullpen-5">
-  <div class="bp-section">
-  <div class="bp-header">
-    <span class="bp-team">LAA PEN</span>
-    <span class="bp-meta-hdr">SP ~5.5 IP · 3.5 IP needed · 14/14 avail</span>
-    <span class="bp-confidence bp-conf-high">HIGH</span>
-  </div>
-  <div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Fermin, José</div>
-    <div class="bp-meta">Kitchen Sink · ~1IP · Inn 7 MS 73</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Yates, Kirby</div>
-    <div class="bp-meta">Split Demon · ~1IP · Inn 8 MS 51</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">MID</div>
-  <div class="bp-info">
-    <div class="bp-name">Joyce, Ben</div>
-    <div class="bp-meta">Kitchen Sink · ~2IP · Inn 9 MS 73</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">CLO</div>
-  <div class="bp-info">
-    <div class="bp-name">Stephenson, Robert</div>
-    <div class="bp-meta">Uncle Charlie · ~1IP · Inn 6 MS 68</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div>
-</div>
-  <div class="bp-section">
-  <div class="bp-header">
-    <span class="bp-team">HOU PEN</span>
-    <span class="bp-meta-hdr">SP ~5.5 IP · 3.5 IP needed · 11/11 avail</span>
-    <span class="bp-confidence bp-conf-high">HIGH</span>
-  </div>
-  <div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Hader, Josh</div>
-    <div class="bp-meta">Undertow · ~1IP · Inn 7 MS 78</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Sousa, Bennett</div>
-    <div class="bp-meta">Barnburner · ~1IP · Inn 8 MS 62</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">MID</div>
-  <div class="bp-info">
-    <div class="bp-name">Okert, Steven</div>
-    <div class="bp-meta">Wormburner · ~2IP · Inn 9 MS 58</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">CLO</div>
-  <div class="bp-info">
-    <div class="bp-name">Abreu, Bryan</div>
-    <div class="bp-meta">Kitchen Sink · ~1IP · Inn 6 MS 69</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div>
-</div>
-</div>
-</div><div class="game-card" data-conf="6" data-value="6" data-edge="8.9">
+  
+</div><div class="game-card" data-conf="2" data-value="1" data-edge="-3.1">
   
   <div class="run-bar ma-premium">
-  <div class="run-bar-seg" style="width:59%;background:#0C2340">3.7</div>
-  <div class="run-bar-seg" style="width:41%;background:#2F241D">2.6</div>
+  <div class="run-bar-seg" style="width:54%;background:#0C2340">3.7</div>
+  <div class="run-bar-seg" style="width:46%;background:#2F241D">3.2</div>
 </div>
   <div class="card-header">
   <div class="team-block">
@@ -3294,9 +2672,9 @@ body::after{
   </div>
   <div class="card-center ma-premium">
     <div class="proj-label">WIN PROB</div>
-    <div class="spread">62% — 38%</div>
+    <div class="spread">55% — 45%</div>
     <div class="ou-line">O/U 7.0</div>
-    <div class="sim-pick"><span class="pick-type-label">ML</span> DET ML (-131) <span class="mc-conf-num" style="color:#7FFF00" title="Confidence (win probability)">C:6</span> <span class="mc-conf-num" style="color:#7FFF00" title="Value (EV vs odds)">V:6</span></div>
+    
   </div>
   <div class="team-block">
     <div class="team-logo"><img src="https://www.mlbstatic.com/team-logos/135.svg" alt="SD" style="width:100%;height:100%;object-fit:contain"></div>
@@ -3304,7 +2682,7 @@ body::after{
     <div class="team-ml">+104</div>
   </div>
 </div>
-  <div class="edge-bar ma-premium">ML Edge: DET +8.9% EV</div>
+  
   <div class="sp-block">
   <div class="sp-side">
       <div class="sp-name">Tarik Skubal</div>
@@ -3314,20 +2692,20 @@ body::after{
   <div class="sp-vs">VS</div>
   <div class="sp-side">
       <div class="sp-name">Nick Pivetta</div>
-      <span class="arch-badge">Heater-Heavy</span>
+      <span class="arch-badge">Kitchen Sink</span>
       <div class="sp-stats">RHP</div>
     </div>
 </div>
   <div class="model-breakdown">
     <div class="model-row">
       <span class="model-label">wOBA</span>
-      <span class="model-val">DET .333</span>
+      <span class="model-val">DET .338</span>
       <div class="model-bar-mini">
-        <div class="model-bar-away" style="width:55%;background:#0C2340"></div>
-        <div class="model-bar-home" style="width:45%;background:#2F241D"></div>
+        <div class="model-bar-away" style="width:54%;background:#0C2340"></div>
+        <div class="model-bar-home" style="width:46%;background:#2F241D"></div>
       </div>
-      <span class="model-val">SD .269</span>
-      <span class="model-edge-sm">DET +.064</span>
+      <span class="model-val">SD .281</span>
+      <span class="model-edge-sm">DET +.056</span>
     </div>
     <div class="model-row">
       <span class="model-label">TIER</span>
@@ -3340,19 +2718,19 @@ body::after{
       <span class="model-label">RE24</span>
       <span class="model-val">DET +0.3</span>
       <div class="model-mid-spacer"></div>
-      <span class="model-val">SD +0.6</span>
-      <span class="model-edge-sm">SD +0.3</span>
+      <span class="model-val">SD +0.5</span>
+      <span class="model-edge-sm">SD +0.2</span>
     </div>
     <div class="model-row">
       <span class="model-label">OAA</span>
       <span class="model-val">DET +0.07</span>
       <div class="model-mid-spacer"></div>
-      <span class="model-val">SD +0.02</span>
+      <span class="model-val">SD +0.03</span>
       <span class="model-edge-sm"></span>
     </div>
     <div class="model-row model-formula-row ma-premium">
       <span class="model-label">MODEL</span>
-      <span class="model-formula">BaseRuns(wOBA×Tier) + RE24 + OAA + Park + BP = <strong>DET 3.7 — SD 2.6</strong></span>
+      <span class="model-formula">BaseRuns(wOBA×Tier) + RE24 + OAA + Park + BP = <strong>DET 3.7 — SD 3.2</strong></span>
     </div>
     <div class="model-row model-tags">
       <span class="model-tag tag-venue">Petco Park 0.97×</span><span class="model-tag tag-arch">vs T2_Core</span><span class="model-tag tag-arch">vs T1_Apex</span>
@@ -3381,7 +2759,7 @@ body::after{
     <span class="batter-ms ms-neutral">65</span>
   </div>
   <div class="batter-bottom">
-    <span class="batter-stats">RF · L</span>
+    <span class="batter-stats">DH · L</span>
     <span class="batter-range">61-69</span>
   </div>
   <div class="batter-woba">
@@ -3409,19 +2787,14 @@ body::after{
 </div><div class="batter-row">
   <div class="batter-top">
     <span class="batter-order">3</span>
-    <span class="batter-name">Colt Keith</span>
-    <span class="batter-ms ms-favorable">73</span>
+    <span class="batter-name">Kevin McGonigle</span>
+    <span class="batter-ms ">—</span>
   </div>
   <div class="batter-bottom">
-    <span class="batter-stats">DH · L</span>
-    <span class="batter-range">69-77</span>
+    <span class="batter-stats">SS · L</span>
+    <span class="batter-range">0-0</span>
   </div>
-  <div class="batter-woba">
-    <span class="woba-base">.324</span>
-    <span class="woba-dna">🧬</span>
-    <span class="woba-vs hot">.352</span>
-    <span class="woba-pa">98PA</span>
-  </div>
+  
 </div><div class="batter-row">
   <div class="batter-top">
     <span class="batter-order">4</span>
@@ -3457,14 +2830,19 @@ body::after{
 </div><div class="batter-row">
   <div class="batter-top">
     <span class="batter-order">6</span>
-    <span class="batter-name">Kevin McGonigle</span>
-    <span class="batter-ms ">—</span>
+    <span class="batter-name">Colt Keith</span>
+    <span class="batter-ms ms-favorable">73</span>
   </div>
   <div class="batter-bottom">
     <span class="batter-stats">3B · L</span>
-    <span class="batter-range">0-0</span>
+    <span class="batter-range">69-77</span>
   </div>
-  
+  <div class="batter-woba">
+    <span class="woba-base">.324</span>
+    <span class="woba-dna">🧬</span>
+    <span class="woba-vs hot">.352</span>
+    <span class="woba-pa">98PA</span>
+  </div>
 </div><div class="batter-row">
   <div class="batter-top">
     <span class="batter-order">7</span>
@@ -3500,18 +2878,18 @@ body::after{
 </div><div class="batter-row">
   <div class="batter-top">
     <span class="batter-order">9</span>
-    <span class="batter-name">Javier Baez</span>
-    <span class="batter-ms ms-tough">51</span>
+    <span class="batter-name">Matt Vierling</span>
+    <span class="batter-ms ms-neutral">59</span>
   </div>
   <div class="batter-bottom">
-    <span class="batter-stats">SS · R</span>
-    <span class="batter-range">47-55</span>
+    <span class="batter-stats">RF · R</span>
+    <span class="batter-range">55-63</span>
   </div>
   <div class="batter-woba">
-    <span class="woba-base">.336</span>
+    <span class="woba-base">.321</span>
     <span class="woba-dna">🧬</span>
-    <span class="woba-vs cold">.275</span>
-    <span class="woba-pa">189PA</span>
+    <span class="woba-vs neutral">.310</span>
+    <span class="woba-pa">118PA</span>
   </div>
 </div>
     <div class="coverage cov-good">ATLAS: 89% COVERED (8/9)</div>
@@ -3521,22 +2899,6 @@ body::after{
     <div class="batter-row">
   <div class="batter-top">
     <span class="batter-order">1</span>
-    <span class="batter-name">Fernando Tatis</span>
-    <span class="batter-ms ms-tough">40</span>
-  </div>
-  <div class="batter-bottom">
-    <span class="batter-stats">RF · R</span>
-    <span class="batter-range">40-48</span>
-  </div>
-  <div class="batter-woba">
-    <span class="woba-base">.383</span>
-    <span class="woba-dna">🧬</span>
-    <span class="woba-vs cold">.174</span>
-    <span class="woba-pa">26PA</span>
-  </div>
-</div><div class="batter-row">
-  <div class="batter-top">
-    <span class="batter-order">2</span>
     <span class="batter-name">Xander Bogaerts</span>
     <span class="batter-ms ms-elite">96</span>
   </div>
@@ -3549,6 +2911,22 @@ body::after{
     <span class="woba-dna">🧬</span>
     <span class="woba-vs hot">.459</span>
     <span class="woba-pa">31PA</span>
+  </div>
+</div><div class="batter-row">
+  <div class="batter-top">
+    <span class="batter-order">2</span>
+    <span class="batter-name">Jackson Merrill</span>
+    <span class="batter-ms ms-tough">40</span>
+  </div>
+  <div class="batter-bottom">
+    <span class="batter-stats">CF · L</span>
+    <span class="batter-range">40-54</span>
+  </div>
+  <div class="batter-woba">
+    <span class="woba-base">.351</span>
+    <span class="woba-dna">🧬</span>
+    <span class="woba-vs cold">.115</span>
+    <span class="woba-pa">11PA</span>
   </div>
 </div><div class="batter-row">
   <div class="batter-top">
@@ -3569,44 +2947,22 @@ body::after{
 </div><div class="batter-row">
   <div class="batter-top">
     <span class="batter-order">4</span>
-    <span class="batter-name">Jackson Merrill</span>
+    <span class="batter-name">Fernando Tatis</span>
     <span class="batter-ms ms-tough">40</span>
   </div>
   <div class="batter-bottom">
-    <span class="batter-stats">CF · L</span>
-    <span class="batter-range">40-54</span>
+    <span class="batter-stats">RF · R</span>
+    <span class="batter-range">40-48</span>
   </div>
   <div class="batter-woba">
-    <span class="woba-base">.351</span>
+    <span class="woba-base">.383</span>
     <span class="woba-dna">🧬</span>
-    <span class="woba-vs cold">.115</span>
-    <span class="woba-pa">11PA</span>
+    <span class="woba-vs cold">.174</span>
+    <span class="woba-pa">26PA</span>
   </div>
 </div><div class="batter-row">
   <div class="batter-top">
     <span class="batter-order">5</span>
-    <span class="batter-name">Miguel Andujar</span>
-    <span class="batter-ms ms-tough">40</span>
-  </div>
-  <div class="batter-bottom">
-    <span class="batter-stats">DH · R</span>
-    <span class="batter-range">40-54</span>
-  </div>
-  
-</div><div class="batter-row">
-  <div class="batter-top">
-    <span class="batter-order">6</span>
-    <span class="batter-name">Gavin Sheets</span>
-    <span class="batter-ms ms-tough">40</span>
-  </div>
-  <div class="batter-bottom">
-    <span class="batter-stats">1B · L</span>
-    <span class="batter-range">40-54</span>
-  </div>
-  
-</div><div class="batter-row">
-  <div class="batter-top">
-    <span class="batter-order">7</span>
     <span class="batter-name">Ramon Laureano</span>
     <span class="batter-ms ms-tough">48</span>
   </div>
@@ -3622,23 +2978,7 @@ body::after{
   </div>
 </div><div class="batter-row">
   <div class="batter-top">
-    <span class="batter-order">8</span>
-    <span class="batter-name">Freddy Fermin</span>
-    <span class="batter-ms ms-tough">43</span>
-  </div>
-  <div class="batter-bottom">
-    <span class="batter-stats">C · R</span>
-    <span class="batter-range">40-51</span>
-  </div>
-  <div class="batter-woba">
-    <span class="woba-base">.313</span>
-    <span class="woba-dna">🧬</span>
-    <span class="woba-vs cold">.223</span>
-    <span class="woba-pa">20PA</span>
-  </div>
-</div><div class="batter-row">
-  <div class="batter-top">
-    <span class="batter-order">9</span>
+    <span class="batter-order">6</span>
     <span class="batter-name">Jake Cronenworth</span>
     <span class="batter-ms ms-tough">47</span>
   </div>
@@ -3652,109 +2992,59 @@ body::after{
     <span class="woba-vs cold">.257</span>
     <span class="woba-pa">26PA</span>
   </div>
+</div><div class="batter-row">
+  <div class="batter-top">
+    <span class="batter-order">7</span>
+    <span class="batter-name">Nick Castellanos</span>
+    <span class="batter-ms ms-favorable">78</span>
+  </div>
+  <div class="batter-bottom">
+    <span class="batter-stats">DH · R</span>
+    <span class="batter-range">70-86</span>
+  </div>
+  <div class="batter-woba">
+    <span class="woba-base">.358</span>
+    <span class="woba-dna">🧬</span>
+    <span class="woba-vs neutral">.366</span>
+    <span class="woba-pa">23PA</span>
+  </div>
+</div><div class="batter-row">
+  <div class="batter-top">
+    <span class="batter-order">8</span>
+    <span class="batter-name">Miguel Andujar</span>
+    <span class="batter-ms ms-tough">40</span>
+  </div>
+  <div class="batter-bottom">
+    <span class="batter-stats">1B · R</span>
+    <span class="batter-range">40-54</span>
+  </div>
+  
+</div><div class="batter-row">
+  <div class="batter-top">
+    <span class="batter-order">9</span>
+    <span class="batter-name">Freddy Fermin</span>
+    <span class="batter-ms ms-tough">43</span>
+  </div>
+  <div class="batter-bottom">
+    <span class="batter-stats">C · R</span>
+    <span class="batter-range">40-51</span>
+  </div>
+  <div class="batter-woba">
+    <span class="woba-base">.313</span>
+    <span class="woba-dna">🧬</span>
+    <span class="woba-vs cold">.223</span>
+    <span class="woba-pa">20PA</span>
+  </div>
 </div>
     <div class="coverage cov-good">ATLAS: 89% COVERED (8/9)</div>
   </div>
 </div>
-  <div class="bp-toggle" onclick="toggleBullpen(6)">
-  <span>BULLPEN PREDICTIONS</span>
-  <span class="arrow" id="bp-arrow-6">▼</span>
-</div>
-<div class="bp-container" id="bullpen-6">
-  <div class="bp-section">
-  <div class="bp-header">
-    <span class="bp-team">DET PEN</span>
-    <span class="bp-meta-hdr">SP ~5.5 IP · 3.5 IP needed · 14/14 avail</span>
-    <span class="bp-confidence bp-conf-high">HIGH</span>
-  </div>
-  <div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Jobe, Jackson</div>
-    <div class="bp-meta">Yakker · ~1IP · Inn 7 MS 72</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Hurter, Brant</div>
-    <div class="bp-meta">Undertow · ~1IP · Inn 8 MS 69</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">MID</div>
-  <div class="bp-info">
-    <div class="bp-name">Gipson-Long, Sawyer</div>
-    <div class="bp-meta">Kitchen Sink · ~2IP · Inn 9 MS 70</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">CLO</div>
-  <div class="bp-info">
-    <div class="bp-name">Vest, Will</div>
-    <div class="bp-meta">Kitchen Sink · ~1IP · Inn 6 MS 68</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div>
-</div>
-  <div class="bp-section">
-  <div class="bp-header">
-    <span class="bp-team">SD PEN</span>
-    <span class="bp-meta-hdr">SP ~5.5 IP · 3.5 IP needed · 12/12 avail</span>
-    <span class="bp-confidence bp-conf-high">HIGH</span>
-  </div>
-  <div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Estrada, Jeremiah</div>
-    <div class="bp-meta">Split Demon · ~1IP · Inn 7 MS 56</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Adam, Jason</div>
-    <div class="bp-meta">Yakker · ~1IP · Inn 8 MS 66</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">MID</div>
-  <div class="bp-info">
-    <div class="bp-name">Matsui, Yuki</div>
-    <div class="bp-meta">Split Demon · ~2IP · Inn 9 MS 55</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">CLO</div>
-  <div class="bp-info">
-    <div class="bp-name">Miller, Mason</div>
-    <div class="bp-meta">Kitchen Sink · ~1IP · Inn 6 MS 58</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div>
-</div>
-</div>
-</div><div class="game-card" data-conf="3" data-value="2" data-edge="-4.3">
+  
+</div><div class="game-card" data-conf="6" data-value="9" data-edge="18.7">
   
   <div class="run-bar ma-premium">
-  <div class="run-bar-seg" style="width:52%;background:#092C5C">3.6</div>
-  <div class="run-bar-seg" style="width:48%;background:#C41E3A">3.2</div>
+  <div class="run-bar-seg" style="width:60%;background:#092C5C">4.9</div>
+  <div class="run-bar-seg" style="width:40%;background:#C41E3A">3.2</div>
 </div>
   <div class="card-header">
   <div class="team-block">
@@ -3764,9 +3054,9 @@ body::after{
   </div>
   <div class="card-center ma-premium">
     <div class="proj-label">WIN PROB</div>
-    <div class="spread">53% — 47%</div>
+    <div class="spread">66% — 34%</div>
     <div class="ou-line">O/U 7.5</div>
-    
+    <div class="sim-pick"><span class="pick-type-label">ML</span> TB ML (-126) <span class="mc-conf-num" style="color:#7FFF00" title="Confidence (win probability)">C:6</span> <span class="mc-conf-num" style="color:#00FF55" title="Value (EV vs odds)">V:9</span></div>
   </div>
   <div class="team-block">
     <div class="team-logo"><img src="https://www.mlbstatic.com/team-logos/138.svg" alt="STL" style="width:100%;height:100%;object-fit:contain"></div>
@@ -3774,11 +3064,11 @@ body::after{
     <div class="team-ml">+100</div>
   </div>
 </div>
-  
+  <div class="edge-bar ma-premium">ML Edge: TB +18.7% EV</div>
   <div class="sp-block">
   <div class="sp-side">
       <div class="sp-name">Drew Rasmussen</div>
-      <span class="arch-badge">Yakker</span>
+      <span class="arch-badge">Boomerang</span>
       <div class="sp-stats">RHP</div>
     </div>
   <div class="sp-vs">VS</div>
@@ -3791,13 +3081,13 @@ body::after{
   <div class="model-breakdown">
     <div class="model-row">
       <span class="model-label">wOBA</span>
-      <span class="model-val">TB .371</span>
+      <span class="model-val">TB .368</span>
       <div class="model-bar-mini">
         <div class="model-bar-away" style="width:53%;background:#092C5C"></div>
         <div class="model-bar-home" style="width:47%;background:#C41E3A"></div>
       </div>
       <span class="model-val">STL .326</span>
-      <span class="model-edge-sm">TB +.044</span>
+      <span class="model-edge-sm">TB +.042</span>
     </div>
     <div class="model-row">
       <span class="model-label">TIER</span>
@@ -3808,21 +3098,21 @@ body::after{
     </div>
     <div class="model-row">
       <span class="model-label">RE24</span>
-      <span class="model-val">TB +0.1</span>
+      <span class="model-val">TB +0.5</span>
       <div class="model-mid-spacer"></div>
       <span class="model-val">STL +0.0</span>
-      <span class="model-edge-sm">TB +0.1</span>
+      <span class="model-edge-sm">TB +0.5</span>
     </div>
     <div class="model-row">
       <span class="model-label">OAA</span>
-      <span class="model-val">TB -0.38</span>
+      <span class="model-val">TB -0.46</span>
       <div class="model-mid-spacer"></div>
       <span class="model-val">STL +0.30</span>
       <span class="model-edge-sm"></span>
     </div>
     <div class="model-row model-formula-row ma-premium">
       <span class="model-label">MODEL</span>
-      <span class="model-formula">BaseRuns(wOBA×Tier) + RE24 + OAA + Park + BP = <strong>TB 3.6 — STL 3.2</strong></span>
+      <span class="model-formula">BaseRuns(wOBA×Tier) + RE24 + OAA + Park + BP = <strong>TB 4.9 — STL 3.2</strong></span>
     </div>
     <div class="model-row model-tags">
       <span class="model-tag tag-arch">vs T4_Fringe</span><span class="model-tag tag-arch">vs T2_Core</span>
@@ -3863,17 +3153,6 @@ body::after{
 </div><div class="batter-row">
   <div class="batter-top">
     <span class="batter-order">2</span>
-    <span class="batter-name">Ryan Vilade</span>
-    <span class="batter-ms ms-tough">40</span>
-  </div>
-  <div class="batter-bottom">
-    <span class="batter-stats">LF · R</span>
-    <span class="batter-range">40-54</span>
-  </div>
-  
-</div><div class="batter-row">
-  <div class="batter-top">
-    <span class="batter-order">3</span>
     <span class="batter-name">Jonathan Aranda</span>
     <span class="batter-ms ms-favorable">82</span>
   </div>
@@ -3889,7 +3168,7 @@ body::after{
   </div>
 </div><div class="batter-row">
   <div class="batter-top">
-    <span class="batter-order">4</span>
+    <span class="batter-order">3</span>
     <span class="batter-name">Junior Caminero</span>
     <span class="batter-ms ms-elite">90</span>
   </div>
@@ -3902,6 +3181,22 @@ body::after{
     <span class="woba-dna">🧬</span>
     <span class="woba-vs neutral">.403</span>
     <span class="woba-pa">50PA</span>
+  </div>
+</div><div class="batter-row">
+  <div class="batter-top">
+    <span class="batter-order">4</span>
+    <span class="batter-name">Cedric Mullins</span>
+    <span class="batter-ms ms-neutral">67</span>
+  </div>
+  <div class="batter-bottom">
+    <span class="batter-stats">CF · L</span>
+    <span class="batter-range">63-71</span>
+  </div>
+  <div class="batter-woba">
+    <span class="woba-base">.332</span>
+    <span class="woba-dna">🧬</span>
+    <span class="woba-vs neutral">.332</span>
+    <span class="woba-pa">211PA</span>
   </div>
 </div><div class="batter-row">
   <div class="batter-top">
@@ -3938,6 +3233,22 @@ body::after{
 </div><div class="batter-row">
   <div class="batter-top">
     <span class="batter-order">7</span>
+    <span class="batter-name">Chandler Simpson</span>
+    <span class="batter-ms ms-favorable">73</span>
+  </div>
+  <div class="batter-bottom">
+    <span class="batter-stats">LF · L</span>
+    <span class="batter-range">65-81</span>
+  </div>
+  <div class="batter-woba">
+    <span class="woba-base">.311</span>
+    <span class="woba-dna">🧬</span>
+    <span class="woba-vs hot">.351</span>
+    <span class="woba-pa">26PA</span>
+  </div>
+</div><div class="batter-row">
+  <div class="batter-top">
+    <span class="batter-order">8</span>
     <span class="batter-name">Nick Fortes</span>
     <span class="batter-ms ms-tough">54</span>
   </div>
@@ -3950,22 +3261,6 @@ body::after{
     <span class="woba-dna">🧬</span>
     <span class="woba-vs neutral">.287</span>
     <span class="woba-pa">58PA</span>
-  </div>
-</div><div class="batter-row">
-  <div class="batter-top">
-    <span class="batter-order">8</span>
-    <span class="batter-name">Cedric Mullins</span>
-    <span class="batter-ms ms-neutral">67</span>
-  </div>
-  <div class="batter-bottom">
-    <span class="batter-stats">CF · L</span>
-    <span class="batter-range">63-71</span>
-  </div>
-  <div class="batter-woba">
-    <span class="woba-base">.332</span>
-    <span class="woba-dna">🧬</span>
-    <span class="woba-vs neutral">.332</span>
-    <span class="woba-pa">211PA</span>
   </div>
 </div><div class="batter-row">
   <div class="batter-top">
@@ -3984,7 +3279,7 @@ body::after{
     <span class="woba-pa">3PA</span>
   </div>
 </div>
-    <div class="coverage cov-good">ATLAS: 78% COVERED (7/9)</div>
+    <div class="coverage cov-good">ATLAS: 89% COVERED (8/9)</div>
   </div>
   <div class="lineup-col">
     <div class="lineup-col-hdr">STL LINEUP</div>
@@ -4002,6 +3297,22 @@ body::after{
 </div><div class="batter-row">
   <div class="batter-top">
     <span class="batter-order">2</span>
+    <span class="batter-name">Masyn Winn</span>
+    <span class="batter-ms ms-neutral">62</span>
+  </div>
+  <div class="batter-bottom">
+    <span class="batter-stats">SS · R</span>
+    <span class="batter-range">58-66</span>
+  </div>
+  <div class="batter-woba">
+    <span class="woba-base">.308</span>
+    <span class="woba-dna">🧬</span>
+    <span class="woba-vs neutral">.318</span>
+    <span class="woba-pa">250PA</span>
+  </div>
+</div><div class="batter-row">
+  <div class="batter-top">
+    <span class="batter-order">3</span>
     <span class="batter-name">Ivan Herrera</span>
     <span class="batter-ms ms-elite">92</span>
   </div>
@@ -4017,7 +3328,7 @@ body::after{
   </div>
 </div><div class="batter-row">
   <div class="batter-top">
-    <span class="batter-order">3</span>
+    <span class="batter-order">4</span>
     <span class="batter-name">Alec Burleson</span>
     <span class="batter-ms ms-elite">86</span>
   </div>
@@ -4030,22 +3341,6 @@ body::after{
     <span class="woba-dna">🧬</span>
     <span class="woba-vs hot">.389</span>
     <span class="woba-pa">324PA</span>
-  </div>
-</div><div class="batter-row">
-  <div class="batter-top">
-    <span class="batter-order">4</span>
-    <span class="batter-name">Masyn Winn</span>
-    <span class="batter-ms ms-neutral">62</span>
-  </div>
-  <div class="batter-bottom">
-    <span class="batter-stats">SS · R</span>
-    <span class="batter-range">58-66</span>
-  </div>
-  <div class="batter-woba">
-    <span class="woba-base">.308</span>
-    <span class="woba-dna">🧬</span>
-    <span class="woba-vs neutral">.318</span>
-    <span class="woba-pa">250PA</span>
   </div>
 </div><div class="batter-row">
   <div class="batter-top">
@@ -4131,105 +3426,12 @@ body::after{
     <div class="coverage cov-good">ATLAS: 89% COVERED (8/9)</div>
   </div>
 </div>
-  <div class="bp-toggle" onclick="toggleBullpen(7)">
-  <span>BULLPEN PREDICTIONS</span>
-  <span class="arrow" id="bp-arrow-7">▼</span>
-</div>
-<div class="bp-container" id="bullpen-7">
-  <div class="bp-section">
-  <div class="bp-header">
-    <span class="bp-team">TB PEN</span>
-    <span class="bp-meta-hdr">SP ~5.5 IP · 3.5 IP needed · 14/14 avail</span>
-    <span class="bp-confidence bp-conf-high">HIGH</span>
-  </div>
-  <div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Bigge, Hunter</div>
-    <div class="bp-meta">Heater-Heavy · ~1IP · Inn 7 MS 56</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Cleavinger, Garrett</div>
-    <div class="bp-meta">Boomerang · ~1IP · Inn 8 MS 78</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">MID</div>
-  <div class="bp-info">
-    <div class="bp-name">Uceta, Edwin</div>
-    <div class="bp-meta">Yakker · ~2IP · Inn 9 MS 66</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">CLO</div>
-  <div class="bp-info">
-    <div class="bp-name">Jax, Griffin</div>
-    <div class="bp-meta">Yakker · ~1IP · Inn 6 MS 66</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div>
-</div>
-  <div class="bp-section">
-  <div class="bp-header">
-    <span class="bp-team">STL PEN</span>
-    <span class="bp-meta-hdr">SP ~5.5 IP · 3.5 IP needed · 13/13 avail</span>
-    <span class="bp-confidence bp-conf-high">HIGH</span>
-  </div>
-  <div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Fernandez, Ryan</div>
-    <div class="bp-meta">Kitchen Sink · ~1IP · Inn 7 MS 64</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Stanek, Ryne</div>
-    <div class="bp-meta">Heater-Heavy · ~1IP · Inn 8 MS 60</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">MID</div>
-  <div class="bp-info">
-    <div class="bp-name">Romero, JoJo</div>
-    <div class="bp-meta">Boomerang · ~2IP · Inn 9 MS 64</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">CLO</div>
-  <div class="bp-info">
-    <div class="bp-name">Granillo, Andre</div>
-    <div class="bp-meta">Kitchen Sink · ~1IP · Inn 6 MS 68</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div>
-</div>
-</div>
-</div><div class="game-card" data-conf="3" data-value="7" data-edge="12.1">
+  
+</div><div class="game-card" data-conf="2" data-value="7" data-edge="13.6">
   
   <div class="run-bar ma-premium">
-  <div class="run-bar-seg" style="width:52%;background:#003278">4.2</div>
-  <div class="run-bar-seg" style="width:48%;background:#E81828">3.8</div>
+  <div class="run-bar-seg" style="width:53%;background:#003278">4.3</div>
+  <div class="run-bar-seg" style="width:47%;background:#E81828">3.8</div>
 </div>
   <div class="card-header">
   <div class="team-block">
@@ -4241,7 +3443,7 @@ body::after{
     <div class="proj-label">WIN PROB</div>
     <div class="spread">54% — 46%</div>
     <div class="ou-line">O/U 8.0</div>
-    <div class="sim-pick"><span class="pick-type-label">ML</span> TEX ML (+109) <span class="mc-conf-num" style="color:#FF8C00" title="Confidence (win probability)">C:3</span> <span class="mc-conf-num" style="color:#7FFF00" title="Value (EV vs odds)">V:7</span></div>
+    <div class="sim-pick"><span class="pick-type-label">ML</span> TEX ML (+109) <span class="mc-conf-num" style="color:#FF8C00" title="Confidence (win probability)">C:2</span> <span class="mc-conf-num" style="color:#7FFF00" title="Value (EV vs odds)">V:7</span></div>
   </div>
   <div class="team-block">
     <div class="team-logo"><img src="https://www.mlbstatic.com/team-logos/143.svg" alt="PHI" style="width:100%;height:100%;object-fit:contain"></div>
@@ -4249,11 +3451,11 @@ body::after{
     <div class="team-ml">-156</div>
   </div>
 </div>
-  <div class="edge-bar ma-premium">ML Edge: TEX +12.1% EV</div>
+  <div class="edge-bar ma-premium">ML Edge: TEX +13.6% EV</div>
   <div class="sp-block">
   <div class="sp-side">
       <div class="sp-name">Nathan Eovaldi</div>
-      <span class="arch-badge">Heater-Heavy</span>
+      <span class="arch-badge">Kitchen Sink</span>
       <div class="sp-stats">RHP</div>
     </div>
   <div class="sp-vs">VS</div>
@@ -4266,13 +3468,13 @@ body::after{
   <div class="model-breakdown">
     <div class="model-row">
       <span class="model-label">wOBA</span>
-      <span class="model-val">TEX .317</span>
+      <span class="model-val">TEX .308</span>
       <div class="model-bar-mini">
         <div class="model-bar-away" style="width:47%;background:#003278"></div>
         <div class="model-bar-home" style="width:53%;background:#E81828"></div>
       </div>
       <span class="model-val">PHI .344</span>
-      <span class="model-edge-sm">PHI +.027</span>
+      <span class="model-edge-sm">PHI +.036</span>
     </div>
     <div class="model-row">
       <span class="model-label">TIER</span>
@@ -4286,7 +3488,7 @@ body::after{
       <span class="model-val">TEX +0.3</span>
       <div class="model-mid-spacer"></div>
       <span class="model-val">PHI +0.4</span>
-      <span class="model-edge-sm">PHI +0.1</span>
+      <span class="model-edge-sm">EVEN</span>
     </div>
     <div class="model-row">
       <span class="model-label">OAA</span>
@@ -4297,7 +3499,7 @@ body::after{
     </div>
     <div class="model-row model-formula-row ma-premium">
       <span class="model-label">MODEL</span>
-      <span class="model-formula">BaseRuns(wOBA×Tier) + RE24 + OAA + Park + BP = <strong>TEX 4.2 — PHI 3.8</strong></span>
+      <span class="model-formula">BaseRuns(wOBA×Tier) + RE24 + OAA + Park + BP = <strong>TEX 4.3 — PHI 3.8</strong></span>
     </div>
     <div class="model-row model-tags">
       <span class="model-tag tag-venue">Citizens Bank Park 1.01×</span><span class="model-tag tag-arch">vs T1_Apex</span><span class="model-tag tag-arch">vs T1_Apex</span>
@@ -4342,7 +3544,7 @@ body::after{
     <span class="batter-ms ms-favorable">84</span>
   </div>
   <div class="batter-bottom">
-    <span class="batter-stats">CF · R</span>
+    <span class="batter-stats">LF · R</span>
     <span class="batter-range">76-92</span>
   </div>
   <div class="batter-woba">
@@ -4402,6 +3604,22 @@ body::after{
 </div><div class="batter-row">
   <div class="batter-top">
     <span class="batter-order">6</span>
+    <span class="batter-name">Kyle Higashioka</span>
+    <span class="batter-ms ms-tough">46</span>
+  </div>
+  <div class="batter-bottom">
+    <span class="batter-stats">C · R</span>
+    <span class="batter-range">42-50</span>
+  </div>
+  <div class="batter-woba">
+    <span class="woba-base">.297</span>
+    <span class="woba-dna">🧬</span>
+    <span class="woba-vs cold">.244</span>
+    <span class="woba-pa">65PA</span>
+  </div>
+</div><div class="batter-row">
+  <div class="batter-top">
+    <span class="batter-order">7</span>
     <span class="batter-name">Josh Jung</span>
     <span class="batter-ms ms-tough">49</span>
   </div>
@@ -4417,44 +3635,12 @@ body::after{
   </div>
 </div><div class="batter-row">
   <div class="batter-top">
-    <span class="batter-order">7</span>
-    <span class="batter-name">Josh Smith</span>
-    <span class="batter-ms ms-tough">47</span>
-  </div>
-  <div class="batter-bottom">
-    <span class="batter-stats">2B · L</span>
-    <span class="batter-range">43-51</span>
-  </div>
-  <div class="batter-woba">
-    <span class="woba-base">.327</span>
-    <span class="woba-dna">🧬</span>
-    <span class="woba-vs cold">.251</span>
-    <span class="woba-pa">53PA</span>
-  </div>
-</div><div class="batter-row">
-  <div class="batter-top">
     <span class="batter-order">8</span>
-    <span class="batter-name">Danny Jansen</span>
-    <span class="batter-ms ms-neutral">61</span>
-  </div>
-  <div class="batter-bottom">
-    <span class="batter-stats">C · R</span>
-    <span class="batter-range">57-65</span>
-  </div>
-  <div class="batter-woba">
-    <span class="woba-base">.327</span>
-    <span class="woba-dna">🧬</span>
-    <span class="woba-vs cold">.312</span>
-    <span class="woba-pa">82PA</span>
-  </div>
-</div><div class="batter-row">
-  <div class="batter-top">
-    <span class="batter-order">9</span>
     <span class="batter-name">Sam Haggerty</span>
     <span class="batter-ms ms-neutral">57</span>
   </div>
   <div class="batter-bottom">
-    <span class="batter-stats">LF · S</span>
+    <span class="batter-stats">CF · S</span>
     <span class="batter-range">49-65</span>
   </div>
   <div class="batter-woba">
@@ -4462,6 +3648,22 @@ body::after{
     <span class="woba-dna">🧬</span>
     <span class="woba-vs cold">.301</span>
     <span class="woba-pa">48PA</span>
+  </div>
+</div><div class="batter-row">
+  <div class="batter-top">
+    <span class="batter-order">9</span>
+    <span class="batter-name">Ezequiel Duran</span>
+    <span class="batter-ms ms-tough">45</span>
+  </div>
+  <div class="batter-bottom">
+    <span class="batter-stats">2B · R</span>
+    <span class="batter-range">41-49</span>
+  </div>
+  <div class="batter-woba">
+    <span class="woba-base">.299</span>
+    <span class="woba-dna">🧬</span>
+    <span class="woba-vs cold">.238</span>
+    <span class="woba-pa">54PA</span>
   </div>
 </div>
     <div class="coverage cov-good">ATLAS: 100% COVERED (9/9)</div>
@@ -4611,100 +3813,7 @@ body::after{
     <div class="coverage cov-good">ATLAS: 89% COVERED (8/9)</div>
   </div>
 </div>
-  <div class="bp-toggle" onclick="toggleBullpen(8)">
-  <span>BULLPEN PREDICTIONS</span>
-  <span class="arrow" id="bp-arrow-8">▼</span>
-</div>
-<div class="bp-container" id="bullpen-8">
-  <div class="bp-section">
-  <div class="bp-header">
-    <span class="bp-team">TEX PEN</span>
-    <span class="bp-meta-hdr">SP ~5.5 IP · 3.5 IP needed · 12/12 avail</span>
-    <span class="bp-confidence bp-conf-high">HIGH</span>
-  </div>
-  <div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Garcia, Robert</div>
-    <div class="bp-meta">Barnburner · ~1IP · Inn 7 MS 63</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Latz, Jacob</div>
-    <div class="bp-meta">Uncle Charlie · ~1IP · Inn 8 MS 79</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">MID</div>
-  <div class="bp-info">
-    <div class="bp-name">Rocker, Kumar</div>
-    <div class="bp-meta">Kitchen Sink · ~2IP · Inn 9 MS 70</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">CLO</div>
-  <div class="bp-info">
-    <div class="bp-name">Otañez, Michel</div>
-    <div class="bp-meta">Kitchen Sink · ~1IP · Inn 6 MS 76</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div>
-</div>
-  <div class="bp-section">
-  <div class="bp-header">
-    <span class="bp-team">PHI PEN</span>
-    <span class="bp-meta-hdr">SP ~5.5 IP · 3.5 IP needed · 10/10 avail</span>
-    <span class="bp-confidence bp-conf-high">HIGH</span>
-  </div>
-  <div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Duran, Jhoan</div>
-    <div class="bp-meta">Uncle Charlie · ~1IP · Inn 7 MS 59</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Keller, Brad</div>
-    <div class="bp-meta">Yakker · ~1IP · Inn 8 MS 68</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">MID</div>
-  <div class="bp-info">
-    <div class="bp-name">Alvarado, José</div>
-    <div class="bp-meta">Undertow · ~2IP · Inn 9 MS 64</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">CLO</div>
-  <div class="bp-info">
-    <div class="bp-name">Bowlan, Jonathan</div>
-    <div class="bp-meta">Triple Threat · ~1IP · Inn 6 MS 70</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div>
-</div>
-</div>
+  
 </div><div class="game-card" data-conf="7" data-value="1" data-edge="-2.0">
   
   <div class="run-bar ma-premium">
@@ -4733,13 +3842,13 @@ body::after{
   <div class="sp-block">
   <div class="sp-side">
       <div class="sp-name">Zac Gallen</div>
-      <span class="arch-badge">Ghost</span>
+      <span class="arch-badge">Uncle Charlie</span>
       <div class="sp-stats">RHP</div>
     </div>
   <div class="sp-vs">VS</div>
   <div class="sp-side">
       <div class="sp-name">Yoshinobu Yamamoto</div>
-      <span class="arch-badge">Heater-Heavy</span>
+      <span class="arch-badge">Kitchen Sink</span>
       <div class="sp-stats">RHP</div>
     </div>
 </div>
@@ -5091,100 +4200,7 @@ body::after{
     <div class="coverage cov-good">ATLAS: 89% COVERED (8/9)</div>
   </div>
 </div>
-  <div class="bp-toggle" onclick="toggleBullpen(9)">
-  <span>BULLPEN PREDICTIONS</span>
-  <span class="arrow" id="bp-arrow-9">▼</span>
-</div>
-<div class="bp-container" id="bullpen-9">
-  <div class="bp-section">
-  <div class="bp-header">
-    <span class="bp-team">ARI PEN</span>
-    <span class="bp-meta-hdr">SP ~5.5 IP · 3.5 IP needed · 10/10 avail</span>
-    <span class="bp-confidence bp-conf-high">HIGH</span>
-  </div>
-  <div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Puk, A.J.</div>
-    <div class="bp-meta">Split Demon · ~1IP · Inn 7 MS 72</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Jameson, Drey</div>
-    <div class="bp-meta">Triple Threat · ~1IP · Inn 8 MS 83</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">MID</div>
-  <div class="bp-info">
-    <div class="bp-name">Ginkel, Kevin</div>
-    <div class="bp-meta">Kitchen Sink · ~2IP · Inn 9 MS 79</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">CLO</div>
-  <div class="bp-info">
-    <div class="bp-name">Martinez, Justin</div>
-    <div class="bp-meta">Split Demon · ~1IP · Inn 6 MS 86</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div>
-</div>
-  <div class="bp-section">
-  <div class="bp-header">
-    <span class="bp-team">LAD PEN</span>
-    <span class="bp-meta-hdr">SP ~5.5 IP · 3.5 IP needed · 12/12 avail</span>
-    <span class="bp-confidence bp-conf-high">HIGH</span>
-  </div>
-  <div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Stewart, Brock</div>
-    <div class="bp-meta">Yakker · ~1IP · Inn 7 MS 64</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Scott, Tanner</div>
-    <div class="bp-meta">Barnburner · ~1IP · Inn 8 MS 76</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">MID</div>
-  <div class="bp-info">
-    <div class="bp-name">Vesia, Alex</div>
-    <div class="bp-meta">Barnburner · ~2IP · Inn 9 MS 76</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">CLO</div>
-  <div class="bp-info">
-    <div class="bp-name">Díaz, Edwin</div>
-    <div class="bp-meta">Kitchen Sink · ~1IP · Inn 6 MS 75</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div>
-</div>
-</div>
+  
 </div><div class="game-card" data-conf="8" data-value="7" data-edge="14.1">
   
   <div class="run-bar ma-premium">
@@ -5213,13 +4229,13 @@ body::after{
   <div class="sp-block">
   <div class="sp-side">
       <div class="sp-name">Tanner Bibee</div>
-      <span class="arch-badge">Yakker</span>
+      <span class="arch-badge">Boomerang</span>
       <div class="sp-stats">RHP</div>
     </div>
   <div class="sp-vs">VS</div>
   <div class="sp-side">
       <div class="sp-name">Logan Gilbert</div>
-      <span class="arch-badge">Heater-Heavy</span>
+      <span class="arch-badge">Kitchen Sink</span>
       <div class="sp-stats">RHP</div>
     </div>
 </div>
@@ -5566,102 +4582,9 @@ body::after{
     <div class="coverage cov-good">ATLAS: 100% COVERED (9/9)</div>
   </div>
 </div>
-  <div class="bp-toggle" onclick="toggleBullpen(10)">
-  <span>BULLPEN PREDICTIONS</span>
-  <span class="arrow" id="bp-arrow-10">▼</span>
+  
 </div>
-<div class="bp-container" id="bullpen-10">
-  <div class="bp-section">
-  <div class="bp-header">
-    <span class="bp-team">CLE PEN</span>
-    <span class="bp-meta-hdr">SP ~5.5 IP · 3.5 IP needed · 10/10 avail</span>
-    <span class="bp-confidence bp-conf-high">HIGH</span>
-  </div>
-  <div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Smith, Cade</div>
-    <div class="bp-meta">Heater-Heavy · ~1IP · Inn 7 MS 70</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Gaddis, Hunter</div>
-    <div class="bp-meta">Kitchen Sink · ~1IP · Inn 8 MS 74</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">MID</div>
-  <div class="bp-info">
-    <div class="bp-name">Herrin, Tim</div>
-    <div class="bp-meta">Uncle Charlie · ~2IP · Inn 9 MS 71</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">CLO</div>
-  <div class="bp-info">
-    <div class="bp-name">Sabrowski, Erik</div>
-    <div class="bp-meta">Uncle Charlie · ~1IP · Inn 6 MS 71</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div>
-</div>
-  <div class="bp-section">
-  <div class="bp-header">
-    <span class="bp-team">SEA PEN</span>
-    <span class="bp-meta-hdr">SP ~5.5 IP · 3.5 IP needed · 9/9 avail</span>
-    <span class="bp-confidence bp-conf-high">HIGH</span>
-  </div>
-  <div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Brash, Matt</div>
-    <div class="bp-meta">Ghost · ~1IP · Inn 7 MS 79</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">SET</div>
-  <div class="bp-info">
-    <div class="bp-name">Speier, Gabe</div>
-    <div class="bp-meta">Barnburner · ~1IP · Inn 8 MS 59</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">MID</div>
-  <div class="bp-info">
-    <div class="bp-name">Taylor, Troy</div>
-    <div class="bp-meta">Yakker · ~2IP · Inn 9 MS 59</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div><div class="bp-row">
-  <div class="bp-role">CLO</div>
-  <div class="bp-info">
-    <div class="bp-name">Muñoz, Andrés</div>
-    <div class="bp-meta">Kitchen Sink · ~1IP · Inn 6 MS 57</div>
-  </div>
-  <div class="bp-avail">
-    <div class="bp-avail-bar"><div class="bp-avail-fill" style="width:100%"></div></div>
-  </div>
-</div>
-</div>
-</div>
-</div>
-        <div class="gen-badge">Generated 2026-03-26 19:13 ET · Powered by ATLAS Pitcher DNA</div>
+        <div class="gen-badge">Generated 2026-03-26 15:07 ET · Powered by ATLAS Pitcher DNA</div>
     </div>
 
     <!-- ═══ DAILY PROJECTIONS TAB ═══ -->
@@ -5679,10 +4602,10 @@ body::after{
 <div class="picks-container ma-premium"><div class="pick-row ma-premium">
   <div class="pick-rank">1</div>
   <div class="pick-info">
-    <div class="pick-label gp-pick-strong">MIL ML (-186) <span class="mc-conf-num" style="color:#00FF55">10</span></div>
+    <div class="pick-label gp-pick-strong">MIL ML (-186) <span class="mc-conf-num" style="color:#00FF55">9</span></div>
     <div class="pick-matchup">CWS @ MIL</div>
   </div>
-  <div class="pick-edge">+17.6</div>
+  <div class="pick-edge">+15.0</div>
 </div><div class="pick-row">
   <div class="pick-rank">2</div>
   <div class="pick-info">
@@ -5693,31 +4616,24 @@ body::after{
 </div><div class="pick-row">
   <div class="pick-rank">3</div>
   <div class="pick-info">
-    <div class="pick-label gp-pick-strong">DET ML (-131) <span class="mc-conf-num" style="color:#7FFF00">6</span></div>
-    <div class="pick-matchup">DET @ SD</div>
+    <div class="pick-label gp-pick-strong">TB ML (-126) <span class="mc-conf-num" style="color:#7FFF00">6</span></div>
+    <div class="pick-matchup">TB @ STL</div>
   </div>
-  <div class="pick-edge">+8.9</div>
+  <div class="pick-edge">+18.7</div>
 </div><div class="pick-row">
   <div class="pick-rank">4</div>
   <div class="pick-info">
-    <div class="pick-label gp-pick-strong">MIN ML (+112) <span class="mc-conf-num" style="color:#FF8C00">3</span></div>
-    <div class="pick-matchup">MIN @ BAL</div>
+    <div class="pick-label gp-pick-strong">TEX ML (+109) <span class="mc-conf-num" style="color:#FF8C00">2</span></div>
+    <div class="pick-matchup">TEX @ PHI</div>
   </div>
-  <div class="pick-edge">+12.7</div>
+  <div class="pick-edge">+13.6</div>
 </div><div class="pick-row">
   <div class="pick-rank">5</div>
   <div class="pick-info">
-    <div class="pick-label gp-pick-strong">TEX ML (+109) <span class="mc-conf-num" style="color:#FF8C00">3</span></div>
-    <div class="pick-matchup">TEX @ PHI</div>
+    <div class="pick-label gp-pick-strong">MIN ML (+112) <span class="mc-conf-num" style="color:#FF8C00">2</span></div>
+    <div class="pick-matchup">MIN @ BAL</div>
   </div>
-  <div class="pick-edge">+12.1</div>
-</div><div class="pick-row">
-  <div class="pick-rank">6</div>
-  <div class="pick-info">
-    <div class="pick-label gp-pick-strong">WSH ML (+157) <span class="mc-conf-num" style="color:#FF8C00">2</span></div>
-    <div class="pick-matchup">WSH @ CHC</div>
-  </div>
-  <div class="pick-edge">+28.8</div>
+  <div class="pick-edge">+12.7</div>
 </div></div>
         <div class="picks-container">
             <div class="trend-row">
@@ -5759,15 +4675,6 @@ body::after{
 </div><div class="trend-row">
   <div class="trend-rank">5</div>
   <div class="trend-info">
-    <div class="trend-name">Oswald Peraza</div>
-    <div class="trend-meta">LAA vs Hunter Brown (HOU) · .259→.536 wOBA</div>
-  </div>
-  <div class="trend-right">
-    <div class="trend-ms ms-elite">99</div>
-  </div>
-</div><div class="trend-row">
-  <div class="trend-rank">6</div>
-  <div class="trend-info">
     <div class="trend-name">Carson Williams</div>
     <div class="trend-meta">TB vs Matthew Liberatore (STL) · .261→.676 wOBA</div>
   </div>
@@ -5775,7 +4682,7 @@ body::after{
     <div class="trend-ms ms-elite">99</div>
   </div>
 </div><div class="trend-row">
-  <div class="trend-rank">7</div>
+  <div class="trend-rank">6</div>
   <div class="trend-info">
     <div class="trend-name">CJ Kayfus</div>
     <div class="trend-meta">CLE vs Logan Gilbert (SEA) · .314→.658 wOBA</div>
@@ -5784,7 +4691,7 @@ body::after{
     <div class="trend-ms ms-elite">99</div>
   </div>
 </div><div class="trend-row">
-  <div class="trend-rank">8</div>
+  <div class="trend-rank">7</div>
   <div class="trend-info">
     <div class="trend-name">Tyler Stephenson</div>
     <div class="trend-meta">CIN vs Garrett Crochet (BOS) · .348→.478 wOBA</div>
@@ -5793,7 +4700,7 @@ body::after{
     <div class="trend-ms ms-elite">98</div>
   </div>
 </div><div class="trend-row">
-  <div class="trend-rank">9</div>
+  <div class="trend-rank">8</div>
   <div class="trend-info">
     <div class="trend-name">Mike Trout</div>
     <div class="trend-meta">LAA vs Hunter Brown (HOU) · .443→.484 wOBA</div>
@@ -5802,7 +4709,7 @@ body::after{
     <div class="trend-ms ms-elite">98</div>
   </div>
 </div><div class="trend-row">
-  <div class="trend-rank">10</div>
+  <div class="trend-rank">9</div>
   <div class="trend-info">
     <div class="trend-name">Yordan Alvarez</div>
     <div class="trend-meta">HOU vs José Soriano (LAA) · .413→.482 wOBA</div>
@@ -5811,7 +4718,7 @@ body::after{
     <div class="trend-ms ms-elite">98</div>
   </div>
 </div><div class="trend-row">
-  <div class="trend-rank">11</div>
+  <div class="trend-rank">10</div>
   <div class="trend-info">
     <div class="trend-name">Daylen Lile</div>
     <div class="trend-meta">WSH vs Matthew Boyd (CHC) · .375→.475 wOBA</div>
@@ -5820,7 +4727,7 @@ body::after{
     <div class="trend-ms ms-elite">97</div>
   </div>
 </div><div class="trend-row">
-  <div class="trend-rank">12</div>
+  <div class="trend-rank">11</div>
   <div class="trend-info">
     <div class="trend-name">Xander Bogaerts</div>
     <div class="trend-meta">SD vs Tarik Skubal (DET) · .366→.459 wOBA</div>
@@ -5829,7 +4736,7 @@ body::after{
     <div class="trend-ms ms-elite">96</div>
   </div>
 </div><div class="trend-row">
-  <div class="trend-rank">13</div>
+  <div class="trend-rank">12</div>
   <div class="trend-info">
     <div class="trend-name">Andres Chaparro</div>
     <div class="trend-meta">WSH vs Matthew Boyd (CHC) · .281→.446 wOBA</div>
@@ -5838,7 +4745,7 @@ body::after{
     <div class="trend-ms ms-elite">95</div>
   </div>
 </div><div class="trend-row">
-  <div class="trend-rank">14</div>
+  <div class="trend-rank">13</div>
   <div class="trend-info">
     <div class="trend-name">Riley Greene</div>
     <div class="trend-meta">DET vs Nick Pivetta (SD) · .350→.447 wOBA</div>
@@ -5847,7 +4754,7 @@ body::after{
     <div class="trend-ms ms-elite">95</div>
   </div>
 </div><div class="trend-row">
-  <div class="trend-rank">15</div>
+  <div class="trend-rank">14</div>
   <div class="trend-info">
     <div class="trend-name">Nasim Nunez</div>
     <div class="trend-meta">WSH vs Matthew Boyd (CHC) · .439→.444 wOBA</div>
@@ -5856,7 +4763,7 @@ body::after{
     <div class="trend-ms ms-elite">94</div>
   </div>
 </div><div class="trend-row">
-  <div class="trend-rank">16</div>
+  <div class="trend-rank">15</div>
   <div class="trend-info">
     <div class="trend-name">Francisco Lindor</div>
     <div class="trend-meta">NYM vs Paul Skenes (PIT) · .365→.427 wOBA</div>
@@ -5865,7 +4772,7 @@ body::after{
     <div class="trend-ms ms-elite">93</div>
   </div>
 </div><div class="trend-row">
-  <div class="trend-rank">17</div>
+  <div class="trend-rank">16</div>
   <div class="trend-info">
     <div class="trend-name">Joey Loperfido</div>
     <div class="trend-meta">HOU vs José Soriano (LAA) · .313→.432 wOBA</div>
@@ -5874,7 +4781,7 @@ body::after{
     <div class="trend-ms ms-elite">93</div>
   </div>
 </div><div class="trend-row">
-  <div class="trend-rank">18</div>
+  <div class="trend-rank">17</div>
   <div class="trend-info">
     <div class="trend-name">Freddie Freeman</div>
     <div class="trend-meta">LAD vs Zac Gallen (ARI) · .417→.431 wOBA</div>
@@ -5883,7 +4790,7 @@ body::after{
     <div class="trend-ms ms-elite">93</div>
   </div>
 </div><div class="trend-row">
-  <div class="trend-rank">19</div>
+  <div class="trend-rank">18</div>
   <div class="trend-info">
     <div class="trend-name">Juan Soto</div>
     <div class="trend-meta">NYM vs Paul Skenes (PIT) · .421→.419 wOBA</div>
@@ -5892,10 +4799,19 @@ body::after{
     <div class="trend-ms ms-elite">92</div>
   </div>
 </div><div class="trend-row">
-  <div class="trend-rank">20</div>
+  <div class="trend-rank">19</div>
   <div class="trend-info">
     <div class="trend-name">Ivan Herrera</div>
     <div class="trend-meta">STL vs Drew Rasmussen (TB) · .368→.418 wOBA</div>
+  </div>
+  <div class="trend-right">
+    <div class="trend-ms ms-elite">92</div>
+  </div>
+</div><div class="trend-row">
+  <div class="trend-rank">20</div>
+  <div class="trend-info">
+    <div class="trend-name">Corbin Carroll</div>
+    <div class="trend-meta">ARI vs Yoshinobu Yamamoto (LAD) · .366→.416 wOBA</div>
   </div>
   <div class="trend-right">
     <div class="trend-ms ms-elite">92</div>
@@ -6025,9 +4941,9 @@ document.querySelectorAll('.filter-btn').forEach(tab => {
 });
 
 // ═══ FILTER CHIPS ═══
-document.querySelectorAll('.chip').forEach(chip => {
+document.querySelectorAll('.chip[data-filter]').forEach(chip => {
   chip.addEventListener('click', () => {
-    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.chip[data-filter]').forEach(c => c.classList.remove('active'));
     chip.classList.add('active');
     const filter = chip.getAttribute('data-filter');
     const cards = Array.from(document.querySelectorAll('.game-card'));
@@ -6074,15 +4990,22 @@ function toggleBullpen(idx) {
 }
 
 // ═══ SORT GAMES ═══
-function sortGames(mode) {
+function sortGames(mode, el) {
   const container = document.querySelector('#tab-lines');
   if (!container) return;
   const cards = Array.from(container.querySelectorAll('.game-card'));
   if (!cards.length) return;
 
-  // Update active button
-  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector('.sort-btn[onclick*="' + mode + '"]')?.classList.add('active');
+  // Update active sort chip (only the sort chips after the divider)
+  const divider = document.querySelector('.chip-divider');
+  if (divider) {
+    let sib = divider.nextElementSibling;
+    while (sib) {
+      if (sib.classList.contains('chip')) sib.classList.remove('active');
+      sib = sib.nextElementSibling;
+    }
+  }
+  if (el) el.classList.add('active');
 
   // Sort
   cards.sort((a, b) => {
