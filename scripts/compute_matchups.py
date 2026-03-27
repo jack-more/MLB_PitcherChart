@@ -541,8 +541,12 @@ def project_team(lineup, opposing_pitcher_id: int, atlas: AtlasData,
     runs = round(base_runs(team_h, team_hr, team_bb, team_tb, team_pa, team_sb, team_cs), 2)
 
     # ── RE24 bonus: lineup baserunning/context value ──
-    re24_adj = round(team_re24, 3)
-    runs += team_re24
+    # Scale by 0.5 — BaseRuns already captures some of what RE24 measures
+    # (hits, walks, total bases all feed into the formula), so raw RE24
+    # partially double-counts. Backtest showed +0.55 runs/team inflation.
+    RE24_SCALE = 0.5
+    re24_adj = round(team_re24 * RE24_SCALE, 3)
+    runs += re24_adj
 
     # ── Park factor: venue run environment ──
     park_mult = 1.0
