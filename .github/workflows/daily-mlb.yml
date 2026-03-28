@@ -75,6 +75,8 @@ jobs:
             echo "=== MLB pipeline attempt $attempt/3 ==="
             python scripts/collect_daily.py && \
             python scripts/compute_matchups.py && \
+            mkdir -p data/daily/snapshots && \
+            cp data/daily/daily_games.json "data/daily/snapshots/$(python3 -c "import json; print(json.load(open('data/daily/daily_games.json')).get('slate_date','unknown'))" 2>/dev/null || echo 'unknown').json" && \
             python scripts/predict_bullpen.py && \
             python scripts/generate_mlbsim.py && break
             echo "Attempt $attempt failed, waiting 60s before retry..."

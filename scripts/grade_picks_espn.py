@@ -313,17 +313,24 @@ def main():
     print(f"  Grading: {grade_date}")
     print(f"{'='*60}\n")
 
-    # Load daily games
-    if not os.path.exists(DAILY_GAMES_FILE):
-        print(f"[ERROR] {DAILY_GAMES_FILE} not found")
+    # Load daily games — prefer snapshot if available (daily_games.json gets overwritten)
+    snapshot_path = os.path.join(DAILY_DATA_DIR, "snapshots", f"{grade_date}.json")
+    if os.path.exists(snapshot_path):
+        source = snapshot_path
+        print(f"[GradeESPN] Using snapshot: {snapshot_path}")
+    elif os.path.exists(DAILY_GAMES_FILE):
+        source = DAILY_GAMES_FILE
+        print(f"[GradeESPN] No snapshot found, using live daily_games.json")
+    else:
+        print(f"[ERROR] No data found for {grade_date}")
         sys.exit(1)
 
-    with open(DAILY_GAMES_FILE) as f:
+    with open(source) as f:
         daily_data = json.load(f)
 
     slate_date = daily_data.get("slate_date", "")
     if slate_date != grade_date:
-        print(f"[WARN] daily_games.json slate_date ({slate_date}) != grade_date ({grade_date})")
+        print(f"[WARN] Source slate_date ({slate_date}) != grade_date ({grade_date})")
         print(f"[WARN] Proceeding anyway — will grade picks from {slate_date}")
 
     # Extract ML picks
