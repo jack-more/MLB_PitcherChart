@@ -1182,11 +1182,18 @@ function toggleBullpen(idx) {
 }
 
 // ═══ SORT GAMES ═══
+let currentSort = 'time';
 function sortGames(mode, el) {
   const container = document.querySelector('#tab-lines');
   if (!container) return;
   const cards = Array.from(container.querySelectorAll('.game-card'));
   if (!cards.length) return;
+
+  // Toggle: clicking active sort resets to time
+  if (mode === currentSort && mode !== 'time') {
+    mode = 'time';
+  }
+  currentSort = mode;
 
   // Update active sort chip (only the sort chips after the divider)
   const divider = document.querySelector('.chip-divider');
@@ -1197,7 +1204,16 @@ function sortGames(mode, el) {
       sib = sib.nextElementSibling;
     }
   }
-  if (el) el.classList.add('active');
+  // Find the right button to highlight
+  if (divider) {
+    let sib = divider.nextElementSibling;
+    while (sib) {
+      if (sib.classList.contains('chip') && sib.textContent.trim().toLowerCase() === mode) {
+        sib.classList.add('active');
+      }
+      sib = sib.nextElementSibling;
+    }
+  }
 
   // Sort
   cards.sort((a, b) => {
