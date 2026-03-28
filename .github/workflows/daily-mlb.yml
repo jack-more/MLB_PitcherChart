@@ -160,8 +160,8 @@ jobs:
           git push
 
   # ═══════════════════════════════════════════════════════
-  # JOB 3: GRADE PICKS
-  # Run settlement: fetch scores, grade W/L/P, save results
+  # JOB 3: GRADE PICKS (ESPN API — no key needed)
+  # Fetch scores from ESPN, grade ML picks, save settlement + history
   # ═══════════════════════════════════════════════════════
   grade-picks:
     if: github.event.schedule == '0 14 * * *' || inputs.settle_only == 'true'
@@ -180,25 +180,25 @@ jobs:
       - name: Install dependencies
         run: pip install requests beautifulsoup4 python-dotenv
 
-      - name: Run grade_picks.py
-        run: python scripts/grade_picks.py
+      - name: Grade picks via ESPN API
+        run: python scripts/grade_picks_espn.py
 
-      - name: Commit settlement results
+      - name: Commit settlement + history
         run: |
           DATE=$(TZ='America/New_York' date '+%b %d %I:%M %p ET')
           git config user.name "MLB Pipeline Bot"
           git config user.email "noreply@github.com"
-          git add data/daily/settlement_results.json
+          git add data/daily/mlb_settlement.json data/daily/mlb_pick_history.json
           if git diff --cached --quiet; then
             echo "No changes to commit"
             exit 0
           fi
-          git commit -m "Grade MLB picks — ${DATE}"
+          git commit -m "Grade MLB picks (ESPN) — ${DATE}"
           git push
 
   # ═══════════════════════════════════════════════════════
   # JOB 4: SETTLE MORELLOSIMS
-  # Patch blog with W/L/P results, FINAL scores, bankroll
+  # Patch MLB blog with graded picks, bankroll, pending picks
   # ═══════════════════════════════════════════════════════
   settle-morellosims:
     needs: grade-picks
@@ -224,8 +224,8 @@ jobs:
       - name: Install dependencies
         run: pip install requests beautifulsoup4 python-dotenv
 
-      - name: Run settle_blog.py
-        run: python scripts/settle_blog.py data/daily/settlement_results.json morellosims/index.html
+      - name: Update MLB blog section
+        run: python scripts/update_mlb_blog.py morellosims/index.html
 
       - name: Sync fresh mlbsim dashboard
         run: |
