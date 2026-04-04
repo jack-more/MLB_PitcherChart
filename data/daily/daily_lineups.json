@@ -1,28 +1,596 @@
 {
-  "slate_date": "2026-04-03",
-  "collected_at": "2026-04-03T22:37:18.964453+00:00",
-  "game_count": 15,
+  "slate_date": "2026-04-04",
+  "collected_at": "2026-04-04T14:06:05.857682+00:00",
+  "game_count": 16,
   "spring_training_count": 0,
-  "regular_season_count": 15,
+  "regular_season_count": 16,
   "games": [
     {
-      "game_pk": 822758,
+      "game_pk": 824295,
+      "game_type": "R",
+      "is_spring_training": false,
+      "away_team": "STL",
+      "home_team": "DET",
+      "game_time_utc": "2026-04-04T17:10:00Z",
+      "venue": "Comerica Park",
+      "status": "Pre-Game",
+      "series_description": "Regular Season",
+      "away_pitcher": {
+        "id": 669160,
+        "name": "Dustin May",
+        "throws": "R"
+      },
+      "home_pitcher": {
+        "id": 656427,
+        "name": "Jack Flaherty",
+        "throws": "R"
+      },
+      "away_lineup": [
+        {
+          "id": 802139,
+          "name": "JJ Wetherholt",
+          "pos": "2B",
+          "bats": "L"
+        },
+        {
+          "id": 671056,
+          "name": "Ivan Herrera",
+          "pos": "DH",
+          "bats": "R"
+        },
+        {
+          "id": 676475,
+          "name": "Alec Burleson",
+          "pos": "1B",
+          "bats": "L"
+        },
+        {
+          "id": 669357,
+          "name": "Nolan Gorman",
+          "pos": "3B",
+          "bats": "L"
+        },
+        {
+          "id": 691023,
+          "name": "Jordan Walker",
+          "pos": "RF",
+          "bats": "R"
+        },
+        {
+          "id": 695336,
+          "name": "Thomas Saggese",
+          "pos": "SS",
+          "bats": "R"
+        },
+        {
+          "id": 701675,
+          "name": "Nathan Church",
+          "pos": "LF",
+          "bats": "L"
+        },
+        {
+          "id": 686780,
+          "name": "Pedro Pages",
+          "pos": "C",
+          "bats": "R"
+        },
+        {
+          "id": 687363,
+          "name": "Victor Scott",
+          "pos": "CF",
+          "bats": "L"
+        }
+      ],
+      "lineup_status": "confirmed",
+      "home_lineup": [
+        {
+          "id": 690993,
+          "name": "Colt Keith",
+          "pos": "DH",
+          "bats": "L"
+        },
+        {
+          "id": 805808,
+          "name": "Kevin McGonigle",
+          "pos": "3B",
+          "bats": "L"
+        },
+        {
+          "id": 650402,
+          "name": "Gleyber Torres",
+          "pos": "2B",
+          "bats": "R"
+        },
+        {
+          "id": 682985,
+          "name": "Riley Greene",
+          "pos": "LF",
+          "bats": "L"
+        },
+        {
+          "id": 681481,
+          "name": "Kerry Carpenter",
+          "pos": "RF",
+          "bats": "L"
+        },
+        {
+          "id": 679529,
+          "name": "Spencer Torkelson",
+          "pos": "1B",
+          "bats": "R"
+        },
+        {
+          "id": 693307,
+          "name": "Dillon Dingler",
+          "pos": "C",
+          "bats": "R"
+        },
+        {
+          "id": 678009,
+          "name": "Parker Meadows",
+          "pos": "CF",
+          "bats": "L"
+        },
+        {
+          "id": 595879,
+          "name": "Javier Baez",
+          "pos": "SS",
+          "bats": "R"
+        }
+      ],
+      "odds": {
+        "home_ml": -162,
+        "away_ml": 113,
+        "spread": -1.5,
+        "total": 7.5
+      },
+      "weather": "5% Precipitation56\u00b0\u00a0\u00a0Wind 15 mph In",
+      "umpire": ""
+    },
+    {
+      "game_pk": 824622,
+      "game_type": "R",
+      "is_spring_training": false,
+      "away_team": "TOR",
+      "home_team": "CWS",
+      "game_time_utc": "2026-04-04T18:10:00Z",
+      "venue": "Rate Field",
+      "status": "Scheduled",
+      "series_description": "Regular Season",
+      "away_pitcher": {
+        "id": 689254,
+        "name": "Mason Fluharty",
+        "throws": "R"
+      },
+      "home_pitcher": {
+        "id": 691799,
+        "name": "Grant Taylor",
+        "throws": "R"
+      },
+      "away_lineup": [
+        {
+          "id": 543807,
+          "name": "George Springer",
+          "pos": "DH",
+          "bats": "R"
+        },
+        {
+          "id": 676914,
+          "name": "Davis Schneider",
+          "pos": "LF",
+          "bats": "R"
+        },
+        {
+          "id": 665489,
+          "name": "Vladimir Guerrero",
+          "pos": "1B",
+          "bats": "R"
+        },
+        {
+          "id": 672960,
+          "name": "Kazuma Okamoto",
+          "pos": "3B",
+          "bats": "R"
+        },
+        {
+          "id": 672386,
+          "name": "Alejandro Kirk",
+          "pos": "C",
+          "bats": "R"
+        },
+        {
+          "id": 662139,
+          "name": "Daulton Varsho",
+          "pos": "CF",
+          "bats": "L"
+        },
+        {
+          "id": 676391,
+          "name": "Ernie Clement",
+          "pos": "2B",
+          "bats": "R"
+        },
+        {
+          "id": 664702,
+          "name": "Myles Straw",
+          "pos": "RF",
+          "bats": "R"
+        },
+        {
+          "id": 665926,
+          "name": "Andres Gimenez",
+          "pos": "SS",
+          "bats": "L"
+        }
+      ],
+      "lineup_status": "expected",
+      "home_lineup": [
+        {
+          "id": 805367,
+          "name": "Chase Meidroth",
+          "pos": "2B",
+          "bats": "R"
+        },
+        {
+          "id": 672820,
+          "name": "Lenyn Sosa",
+          "pos": "DH",
+          "bats": "R"
+        },
+        {
+          "id": 700337,
+          "name": "Edgar Quero",
+          "pos": "C",
+          "bats": "S"
+        },
+        {
+          "id": 695657,
+          "name": "Colson Montgomery",
+          "pos": "SS",
+          "bats": "L"
+        },
+        {
+          "id": 678246,
+          "name": "Miguel Vargas",
+          "pos": "3B",
+          "bats": "R"
+        },
+        {
+          "id": 808959,
+          "name": "Munetaka Murakami",
+          "pos": "1B",
+          "bats": "L"
+        },
+        {
+          "id": 669720,
+          "name": "Austin Hays",
+          "pos": "RF",
+          "bats": "R"
+        },
+        {
+          "id": 643217,
+          "name": "Andrew Benintendi",
+          "pos": "LF",
+          "bats": "L"
+        },
+        {
+          "id": 682668,
+          "name": "Luisangel Acuna",
+          "pos": "CF",
+          "bats": "R"
+        }
+      ],
+      "odds": {
+        "away_ml": -150,
+        "home_ml": 120,
+        "spread": 1.5,
+        "total": 8.5
+      },
+      "weather": "14% Rain53\u00b0\u00a0\u00a0Wind 18 mph R-L",
+      "umpire": ""
+    },
+    {
+      "game_pk": 824132,
+      "game_type": "R",
+      "is_spring_training": false,
+      "away_team": "MIL",
+      "home_team": "KC",
+      "game_time_utc": "2026-04-04T18:10:00Z",
+      "venue": "Kauffman Stadium",
+      "status": "Scheduled",
+      "series_description": "Regular Season",
+      "away_pitcher": {
+        "id": 694477,
+        "name": "Chad Patrick",
+        "throws": "R"
+      },
+      "home_pitcher": {
+        "id": 679883,
+        "name": "Luinder Avila",
+        "throws": "R"
+      },
+      "away_lineup": [
+        {
+          "id": 668930,
+          "name": "Brice Turang",
+          "pos": "2B",
+          "bats": "L"
+        },
+        {
+          "id": 661388,
+          "name": "William Contreras",
+          "pos": "C",
+          "bats": "R"
+        },
+        {
+          "id": 592885,
+          "name": "Christian Yelich",
+          "pos": "DH",
+          "bats": "L"
+        },
+        {
+          "id": 641343,
+          "name": "Jake Bauers",
+          "pos": "1B",
+          "bats": "L"
+        },
+        {
+          "id": 669003,
+          "name": "Garrett Mitchell",
+          "pos": "CF",
+          "bats": "L"
+        },
+        {
+          "id": 686217,
+          "name": "Sal Frelick",
+          "pos": "RF",
+          "bats": "L"
+        },
+        {
+          "id": 687401,
+          "name": "Joey Ortiz",
+          "pos": "SS",
+          "bats": "R"
+        },
+        {
+          "id": 666152,
+          "name": "David Hamilton",
+          "pos": "3B",
+          "bats": "L"
+        },
+        {
+          "id": 663604,
+          "name": "Brandon Lockridge",
+          "pos": "LF",
+          "bats": "R"
+        }
+      ],
+      "lineup_status": "expected",
+      "home_lineup": [
+        {
+          "id": 672580,
+          "name": "Maikel Garcia",
+          "pos": "3B",
+          "bats": "R"
+        },
+        {
+          "id": 677951,
+          "name": "Bobby Witt",
+          "pos": "SS",
+          "bats": "R"
+        },
+        {
+          "id": 686469,
+          "name": "Vinnie Pasquantino",
+          "pos": "1B",
+          "bats": "L"
+        },
+        {
+          "id": 521692,
+          "name": "Salvador Perez",
+          "pos": "C",
+          "bats": "R"
+        },
+        {
+          "id": 695600,
+          "name": "Carter Jensen",
+          "pos": "DH",
+          "bats": "L"
+        },
+        {
+          "id": 663697,
+          "name": "Jonathan India",
+          "pos": "2B",
+          "bats": "R"
+        },
+        {
+          "id": 695506,
+          "name": "Jac Caglianone",
+          "pos": "RF",
+          "bats": "L"
+        },
+        {
+          "id": 686555,
+          "name": "Isaac Collins",
+          "pos": "LF",
+          "bats": "S"
+        },
+        {
+          "id": 664728,
+          "name": "Kyle Isbel",
+          "pos": "CF",
+          "bats": "L"
+        }
+      ],
+      "odds": {
+        "home_ml": -112,
+        "away_ml": 89,
+        "spread": -1.5,
+        "total": 8.0
+      },
+      "weather": "0%53\u00b0\u00a0\u00a0Wind 13 mph L-R",
+      "umpire": ""
+    },
+    {
+      "game_pk": 824134,
+      "game_type": "R",
+      "is_spring_training": false,
+      "away_team": "MIL",
+      "home_team": "KC",
+      "game_time_utc": "2026-04-04T23:10:00Z",
+      "venue": "Kauffman Stadium",
+      "status": "Scheduled",
+      "series_description": "Regular Season",
+      "away_pitcher": {
+        "id": 687075,
+        "name": "Brandon Sproat",
+        "throws": "R"
+      },
+      "home_pitcher": {
+        "id": 607625,
+        "name": "Seth Lugo",
+        "throws": "R"
+      },
+      "away_lineup": [
+        {
+          "id": 668930,
+          "name": "Brice Turang",
+          "pos": "2B",
+          "bats": "L"
+        },
+        {
+          "id": 661388,
+          "name": "William Contreras",
+          "pos": "C",
+          "bats": "R"
+        },
+        {
+          "id": 592885,
+          "name": "Christian Yelich",
+          "pos": "DH",
+          "bats": "L"
+        },
+        {
+          "id": 641343,
+          "name": "Jake Bauers",
+          "pos": "1B",
+          "bats": "L"
+        },
+        {
+          "id": 669003,
+          "name": "Garrett Mitchell",
+          "pos": "CF",
+          "bats": "L"
+        },
+        {
+          "id": 686217,
+          "name": "Sal Frelick",
+          "pos": "RF",
+          "bats": "L"
+        },
+        {
+          "id": 687401,
+          "name": "Joey Ortiz",
+          "pos": "SS",
+          "bats": "R"
+        },
+        {
+          "id": 666152,
+          "name": "David Hamilton",
+          "pos": "3B",
+          "bats": "L"
+        },
+        {
+          "id": 663604,
+          "name": "Brandon Lockridge",
+          "pos": "LF",
+          "bats": "R"
+        }
+      ],
+      "lineup_status": "expected",
+      "home_lineup": [
+        {
+          "id": 672580,
+          "name": "Maikel Garcia",
+          "pos": "3B",
+          "bats": "R"
+        },
+        {
+          "id": 677951,
+          "name": "Bobby Witt",
+          "pos": "SS",
+          "bats": "R"
+        },
+        {
+          "id": 686469,
+          "name": "Vinnie Pasquantino",
+          "pos": "1B",
+          "bats": "L"
+        },
+        {
+          "id": 521692,
+          "name": "Salvador Perez",
+          "pos": "C",
+          "bats": "R"
+        },
+        {
+          "id": 695600,
+          "name": "Carter Jensen",
+          "pos": "DH",
+          "bats": "L"
+        },
+        {
+          "id": 663697,
+          "name": "Jonathan India",
+          "pos": "2B",
+          "bats": "R"
+        },
+        {
+          "id": 695506,
+          "name": "Jac Caglianone",
+          "pos": "RF",
+          "bats": "L"
+        },
+        {
+          "id": 686555,
+          "name": "Isaac Collins",
+          "pos": "LF",
+          "bats": "S"
+        },
+        {
+          "id": 664728,
+          "name": "Kyle Isbel",
+          "pos": "CF",
+          "bats": "L"
+        }
+      ],
+      "odds": {
+        "home_ml": -112,
+        "away_ml": 89,
+        "spread": -1.5,
+        "total": 8.0
+      },
+      "weather": "0%53\u00b0\u00a0\u00a0Wind 13 mph L-R",
+      "umpire": ""
+    },
+    {
+      "game_pk": 822757,
       "game_type": "R",
       "is_spring_training": false,
       "away_team": "LAD",
       "home_team": "WSH",
-      "game_time_utc": "2026-04-03T17:05:00Z",
+      "game_time_utc": "2026-04-04T20:05:00Z",
       "venue": "Nationals Park",
-      "status": "Final",
+      "status": "Scheduled",
       "series_description": "Regular Season",
       "away_pitcher": {
-        "id": 686218,
-        "name": "Emmet Sheehan",
+        "id": 607192,
+        "name": "Tyler Glasnow",
         "throws": "R"
       },
       "home_pitcher": {
-        "id": 571945,
-        "name": "Miles Mikolas",
+        "id": 663623,
+        "name": "Jake Irvin",
         "throws": "R"
       },
       "away_lineup": [
@@ -81,7 +649,7 @@
           "bats": "S"
         }
       ],
-      "lineup_status": "confirmed",
+      "lineup_status": "expected",
       "home_lineup": [
         {
           "id": 695578,
@@ -96,33 +664,21 @@
           "bats": "L"
         },
         {
+          "id": 691781,
+          "name": "Brady House",
+          "pos": "3B",
+          "bats": "R"
+        },
+        {
           "id": 695734,
           "name": "Daylen Lile",
           "pos": "LF",
           "bats": "L"
         },
         {
-          "id": 691781,
-          "name": "Brady House",
-          "pos": "DH",
-          "bats": "R"
-        },
-        {
           "id": 682928,
           "name": "CJ Abrams",
           "pos": "SS",
-          "bats": "L"
-        },
-        {
-          "id": 683083,
-          "name": "Nasim Nunez",
-          "pos": "2B",
-          "bats": "S"
-        },
-        {
-          "id": 678391,
-          "name": "Jorbit Vivas",
-          "pos": "3B",
           "bats": "L"
         },
         {
@@ -132,323 +688,220 @@
           "bats": "S"
         },
         {
-          "id": 696285,
-          "name": "Jacob Young",
+          "id": 677588,
+          "name": "Jose Tena",
+          "pos": "DH",
+          "bats": "L"
+        },
+        {
+          "id": 686894,
+          "name": "Joey Wiemer",
           "pos": "CF",
           "bats": "R"
+        },
+        {
+          "id": 683083,
+          "name": "Nasim Nunez",
+          "pos": "2B",
+          "bats": "S"
         }
       ],
       "odds": {
-        "away_ml": -290,
-        "home_ml": 203,
+        "away_ml": -302,
+        "home_ml": 211,
         "spread": 1.5,
         "total": 9.5
       },
-      "weather": "0%64\u00b0\u00a0\u00a0Wind 7 mph",
-      "umpire": "Gabe Morales"
+      "weather": "15% Precipitation86\u00b0\u00a0\u00a0Wind 10 mph",
+      "umpire": ""
     },
     {
-      "game_pk": 824299,
+      "game_pk": 825027,
       "game_type": "R",
       "is_spring_training": false,
-      "away_team": "STL",
-      "home_team": "DET",
-      "game_time_utc": "2026-04-03T17:10:00Z",
-      "venue": "Comerica Park",
-      "status": "Final",
+      "away_team": "HOU",
+      "home_team": "OAK",
+      "game_time_utc": "2026-04-04T20:05:00Z",
+      "venue": "Sutter Health Park",
+      "status": "Scheduled",
       "series_description": "Regular Season",
       "away_pitcher": {
-        "id": 700241,
-        "name": "Michael McGreevy",
+        "id": 837227,
+        "name": "Tatsuya Imai",
         "throws": "R"
       },
       "home_pitcher": {
-        "id": 664285,
-        "name": "Framber Valdez",
+        "id": 806960,
+        "name": "Luis Morales",
+        "throws": "R"
+      },
+      "away_lineup": [],
+      "lineup_status": "tbd",
+      "home_lineup": [],
+      "odds": {},
+      "weather": "",
+      "umpire": ""
+    },
+    {
+      "game_pk": 823404,
+      "game_type": "R",
+      "is_spring_training": false,
+      "away_team": "BAL",
+      "home_team": "PIT",
+      "game_time_utc": "2026-04-04T20:05:00Z",
+      "venue": "PNC Park",
+      "status": "Scheduled",
+      "series_description": "Regular Season",
+      "away_pitcher": {
+        "id": 669358,
+        "name": "Shane Baz",
+        "throws": "R"
+      },
+      "home_pitcher": {
+        "id": 669387,
+        "name": "Carmen Mlodzinski",
         "throws": "R"
       },
       "away_lineup": [
         {
-          "id": 691026,
-          "name": "Masyn Winn",
-          "pos": "SS",
-          "bats": "R"
-        },
-        {
-          "id": 671056,
-          "name": "Ivan Herrera",
-          "pos": "C",
-          "bats": "R"
-        },
-        {
-          "id": 676475,
-          "name": "Alec Burleson",
-          "pos": "1B",
-          "bats": "L"
-        },
-        {
-          "id": 602104,
-          "name": "Ramon Urias",
-          "pos": "3B",
-          "bats": "R"
-        },
-        {
-          "id": 691023,
-          "name": "Jordan Walker",
-          "pos": "RF",
-          "bats": "R"
-        },
-        {
-          "id": 650968,
-          "name": "Yohel Pozo",
-          "pos": "DH",
-          "bats": "R"
-        },
-        {
-          "id": 695336,
-          "name": "Thomas Saggese",
-          "pos": "2B",
-          "bats": "R"
-        },
-        {
-          "id": 820862,
-          "name": "Jose Fermin",
+          "id": 621493,
+          "name": "Taylor Ward",
           "pos": "LF",
           "bats": "R"
         },
         {
-          "id": 687363,
-          "name": "Victor Scott",
-          "pos": "CF",
-          "bats": "L"
-        }
-      ],
-      "lineup_status": "confirmed",
-      "home_lineup": [
-        {
-          "id": 805808,
-          "name": "Kevin McGonigle",
-          "pos": "3B",
+          "id": 683002,
+          "name": "Gunnar Henderson",
+          "pos": "SS",
           "bats": "L"
         },
         {
-          "id": 650402,
-          "name": "Gleyber Torres",
-          "pos": "DH",
-          "bats": "R"
-        },
-        {
-          "id": 681481,
-          "name": "Kerry Carpenter",
-          "pos": "RF",
-          "bats": "L"
-        },
-        {
-          "id": 682985,
-          "name": "Riley Greene",
-          "pos": "LF",
-          "bats": "L"
-        },
-        {
-          "id": 693307,
-          "name": "Dillon Dingler",
-          "pos": "C",
-          "bats": "R"
-        },
-        {
-          "id": 656716,
-          "name": "Zach McKinstry",
-          "pos": "2B",
-          "bats": "L"
-        },
-        {
-          "id": 679529,
-          "name": "Spencer Torkelson",
+          "id": 624413,
+          "name": "Pete Alonso",
           "pos": "1B",
           "bats": "R"
         },
         {
-          "id": 678009,
-          "name": "Parker Meadows",
-          "pos": "CF",
-          "bats": "L"
-        },
-        {
-          "id": 595879,
-          "name": "Javier Baez",
-          "pos": "SS",
-          "bats": "R"
-        }
-      ],
-      "odds": {
-        "home_ml": -185,
-        "away_ml": 129,
-        "spread": -1.5,
-        "total": 8.0
-      },
-      "weather": "0%72\u00b0\u00a0\u00a0Wind 22 mph R-L",
-      "umpire": "Carlos Torres"
-    },
-    {
-      "game_pk": 823568,
-      "game_type": "R",
-      "is_spring_training": false,
-      "away_team": "MIA",
-      "home_team": "NYY",
-      "game_time_utc": "2026-04-03T17:35:00Z",
-      "venue": "Yankee Stadium",
-      "status": "Final",
-      "series_description": "Regular Season",
-      "away_pitcher": {
-        "id": 691587,
-        "name": "Eury P\u00e9rez",
-        "throws": "R"
-      },
-      "home_pitcher": {
-        "id": 701542,
-        "name": "Will Warren",
-        "throws": "R"
-      },
-      "away_lineup": [
-        {
-          "id": 805300,
-          "name": "Jakob Marsee",
-          "pos": "CF",
-          "bats": "L"
-        },
-        {
-          "id": 669364,
-          "name": "Xavier Edwards",
-          "pos": "2B",
+          "id": 668939,
+          "name": "Adley Rutschman",
+          "pos": "C",
           "bats": "S"
         },
         {
-          "id": 682663,
-          "name": "Agustin Ramirez",
+          "id": 694212,
+          "name": "Samuel Basallo",
           "pos": "DH",
-          "bats": "R"
-        },
-        {
-          "id": 689414,
-          "name": "Liam Hicks",
-          "pos": "C",
           "bats": "L"
         },
         {
-          "id": 672640,
-          "name": "Otto Lopez",
-          "pos": "SS",
-          "bats": "R"
-        },
-        {
-          "id": 683357,
-          "name": "Owen Caissie",
+          "id": 687637,
+          "name": "Dylan Beavers",
           "pos": "RF",
           "bats": "L"
         },
         {
-          "id": 681393,
-          "name": "Connor Norby",
-          "pos": "1B",
+          "id": 691723,
+          "name": "Coby Mayo",
+          "pos": "3B",
           "bats": "R"
         },
         {
-          "id": 665052,
-          "name": "Griffin Conine",
-          "pos": "LF",
-          "bats": "L"
-        },
-        {
-          "id": 688363,
-          "name": "Graham Pauley",
-          "pos": "3B",
-          "bats": "L"
-        }
-      ],
-      "lineup_status": "confirmed",
-      "home_lineup": [
-        {
-          "id": 663757,
-          "name": "Trent Grisham",
+          "id": 681297,
+          "name": "Colton Cowser",
           "pos": "CF",
           "bats": "L"
         },
         {
-          "id": 592450,
-          "name": "Aaron Judge",
-          "pos": "RF",
+          "id": 669236,
+          "name": "Jeremiah Jackson",
+          "pos": "2B",
           "bats": "R"
-        },
+        }
+      ],
+      "lineup_status": "expected",
+      "home_lineup": [
         {
-          "id": 641355,
-          "name": "Cody Bellinger",
-          "pos": "LF",
+          "id": 665833,
+          "name": "Oneil Cruz",
+          "pos": "CF",
           "bats": "L"
         },
         {
-          "id": 700250,
-          "name": "Ben Rice",
-          "pos": "1B",
-          "bats": "L"
-        },
-        {
-          "id": 519317,
-          "name": "Giancarlo Stanton",
-          "pos": "DH",
-          "bats": "R"
-        },
-        {
-          "id": 665862,
-          "name": "Jazz Chisholm",
+          "id": 664040,
+          "name": "Brandon Lowe",
           "pos": "2B",
           "bats": "L"
         },
         {
-          "id": 669224,
-          "name": "Austin Wells",
-          "pos": "C",
+          "id": 668804,
+          "name": "Bryan Reynolds",
+          "pos": "LF",
+          "bats": "S"
+        },
+        {
+          "id": 542303,
+          "name": "Marcell Ozuna",
+          "pos": "DH",
+          "bats": "R"
+        },
+        {
+          "id": 656811,
+          "name": "Ryan O'Hearn",
+          "pos": "RF",
           "bats": "L"
         },
         {
-          "id": 676609,
-          "name": "Jose Caballero",
+          "id": 804606,
+          "name": "Konnor Griffin",
           "pos": "SS",
           "bats": "R"
         },
         {
-          "id": 641857,
-          "name": "Ryan McMahon",
-          "pos": "3B",
+          "id": 687462,
+          "name": "Spencer Horwitz",
+          "pos": "1B",
           "bats": "L"
+        },
+        {
+          "id": 669707,
+          "name": "Jared Triolo",
+          "pos": "3B",
+          "bats": "R"
+        },
+        {
+          "id": 680779,
+          "name": "Henry Davis",
+          "pos": "C",
+          "bats": "R"
         }
       ],
       "odds": {
-        "home_ml": -165,
-        "away_ml": 115,
-        "spread": -1.5,
-        "total": 9.5
+        "away_ml": -110,
+        "home_ml": 88,
+        "spread": 1.5,
+        "total": 8.5
       },
-      "weather": "0%53\u00b0\u00a0\u00a0Wind 8 mph Out",
-      "umpire": "Tom Hanahan"
+      "weather": "12% Precipitation83\u00b0\u00a0\u00a0Wind 13 mph R-L",
+      "umpire": ""
     },
     {
-      "game_pk": 824786,
+      "game_pk": 824782,
       "game_type": "R",
       "is_spring_training": false,
       "away_team": "SD",
       "home_team": "BOS",
-      "game_time_utc": "2026-04-03T18:10:00Z",
+      "game_time_utc": "2026-04-04T20:10:00Z",
       "venue": "Fenway Park",
-      "status": "Final",
+      "status": "Scheduled",
       "series_description": "Regular Season",
       "away_pitcher": {
-        "id": 650633,
-        "name": "Michael King",
+        "id": 681190,
+        "name": "Randy V\u00e1squez",
         "throws": "R"
       },
       "home_pitcher": {
-        "id": 543243,
-        "name": "Sonny Gray",
+        "id": 813349,
+        "name": "Connelly Early",
         "throws": "R"
       },
       "away_lineup": [
@@ -465,15 +918,21 @@
           "bats": "R"
         },
         {
+          "id": 592518,
+          "name": "Manny Machado",
+          "pos": "3B",
+          "bats": "R"
+        },
+        {
           "id": 701538,
           "name": "Jackson Merrill",
           "pos": "CF",
           "bats": "L"
         },
         {
-          "id": 592518,
-          "name": "Manny Machado",
-          "pos": "3B",
+          "id": 609280,
+          "name": "Miguel Andujar",
+          "pos": "DH",
           "bats": "R"
         },
         {
@@ -483,36 +942,30 @@
           "bats": "R"
         },
         {
-          "id": 609280,
-          "name": "Miguel Andujar",
-          "pos": "DH",
+          "id": 664034,
+          "name": "Ty France",
+          "pos": "1B",
           "bats": "R"
         },
         {
-          "id": 657757,
-          "name": "Gavin Sheets",
-          "pos": "1B",
-          "bats": "L"
+          "id": 666023,
+          "name": "Freddy Fermin",
+          "pos": "C",
+          "bats": "R"
         },
         {
           "id": 630105,
           "name": "Jake Cronenworth",
           "pos": "2B",
           "bats": "L"
-        },
-        {
-          "id": 669134,
-          "name": "Luis Campusano",
-          "pos": "C",
-          "bats": "R"
         }
       ],
-      "lineup_status": "confirmed",
+      "lineup_status": "expected",
       "home_lineup": [
         {
           "id": 701350,
           "name": "Roman Anthony",
-          "pos": "DH",
+          "pos": "LF",
           "bats": "L"
         },
         {
@@ -524,7 +977,7 @@
         {
           "id": 680776,
           "name": "Jarren Duran",
-          "pos": "LF",
+          "pos": "DH",
           "bats": "L"
         },
         {
@@ -565,187 +1018,45 @@
         }
       ],
       "odds": {
-        "home_ml": -125,
-        "away_ml": 100,
+        "home_ml": -147,
+        "away_ml": 117,
         "spread": -1.5,
-        "total": 9.0
+        "total": 8.0
       },
-      "weather": "0%53\u00b0\u00a0\u00a0Wind 8 mph Out",
-      "umpire": "Chris Segal"
+      "weather": "4% Precipitation46\u00b0\u00a0\u00a0Wind 14 mph In",
+      "umpire": ""
     },
     {
-      "game_pk": 824621,
-      "game_type": "R",
-      "is_spring_training": false,
-      "away_team": "TOR",
-      "home_team": "CWS",
-      "game_time_utc": "2026-04-03T18:10:00Z",
-      "venue": "Rate Field",
-      "status": "Final",
-      "series_description": "Regular Season",
-      "away_pitcher": {
-        "id": 656302,
-        "name": "Dylan Cease",
-        "throws": "R"
-      },
-      "home_pitcher": {
-        "id": 691799,
-        "name": "Grant Taylor",
-        "throws": "R"
-      },
-      "away_lineup": [
-        {
-          "id": 543807,
-          "name": "George Springer",
-          "pos": "DH",
-          "bats": "R"
-        },
-        {
-          "id": 660821,
-          "name": "Jesus Sanchez",
-          "pos": "LF",
-          "bats": "L"
-        },
-        {
-          "id": 665489,
-          "name": "Vladimir Guerrero",
-          "pos": "1B",
-          "bats": "R"
-        },
-        {
-          "id": 680718,
-          "name": "Addison Barger",
-          "pos": "RF",
-          "bats": "L"
-        },
-        {
-          "id": 672386,
-          "name": "Alejandro Kirk",
-          "pos": "C",
-          "bats": "R"
-        },
-        {
-          "id": 662139,
-          "name": "Daulton Varsho",
-          "pos": "CF",
-          "bats": "L"
-        },
-        {
-          "id": 672960,
-          "name": "Kazuma Okamoto",
-          "pos": "3B",
-          "bats": "R"
-        },
-        {
-          "id": 676391,
-          "name": "Ernie Clement",
-          "pos": "2B",
-          "bats": "R"
-        },
-        {
-          "id": 665926,
-          "name": "Andres Gimenez",
-          "pos": "SS",
-          "bats": "L"
-        }
-      ],
-      "lineup_status": "confirmed",
-      "home_lineup": [
-        {
-          "id": 805367,
-          "name": "Chase Meidroth",
-          "pos": "2B",
-          "bats": "R"
-        },
-        {
-          "id": 808959,
-          "name": "Munetaka Murakami",
-          "pos": "1B",
-          "bats": "L"
-        },
-        {
-          "id": 678246,
-          "name": "Miguel Vargas",
-          "pos": "3B",
-          "bats": "R"
-        },
-        {
-          "id": 695657,
-          "name": "Colson Montgomery",
-          "pos": "SS",
-          "bats": "L"
-        },
-        {
-          "id": 669720,
-          "name": "Austin Hays",
-          "pos": "LF",
-          "bats": "R"
-        },
-        {
-          "id": 643217,
-          "name": "Andrew Benintendi",
-          "pos": "DH",
-          "bats": "L"
-        },
-        {
-          "id": 671976,
-          "name": "Tristan Peters",
-          "pos": "RF",
-          "bats": "L"
-        },
-        {
-          "id": 700337,
-          "name": "Edgar Quero",
-          "pos": "C",
-          "bats": "S"
-        },
-        {
-          "id": 682668,
-          "name": "Luisangel Acuna",
-          "pos": "CF",
-          "bats": "R"
-        }
-      ],
-      "odds": {
-        "away_ml": -195,
-        "home_ml": 136,
-        "spread": 1.5,
-        "total": 8.5
-      },
-      "weather": "0%56\u00b0\u00a0\u00a0Wind 5 mph L-R",
-      "umpire": "Stu Scheurwater"
-    },
-    {
-      "game_pk": 822919,
+      "game_pk": 822920,
       "game_type": "R",
       "is_spring_training": false,
       "away_team": "CIN",
       "home_team": "TEX",
-      "game_time_utc": "2026-04-03T20:05:00Z",
+      "game_time_utc": "2026-04-04T23:05:00Z",
       "venue": "Globe Life Field",
-      "status": "Game Over",
+      "status": "Scheduled",
       "series_description": "Regular Season",
       "away_pitcher": {
-        "id": 663903,
-        "name": "Brady Singer",
+        "id": 695076,
+        "name": "Rhett Lowder",
         "throws": "R"
       },
       "home_pitcher": {
-        "id": 669022,
-        "name": "MacKenzie Gore",
+        "id": 677958,
+        "name": "Kumar Rocker",
         "throws": "R"
       },
       "away_lineup": [
         {
+          "id": 670770,
+          "name": "TJ Friedl",
+          "pos": "CF",
+          "bats": "L"
+        },
+        {
           "id": 680574,
           "name": "Matt McLain",
           "pos": "2B",
-          "bats": "R"
-        },
-        {
-          "id": 667472,
-          "name": "Dane Myers",
-          "pos": "CF",
           "bats": "R"
         },
         {
@@ -773,15 +1084,15 @@
           "bats": "R"
         },
         {
+          "id": 666181,
+          "name": "Will Benson",
+          "pos": "RF",
+          "bats": "L"
+        },
+        {
           "id": 663886,
           "name": "Tyler Stephenson",
           "pos": "C",
-          "bats": "R"
-        },
-        {
-          "id": 682622,
-          "name": "Noelvi Marte",
-          "pos": "RF",
           "bats": "R"
         },
         {
@@ -791,7 +1102,7 @@
           "bats": "R"
         }
       ],
-      "lineup_status": "confirmed",
+      "lineup_status": "expected",
       "home_lineup": [
         {
           "id": 607043,
@@ -849,174 +1160,174 @@
         }
       ],
       "odds": {
-        "away_ml": -1483,
-        "home_ml": 1038,
-        "spread": 1.5,
+        "home_ml": -143,
+        "away_ml": 114,
+        "spread": -1.5,
         "total": 8.5
       },
       "weather": "DomeIn Domed Stadium",
-      "umpire": "Clint Vondrak"
+      "umpire": ""
     },
     {
-      "game_pk": 824458,
+      "game_pk": 823569,
       "game_type": "R",
       "is_spring_training": false,
-      "away_team": "CHC",
-      "home_team": "CLE",
-      "game_time_utc": "2026-04-03T20:10:00Z",
-      "venue": "Progressive Field",
-      "status": "In Progress",
+      "away_team": "MIA",
+      "home_team": "NYY",
+      "game_time_utc": "2026-04-04T23:05:00Z",
+      "venue": "Yankee Stadium",
+      "status": "Scheduled",
       "series_description": "Regular Season",
       "away_pitcher": {
-        "id": 690990,
-        "name": "Cade Horton",
+        "id": 676974,
+        "name": "Max Meyer",
         "throws": "R"
       },
       "home_pitcher": {
-        "id": 676282,
-        "name": "Joey Cantillo",
+        "id": 677960,
+        "name": "Ryan Weathers",
         "throws": "R"
       },
       "away_lineup": [
         {
-          "id": 663538,
-          "name": "Nico Hoerner",
-          "pos": "2B",
-          "bats": "R"
-        },
-        {
-          "id": 608324,
-          "name": "Alex Bregman",
-          "pos": "3B",
-          "bats": "R"
-        },
-        {
-          "id": 664023,
-          "name": "Ian Happ",
-          "pos": "LF",
-          "bats": "S"
-        },
-        {
-          "id": 608348,
-          "name": "Carson Kelly",
-          "pos": "C",
-          "bats": "R"
-        },
-        {
-          "id": 683737,
-          "name": "Michael Busch",
-          "pos": "1B",
-          "bats": "L"
-        },
-        {
-          "id": 621020,
-          "name": "Dansby Swanson",
-          "pos": "SS",
-          "bats": "R"
-        },
-        {
-          "id": 807713,
-          "name": "Matt Shaw",
+          "id": 596103,
+          "name": "Austin Slater",
           "pos": "RF",
           "bats": "R"
         },
         {
-          "id": 691718,
-          "name": "Pete Crow-Armstrong",
+          "id": 682663,
+          "name": "Agustin Ramirez",
+          "pos": "C",
+          "bats": "R"
+        },
+        {
+          "id": 805300,
+          "name": "Jakob Marsee",
           "pos": "CF",
           "bats": "L"
         },
         {
-          "id": 665804,
-          "name": "Miguel Amaya",
+          "id": 672640,
+          "name": "Otto Lopez",
+          "pos": "SS",
+          "bats": "R"
+        },
+        {
+          "id": 681393,
+          "name": "Connor Norby",
+          "pos": "1B",
+          "bats": "R"
+        },
+        {
+          "id": 681715,
+          "name": "Heriberto Hernandez",
+          "pos": "LF",
+          "bats": "R"
+        },
+        {
+          "id": 669364,
+          "name": "Xavier Edwards",
+          "pos": "2B",
+          "bats": "S"
+        },
+        {
+          "id": 683357,
+          "name": "Owen Caissie",
           "pos": "DH",
+          "bats": "L"
+        },
+        {
+          "id": 691594,
+          "name": "Javier Sanoja",
+          "pos": "3B",
           "bats": "R"
         }
       ],
-      "lineup_status": "confirmed",
+      "lineup_status": "expected",
       "home_lineup": [
         {
-          "id": 680757,
-          "name": "Steven Kwan",
-          "pos": "LF",
-          "bats": "L"
-        },
-        {
-          "id": 800050,
-          "name": "Chase DeLauter",
-          "pos": "DH",
-          "bats": "L"
-        },
-        {
-          "id": 542432,
-          "name": "Jose Ramirez",
-          "pos": "3B",
-          "bats": "S"
-        },
-        {
-          "id": 700932,
-          "name": "Kyle Manzardo",
-          "pos": "1B",
-          "bats": "L"
-        },
-        {
-          "id": 666310,
-          "name": "Bo Naylor",
-          "pos": "C",
-          "bats": "L"
-        },
-        {
-          "id": 682657,
-          "name": "Angel Martinez",
-          "pos": "RF",
-          "bats": "S"
-        },
-        {
-          "id": 682177,
-          "name": "Daniel Schneemann",
+          "id": 663757,
+          "name": "Trent Grisham",
           "pos": "CF",
           "bats": "L"
         },
         {
-          "id": 672356,
-          "name": "Gabriel Arias",
+          "id": 592450,
+          "name": "Aaron Judge",
+          "pos": "RF",
+          "bats": "R"
+        },
+        {
+          "id": 641355,
+          "name": "Cody Bellinger",
+          "pos": "LF",
+          "bats": "L"
+        },
+        {
+          "id": 700250,
+          "name": "Ben Rice",
+          "pos": "1B",
+          "bats": "L"
+        },
+        {
+          "id": 519317,
+          "name": "Giancarlo Stanton",
+          "pos": "DH",
+          "bats": "R"
+        },
+        {
+          "id": 665862,
+          "name": "Jazz Chisholm",
+          "pos": "2B",
+          "bats": "L"
+        },
+        {
+          "id": 676609,
+          "name": "Jose Caballero",
           "pos": "SS",
           "bats": "R"
         },
         {
-          "id": 677587,
-          "name": "Brayan Rocchio",
-          "pos": "2B",
-          "bats": "S"
+          "id": 641857,
+          "name": "Ryan McMahon",
+          "pos": "3B",
+          "bats": "L"
+        },
+        {
+          "id": 669224,
+          "name": "Austin Wells",
+          "pos": "C",
+          "bats": "L"
         }
       ],
       "odds": {
-        "home_ml": -11500,
-        "away_ml": 8049,
+        "home_ml": -195,
+        "away_ml": 136,
         "spread": -1.5,
-        "total": 5.5
+        "total": 7.5
       },
-      "weather": "0%62\u00b0\u00a0\u00a0Wind 9 mph L-R",
-      "umpire": "Dan Merzel"
+      "weather": "15% Precipitation53\u00b0\u00a0\u00a0Wind 14 mph In",
+      "umpire": ""
     },
     {
-      "game_pk": 823732,
+      "game_pk": 823730,
       "game_type": "R",
       "is_spring_training": false,
       "away_team": "TB",
       "home_team": "MIN",
-      "game_time_utc": "2026-04-03T20:10:00Z",
+      "game_time_utc": "2026-04-04T23:10:00Z",
       "venue": "Target Field",
-      "status": "In Progress",
+      "status": "Scheduled",
       "series_description": "Regular Season",
       "away_pitcher": {
-        "id": 671212,
-        "name": "Joe Boyle",
+        "id": 571927,
+        "name": "Steven Matz",
         "throws": "R"
       },
       "home_pitcher": {
-        "id": 641927,
-        "name": "Bailey Ober",
+        "id": 690953,
+        "name": "Mick Abel",
         "throws": "R"
       },
       "away_lineup": [
@@ -1033,21 +1344,15 @@
           "bats": "L"
         },
         {
-          "id": 691406,
-          "name": "Junior Caminero",
-          "pos": "3B",
-          "bats": "R"
-        },
-        {
           "id": 641584,
           "name": "Jake Fraley",
           "pos": "RF",
           "bats": "L"
         },
         {
-          "id": 663743,
-          "name": "Nick Fortes",
-          "pos": "C",
+          "id": 691406,
+          "name": "Junior Caminero",
+          "pos": "3B",
           "bats": "R"
         },
         {
@@ -1057,9 +1362,9 @@
           "bats": "L"
         },
         {
-          "id": 810938,
-          "name": "Ben Williamson",
-          "pos": "2B",
+          "id": 663743,
+          "name": "Nick Fortes",
+          "pos": "C",
           "bats": "R"
         },
         {
@@ -1069,19 +1374,25 @@
           "bats": "L"
         },
         {
+          "id": 680700,
+          "name": "Richie Palacios",
+          "pos": "2B",
+          "bats": "L"
+        },
+        {
           "id": 700246,
           "name": "Carson Williams",
           "pos": "SS",
           "bats": "R"
         }
       ],
-      "lineup_status": "confirmed",
+      "lineup_status": "expected",
       "home_lineup": [
         {
-          "id": 665019,
-          "name": "Kody Clemens",
-          "pos": "1B",
-          "bats": "L"
+          "id": 668885,
+          "name": "Austin Martin",
+          "pos": "LF",
+          "bats": "R"
         },
         {
           "id": 621439,
@@ -1102,22 +1413,22 @@
           "bats": "L"
         },
         {
-          "id": 605137,
-          "name": "Josh Bell",
-          "pos": "DH",
-          "bats": "S"
-        },
-        {
           "id": 680777,
           "name": "Ryan Jeffers",
           "pos": "C",
           "bats": "R"
         },
         {
-          "id": 663616,
-          "name": "Trevor Larnach",
-          "pos": "LF",
-          "bats": "L"
+          "id": 605137,
+          "name": "Josh Bell",
+          "pos": "DH",
+          "bats": "S"
+        },
+        {
+          "id": 605170,
+          "name": "Victor Caratini",
+          "pos": "1B",
+          "bats": "S"
         },
         {
           "id": 668904,
@@ -1126,39 +1437,323 @@
           "bats": "R"
         },
         {
-          "id": 656484,
-          "name": "Tristan Gray",
+          "id": 686797,
+          "name": "Brooks Lee",
           "pos": "SS",
-          "bats": "L"
+          "bats": "S"
         }
       ],
       "odds": {
-        "away_ml": -113,
-        "home_ml": 90,
-        "spread": 1.5,
-        "total": 10.0
+        "home_ml": -111,
+        "away_ml": 88,
+        "spread": -1.5,
+        "total": 7.5
       },
-      "weather": "100% Rain38\u00b0\u00a0\u00a0Wind 13 mph In",
-      "umpire": "Ryan Blakney"
+      "weather": "30% Rain37\u00b0\u00a0\u00a0Wind 16 mph",
+      "umpire": ""
     },
     {
-      "game_pk": 824377,
+      "game_pk": 824460,
+      "game_type": "R",
+      "is_spring_training": false,
+      "away_team": "CHC",
+      "home_team": "CLE",
+      "game_time_utc": "2026-04-04T23:15:00Z",
+      "venue": "Progressive Field",
+      "status": "Scheduled",
+      "series_description": "Regular Season",
+      "away_pitcher": {
+        "id": 684007,
+        "name": "Shota Imanaga",
+        "throws": "R"
+      },
+      "home_pitcher": {
+        "id": 677944,
+        "name": "Slade Cecconi",
+        "throws": "R"
+      },
+      "away_lineup": [
+        {
+          "id": 683737,
+          "name": "Michael Busch",
+          "pos": "1B",
+          "bats": "L"
+        },
+        {
+          "id": 608324,
+          "name": "Alex Bregman",
+          "pos": "3B",
+          "bats": "R"
+        },
+        {
+          "id": 664023,
+          "name": "Ian Happ",
+          "pos": "LF",
+          "bats": "S"
+        },
+        {
+          "id": 691718,
+          "name": "Pete Crow-Armstrong",
+          "pos": "CF",
+          "bats": "L"
+        },
+        {
+          "id": 663538,
+          "name": "Nico Hoerner",
+          "pos": "2B",
+          "bats": "R"
+        },
+        {
+          "id": 608348,
+          "name": "Carson Kelly",
+          "pos": "C",
+          "bats": "R"
+        },
+        {
+          "id": 694208,
+          "name": "Moises Ballesteros",
+          "pos": "DH",
+          "bats": "L"
+        },
+        {
+          "id": 621020,
+          "name": "Dansby Swanson",
+          "pos": "SS",
+          "bats": "R"
+        },
+        {
+          "id": 807713,
+          "name": "Matt Shaw",
+          "pos": "RF",
+          "bats": "R"
+        }
+      ],
+      "lineup_status": "expected",
+      "home_lineup": [
+        {
+          "id": 680757,
+          "name": "Steven Kwan",
+          "pos": "LF",
+          "bats": "L"
+        },
+        {
+          "id": 682657,
+          "name": "Angel Martinez",
+          "pos": "CF",
+          "bats": "S"
+        },
+        {
+          "id": 542432,
+          "name": "Jose Ramirez",
+          "pos": "3B",
+          "bats": "S"
+        },
+        {
+          "id": 656555,
+          "name": "Rhys Hoskins",
+          "pos": "1B",
+          "bats": "R"
+        },
+        {
+          "id": 681807,
+          "name": "David Fry",
+          "pos": "DH",
+          "bats": "R"
+        },
+        {
+          "id": 672356,
+          "name": "Gabriel Arias",
+          "pos": "SS",
+          "bats": "R"
+        },
+        {
+          "id": 692216,
+          "name": "CJ Kayfus",
+          "pos": "RF",
+          "bats": "L"
+        },
+        {
+          "id": 677587,
+          "name": "Brayan Rocchio",
+          "pos": "2B",
+          "bats": "S"
+        },
+        {
+          "id": 595978,
+          "name": "Austin Hedges",
+          "pos": "C",
+          "bats": "R"
+        }
+      ],
+      "odds": {
+        "away_ml": -136,
+        "home_ml": 108,
+        "spread": 1.5,
+        "total": 8.0
+      },
+      "weather": "80% Rain72\u00b0\u00a0\u00a0Wind 13 mph Out",
+      "umpire": ""
+    },
+    {
+      "game_pk": 825104,
+      "game_type": "R",
+      "is_spring_training": false,
+      "away_team": "ATL",
+      "home_team": "ARI",
+      "game_time_utc": "2026-04-04T23:15:00Z",
+      "venue": "Chase Field",
+      "status": "Scheduled",
+      "series_description": "Regular Season",
+      "away_pitcher": {
+        "id": 693821,
+        "name": "Bryce Elder",
+        "throws": "R"
+      },
+      "home_pitcher": {
+        "id": 647336,
+        "name": "Michael Soroka",
+        "throws": "R"
+      },
+      "away_lineup": [
+        {
+          "id": 660670,
+          "name": "Ronald Acuna",
+          "pos": "RF",
+          "bats": "R"
+        },
+        {
+          "id": 686948,
+          "name": "Drake Baldwin",
+          "pos": "C",
+          "bats": "L"
+        },
+        {
+          "id": 621566,
+          "name": "Matt Olson",
+          "pos": "1B",
+          "bats": "L"
+        },
+        {
+          "id": 663586,
+          "name": "Austin Riley",
+          "pos": "3B",
+          "bats": "R"
+        },
+        {
+          "id": 573262,
+          "name": "Mike Yastrzemski",
+          "pos": "LF",
+          "bats": "L"
+        },
+        {
+          "id": 645277,
+          "name": "Ozzie Albies",
+          "pos": "2B",
+          "bats": "S"
+        },
+        {
+          "id": 671739,
+          "name": "Michael Harris",
+          "pos": "CF",
+          "bats": "L"
+        },
+        {
+          "id": 642086,
+          "name": "Dominic Smith",
+          "pos": "DH",
+          "bats": "L"
+        },
+        {
+          "id": 643289,
+          "name": "Mauricio Dubon",
+          "pos": "SS",
+          "bats": "R"
+        }
+      ],
+      "lineup_status": "expected",
+      "home_lineup": [
+        {
+          "id": 606466,
+          "name": "Ketel Marte",
+          "pos": "2B",
+          "bats": "S"
+        },
+        {
+          "id": 682998,
+          "name": "Corbin Carroll",
+          "pos": "RF",
+          "bats": "L"
+        },
+        {
+          "id": 672695,
+          "name": "Geraldo Perdomo",
+          "pos": "SS",
+          "bats": "S"
+        },
+        {
+          "id": 672515,
+          "name": "Gabriel Moreno",
+          "pos": "C",
+          "bats": "R"
+        },
+        {
+          "id": 571448,
+          "name": "Nolan Arenado",
+          "pos": "3B",
+          "bats": "R"
+        },
+        {
+          "id": 677950,
+          "name": "Alek Thomas",
+          "pos": "CF",
+          "bats": "L"
+        },
+        {
+          "id": 467793,
+          "name": "Carlos Santana",
+          "pos": "1B",
+          "bats": "S"
+        },
+        {
+          "id": 605228,
+          "name": "Jose Fernandez",
+          "pos": "DH",
+          "bats": "R"
+        },
+        {
+          "id": 678489,
+          "name": "Jorge Barrosa",
+          "pos": "LF",
+          "bats": "S"
+        }
+      ],
+      "odds": {
+        "home_ml": -114,
+        "away_ml": 91,
+        "spread": -1.5,
+        "total": 9.5
+      },
+      "weather": "DomeIn Domed Stadium",
+      "umpire": ""
+    },
+    {
+      "game_pk": 824378,
       "game_type": "R",
       "is_spring_training": false,
       "away_team": "PHI",
       "home_team": "COL",
-      "game_time_utc": "2026-04-03T20:10:00Z",
+      "game_time_utc": "2026-04-05T00:10:00Z",
       "venue": "Coors Field",
-      "status": "In Progress",
+      "status": "Scheduled",
       "series_description": "Regular Season",
       "away_pitcher": {
-        "id": 605400,
-        "name": "Aaron Nola",
+        "id": 666200,
+        "name": "Jes\u00fas Luzardo",
         "throws": "R"
       },
       "home_pitcher": {
-        "id": 547179,
-        "name": "Michael Lorenzen",
+        "id": null,
+        "name": "TBD",
         "throws": "R"
       },
       "away_lineup": [
@@ -1187,27 +1782,27 @@
           "bats": "R"
         },
         {
-          "id": 681082,
-          "name": "Bryson Stott",
-          "pos": "2B",
-          "bats": "L"
-        },
-        {
           "id": 666969,
           "name": "Adolis Garcia",
           "pos": "RF",
           "bats": "R"
         },
         {
-          "id": 669016,
-          "name": "Brandon Marsh",
-          "pos": "LF",
-          "bats": "L"
+          "id": 624641,
+          "name": "Edmundo Sosa",
+          "pos": "2B",
+          "bats": "R"
         },
         {
           "id": 592663,
           "name": "J.T. Realmuto",
           "pos": "C",
+          "bats": "R"
+        },
+        {
+          "id": 805249,
+          "name": "Otto Kemp",
+          "pos": "LF",
           "bats": "R"
         },
         {
@@ -1217,13 +1812,13 @@
           "bats": "L"
         }
       ],
-      "lineup_status": "confirmed",
+      "lineup_status": "expected",
       "home_lineup": [
         {
-          "id": 687859,
-          "name": "Troy Johnston",
-          "pos": "DH",
-          "bats": "L"
+          "id": 678662,
+          "name": "Ezequiel Tovar",
+          "pos": "SS",
+          "bats": "R"
         },
         {
           "id": 696100,
@@ -1232,21 +1827,33 @@
           "bats": "R"
         },
         {
-          "id": 666160,
-          "name": "Mickey Moniak",
+          "id": 687597,
+          "name": "Jordan Beck",
           "pos": "RF",
-          "bats": "L"
-        },
-        {
-          "id": 678662,
-          "name": "Ezequiel Tovar",
-          "pos": "SS",
           "bats": "R"
         },
         {
-          "id": 681198,
-          "name": "TJ Rumfield",
-          "pos": "1B",
+          "id": 686668,
+          "name": "Brenton Doyle",
+          "pos": "CF",
+          "bats": "R"
+        },
+        {
+          "id": 691720,
+          "name": "Kyle Karros",
+          "pos": "3B",
+          "bats": "R"
+        },
+        {
+          "id": 671289,
+          "name": "Tyler Freeman",
+          "pos": "LF",
+          "bats": "R"
+        },
+        {
+          "id": 666160,
+          "name": "Mickey Moniak",
+          "pos": "DH",
           "bats": "L"
         },
         {
@@ -1256,201 +1863,189 @@
           "bats": "S"
         },
         {
-          "id": 686668,
-          "name": "Brenton Doyle",
-          "pos": "CF",
-          "bats": "R"
-        },
-        {
-          "id": 664983,
-          "name": "Jake McCarthy",
-          "pos": "LF",
+          "id": 681198,
+          "name": "TJ Rumfield",
+          "pos": "1B",
           "bats": "L"
-        },
-        {
-          "id": 691720,
-          "name": "Kyle Karros",
-          "pos": "3B",
-          "bats": "R"
         }
       ],
       "odds": {
-        "away_ml": -185,
-        "home_ml": 129,
+        "away_ml": -238,
+        "home_ml": 166,
         "spread": 1.5,
-        "total": 12.0
+        "total": 10.0
       },
-      "weather": "0%51\u00b0\u00a0\u00a0Wind 13 mph",
-      "umpire": "Jansen Visconti"
+      "weather": "0%62\u00b0\u00a0\u00a0Wind 8 mph R-L",
+      "umpire": ""
     },
     {
-      "game_pk": 823406,
+      "game_pk": 823239,
       "game_type": "R",
       "is_spring_training": false,
-      "away_team": "BAL",
-      "home_team": "PIT",
-      "game_time_utc": "2026-04-03T20:12:00Z",
-      "venue": "PNC Park",
-      "status": "In Progress",
+      "away_team": "NYM",
+      "home_team": "SF",
+      "game_time_utc": "2026-04-05T01:05:00Z",
+      "venue": "Oracle Park",
+      "status": "Scheduled",
       "series_description": "Regular Season",
       "away_pitcher": {
-        "id": 680694,
-        "name": "Kyle Bradish",
+        "id": 605280,
+        "name": "Clay Holmes",
         "throws": "R"
       },
       "home_pitcher": {
-        "id": 656605,
-        "name": "Mitch Keller",
+        "id": 694738,
+        "name": "Landen Roupp",
         "throws": "R"
       },
       "away_lineup": [
         {
-          "id": 621493,
-          "name": "Taylor Ward",
-          "pos": "LF",
-          "bats": "R"
-        },
-        {
-          "id": 683002,
-          "name": "Gunnar Henderson",
+          "id": 596019,
+          "name": "Francisco Lindor",
           "pos": "SS",
-          "bats": "L"
-        },
-        {
-          "id": 624413,
-          "name": "Pete Alonso",
-          "pos": "1B",
-          "bats": "R"
-        },
-        {
-          "id": 668939,
-          "name": "Adley Rutschman",
-          "pos": "C",
           "bats": "S"
         },
         {
-          "id": 694212,
-          "name": "Samuel Basallo",
+          "id": 665742,
+          "name": "Juan Soto",
+          "pos": "LF",
+          "bats": "L"
+        },
+        {
+          "id": 666182,
+          "name": "Bo Bichette",
+          "pos": "3B",
+          "bats": "R"
+        },
+        {
+          "id": 593871,
+          "name": "Jorge Polanco",
+          "pos": "1B",
+          "bats": "S"
+        },
+        {
+          "id": 673357,
+          "name": "Luis Robert",
+          "pos": "CF",
+          "bats": "R"
+        },
+        {
+          "id": 683146,
+          "name": "Brett Baty",
           "pos": "DH",
           "bats": "L"
         },
         {
-          "id": 687637,
-          "name": "Dylan Beavers",
-          "pos": "RF",
-          "bats": "L"
-        },
-        {
-          "id": 669236,
-          "name": "Jeremiah Jackson",
+          "id": 543760,
+          "name": "Marcus Semien",
           "pos": "2B",
           "bats": "R"
         },
         {
-          "id": 681297,
-          "name": "Colton Cowser",
-          "pos": "CF",
+          "id": 701807,
+          "name": "Carson Benge",
+          "pos": "RF",
           "bats": "L"
         },
         {
-          "id": 677942,
-          "name": "Blaze Alexander",
-          "pos": "3B",
+          "id": 682626,
+          "name": "Francisco Alvarez",
+          "pos": "C",
           "bats": "R"
         }
       ],
-      "lineup_status": "confirmed",
+      "lineup_status": "expected",
       "home_lineup": [
         {
-          "id": 665833,
-          "name": "Oneil Cruz",
-          "pos": "CF",
-          "bats": "L"
-        },
-        {
-          "id": 664040,
-          "name": "Brandon Lowe",
-          "pos": "2B",
-          "bats": "L"
-        },
-        {
-          "id": 668804,
-          "name": "Bryan Reynolds",
-          "pos": "LF",
-          "bats": "S"
-        },
-        {
-          "id": 542303,
-          "name": "Marcell Ozuna",
-          "pos": "DH",
-          "bats": "R"
-        },
-        {
-          "id": 656811,
-          "name": "Ryan O'Hearn",
-          "pos": "RF",
-          "bats": "L"
-        },
-        {
-          "id": 687462,
-          "name": "Spencer Horwitz",
-          "pos": "1B",
-          "bats": "L"
-        },
-        {
-          "id": 804606,
-          "name": "Konnor Griffin",
+          "id": 642715,
+          "name": "Willy Adames",
           "pos": "SS",
           "bats": "R"
         },
         {
-          "id": 669707,
-          "name": "Jared Triolo",
+          "id": 646240,
+          "name": "Rafael Devers",
+          "pos": "DH",
+          "bats": "L"
+        },
+        {
+          "id": 671218,
+          "name": "Heliot Ramos",
+          "pos": "LF",
+          "bats": "R"
+        },
+        {
+          "id": 650333,
+          "name": "Luis Arraez",
+          "pos": "2B",
+          "bats": "L"
+        },
+        {
+          "id": 656305,
+          "name": "Matt Chapman",
           "pos": "3B",
           "bats": "R"
         },
         {
-          "id": 680779,
-          "name": "Henry Davis",
+          "id": 808982,
+          "name": "Jung Hoo Lee",
+          "pos": "RF",
+          "bats": "L"
+        },
+        {
+          "id": 664056,
+          "name": "Harrison Bader",
+          "pos": "CF",
+          "bats": "R"
+        },
+        {
+          "id": 672275,
+          "name": "Patrick Bailey",
           "pos": "C",
+          "bats": "S"
+        },
+        {
+          "id": 669477,
+          "name": "Casey Schmitt",
+          "pos": "1B",
           "bats": "R"
         }
       ],
       "odds": {
-        "home_ml": -633,
-        "away_ml": 443,
-        "spread": -1.5,
-        "total": 10.0
+        "away_ml": -116,
+        "home_ml": 92,
+        "spread": 1.5,
+        "total": 7.5
       },
-      "weather": "0%75\u00b0\u00a0\u00a0Wind 15 mph R-L",
-      "umpire": "Jeremie Rehak"
+      "weather": "0%74\u00b0\u00a0\u00a0Wind 5 mph Out",
+      "umpire": ""
     },
     {
-      "game_pk": 824056,
+      "game_pk": 824054,
       "game_type": "R",
       "is_spring_training": false,
       "away_team": "SEA",
       "home_team": "LAA",
-      "game_time_utc": "2026-04-04T01:38:00Z",
+      "game_time_utc": "2026-04-05T01:38:00Z",
       "venue": "Angel Stadium",
-      "status": "Pre-Game",
+      "status": "Scheduled",
       "series_description": "Regular Season",
       "away_pitcher": {
-        "id": 693433,
-        "name": "Bryan Woo",
+        "id": 676106,
+        "name": "Emerson Hancock",
         "throws": "R"
       },
       "home_pitcher": {
-        "id": 672282,
-        "name": "Reid Detmers",
+        "id": 686799,
+        "name": "Jack Kochanowicz",
         "throws": "R"
       },
       "away_lineup": [
         {
-          "id": 608701,
-          "name": "Rob Refsnyder",
-          "pos": "DH",
-          "bats": "R"
+          "id": 680977,
+          "name": "Brendan Donovan",
+          "pos": "3B",
+          "bats": "L"
         },
         {
           "id": 663728,
@@ -1477,9 +2072,21 @@
           "bats": "R"
         },
         {
-          "id": 680977,
-          "name": "Brendan Donovan",
-          "pos": "3B",
+          "id": 670042,
+          "name": "Luke Raley",
+          "pos": "RF",
+          "bats": "L"
+        },
+        {
+          "id": 686527,
+          "name": "Dominic Canzone",
+          "pos": "DH",
+          "bats": "L"
+        },
+        {
+          "id": 702284,
+          "name": "Cole Young",
+          "pos": "2B",
           "bats": "L"
         },
         {
@@ -1487,21 +2094,9 @@
           "name": "J.P. Crawford",
           "pos": "SS",
           "bats": "L"
-        },
-        {
-          "id": 645302,
-          "name": "Victor Robles",
-          "pos": "RF",
-          "bats": "R"
-        },
-        {
-          "id": 702284,
-          "name": "Cole Young",
-          "pos": "2B",
-          "bats": "L"
         }
       ],
-      "lineup_status": "confirmed",
+      "lineup_status": "expected",
       "home_lineup": [
         {
           "id": 687263,
@@ -1559,520 +2154,12 @@
         }
       ],
       "odds": {
-        "away_ml": -159,
-        "home_ml": 111,
+        "away_ml": -162,
+        "home_ml": 113,
         "spread": 1.5,
-        "total": 8.0
+        "total": 9.5
       },
-      "weather": "0%81\u00b0\u00a0\u00a0Wind 8 mph In",
-      "umpire": ""
-    },
-    {
-      "game_pk": 825026,
-      "game_type": "R",
-      "is_spring_training": false,
-      "away_team": "HOU",
-      "home_team": "OAK",
-      "game_time_utc": "2026-04-04T01:40:00Z",
-      "venue": "Sutter Health Park",
-      "status": "Pre-Game",
-      "series_description": "Regular Season",
-      "away_pitcher": {
-        "id": 664299,
-        "name": "Cristian Javier",
-        "throws": "R"
-      },
-      "home_pitcher": {
-        "id": 605488,
-        "name": "Jeffrey Springs",
-        "throws": "R"
-      },
-      "away_lineup": [],
-      "lineup_status": "expected",
-      "home_lineup": [
-        {
-          "id": 701762,
-          "name": "",
-          "pos": "",
-          "bats": ""
-        },
-        {
-          "id": 669127,
-          "name": "",
-          "pos": "",
-          "bats": ""
-        },
-        {
-          "id": 691016,
-          "name": "",
-          "pos": "",
-          "bats": ""
-        },
-        {
-          "id": 667670,
-          "name": "",
-          "pos": "",
-          "bats": ""
-        },
-        {
-          "id": 805779,
-          "name": "",
-          "pos": "",
-          "bats": ""
-        },
-        {
-          "id": 671732,
-          "name": "",
-          "pos": "",
-          "bats": ""
-        },
-        {
-          "id": 691777,
-          "name": "",
-          "pos": "",
-          "bats": ""
-        },
-        {
-          "id": 643446,
-          "name": "",
-          "pos": "",
-          "bats": ""
-        },
-        {
-          "id": 672016,
-          "name": "",
-          "pos": "",
-          "bats": ""
-        }
-      ],
-      "odds": {},
-      "weather": "",
-      "umpire": ""
-    },
-    {
-      "game_pk": 825103,
-      "game_type": "R",
-      "is_spring_training": false,
-      "away_team": "ATL",
-      "home_team": "ARI",
-      "game_time_utc": "2026-04-04T01:45:00Z",
-      "venue": "Chase Field",
-      "status": "Pre-Game",
-      "series_description": "Regular Season",
-      "away_pitcher": {
-        "id": 656550,
-        "name": "Grant Holmes",
-        "throws": "R"
-      },
-      "home_pitcher": {
-        "id": 593958,
-        "name": "Eduardo Rodriguez",
-        "throws": "R"
-      },
-      "away_lineup": [
-        {
-          "id": 660670,
-          "name": "Ronald Acuna",
-          "pos": "RF",
-          "bats": "R"
-        },
-        {
-          "id": 686948,
-          "name": "Drake Baldwin",
-          "pos": "DH",
-          "bats": "L"
-        },
-        {
-          "id": 645277,
-          "name": "Ozzie Albies",
-          "pos": "2B",
-          "bats": "S"
-        },
-        {
-          "id": 621566,
-          "name": "Matt Olson",
-          "pos": "1B",
-          "bats": "L"
-        },
-        {
-          "id": 663586,
-          "name": "Austin Riley",
-          "pos": "3B",
-          "bats": "R"
-        },
-        {
-          "id": 642201,
-          "name": "Eli White",
-          "pos": "LF",
-          "bats": "R"
-        },
-        {
-          "id": 643289,
-          "name": "Mauricio Dubon",
-          "pos": "SS",
-          "bats": "R"
-        },
-        {
-          "id": 671739,
-          "name": "Michael Harris",
-          "pos": "CF",
-          "bats": "L"
-        },
-        {
-          "id": 641680,
-          "name": "Jonah Heim",
-          "pos": "C",
-          "bats": "S"
-        }
-      ],
-      "lineup_status": "confirmed",
-      "home_lineup": [
-        {
-          "id": 606466,
-          "name": "Ketel Marte",
-          "pos": "2B",
-          "bats": "S"
-        },
-        {
-          "id": 682998,
-          "name": "Corbin Carroll",
-          "pos": "RF",
-          "bats": "L"
-        },
-        {
-          "id": 672695,
-          "name": "Geraldo Perdomo",
-          "pos": "SS",
-          "bats": "S"
-        },
-        {
-          "id": 672515,
-          "name": "Gabriel Moreno",
-          "pos": "DH",
-          "bats": "R"
-        },
-        {
-          "id": 571448,
-          "name": "Nolan Arenado",
-          "pos": "3B",
-          "bats": "R"
-        },
-        {
-          "id": 677950,
-          "name": "Alek Thomas",
-          "pos": "CF",
-          "bats": "L"
-        },
-        {
-          "id": 543510,
-          "name": "James McCann",
-          "pos": "C",
-          "bats": "R"
-        },
-        {
-          "id": 467793,
-          "name": "Carlos Santana",
-          "pos": "1B",
-          "bats": "S"
-        },
-        {
-          "id": 694374,
-          "name": "Tim Tawa",
-          "pos": "LF",
-          "bats": "R"
-        }
-      ],
-      "odds": {
-        "away_ml": -116,
-        "home_ml": 92,
-        "spread": 1.5,
-        "total": 9.0
-      },
-      "weather": "DomeIn Domed Stadium",
-      "umpire": ""
-    },
-    {
-      "game_pk": 823240,
-      "game_type": "R",
-      "is_spring_training": false,
-      "away_team": "NYM",
-      "home_team": "SF",
-      "game_time_utc": "2026-04-04T02:15:00Z",
-      "venue": "Oracle Park",
-      "status": "Pre-Game",
-      "series_description": "Regular Season",
-      "away_pitcher": {
-        "id": 690997,
-        "name": "Nolan McLean",
-        "throws": "R"
-      },
-      "home_pitcher": {
-        "id": 641816,
-        "name": "Tyler Mahle",
-        "throws": "R"
-      },
-      "away_lineup": [
-        {
-          "id": 596019,
-          "name": "Francisco Lindor",
-          "pos": "SS",
-          "bats": "S"
-        },
-        {
-          "id": 665742,
-          "name": "Juan Soto",
-          "pos": "LF",
-          "bats": "L"
-        },
-        {
-          "id": 666182,
-          "name": "Bo Bichette",
-          "pos": "3B",
-          "bats": "R"
-        },
-        {
-          "id": 673357,
-          "name": "Luis Robert",
-          "pos": "CF",
-          "bats": "R"
-        },
-        {
-          "id": 683146,
-          "name": "Brett Baty",
-          "pos": "1B",
-          "bats": "L"
-        },
-        {
-          "id": 668901,
-          "name": "Mark Vientos",
-          "pos": "DH",
-          "bats": "R"
-        },
-        {
-          "id": 543760,
-          "name": "Marcus Semien",
-          "pos": "2B",
-          "bats": "R"
-        },
-        {
-          "id": 701807,
-          "name": "Carson Benge",
-          "pos": "RF",
-          "bats": "L"
-        },
-        {
-          "id": 682626,
-          "name": "Francisco Alvarez",
-          "pos": "C",
-          "bats": "R"
-        }
-      ],
-      "lineup_status": "confirmed",
-      "home_lineup": [
-        {
-          "id": 642715,
-          "name": "Willy Adames",
-          "pos": "SS",
-          "bats": "R"
-        },
-        {
-          "id": 646240,
-          "name": "Rafael Devers",
-          "pos": "DH",
-          "bats": "L"
-        },
-        {
-          "id": 650333,
-          "name": "Luis Arraez",
-          "pos": "2B",
-          "bats": "L"
-        },
-        {
-          "id": 656305,
-          "name": "Matt Chapman",
-          "pos": "3B",
-          "bats": "R"
-        },
-        {
-          "id": 808982,
-          "name": "Jung Hoo Lee",
-          "pos": "RF",
-          "bats": "L"
-        },
-        {
-          "id": 671218,
-          "name": "Heliot Ramos",
-          "pos": "LF",
-          "bats": "R"
-        },
-        {
-          "id": 664056,
-          "name": "Harrison Bader",
-          "pos": "CF",
-          "bats": "R"
-        },
-        {
-          "id": 672275,
-          "name": "Patrick Bailey",
-          "pos": "C",
-          "bats": "S"
-        },
-        {
-          "id": 669477,
-          "name": "Casey Schmitt",
-          "pos": "1B",
-          "bats": "R"
-        }
-      ],
-      "odds": {
-        "away_ml": -130,
-        "home_ml": 104,
-        "spread": 1.5,
-        "total": 7.5
-      },
-      "weather": "0%65\u00b0\u00a0\u00a0Wind 15 mph Out",
-      "umpire": ""
-    },
-    {
-      "game_pk": 824134,
-      "game_type": "R",
-      "is_spring_training": false,
-      "away_team": "MIL",
-      "home_team": "KC",
-      "game_time_utc": "2026-04-03T23:45:00Z",
-      "venue": "Kauffman Stadium",
-      "status": "Postponed",
-      "series_description": "Regular Season",
-      "away_pitcher": {
-        "id": 694477,
-        "name": "Chad Patrick",
-        "throws": "R"
-      },
-      "home_pitcher": {
-        "id": 679883,
-        "name": "Luinder Avila",
-        "throws": "R"
-      },
-      "away_lineup": [
-        {
-          "id": 668930,
-          "name": "Brice Turang",
-          "pos": "2B",
-          "bats": "L"
-        },
-        {
-          "id": 650859,
-          "name": "Luis Rengifo",
-          "pos": "3B",
-          "bats": "S"
-        },
-        {
-          "id": 661388,
-          "name": "William Contreras",
-          "pos": "C",
-          "bats": "R"
-        },
-        {
-          "id": 592885,
-          "name": "Christian Yelich",
-          "pos": "DH",
-          "bats": "L"
-        },
-        {
-          "id": 669003,
-          "name": "Garrett Mitchell",
-          "pos": "CF",
-          "bats": "L"
-        },
-        {
-          "id": 641343,
-          "name": "Jake Bauers",
-          "pos": "1B",
-          "bats": "L"
-        },
-        {
-          "id": 686217,
-          "name": "Sal Frelick",
-          "pos": "RF",
-          "bats": "L"
-        },
-        {
-          "id": 663604,
-          "name": "Brandon Lockridge",
-          "pos": "LF",
-          "bats": "R"
-        },
-        {
-          "id": 666152,
-          "name": "David Hamilton",
-          "pos": "SS",
-          "bats": "L"
-        }
-      ],
-      "lineup_status": "confirmed",
-      "home_lineup": [
-        {
-          "id": 672580,
-          "name": "Maikel Garcia",
-          "pos": "3B",
-          "bats": "R"
-        },
-        {
-          "id": 677951,
-          "name": "Bobby Witt",
-          "pos": "SS",
-          "bats": "R"
-        },
-        {
-          "id": 686469,
-          "name": "Vinnie Pasquantino",
-          "pos": "1B",
-          "bats": "L"
-        },
-        {
-          "id": 521692,
-          "name": "Salvador Perez",
-          "pos": "C",
-          "bats": "R"
-        },
-        {
-          "id": 695506,
-          "name": "Jac Caglianone",
-          "pos": "RF",
-          "bats": "L"
-        },
-        {
-          "id": 516782,
-          "name": "Starling Marte",
-          "pos": "DH",
-          "bats": "R"
-        },
-        {
-          "id": 686555,
-          "name": "Isaac Collins",
-          "pos": "LF",
-          "bats": "S"
-        },
-        {
-          "id": 679845,
-          "name": "Nick Loftin",
-          "pos": "2B",
-          "bats": "R"
-        },
-        {
-          "id": 664728,
-          "name": "Kyle Isbel",
-          "pos": "CF",
-          "bats": "L"
-        }
-      ],
-      "odds": {
-        "away_ml": -118,
-        "home_ml": 94,
-        "spread": 1.5,
-        "total": 9.0
-      },
-      "weather": "68% Rain73\u00b0\u00a0\u00a0Wind 17 mph Out",
+      "weather": "0%82\u00b0\u00a0\u00a0Wind 8 mph Out",
       "umpire": ""
     }
   ]
