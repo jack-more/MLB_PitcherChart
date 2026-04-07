@@ -18,6 +18,7 @@ import json
 import os
 import sys
 import html as html_lib
+import requests
 from datetime import datetime, timezone, timedelta
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -66,7 +67,7 @@ def ms_signal(ms):
 def format_spread(val):
     """Format a spread value for display."""
     if val is None:
-        return "—"
+        return "-"
     v = float(val)
     if v > 0:
         return f"+{v:.1f}"
@@ -76,14 +77,14 @@ def format_spread(val):
 def format_total(val):
     """Format over/under total."""
     if val is None:
-        return "—"
+        return "-"
     return f"{float(val):.1f}"
 
 
 def format_ml(val):
     """Format moneyline value."""
     if val is None:
-        return "—"
+        return "-"
     v = int(val)
     return f"+{v}" if v > 0 else str(v)
 
@@ -91,7 +92,7 @@ def format_ml(val):
 def _pct(val):
     """Format decimal as percentage string."""
     if val is None:
-        return "—"
+        return "-"
     return f"{float(val)*100:.0f}%"
 
 
@@ -124,7 +125,7 @@ def flatten_game(game):
         flat_edge["total_edge"] = edges["total"]["edge"]
     game["edge"] = flat_edge
 
-    # 3. Build per-game picks list — ML first (baseball is a ML sport)
+    # 3. Build per-game picks list - ML first (baseball is a ML sport)
     conf = game.get("confidence", {})
     picks = []
 
@@ -241,8 +242,8 @@ def render_card_header(game):
     # ML display
     away_ml = odds.get("away_ml")
     home_ml = odds.get("home_ml")
-    away_ml_str = format_ml(away_ml) if away_ml is not None else "—"
-    home_ml_str = format_ml(home_ml) if home_ml is not None else "—"
+    away_ml_str = format_ml(away_ml) if away_ml is not None else "-"
+    home_ml_str = format_ml(home_ml) if home_ml is not None else "-"
 
     # Model win probability
     away_wp = model_wp.get("away", 50)
@@ -282,7 +283,7 @@ def render_card_header(game):
   </div>
   <div class="card-center ma-premium">
     <div class="proj-label">WIN PROB</div>
-    <div class="spread">{away_wp:.0f}% — {home_wp:.0f}%</div>
+    <div class="spread">{away_wp:.0f}% - {home_wp:.0f}%</div>
     <div class="ou-line">{total_display}</div>
     {pick_html}
   </div>
@@ -363,7 +364,7 @@ def render_batter_row(batter, order_num):
         ms_display = '<span style="color:#999;font-size:12px">NRI</span>'
         ms_cls = ""
     else:
-        ms_display = str(int(ms)) if ms else "—"
+        ms_display = str(int(ms)) if ms else "-"
         ms_cls = ms_class(ms) if ms else ""
 
     # Build position/hand line
@@ -431,7 +432,7 @@ def render_lineup_grid(game, game_idx):
     if not away_lineup and not home_lineup:
         status = game.get("lineup_status", "TBD")
         return f'''<div class="tbd-block">
-  LINEUPS {status.upper()} — CHECK BACK CLOSER TO GAME TIME
+  LINEUPS {status.upper()} - CHECK BACK CLOSER TO GAME TIME
 </div>'''
 
     # Away batters
@@ -575,9 +576,9 @@ def render_model_breakdown(game):
     else:
         woba_edge = f"{home} +.{int(abs(woba_diff)*1000):03d}"
 
-    # Tier row (opposing pitcher tiers — away lineup faces home SP and vice versa)
-    away_tier = away_adj.get("tier", "—")
-    home_tier = home_adj.get("tier", "—")
+    # Tier row (opposing pitcher tiers - away lineup faces home SP and vice versa)
+    away_tier = away_adj.get("tier", "-")
+    home_tier = home_adj.get("tier", "-")
     away_tier_mult = away_adj.get("tier_mult", 1.0)
     home_tier_mult = home_adj.get("tier_mult", 1.0)
 
@@ -604,9 +605,9 @@ def render_model_breakdown(game):
     if park_mult != 1.0:
         venue = game.get("venue", "")
         tags.append(f'<span class="model-tag tag-venue">{_esc(venue)} {park_mult:.2f}×</span>')
-    if away_tier and away_tier != "—":
+    if away_tier and away_tier != "-":
         tags.append(f'<span class="model-tag tag-arch">vs {_esc(away_tier)}</span>')
-    if home_tier and home_tier != "—":
+    if home_tier and home_tier != "-":
         tags.append(f'<span class="model-tag tag-arch">vs {_esc(home_tier)}</span>')
 
     return f'''<div class="model-breakdown">
@@ -643,7 +644,7 @@ def render_model_breakdown(game):
     </div>
     <div class="model-row model-formula-row ma-premium">
       <span class="model-label">MODEL</span>
-      <span class="model-formula">BaseRuns(wOBA×Tier) + RE24 + OAA + Park + BP = <strong>{_esc(away)} {away_runs:.1f} — {_esc(home)} {home_runs:.1f}</strong></span>
+      <span class="model-formula">BaseRuns(wOBA×Tier) + RE24 + OAA + Park + BP = <strong>{_esc(away)} {away_runs:.1f} - {_esc(home)} {home_runs:.1f}</strong></span>
     </div>
     <div class="model-row model-tags">
       {"".join(tags)}
@@ -675,7 +676,7 @@ def render_game_card(game, game_idx):
   {bp_home}
 </div>'''
 
-    # Edge info — ML-first
+    # Edge info - ML-first
     edge_html = ""
     edges = game.get("edges", {})
     edge_data = game.get("edge", {})
@@ -816,7 +817,7 @@ def render_trends(games):
         elif woba:
             woba_str = f".{int(woba*1000):03d}"
         else:
-            woba_str = "—"
+            woba_str = "-"
 
         rows += f'''<div class="trend-row">
   <div class="trend-rank">{i+1}</div>
@@ -826,6 +827,165 @@ def render_trends(games):
   </div>
   <div class="trend-right">
     <div class="trend-ms {ms_cls}">{ms}</div>
+  </div>
+</div>'''
+
+    return rows
+
+
+def fetch_hitting_streaks(games):
+    """Fetch current consecutive hitting streaks for all batters in lineups.
+    Per SABR research, hitting streaks are non-random signal with predictive value.
+    Returns dict of batter_id -> {streak: int, last7_avg: float}
+    """
+    MLB_API = "https://statsapi.mlb.com/api/v1"
+    year = datetime.now().year
+    all_pids = set()
+    for game in games:
+        for side in ("away", "home"):
+            for b in game.get(f"{side}_lineup", []):
+                pid = b.get("id")
+                if pid:
+                    all_pids.add(pid)
+
+    streaks = {}
+    for pid in all_pids:
+        try:
+            r = requests.get(f"{MLB_API}/people/{pid}/stats?stats=gameLog&season={year}&group=hitting", timeout=8)
+            if r.status_code != 200:
+                continue
+            splits = r.json().get("stats", [{}])[0].get("splits", [])
+            if not splits:
+                continue
+            streak = 0
+            for s in reversed(splits):
+                if s.get("stat", {}).get("hits", 0) > 0:
+                    streak += 1
+                else:
+                    break
+            recent = splits[-7:] if len(splits) >= 7 else splits
+            total_h = sum(s.get("stat", {}).get("hits", 0) for s in recent)
+            total_ab = sum(s.get("stat", {}).get("atBats", 0) for s in recent)
+            last7_avg = total_h / max(total_ab, 1)
+            streaks[pid] = {"streak": streak, "last7_avg": round(last7_avg, 3)}
+        except Exception:
+            continue
+
+    print(f"  Fetched streaks for {len(streaks)} batters")
+    print(f"  On 3+ game streaks: {sum(1 for v in streaks.values() if v['streak'] >= 3)}")
+    return streaks
+
+
+def render_hr_watch(games):
+    """Render HR Watch column - batters most likely to go yard based on archetype HR rates."""
+    candidates = []
+    for game in games:
+        for side in ("away", "home"):
+            lineup = game.get(f"{side}_lineup", [])
+            opp = game.get("home_team" if side == "away" else "away_team", "")
+            sp_name = game.get(f"{'home' if side == 'away' else 'away'}_pitcher", {}).get("name", "TBD")
+            team = game.get(f"{side}_team", "")
+            for b in lineup:
+                ms = b.get("ms", 0)
+                # HR rate from the batter details if available
+                hr_rate = b.get("hr_rate", 0)
+                if hr_rate <= 0 and ms > 0:
+                    # Estimate from wOBA if not available
+                    woba = b.get("woba", 0.310)
+                    hr_rate = max(0, (woba - 0.280) * 0.12) if woba > 0.280 else 0.01
+                if hr_rate > 0:
+                    candidates.append({
+                        "name": b.get("name", ""),
+                        "team": team, "opp": opp, "vs": sp_name,
+                        "ms": ms, "hr_rate": hr_rate,
+                    })
+
+    candidates.sort(key=lambda x: -x["hr_rate"])
+    top = candidates[:20]
+
+    if not top:
+        return '<div class="empty-state">UPDATES WHEN LINEUPS ARE RELEASED</div>'
+
+    rows = ""
+    for i, b in enumerate(top):
+        hr_pct = round(b["hr_rate"] * 100, 1)
+        if b["hr_rate"] >= 0.06:
+            heat_cls = "hr-fire"
+        elif b["hr_rate"] >= 0.04:
+            heat_cls = "hr-hot"
+        elif b["hr_rate"] >= 0.025:
+            heat_cls = "hr-warm"
+        else:
+            heat_cls = "hr-mild"
+
+        rows += f'''<div class="hr-row {heat_cls}">
+  <div class="hr-rank">{i+1}</div>
+  <div class="hr-info">
+    <div class="hr-name">{_esc(b["name"])}</div>
+    <div class="hr-meta">{_esc(b["team"])} vs {_esc(b["vs"])} ({_esc(b["opp"])}) - MS {b["ms"]}</div>
+  </div>
+  <div class="hr-rate-col">
+    <div class="hr-rate">{hr_pct}%</div>
+    <div class="hr-rate-label">HR Rate</div>
+  </div>
+</div>'''
+
+    return rows
+
+
+def render_heating_up(games, streaks):
+    """Render Heating Up column - batters on real hitting streaks + archetype edge.
+    Per SABR research, consecutive game hitting streaks are non-random signal."""
+    candidates = []
+    for game in games:
+        for side in ("away", "home"):
+            lineup = game.get(f"{side}_lineup", [])
+            opp = game.get("home_team" if side == "away" else "away_team", "")
+            sp_name = game.get(f"{'home' if side == 'away' else 'away'}_pitcher", {}).get("name", "TBD")
+            team = game.get(f"{side}_team", "")
+            for b in lineup:
+                pid = b.get("id")
+                ms = b.get("ms", 0)
+                s_data = streaks.get(pid, {})
+                streak = s_data.get("streak", 0)
+                last7 = s_data.get("last7_avg", 0)
+                woba_bump = (b.get("woba", 0) or 0) - (b.get("overall_woba", 0) or 0)
+
+                if streak >= 2:
+                    heat_score = streak * (1 + max(0, woba_bump) * 5)
+                    candidates.append({
+                        "name": b.get("name", ""),
+                        "team": team, "opp": opp, "vs": sp_name,
+                        "ms": ms, "streak": streak, "last7": last7,
+                        "woba_bump": woba_bump, "heat_score": heat_score,
+                    })
+
+    candidates.sort(key=lambda x: -x["heat_score"])
+    top = candidates[:15]
+
+    if not top:
+        return '<div class="empty-state">NO ACTIVE STREAKS</div>'
+
+    rows = ""
+    for i, b in enumerate(top):
+        ms_cls = ms_class(b["ms"])
+        streak_str = f'{b["streak"]}G streak'
+        avg_str = f'.{str(b["last7"])[2:]}' if b["last7"] > 0 else ""
+        if b["streak"] >= 7:
+            icon = "&#x1f525;&#x1f525;"
+        elif b["streak"] >= 4:
+            icon = "&#x1f525;"
+        else:
+            icon = "&#x1f7e2;"
+
+        rows += f'''<div class="trend-row">
+  <div class="trend-rank">{i+1}</div>
+  <div class="trend-info">
+    <div class="trend-name">{icon} {_esc(b["name"])}</div>
+    <div class="trend-meta">{streak_str} &middot; L7 {avg_str} &middot; {_esc(b["team"])} vs {_esc(b["vs"])} ({_esc(b["opp"])})</div>
+  </div>
+  <div class="trend-right">
+    <div class="trend-ms {ms_cls}">{b["ms"]}</div>
   </div>
 </div>'''
 
@@ -881,7 +1041,7 @@ body::after{
 .brand-row{display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
 .logo{font-family:var(--font-display);font-size:28px;color:var(--color-accent);background:var(--color-black);padding:4px 14px;transform:skewX(-5deg);display:inline-block;letter-spacing:2px;line-height:1.1}
 .byline{font-family:var(--font-body);font-size:11px;font-weight:400;color:#555;letter-spacing:0.5px;font-style:italic}
-/* atlas-btn removed — now in global site nav via morello-auth.js */
+/* atlas-btn removed - now in global site nav via morello-auth.js */
 .status-dot{width:12px;height:12px;border-radius:50%;background:var(--color-accent);animation:pulse 2s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(255,234,0,0.4)}50%{opacity:0.7;box-shadow:0 0 0 8px rgba(255,234,0,0)}}
 
@@ -1081,6 +1241,26 @@ body::after{
 
 /* ═══ EMPTY STATE ═══ */
 .empty-state{text-align:center;padding:40px 20px;font-family:var(--font-mono);font-size:11px;color:var(--color-meta);text-transform:uppercase;letter-spacing:1px}
+
+/* ═══ DAILY 3-COL GRID ═══ */
+#tab-daily{position:relative;left:50%;transform:translateX(-50%);width:96vw;max-width:1300px;padding:0 24px;box-sizing:border-box}
+.daily-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:12px}
+@media(max-width:900px){.daily-grid{grid-template-columns:1fr}#tab-daily{width:100%;left:0;transform:none;padding:0}}
+.daily-col .section-title{font-size:14px;margin-bottom:4px}
+.daily-col .section-sub{font-size:10px;margin-bottom:8px}
+.hr-row{display:flex;align-items:center;gap:10px;padding:10px 12px;min-height:56px;border-bottom:1px solid #eee}
+.hr-row:last-child{border-bottom:none}
+.hr-rank{font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--color-meta);min-width:20px;text-align:center}
+.hr-info{flex:1;min-width:0}
+.hr-name{font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hr-meta{font-size:10px;color:var(--color-meta);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hr-rate-col{text-align:right;min-width:50px}
+.hr-rate{font-family:var(--font-mono);font-weight:800;font-size:14px;color:var(--color-elite)}
+.hr-rate-label{font-size:8px;color:var(--color-meta);text-transform:uppercase;letter-spacing:0.5px}
+.hr-fire .hr-rate{color:#FF3333}
+.hr-hot .hr-rate{color:var(--color-elite)}
+.hr-warm .hr-rate{color:var(--color-neutral)}
+.hr-mild .hr-rate{color:var(--color-meta)}
 
 /* ═══ BOTTOM NAV ═══ */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--color-black);display:flex;z-index:200;border-top:2px solid rgba(255,255,255,0.1);padding:4px 0;padding-bottom:env(safe-area-inset-bottom, 8px)}
@@ -1287,21 +1467,26 @@ def generate_html(daily_data):
     # Render picks
     picks_html = render_top_picks(games)
 
-    # Render trends
-    trends_html = render_trends(games)
+    # Render HR Watch
+    hr_watch_html = render_hr_watch(games)
+
+    # Fetch hitting streaks and render Heating Up
+    print("\nFetching hitting streaks...")
+    streaks = fetch_hitting_streaks(games)
+    heating_up_html = render_heating_up(games, streaks)
 
     # Determine filter chips
     filter_chips = ''
     if num_st > 0 and num_reg > 0:
         filter_chips += '<div class="chip" data-filter="st">Spring Training</div>'
         filter_chips += '<div class="chip" data-filter="regular">Regular Season</div>'
-    # Best Value filter removed — sort by Value does the same thing
+    # Best Value filter removed - sort by Value does the same thing
 
     # Spring training disclaimer
     st_disclaimer = ""
     if is_spring:
         st_disclaimer = '''<div style="background:#1a5e2a;color:#90EE90;font-family:var(--font-mono);font-size:9px;text-align:center;padding:6px;margin-bottom:10px;letter-spacing:0.5px;border-radius:4px">
-🌴 SPRING TRAINING — Archetype matchups use regular-season data. Bullpen predictions are experimental. NRI players shown as UNCHARTED.
+🌴 SPRING TRAINING - Archetype matchups use regular-season data. Bullpen predictions are experimental. NRI players shown as UNCHARTED.
 </div>'''
 
     # Generation timestamp
@@ -1315,7 +1500,7 @@ def generate_html(daily_data):
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>MLB SIM — {display_date}</title>
+<title>MLB SIM - {display_date}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -1343,8 +1528,6 @@ def generate_html(daily_data):
     <div class="filter-bar-inner">
         <button class="filter-btn active" data-tab="lines">Lines</button>
         <button class="filter-btn" data-tab="daily">Daily</button>
-        <button class="filter-btn" data-tab="stats">Stats</button>
-        <button class="filter-btn" data-tab="fantasy">Fantasy</button>
         <button class="filter-btn" data-tab="info">Info</button>
     </div>
 </div>
@@ -1369,56 +1552,49 @@ def generate_html(daily_data):
         <div class="gen-badge">Generated {gen_time} · Powered by ATLAS Pitcher DNA</div>
     </div>
 
-    <!-- ═══ DAILY PROJECTIONS TAB ═══ -->
+    <!-- ═══ DAILY DASHBOARD TAB ═══ -->
     <div class="tab-content" id="tab-daily">
         <div style="padding-top:12px">
-            <div class="section-title">DAILY PROJECTIONS</div>
-            <div class="section-sub">Today's per-batter matchup scores + team run projections</div>
+            <div class="section-title">DAILY DASHBOARD</div>
+            <div class="section-sub">{display_date} &middot; {num_games} games</div>
         </div>
-        <div class="slate-info">
-            <span>{display_date}</span>
-            <span>{num_games} GAMES</span>
-        </div>
-        {picks_html}
-        <div class="picks-container">
-            {trends_html}
+        <div class="daily-grid">
+            <div class="daily-col">
+                <div class="section-title">HR WATCH</div>
+                <div class="section-sub">Most likely to go yard</div>
+                <div class="picks-container">{hr_watch_html}</div>
+            </div>
+            <div class="daily-col">
+                <div class="section-title">HEATING UP</div>
+                <div class="section-sub">Active hitting streaks + archetype edge</div>
+                <div class="picks-container">{heating_up_html}</div>
+            </div>
+            <div class="daily-col">
+                <div class="section-title">TODAY'S EDGES</div>
+                <div class="section-sub">Best projected spreads</div>
+                {picks_html}
+            </div>
         </div>
     </div>
 
-    <!-- ═══ STATS & TRENDS TAB ═══ -->
-    <div class="tab-content" id="tab-stats">
-        <div style="padding-top:12px">
-            <div class="section-title">STATS &amp; TRENDS</div>
-            <div class="section-sub">Pitcher archetype performance — hot and cold over the last 14 days</div>
-        </div>
-        <div class="empty-state">STATS &amp; TRENDS COMING SOON — AVAILABLE WHEN REGULAR SEASON STARTS</div>
-    </div>
-
-    <!-- ═══ FANTASY TAB ═══ -->
-    <div class="tab-content" id="tab-fantasy">
-        <div style="padding-top:12px">
-            <div class="section-title">WEEKLY FANTASY</div>
-            <div class="section-sub">7-day projected stat lines — built for weekly fantasy lineups</div>
-        </div>
-        <div class="empty-state">WEEKLY FANTASY COMING SOON — AVAILABLE WHEN REGULAR SEASON STARTS</div>
-    </div>
+    <!-- Stats and Fantasy tabs removed -->
 
     <!-- ═══ INFO TAB ═══ -->
     <div class="tab-content" id="tab-info">
         <div style="padding-top:12px">
             <div class="info-card">
                 <h2>HOW MLB SIM WORKS</h2>
-                <p>MLB SIM uses the <strong>Pitcher DNA</strong> system (Gaussian Mixture Model clustering) to classify every pitcher into one of 26 archetypes (15 RHP + 11 LHP) based on their pitch mix, velocity, movement, and approach. Every batter has historical performance data against each archetype — because baseball is fundamentally a 1v1 sport, the specific pitcher a batter faces defines their expected performance.</p>
+                <p>MLB SIM uses the <strong>Pitcher DNA</strong> system (Gaussian Mixture Model clustering) to classify every pitcher into one of 26 archetypes (15 RHP + 11 LHP) based on their pitch mix, velocity, movement, and approach. Every batter has historical performance data against each archetype - because baseball is fundamentally a 1v1 sport, the specific pitcher a batter faces defines their expected performance.</p>
                 <p>When lineups are released, MLB SIM projects every batter's performance based on how they've historically hit against the opposing pitcher's archetype. This produces per-game <strong>Matchup Scores</strong> that change daily depending on the starter.</p>
             </div>
             <div class="info-card">
-                <h2>MATCHUP SCORE (MS) — 40 TO 99</h2>
+                <h2>MATCHUP SCORE (MS) - 40 TO 99</h2>
                 <p>MS is a context-dependent metric that changes each game based on the specific pitcher archetype a batter faces. A batter can be a 92 against a fastball-heavy pitcher but a 48 against a curveball specialist.</p>
                 <table class="tier-table">
-                    <tr><td class="tier-label" style="color:var(--color-elite)">85-99</td><td>Elite Matchup — historically dominant vs this archetype</td></tr>
-                    <tr><td class="tier-label" style="color:var(--color-favorable)">70-84</td><td>Favorable — above-average performance expected</td></tr>
-                    <tr><td class="tier-label" style="color:var(--color-neutral)">55-69</td><td>Neutral — roughly league-average</td></tr>
-                    <tr><td class="tier-label" style="color:var(--color-tough)">40-54</td><td>Tough Matchup — historically struggles vs this archetype</td></tr>
+                    <tr><td class="tier-label" style="color:var(--color-elite)">85-99</td><td>Elite Matchup - historically dominant vs this archetype</td></tr>
+                    <tr><td class="tier-label" style="color:var(--color-favorable)">70-84</td><td>Favorable - above-average performance expected</td></tr>
+                    <tr><td class="tier-label" style="color:var(--color-neutral)">55-69</td><td>Neutral - roughly league-average</td></tr>
+                    <tr><td class="tier-label" style="color:var(--color-tough)">40-54</td><td>Tough Matchup - historically struggles vs this archetype</td></tr>
                 </table>
                 <div class="formula-block ma-premium">MS FORMULA (wOBA-based):
 wOBA >= .400  →  MS 90-99
@@ -1447,9 +1623,9 @@ O/U Total = Home Runs + Away Runs</div>
             <div class="info-card">
                 <h2>BULLPEN PREDICTIONS</h2>
                 <p>MLB SIM predicts bullpen deployment using three layers:</p>
-                <p><strong>Layer 1 — Availability:</strong> Tracks reliever workload history (days rest, recent pitch count, consecutive-day usage) to determine who CAN pitch.</p>
-                <p><strong>Layer 2 — Usage Order:</strong> Estimates starter expected innings, then ranks available relievers by role hierarchy (closer → setup → middle → long) and archetype matchup advantage.</p>
-                <p><strong>Layer 3 — Matchup Integration:</strong> For each predicted reliever, computes MS against the lineup slots they'll likely face. Higher MS = tougher matchup for the opposing lineup.</p>
+                <p><strong>Layer 1 - Availability:</strong> Tracks reliever workload history (days rest, recent pitch count, consecutive-day usage) to determine who CAN pitch.</p>
+                <p><strong>Layer 2 - Usage Order:</strong> Estimates starter expected innings, then ranks available relievers by role hierarchy (closer → setup → middle → long) and archetype matchup advantage.</p>
+                <p><strong>Layer 3 - Matchup Integration:</strong> For each predicted reliever, computes MS against the lineup slots they'll likely face. Higher MS = tougher matchup for the opposing lineup.</p>
             </div>
         </div>
     </div>
@@ -1465,14 +1641,6 @@ O/U Total = Home Runs + Away Runs</div>
     <button class="nav-btn" data-tab="daily">
         <span class="nav-icon">📅</span>
         <span>DAILY</span>
-    </button>
-    <button class="nav-btn" data-tab="stats">
-        <span class="nav-icon">📈</span>
-        <span>STATS</span>
-    </button>
-    <button class="nav-btn" data-tab="fantasy">
-        <span class="nav-icon">⚾</span>
-        <span>FANTASY</span>
     </button>
     <button class="nav-btn" data-tab="info">
         <span class="nav-icon">ℹ️</span>
@@ -1500,12 +1668,12 @@ O/U Total = Home Runs + Away Runs</div>
 
 def main():
     print(f"\n{'='*60}")
-    print(f"  MLB SIM — STATIC HTML GENERATOR")
+    print(f"  MLB SIM - STATIC HTML GENERATOR")
     print(f"{'='*60}\n")
 
     # Load daily games data
     if not os.path.exists(DAILY_GAMES_FILE):
-        print(f"[ERROR] {DAILY_GAMES_FILE} not found — run compute_matchups.py first")
+        print(f"[ERROR] {DAILY_GAMES_FILE} not found - run compute_matchups.py first")
         sys.exit(1)
 
     with open(DAILY_GAMES_FILE) as f:
