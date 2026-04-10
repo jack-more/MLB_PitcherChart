@@ -1,6 +1,6 @@
 {
   "slate_date": "2026-04-10",
-  "collected_at": "2026-04-10T14:35:02.260956+00:00",
+  "collected_at": "2026-04-10T19:00:30.154712+00:00",
   "game_count": 15,
   "spring_training_count": 0,
   "regular_season_count": 15,
@@ -13,7 +13,7 @@
       "home_team": "CHC",
       "game_time_utc": "2026-04-10T18:20:00Z",
       "venue": "Wrigley Field",
-      "status": "Scheduled",
+      "status": "In Progress",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 669387,
@@ -27,10 +27,10 @@
       },
       "away_lineup": [
         {
-          "id": 663968,
-          "name": "Jake Mangum",
-          "pos": "RF",
-          "bats": "S"
+          "id": 694377,
+          "name": "Nick Yorke",
+          "pos": "3B",
+          "bats": "R"
         },
         {
           "id": 656811,
@@ -51,15 +51,9 @@
           "bats": "R"
         },
         {
-          "id": 664040,
-          "name": "Brandon Lowe",
+          "id": 693304,
+          "name": "Nick Gonzales",
           "pos": "2B",
-          "bats": "L"
-        },
-        {
-          "id": 804606,
-          "name": "Konnor Griffin",
-          "pos": "SS",
           "bats": "R"
         },
         {
@@ -69,9 +63,9 @@
           "bats": "L"
         },
         {
-          "id": 694377,
-          "name": "Nick Yorke",
-          "pos": "3B",
+          "id": 804606,
+          "name": "Konnor Griffin",
+          "pos": "SS",
           "bats": "R"
         },
         {
@@ -79,9 +73,15 @@
           "name": "Joey Bart",
           "pos": "C",
           "bats": "R"
+        },
+        {
+          "id": 695257,
+          "name": "Billy Cook",
+          "pos": "RF",
+          "bats": "R"
         }
       ],
-      "lineup_status": "expected",
+      "lineup_status": "confirmed",
       "home_lineup": [
         {
           "id": 663538,
@@ -96,15 +96,21 @@
           "bats": "L"
         },
         {
-          "id": 673548,
-          "name": "Seiya Suzuki",
-          "pos": "RF",
-          "bats": "R"
-        },
-        {
           "id": 608324,
           "name": "Alex Bregman",
           "pos": "3B",
+          "bats": "R"
+        },
+        {
+          "id": 664023,
+          "name": "Ian Happ",
+          "pos": "LF",
+          "bats": "S"
+        },
+        {
+          "id": 673548,
+          "name": "Seiya Suzuki",
+          "pos": "RF",
           "bats": "R"
         },
         {
@@ -112,12 +118,6 @@
           "name": "Pete Crow-Armstrong",
           "pos": "CF",
           "bats": "L"
-        },
-        {
-          "id": 664023,
-          "name": "Ian Happ",
-          "pos": "LF",
-          "bats": "S"
         },
         {
           "id": 608348,
@@ -139,13 +139,13 @@
         }
       ],
       "odds": {
-        "home_ml": -146,
-        "away_ml": 116,
+        "home_ml": -165,
+        "away_ml": 115,
         "spread": -1.5,
-        "total": 6.5
+        "total": 5.0
       },
       "weather": "3% Precipitation45\u00b0\u00a0\u00a0Wind 10 mph In",
-      "umpire": ""
+      "umpire": "Roberto Ortiz"
     },
     {
       "game_pk": 823482,
@@ -155,7 +155,7 @@
       "home_team": "PHI",
       "game_time_utc": "2026-04-10T22:40:00Z",
       "venue": "Citizens Bank Park",
-      "status": "Scheduled",
+      "status": "Pre-Game",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 647336,
@@ -171,14 +171,14 @@
         {
           "id": 606466,
           "name": "Ketel Marte",
-          "pos": "DH",
+          "pos": "2B",
           "bats": "S"
         },
         {
-          "id": 682998,
-          "name": "Corbin Carroll",
-          "pos": "RF",
-          "bats": "L"
+          "id": 545121,
+          "name": "Ildemaro Vargas",
+          "pos": "1B",
+          "bats": "S"
         },
         {
           "id": 672695,
@@ -199,15 +199,9 @@
           "bats": "R"
         },
         {
-          "id": 545121,
-          "name": "Ildemaro Vargas",
-          "pos": "2B",
-          "bats": "S"
-        },
-        {
           "id": 605228,
           "name": "Jose Fernandez",
-          "pos": "1B",
+          "pos": "DH",
           "bats": "R"
         },
         {
@@ -217,13 +211,19 @@
           "bats": "R"
         },
         {
+          "id": 677950,
+          "name": "Alek Thomas",
+          "pos": "CF",
+          "bats": "L"
+        },
+        {
           "id": 678489,
           "name": "Jorge Barrosa",
-          "pos": "CF",
+          "pos": "RF",
           "bats": "S"
         }
       ],
-      "lineup_status": "expected",
+      "lineup_status": "confirmed",
       "home_lineup": [
         {
           "id": 607208,
@@ -281,10 +281,10 @@
         }
       ],
       "odds": {
-        "home_ml": -184,
-        "away_ml": 128,
+        "home_ml": -177,
+        "away_ml": 123,
         "spread": -1.5,
-        "total": 8.5
+        "total": 8.0
       },
       "weather": "0%68\u00b0\u00a0\u00a0Wind 8 mph Out",
       "umpire": ""
@@ -423,8 +423,8 @@
         }
       ],
       "odds": {
-        "home_ml": -148,
-        "away_ml": 118,
+        "home_ml": -143,
+        "away_ml": 114,
         "spread": -1.5,
         "total": 8.5
       },
@@ -439,7 +439,7 @@
       "home_team": "CIN",
       "game_time_utc": "2026-04-10T22:45:00Z",
       "venue": "Great American Ball Park",
-      "status": "Scheduled",
+      "status": "Pre-Game",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 686799,
@@ -565,8 +565,8 @@
         }
       ],
       "odds": {
-        "home_ml": -187,
-        "away_ml": 130,
+        "home_ml": -183,
+        "away_ml": 128,
         "spread": -1.5,
         "total": 9.0
       },
@@ -581,7 +581,7 @@
       "home_team": "TOR",
       "game_time_utc": "2026-04-10T23:07:00Z",
       "venue": "Rogers Centre",
-      "status": "Scheduled",
+      "status": "Pre-Game",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 680573,
@@ -613,6 +613,12 @@
           "bats": "R"
         },
         {
+          "id": 605137,
+          "name": "Josh Bell",
+          "pos": "1B",
+          "bats": "S"
+        },
+        {
           "id": 680777,
           "name": "Ryan Jeffers",
           "pos": "C",
@@ -621,12 +627,6 @@
         {
           "id": 605170,
           "name": "Victor Caratini",
-          "pos": "1B",
-          "bats": "S"
-        },
-        {
-          "id": 605137,
-          "name": "Josh Bell",
           "pos": "DH",
           "bats": "S"
         },
@@ -637,19 +637,19 @@
           "bats": "L"
         },
         {
-          "id": 668904,
-          "name": "Royce Lewis",
-          "pos": "3B",
-          "bats": "R"
-        },
-        {
           "id": 686797,
           "name": "Brooks Lee",
           "pos": "SS",
           "bats": "S"
+        },
+        {
+          "id": 656484,
+          "name": "Tristan Gray",
+          "pos": "3B",
+          "bats": "L"
         }
       ],
-      "lineup_status": "expected",
+      "lineup_status": "confirmed",
       "home_lineup": [
         {
           "id": 543807,
@@ -707,8 +707,8 @@
         }
       ],
       "odds": {
-        "home_ml": -141,
-        "away_ml": 112,
+        "home_ml": -132,
+        "away_ml": 105,
         "spread": -1.5,
         "total": 9.0
       },
@@ -723,7 +723,7 @@
       "home_team": "NYM",
       "game_time_utc": "2026-04-10T23:10:00Z",
       "venue": "Citi Field",
-      "status": "Scheduled",
+      "status": "Pre-Game",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 669372,
@@ -736,8 +736,63 @@
         "throws": "R"
       },
       "away_lineup": [],
-      "lineup_status": "tbd",
-      "home_lineup": [],
+      "lineup_status": "expected",
+      "home_lineup": [
+        {
+          "id": 596019,
+          "name": "",
+          "pos": "",
+          "bats": ""
+        },
+        {
+          "id": 666182,
+          "name": "",
+          "pos": "",
+          "bats": ""
+        },
+        {
+          "id": 676724,
+          "name": "",
+          "pos": "",
+          "bats": ""
+        },
+        {
+          "id": 673357,
+          "name": "",
+          "pos": "",
+          "bats": ""
+        },
+        {
+          "id": 683146,
+          "name": "",
+          "pos": "",
+          "bats": ""
+        },
+        {
+          "id": 543760,
+          "name": "",
+          "pos": "",
+          "bats": ""
+        },
+        {
+          "id": 677595,
+          "name": "",
+          "pos": "",
+          "bats": ""
+        },
+        {
+          "id": 682626,
+          "name": "",
+          "pos": "",
+          "bats": ""
+        },
+        {
+          "id": 701807,
+          "name": "",
+          "pos": "",
+          "bats": ""
+        }
+      ],
       "odds": {},
       "weather": "",
       "umpire": ""
@@ -876,8 +931,8 @@
         }
       ],
       "odds": {
-        "away_ml": -136,
-        "home_ml": 108,
+        "away_ml": -125,
+        "home_ml": 100,
         "spread": 1.5,
         "total": 8.0
       },
@@ -892,7 +947,7 @@
       "home_team": "BAL",
       "game_time_utc": "2026-04-10T23:15:00Z",
       "venue": "Oriole Park at Camden Yards",
-      "status": "Scheduled",
+      "status": "Pre-Game",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 694738,
@@ -1160,8 +1215,8 @@
         }
       ],
       "odds": {
-        "home_ml": -138,
-        "away_ml": 110,
+        "home_ml": -137,
+        "away_ml": 109,
         "spread": -1.5,
         "total": 8.5
       },
@@ -1176,7 +1231,7 @@
       "home_team": "KC",
       "game_time_utc": "2026-04-10T23:40:00Z",
       "venue": "Kauffman Stadium",
-      "status": "Scheduled",
+      "status": "Pre-Game",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 663436,
@@ -1277,10 +1332,10 @@
           "bats": "L"
         },
         {
-          "id": 663697,
-          "name": "Jonathan India",
+          "id": 686681,
+          "name": "Michael Massey",
           "pos": "2B",
-          "bats": "R"
+          "bats": "L"
         },
         {
           "id": 695506,
@@ -1326,8 +1381,8 @@
         "throws": "R"
       },
       "home_pitcher": {
-        "id": 694477,
-        "name": "Chad Patrick",
+        "id": 676879,
+        "name": "Aaron Ashby",
         "throws": "R"
       },
       "away_lineup": [
@@ -1444,8 +1499,8 @@
         }
       ],
       "odds": {
-        "home_ml": -204,
-        "away_ml": 142,
+        "home_ml": -202,
+        "away_ml": 141,
         "spread": -1.5,
         "total": 8.5
       },
@@ -1460,7 +1515,7 @@
       "home_team": "STL",
       "game_time_utc": "2026-04-11T00:15:00Z",
       "venue": "Busch Stadium",
-      "status": "Scheduled",
+      "status": "Pre-Game",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 813349,
@@ -1539,7 +1594,7 @@
         {
           "id": 671056,
           "name": "Ivan Herrera",
-          "pos": "C",
+          "pos": "DH",
           "bats": "R"
         },
         {
@@ -1555,27 +1610,27 @@
           "bats": "R"
         },
         {
-          "id": 691026,
-          "name": "Masyn Winn",
-          "pos": "SS",
-          "bats": "R"
-        },
-        {
-          "id": 695336,
-          "name": "Thomas Saggese",
-          "pos": "LF",
-          "bats": "R"
-        },
-        {
           "id": 602104,
           "name": "Ramon Urias",
           "pos": "3B",
           "bats": "R"
         },
         {
-          "id": 650968,
-          "name": "Yohel Pozo",
-          "pos": "DH",
+          "id": 691026,
+          "name": "Masyn Winn",
+          "pos": "SS",
+          "bats": "R"
+        },
+        {
+          "id": 820862,
+          "name": "Jose Fermin",
+          "pos": "LF",
+          "bats": "R"
+        },
+        {
+          "id": 686780,
+          "name": "Pedro Pages",
+          "pos": "C",
           "bats": "R"
         },
         {
@@ -1586,12 +1641,12 @@
         }
       ],
       "odds": {
-        "away_ml": -144,
-        "home_ml": 115,
+        "away_ml": -142,
+        "home_ml": 113,
         "spread": 1.5,
         "total": 7.5
       },
-      "weather": "17% Precipitation66\u00b0\u00a0\u00a0Wind 8 mph In",
+      "weather": "17% Precipitation65\u00b0\u00a0\u00a0Wind 8 mph In",
       "umpire": ""
     },
     {
@@ -1728,8 +1783,8 @@
         }
       ],
       "odds": {
-        "home_ml": -188,
-        "away_ml": 131,
+        "home_ml": -186,
+        "away_ml": 130,
         "spread": -1.5,
         "total": 8.0
       },
@@ -1870,8 +1925,8 @@
         }
       ],
       "odds": {
-        "home_ml": -139,
-        "away_ml": 111,
+        "home_ml": -140,
+        "away_ml": 112,
         "spread": -1.5,
         "total": 7.5
       },
@@ -2012,8 +2067,8 @@
         }
       ],
       "odds": {
-        "home_ml": -239,
-        "away_ml": 167,
+        "home_ml": -238,
+        "away_ml": 166,
         "spread": -1.5,
         "total": 8.5
       },
