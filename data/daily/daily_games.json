@@ -1,6 +1,6 @@
 {
   "slate_date": "2026-04-13",
-  "computed_at": "2026-04-13T15:03:02.109653+00:00",
+  "computed_at": "2026-04-13T19:19:06.578144+00:00",
   "game_count": 10,
   "spring_training_count": 0,
   "games": [
@@ -12,7 +12,7 @@
       "home_team": "SEA",
       "game_time_utc": "2026-04-13T20:10:00Z",
       "venue": "T-Mobile Park",
-      "status": "Scheduled",
+      "status": "Pre-Game",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 681347,
@@ -42,9 +42,9 @@
       },
       "away_lineup": [
         {
-          "id": 665161,
-          "name": "Jeremy Pena",
-          "pos": "SS",
+          "id": 514888,
+          "name": "Jose Altuve",
+          "pos": "2B",
           "bats": "R"
         },
         {
@@ -52,12 +52,6 @@
           "name": "Yordan Alvarez",
           "pos": "LF",
           "bats": "L"
-        },
-        {
-          "id": 514888,
-          "name": "Jose Altuve",
-          "pos": "2B",
-          "bats": "R"
         },
         {
           "id": 670623,
@@ -84,8 +78,8 @@
           "bats": "R"
         },
         {
-          "id": 694388,
-          "name": "Joey Loperfido",
+          "id": 666211,
+          "name": "Taylor Trammell",
           "pos": "CF",
           "bats": "L"
         },
@@ -94,9 +88,15 @@
           "name": "Yainer Diaz",
           "pos": "C",
           "bats": "R"
+        },
+        {
+          "id": 669397,
+          "name": "Nick Allen",
+          "pos": "SS",
+          "bats": "R"
         }
       ],
-      "lineup_status": "expected",
+      "lineup_status": "confirmed",
       "home_lineup": [
         {
           "id": 680977,
@@ -107,7 +107,7 @@
         {
           "id": 663728,
           "name": "Cal Raleigh",
-          "pos": "C",
+          "pos": "DH",
           "bats": "S"
         },
         {
@@ -141,10 +141,10 @@
           "bats": "L"
         },
         {
-          "id": 686527,
-          "name": "Dominic Canzone",
-          "pos": "DH",
-          "bats": "L"
+          "id": 641598,
+          "name": "Mitch Garver",
+          "pos": "C",
+          "bats": "R"
         },
         {
           "id": 702284,
@@ -154,49 +154,49 @@
         }
       ],
       "odds": {
-        "home_ml": -171,
-        "away_ml": 119,
+        "home_ml": -174,
+        "away_ml": 121,
         "spread": -1.5,
         "total": 7.5
       },
       "weather": "DomeIn Domed Stadium",
       "umpire": "",
       "away_proj": {
-        "runs": 3.25,
+        "runs": 3.41,
         "coverage": 9,
         "total": 9,
         "lineup_pct": 100.0,
         "batter_details": [
           {
-            "id": 665161,
-            "name": "Jeremy Pena",
-            "pos": "SS",
+            "id": 514888,
+            "name": "Jose Altuve",
+            "pos": "2B",
             "bats": "R",
             "proj": {
-              "h": 0.7736274,
-              "hr": 0.023615,
-              "k": 0.586,
-              "bb": 0.14,
-              "tb": 1.1099050000000001,
-              "woba": 0.284,
-              "sb": 0.1018,
-              "cs": 0.0362
+              "h": 1.1769716,
+              "hr": 0.160582,
+              "k": 0.312,
+              "bb": 0.468,
+              "tb": 1.9534328,
+              "woba": 0.454,
+              "sb": 0.1285,
+              "cs": 0.0271
             },
             "source": "archetype",
             "ms": {
-              "ms": 57,
+              "ms": 93,
               "range": [
-                53,
-                61
+                89,
+                97
               ],
-              "woba": 0.302,
-              "k_pct": 0.127,
-              "bb_pct": 0.039,
-              "pa": 85.60009860992432,
+              "woba": 0.427,
+              "k_pct": 0.074,
+              "bb_pct": 0.106,
+              "pa": 141.16919875144958,
               "source": "archetype"
             },
-            "overall_woba": 0.336,
-            "tier": "neutral"
+            "overall_woba": 0.389,
+            "tier": "elite"
           },
           {
             "id": 670541,
@@ -228,37 +228,6 @@
             },
             "overall_woba": 0.413,
             "tier": "tough"
-          },
-          {
-            "id": 514888,
-            "name": "Jose Altuve",
-            "pos": "2B",
-            "bats": "R",
-            "proj": {
-              "h": 1.1769716,
-              "hr": 0.160582,
-              "k": 0.312,
-              "bb": 0.468,
-              "tb": 1.9534328,
-              "woba": 0.454,
-              "sb": 0.1285,
-              "cs": 0.0271
-            },
-            "source": "archetype",
-            "ms": {
-              "ms": 93,
-              "range": [
-                89,
-                97
-              ],
-              "woba": 0.427,
-              "k_pct": 0.074,
-              "bb_pct": 0.106,
-              "pa": 141.16919875144958,
-              "source": "archetype"
-            },
-            "overall_woba": 0.389,
-            "tier": "elite"
           },
           {
             "id": 670623,
@@ -385,34 +354,34 @@
             "tier": "neutral"
           },
           {
-            "id": 694388,
-            "name": "Joey Loperfido",
+            "id": 666211,
+            "name": "Taylor Trammell",
             "pos": "CF",
             "bats": "L",
             "proj": {
-              "h": 0.0,
-              "hr": 0.0,
-              "k": 3.5,
-              "bb": 0.0,
-              "tb": 0.0,
-              "woba": 0.0,
-              "sb": 0.0611,
-              "cs": 0.0305
+              "h": 0.2758232,
+              "hr": 0.179474,
+              "k": 1.518,
+              "bb": 0.481,
+              "tb": 0.8142452,
+              "woba": 0.202,
+              "sb": 0.0228,
+              "cs": 0.059
             },
             "source": "archetype",
             "ms": {
-              "ms": 40,
+              "ms": 44,
               "range": [
                 40,
-                54
+                52
               ],
-              "woba": 0.0,
-              "k_pct": 0.875,
-              "bb_pct": 0.0,
-              "pa": 8.0,
+              "woba": 0.231,
+              "k_pct": 0.361,
+              "bb_pct": 0.139,
+              "pa": 21.065900087356567,
               "source": "archetype"
             },
-            "overall_woba": 0.313,
+            "overall_woba": 0.281,
             "tier": "tough"
           },
           {
@@ -445,15 +414,46 @@
             },
             "overall_woba": 0.341,
             "tier": "neutral"
+          },
+          {
+            "id": 669397,
+            "name": "Nick Allen",
+            "pos": "SS",
+            "bats": "R",
+            "proj": {
+              "h": 0.5393665999999999,
+              "hr": 0.1076844,
+              "k": 0.686,
+              "bb": 0.114,
+              "tb": 0.9710488,
+              "woba": 0.22,
+              "sb": 0.0244,
+              "cs": 0.0092
+            },
+            "source": "archetype",
+            "ms": {
+              "ms": 42,
+              "range": [
+                40,
+                50
+              ],
+              "woba": 0.214,
+              "k_pct": 0.191,
+              "bb_pct": 0.024,
+              "pa": 34.98459982872009,
+              "source": "archetype"
+            },
+            "overall_woba": 0.257,
+            "tier": "tough"
           }
         ],
         "team_stats": {
-          "h": 6.9,
-          "hr": 0.95,
-          "bb": 2.51,
-          "k": 10.07,
-          "tb": 10.68,
-          "sb": 0.35,
+          "h": 6.95,
+          "hr": 1.22,
+          "bb": 2.97,
+          "k": 8.18,
+          "tb": 11.35,
+          "sb": 0.24,
           "cs": 0.11,
           "pa": 36
         },
@@ -465,15 +465,15 @@
         "adjustments": {
           "tier": "T2_Core",
           "tier_mult": 0.945,
-          "re24": 0.159,
-          "oaa": 0.294,
+          "re24": -0.149,
+          "oaa": 0.296,
           "park_mult": 0.915,
-          "park_adj": -0.316,
+          "park_adj": -0.331,
           "bp_adj": -0.15
         }
       },
       "home_proj": {
-        "runs": 4.03,
+        "runs": 3.95,
         "coverage": 9,
         "total": 9,
         "lineup_pct": 100.0,
@@ -512,7 +512,7 @@
           {
             "id": 663728,
             "name": "Cal Raleigh",
-            "pos": "C",
+            "pos": "DH",
             "bats": "S",
             "proj": {
               "h": 0.585816,
@@ -696,35 +696,35 @@
             "tier": "favorable"
           },
           {
-            "id": 686527,
-            "name": "Dominic Canzone",
-            "pos": "DH",
-            "bats": "L",
+            "id": 641598,
+            "name": "Mitch Garver",
+            "pos": "C",
+            "bats": "R",
             "proj": {
-              "h": 0.7902809999999999,
-              "hr": 0.18354299999999998,
-              "k": 0.959,
-              "bb": 0.257,
-              "tb": 1.522551,
-              "woba": 0.342,
-              "sb": 0.0215,
-              "cs": 0.0
+              "h": 0.8121539999999999,
+              "hr": 0.16167,
+              "k": 1.303,
+              "bb": 0.375,
+              "tb": 1.49307,
+              "woba": 0.337,
+              "sb": 0.0047,
+              "cs": 0.0047
             },
             "source": "archetype",
             "ms": {
-              "ms": 73,
+              "ms": 66,
               "range": [
-                69,
-                77
+                62,
+                70
               ],
-              "woba": 0.351,
-              "k_pct": 0.248,
-              "bb_pct": 0.065,
-              "pa": 61.74489974975586,
+              "woba": 0.33,
+              "k_pct": 0.33,
+              "bb_pct": 0.094,
+              "pa": 346.96819496154785,
               "source": "archetype"
             },
-            "overall_woba": 0.328,
-            "tier": "favorable"
+            "overall_woba": 0.341,
+            "tier": "neutral"
           },
           {
             "id": 702284,
@@ -759,12 +759,12 @@
           }
         ],
         "team_stats": {
-          "h": 6.64,
-          "hr": 1.11,
-          "bb": 3.41,
-          "k": 8.37,
-          "tb": 11.74,
-          "sb": 0.53,
+          "h": 6.66,
+          "hr": 1.09,
+          "bb": 3.53,
+          "k": 8.72,
+          "tb": 11.71,
+          "sb": 0.51,
           "cs": 0.17,
           "pa": 36
         },
@@ -776,49 +776,49 @@
         "adjustments": {
           "tier": "T2_Core",
           "tier_mult": 0.951,
-          "re24": 0.484,
-          "oaa": -0.331,
+          "re24": 0.363,
+          "oaa": -0.332,
           "park_mult": 0.915,
-          "park_adj": -0.402,
+          "park_adj": -0.394,
           "bp_adj": -0.292
         }
       },
       "has_lineups": true,
-      "proj_total": 7.3,
-      "proj_spread": 0.8,
+      "proj_total": 7.4,
+      "proj_spread": 0.5,
       "edges": {
         "ml": {
           "side": "HOU",
-          "odds": 119,
-          "edge": 0.1,
-          "ev": -7.8,
-          "model_wp": 42.1,
-          "market_wp": 42.0,
+          "odds": 121,
+          "edge": 2.9,
+          "ev": -1.6,
+          "model_wp": 44.5,
+          "market_wp": 41.6,
           "is_pick": false,
           "is_strong": false
         },
         "total": {
-          "edge": -0.2,
+          "edge": -0.1,
           "market": 7.5,
-          "projected": 7.3,
+          "projected": 7.4,
           "is_pick": false,
           "is_strong": false,
           "direction": "under"
         }
       },
       "model_wp": {
-        "away": 42.1,
-        "home": 57.9
+        "away": 44.5,
+        "home": 55.5
       },
-      "away_avg_ms": 60.1,
-      "home_avg_ms": 66.1,
+      "away_avg_ms": 58.9,
+      "home_avg_ms": 65.3,
       "confidence": {
-        "spread_conf": 1,
-        "spread_conf_color": "#FF3333",
+        "spread_conf": 2,
+        "spread_conf_color": "#FF8C00",
         "spread_conf_label": "TOSS-UP",
-        "value_rating": 1,
-        "value_color": "#FF3333",
-        "total_conf": 2,
+        "value_rating": 2,
+        "value_color": "#FF8C00",
+        "total_conf": 3,
         "total_conf_color": "#FF8C00",
         "total_conf_label": "TOSS-UP"
       },
@@ -874,9 +874,9 @@
                 "woba": 0.268
               },
               {
-                "batter_id": 686527,
-                "ms": 40,
-                "woba": 0.047
+                "batter_id": 641598,
+                "ms": 64,
+                "woba": 0.323
               },
               {
                 "batter_id": 702284,
@@ -884,7 +884,7 @@
                 "woba": 0.229
               }
             ],
-            "avg_ms_faced": 62.3
+            "avg_ms_faced": 65.0
           },
           {
             "id": 656986,
@@ -932,9 +932,9 @@
                 "woba": 0.371
               },
               {
-                "batter_id": 686527,
-                "ms": 47,
-                "woba": 0.256
+                "batter_id": 641598,
+                "ms": 68,
+                "woba": 0.336
               },
               {
                 "batter_id": 702284,
@@ -942,7 +942,7 @@
                 "woba": 0.386
               }
             ],
-            "avg_ms_faced": 67.6
+            "avg_ms_faced": 69.9
           },
           {
             "id": 595345,
@@ -990,9 +990,9 @@
                 "woba": 0.226
               },
               {
-                "batter_id": 686527,
-                "ms": 69,
-                "woba": 0.339
+                "batter_id": 641598,
+                "ms": 99,
+                "woba": 0.585
               },
               {
                 "batter_id": 702284,
@@ -1000,7 +1000,7 @@
                 "woba": 0.289
               }
             ],
-            "avg_ms_faced": 70.1
+            "avg_ms_faced": 73.4
           },
           {
             "id": 805123,
@@ -1048,9 +1048,9 @@
                 "woba": 0.357
               },
               {
-                "batter_id": 686527,
-                "ms": 54,
-                "woba": 0.288
+                "batter_id": 641598,
+                "ms": 62,
+                "woba": 0.316
               },
               {
                 "batter_id": 702284,
@@ -1058,7 +1058,7 @@
                 "woba": 0.204
               }
             ],
-            "avg_ms_faced": 71.4
+            "avg_ms_faced": 72.3
           },
           {
             "id": 660853,
@@ -1106,9 +1106,9 @@
                 "woba": 0.365
               },
               {
-                "batter_id": 686527,
-                "ms": 84,
-                "woba": 0.384
+                "batter_id": 641598,
+                "ms": 72,
+                "woba": 0.346
               },
               {
                 "batter_id": 702284,
@@ -1116,7 +1116,7 @@
                 "woba": 0.54
               }
             ],
-            "avg_ms_faced": 75.8
+            "avg_ms_faced": 74.4
           },
           {
             "id": 650556,
@@ -1164,9 +1164,9 @@
                 "woba": 0.365
               },
               {
-                "batter_id": 686527,
-                "ms": 84,
-                "woba": 0.384
+                "batter_id": 641598,
+                "ms": 72,
+                "woba": 0.346
               },
               {
                 "batter_id": 702284,
@@ -1174,7 +1174,7 @@
                 "woba": 0.54
               }
             ],
-            "avg_ms_faced": 75.8
+            "avg_ms_faced": 74.4
           }
         ],
         "confidence": "high"
@@ -1196,19 +1196,14 @@
             "expected_ip": 1.0,
             "matchup_scores": [
               {
-                "batter_id": 665161,
-                "ms": 61,
-                "woba": 0.312
+                "batter_id": 514888,
+                "ms": 93,
+                "woba": 0.434
               },
               {
                 "batter_id": 670541,
                 "ms": 91,
                 "woba": 0.414
-              },
-              {
-                "batter_id": 514888,
-                "ms": 93,
-                "woba": 0.434
               },
               {
                 "batter_id": 670623,
@@ -1231,17 +1226,22 @@
                 "woba": 0.273
               },
               {
-                "batter_id": 694388,
-                "ms": 52,
-                "woba": 0.277
+                "batter_id": 666211,
+                "ms": 64,
+                "woba": 0.322
               },
               {
                 "batter_id": 673237,
                 "ms": 84,
                 "woba": 0.382
+              },
+              {
+                "batter_id": 669397,
+                "ms": 46,
+                "woba": 0.243
               }
             ],
-            "avg_ms_faced": 74.3
+            "avg_ms_faced": 74.0
           },
           {
             "id": 642100,
@@ -1254,19 +1254,14 @@
             "expected_ip": 1.0,
             "matchup_scores": [
               {
-                "batter_id": 665161,
-                "ms": 64,
-                "woba": 0.324
+                "batter_id": 514888,
+                "ms": 95,
+                "woba": 0.446
               },
               {
                 "batter_id": 670541,
                 "ms": 78,
                 "woba": 0.368
-              },
-              {
-                "batter_id": 514888,
-                "ms": 95,
-                "woba": 0.446
               },
               {
                 "batter_id": 670623,
@@ -1289,17 +1284,22 @@
                 "woba": 0.164
               },
               {
-                "batter_id": 694388,
-                "ms": 91,
-                "woba": 0.412
+                "batter_id": 666211,
+                "ms": 53,
+                "woba": 0.282
               },
               {
                 "batter_id": 673237,
                 "ms": 88,
                 "woba": 0.396
+              },
+              {
+                "batter_id": 669397,
+                "ms": 49,
+                "woba": 0.266
               }
             ],
-            "avg_ms_faced": 76.1
+            "avg_ms_faced": 70.2
           },
           {
             "id": 700187,
@@ -1312,19 +1312,14 @@
             "expected_ip": 1.5,
             "matchup_scores": [
               {
-                "batter_id": 665161,
-                "ms": 82,
-                "woba": 0.375
+                "batter_id": 514888,
+                "ms": 74,
+                "woba": 0.353
               },
               {
                 "batter_id": 670541,
                 "ms": 86,
                 "woba": 0.391
-              },
-              {
-                "batter_id": 514888,
-                "ms": 74,
-                "woba": 0.353
               },
               {
                 "batter_id": 670623,
@@ -1347,17 +1342,22 @@
                 "woba": 0.328
               },
               {
-                "batter_id": 694388,
+                "batter_id": 666211,
                 "ms": 67,
-                "woba": 0.332
+                "woba": 0.333
               },
               {
                 "batter_id": 673237,
                 "ms": 71,
                 "woba": 0.345
+              },
+              {
+                "batter_id": 669397,
+                "ms": 46,
+                "woba": 0.249
               }
             ],
-            "avg_ms_faced": 72.1
+            "avg_ms_faced": 68.1
           },
           {
             "id": 662253,
@@ -1370,19 +1370,14 @@
             "expected_ip": 1.0,
             "matchup_scores": [
               {
-                "batter_id": 665161,
-                "ms": 62,
-                "woba": 0.316
+                "batter_id": 514888,
+                "ms": 74,
+                "woba": 0.354
               },
               {
                 "batter_id": 670541,
                 "ms": 96,
                 "woba": 0.457
-              },
-              {
-                "batter_id": 514888,
-                "ms": 74,
-                "woba": 0.354
               },
               {
                 "batter_id": 670623,
@@ -1405,17 +1400,22 @@
                 "woba": 0.24
               },
               {
-                "batter_id": 694388,
-                "ms": 99,
-                "woba": 0.486
+                "batter_id": 666211,
+                "ms": 63,
+                "woba": 0.32
               },
               {
                 "batter_id": 673237,
                 "ms": 57,
                 "woba": 0.302
+              },
+              {
+                "batter_id": 669397,
+                "ms": 58,
+                "woba": 0.306
               }
             ],
-            "avg_ms_faced": 71.2
+            "avg_ms_faced": 66.8
           }
         ],
         "confidence": "high"
@@ -1429,7 +1429,7 @@
       "home_team": "BAL",
       "game_time_utc": "2026-04-13T22:35:00Z",
       "venue": "Oriole Park at Camden Yards",
-      "status": "Scheduled",
+      "status": "Pre-Game",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 669194,
@@ -1445,17 +1445,23 @@
         "archetype_color": "#e04040"
       },
       "home_pitcher": {
-        "id": null,
-        "name": "TBD",
+        "id": 665152,
+        "name": "Dean Kremer",
         "throws": "R",
-        "cluster": null,
-        "archetype": null
+        "cluster": "R_12",
+        "archetype": "Kitchen Sink",
+        "is_sp": 1.0,
+        "whiff_rate": 0.2126,
+        "groundball_rate": 0,
+        "avg_velo_FF": 93.3,
+        "archetype_short": "Kitchen Sink",
+        "archetype_color": "#80d040"
       },
       "away_lineup": [
         {
           "id": 606466,
           "name": "Ketel Marte",
-          "pos": "DH",
+          "pos": "2B",
           "bats": "S"
         },
         {
@@ -1471,43 +1477,43 @@
           "bats": "S"
         },
         {
+          "id": 680728,
+          "name": "Adrian Del Castillo",
+          "pos": "C",
+          "bats": "L"
+        },
+        {
+          "id": 605228,
+          "name": "Jose Fernandez",
+          "pos": "DH",
+          "bats": "R"
+        },
+        {
+          "id": 545121,
+          "name": "Ildemaro Vargas",
+          "pos": "1B",
+          "bats": "S"
+        },
+        {
           "id": 571448,
           "name": "Nolan Arenado",
           "pos": "3B",
           "bats": "R"
         },
         {
-          "id": 545121,
-          "name": "Ildemaro Vargas",
-          "pos": "2B",
-          "bats": "S"
-        },
-        {
-          "id": 605228,
-          "name": "Jose Fernandez",
-          "pos": "1B",
-          "bats": "R"
-        },
-        {
-          "id": 694374,
-          "name": "Tim Tawa",
-          "pos": "LF",
-          "bats": "R"
+          "id": 677950,
+          "name": "Alek Thomas",
+          "pos": "CF",
+          "bats": "L"
         },
         {
           "id": 678489,
           "name": "Jorge Barrosa",
-          "pos": "CF",
+          "pos": "LF",
           "bats": "S"
-        },
-        {
-          "id": 543510,
-          "name": "James McCann",
-          "pos": "C",
-          "bats": "R"
         }
       ],
-      "lineup_status": "expected",
+      "lineup_status": "confirmed",
       "home_lineup": [
         {
           "id": 683002,
@@ -1518,7 +1524,7 @@
         {
           "id": 621493,
           "name": "Taylor Ward",
-          "pos": "DH",
+          "pos": "LF",
           "bats": "R"
         },
         {
@@ -1536,13 +1542,7 @@
         {
           "id": 687637,
           "name": "Dylan Beavers",
-          "pos": "RF",
-          "bats": "L"
-        },
-        {
-          "id": 681297,
-          "name": "Colton Cowser",
-          "pos": "LF",
+          "pos": "DH",
           "bats": "L"
         },
         {
@@ -1552,38 +1552,345 @@
           "bats": "S"
         },
         {
-          "id": 691723,
-          "name": "Coby Mayo",
-          "pos": "3B",
-          "bats": "R"
+          "id": 681297,
+          "name": "Colton Cowser",
+          "pos": "RF",
+          "bats": "L"
         },
         {
           "id": 669236,
           "name": "Jeremiah Jackson",
           "pos": "2B",
           "bats": "R"
+        },
+        {
+          "id": 677942,
+          "name": "Blaze Alexander",
+          "pos": "3B",
+          "bats": "R"
         }
       ],
       "odds": {
-        "home_ml": -132,
-        "away_ml": 105,
+        "home_ml": -129,
+        "away_ml": 103,
         "spread": -1.5,
         "total": 8.5
       },
       "weather": "10% Precipitation79\u00b0\u00a0\u00a0Wind 14 mph Out",
       "umpire": "",
       "away_proj": {
-        "runs": 0,
-        "coverage": 0,
-        "total": 0,
-        "lineup_pct": 0,
-        "batter_details": [],
-        "team_stats": {},
-        "opposing_pitcher": {},
-        "adjustments": {}
+        "runs": 5.02,
+        "coverage": 8,
+        "total": 9,
+        "lineup_pct": 88.9,
+        "batter_details": [
+          {
+            "id": 606466,
+            "name": "Ketel Marte",
+            "pos": "2B",
+            "bats": "S",
+            "proj": {
+              "h": 1.0993872,
+              "hr": 0.22368000000000002,
+              "k": 0.817,
+              "bb": 0.436,
+              "tb": 2.0824608000000002,
+              "woba": 0.388,
+              "sb": 0.0453,
+              "cs": 0.0083
+            },
+            "source": "archetype",
+            "ms": {
+              "ms": 84,
+              "range": [
+                80,
+                88
+              ],
+              "woba": 0.385,
+              "k_pct": 0.206,
+              "bb_pct": 0.105,
+              "pa": 235.8324978351593,
+              "source": "archetype"
+            },
+            "overall_woba": 0.368,
+            "tier": "favorable"
+          },
+          {
+            "id": 682998,
+            "name": "Corbin Carroll",
+            "pos": "RF",
+            "bats": "L",
+            "proj": {
+              "h": 1.1966880000000002,
+              "hr": 0.22256160000000003,
+              "k": 0.911,
+              "bb": 0.388,
+              "tb": 2.303904,
+              "woba": 0.416,
+              "sb": 0.2035,
+              "cs": 0.0398
+            },
+            "source": "archetype",
+            "ms": {
+              "ms": 92,
+              "range": [
+                88,
+                96
+              ],
+              "woba": 0.416,
+              "k_pct": 0.226,
+              "bb_pct": 0.103,
+              "pa": 187.11940002441406,
+              "source": "archetype"
+            },
+            "overall_woba": 0.366,
+            "tier": "elite"
+          },
+          {
+            "id": 672695,
+            "name": "Geraldo Perdomo",
+            "pos": "SS",
+            "bats": "S",
+            "proj": {
+              "h": 1.0401120000000001,
+              "hr": 0.1610496,
+              "k": 0.664,
+              "bb": 0.389,
+              "tb": 1.9426608000000003,
+              "woba": 0.385,
+              "sb": 0.0967,
+              "cs": 0.0172
+            },
+            "source": "archetype",
+            "ms": {
+              "ms": 87,
+              "range": [
+                83,
+                91
+              ],
+              "woba": 0.392,
+              "k_pct": 0.157,
+              "bb_pct": 0.093,
+              "pa": 160.12420272827148,
+              "source": "archetype"
+            },
+            "overall_woba": 0.338,
+            "tier": "elite"
+          },
+          {
+            "id": 680728,
+            "name": "Adrian Del Castillo",
+            "pos": "C",
+            "bats": "L",
+            "proj": {
+              "h": 1.34208,
+              "hr": 0.0044736,
+              "k": 1.1,
+              "bb": 0.442,
+              "tb": 1.70556,
+              "woba": 0.405,
+              "sb": 0.046,
+              "cs": 0.046
+            },
+            "source": "archetype",
+            "ms": {
+              "ms": 87,
+              "range": [
+                79,
+                95
+              ],
+              "woba": 0.395,
+              "k_pct": 0.268,
+              "bb_pct": 0.09,
+              "pa": 36.15439987182617,
+              "source": "archetype"
+            },
+            "overall_woba": 0.332,
+            "tier": "elite"
+          },
+          {
+            "id": 605228,
+            "name": "Jose Fernandez",
+            "pos": "DH",
+            "bats": "R",
+            "proj": {
+              "h": 0.8622864000000001,
+              "hr": 0.05368320000000001,
+              "k": 0.819,
+              "bb": 0.048,
+              "tb": 1.1843856,
+              "woba": 0.537,
+              "sb": 0,
+              "cs": 0
+            },
+            "source": "overall",
+            "ms": {
+              "ms": 99,
+              "range": [
+                85,
+                99
+              ],
+              "woba": 0.575,
+              "k_pct": 0.208,
+              "bb_pct": 0.014,
+              "pa": 82.95510053634644,
+              "source": "overall"
+            },
+            "overall_woba": 0.537,
+            "tier": "elite"
+          },
+          {
+            "id": 545121,
+            "name": "Ildemaro Vargas",
+            "pos": "1B",
+            "bats": "S",
+            "proj": {
+              "h": 0.8835360000000001,
+              "hr": 0.0,
+              "k": 0.341,
+              "bb": 0.137,
+              "tb": 0.9595872000000001,
+              "woba": 0.222,
+              "sb": 0.0764,
+              "cs": 0.0344
+            },
+            "source": "archetype",
+            "ms": {
+              "ms": 41,
+              "range": [
+                40,
+                45
+              ],
+              "woba": 0.209,
+              "k_pct": 0.077,
+              "bb_pct": 0.031,
+              "pa": 58.553400814533234,
+              "source": "archetype"
+            },
+            "overall_woba": 0.297,
+            "tier": "tough"
+          },
+          {
+            "id": 571448,
+            "name": "Nolan Arenado",
+            "pos": "3B",
+            "bats": "R",
+            "proj": {
+              "h": 1.0613616,
+              "hr": 0.09506400000000001,
+              "k": 0.662,
+              "bb": 0.28,
+              "tb": 1.6250352000000001,
+              "woba": 0.324,
+              "sb": 0.0193,
+              "cs": 0.016
+            },
+            "source": "archetype",
+            "ms": {
+              "ms": 64,
+              "range": [
+                60,
+                68
+              ],
+              "woba": 0.325,
+              "k_pct": 0.161,
+              "bb_pct": 0.065,
+              "pa": 258.638801664114,
+              "source": "archetype"
+            },
+            "overall_woba": 0.385,
+            "tier": "neutral"
+          },
+          {
+            "id": 677950,
+            "name": "Alek Thomas",
+            "pos": "CF",
+            "bats": "L",
+            "proj": {
+              "h": 0.8264976,
+              "hr": 0.12973440000000003,
+              "k": 1.128,
+              "bb": 0.148,
+              "tb": 1.3845792000000001,
+              "woba": 0.269,
+              "sb": 0.1098,
+              "cs": 0.0292
+            },
+            "source": "archetype",
+            "ms": {
+              "ms": 48,
+              "range": [
+                44,
+                52
+              ],
+              "woba": 0.26,
+              "k_pct": 0.306,
+              "bb_pct": 0.029,
+              "pa": 104.5649995803833,
+              "source": "archetype"
+            },
+            "overall_woba": 0.295,
+            "tier": "tough"
+          },
+          {
+            "id": 678489,
+            "name": "Jorge Barrosa",
+            "pos": "LF",
+            "bats": "S",
+            "proj": {
+              "h": 0.0,
+              "hr": 0.0,
+              "k": 0,
+              "bb": 0,
+              "tb": 0.0,
+              "woba": 0,
+              "sb": 0,
+              "cs": 0
+            },
+            "source": "none",
+            "ms": {
+              "ms": 96,
+              "range": [
+                82,
+                99
+              ],
+              "woba": 0.464,
+              "k_pct": 0.124,
+              "bb_pct": 0.0,
+              "pa": 3.2882001101970673,
+              "source": "archetype"
+            },
+            "overall_woba": 0.386,
+            "tier": "elite"
+          }
+        ],
+        "team_stats": {
+          "h": 8.6,
+          "hr": 0.89,
+          "bb": 2.27,
+          "k": 6.44,
+          "tb": 13.19,
+          "sb": 0.6,
+          "cs": 0.19,
+          "pa": 36
+        },
+        "opposing_pitcher": {
+          "id": 665152,
+          "cluster": "R_12",
+          "archetype": "Kitchen Sink"
+        },
+        "adjustments": {
+          "tier": "T4_Fringe",
+          "tier_mult": 1.118,
+          "re24": -0.088,
+          "oaa": 0.284,
+          "park_mult": 1.0,
+          "park_adj": 0.0,
+          "bp_adj": 0.531
+        }
       },
       "home_proj": {
-        "runs": 3.45,
+        "runs": 3.06,
         "coverage": 8,
         "total": 9,
         "lineup_pct": 88.9,
@@ -1622,7 +1929,7 @@
           {
             "id": 621493,
             "name": "Taylor Ward",
-            "pos": "DH",
+            "pos": "LF",
             "bats": "R",
             "proj": {
               "h": 0.852,
@@ -1715,7 +2022,7 @@
           {
             "id": 687637,
             "name": "Dylan Beavers",
-            "pos": "RF",
+            "pos": "DH",
             "bats": "L",
             "proj": {
               "h": 0.615,
@@ -1742,37 +2049,6 @@
             },
             "overall_woba": 0.36,
             "tier": "favorable"
-          },
-          {
-            "id": 681297,
-            "name": "Colton Cowser",
-            "pos": "LF",
-            "bats": "L",
-            "proj": {
-              "h": 0.715,
-              "hr": 0.156,
-              "k": 1.542,
-              "bb": 0.509,
-              "tb": 1.391,
-              "woba": 0.311,
-              "sb": 0.0601,
-              "cs": 0.019
-            },
-            "source": "archetype",
-            "ms": {
-              "ms": 56,
-              "range": [
-                52,
-                60
-              ],
-              "woba": 0.295,
-              "k_pct": 0.423,
-              "bb_pct": 0.116,
-              "pa": 76.63930296897888,
-              "source": "archetype"
-            },
-            "overall_woba": 0.31,
-            "tier": "neutral"
           },
           {
             "id": 665750,
@@ -1806,35 +2082,35 @@
             "tier": "tough"
           },
           {
-            "id": 691723,
-            "name": "Coby Mayo",
-            "pos": "3B",
-            "bats": "R",
+            "id": 681297,
+            "name": "Colton Cowser",
+            "pos": "RF",
+            "bats": "L",
             "proj": {
-              "h": 0.929,
-              "hr": 0.155,
-              "k": 1.539,
-              "bb": 0.31,
-              "tb": 1.549,
-              "woba": 0.319,
-              "sb": 0.0,
-              "cs": 0.0
+              "h": 0.715,
+              "hr": 0.156,
+              "k": 1.542,
+              "bb": 0.509,
+              "tb": 1.391,
+              "woba": 0.311,
+              "sb": 0.0601,
+              "cs": 0.019
             },
             "source": "archetype",
             "ms": {
-              "ms": 74,
+              "ms": 56,
               "range": [
-                66,
-                82
+                52,
+                60
               ],
-              "woba": 0.353,
-              "k_pct": 0.341,
-              "bb_pct": 0.086,
-              "pa": 25.801400661468506,
+              "woba": 0.295,
+              "k_pct": 0.423,
+              "bb_pct": 0.116,
+              "pa": 76.63930296897888,
               "source": "archetype"
             },
-            "overall_woba": 0.284,
-            "tier": "favorable"
+            "overall_woba": 0.31,
+            "tier": "neutral"
           },
           {
             "id": 669236,
@@ -1866,16 +2142,47 @@
             },
             "overall_woba": 0.353,
             "tier": "elite"
+          },
+          {
+            "id": 677942,
+            "name": "Blaze Alexander",
+            "pos": "3B",
+            "bats": "R",
+            "proj": {
+              "h": 0.504,
+              "hr": 0.126,
+              "k": 1.639,
+              "bb": 0.0,
+              "tb": 0.882,
+              "woba": 0.169,
+              "sb": 0.0649,
+              "cs": 0.0216
+            },
+            "source": "archetype",
+            "ms": {
+              "ms": 40,
+              "range": [
+                40,
+                48
+              ],
+              "woba": 0.169,
+              "k_pct": 0.452,
+              "bb_pct": 0.0,
+              "pa": 31.685200691223145,
+              "source": "archetype"
+            },
+            "overall_woba": 0.321,
+            "tier": "tough"
           }
         ],
         "team_stats": {
-          "h": 5.59,
-          "hr": 0.9,
-          "bb": 3.44,
-          "k": 8.76,
-          "tb": 9.51,
-          "sb": 0.35,
-          "cs": 0.11,
+          "h": 5.17,
+          "hr": 0.87,
+          "bb": 3.13,
+          "k": 8.86,
+          "tb": 8.84,
+          "sb": 0.41,
+          "cs": 0.13,
           "pa": 36
         },
         "opposing_pitcher": {
@@ -1886,50 +2193,50 @@
         "adjustments": {
           "tier": "T3_Standard",
           "tier_mult": 1.0,
-          "re24": 0.048,
-          "oaa": -0.076,
+          "re24": 0.017,
+          "oaa": -0.07,
           "park_mult": 1.0,
           "park_adj": 0.0,
           "bp_adj": 0.156
         }
       },
       "has_lineups": true,
-      "proj_total": 3.5,
-      "proj_spread": 3.5,
+      "proj_total": 8.1,
+      "proj_spread": -2.0,
       "edges": {
         "ml": {
-          "side": "BAL",
-          "odds": -132,
-          "edge": 27.6,
-          "ev": 43.1,
-          "model_wp": 81.4,
-          "market_wp": 53.8,
+          "side": "ARI",
+          "odds": 103,
+          "edge": 22.6,
+          "ev": 40.5,
+          "model_wp": 69.2,
+          "market_wp": 46.7,
           "is_pick": true,
           "is_strong": true
         },
         "total": {
-          "edge": -5.0,
+          "edge": -0.4,
           "market": 8.5,
-          "projected": 3.5,
+          "projected": 8.1,
           "is_pick": false,
           "is_strong": false,
           "direction": "under"
         }
       },
       "model_wp": {
-        "away": 18.6,
-        "home": 81.4
+        "away": 69.2,
+        "home": 30.8
       },
-      "away_avg_ms": 0,
-      "home_avg_ms": 68.2,
+      "away_avg_ms": 77.6,
+      "home_avg_ms": 64.4,
       "confidence": {
         "spread_conf": 8,
         "spread_conf_color": "#00FF55",
-        "spread_conf_label": "TAKE BAL",
-        "value_rating": 8,
+        "spread_conf_label": "TAKE ARI",
+        "value_rating": 10,
         "value_color": "#00FF55",
-        "total_conf": 4,
-        "total_conf_color": "#FFD600",
+        "total_conf": 3,
+        "total_conf_color": "#FF8C00",
         "total_conf_label": "TOSS-UP"
       },
       "away_bullpen": {
@@ -1974,27 +2281,27 @@
                 "woba": 0.36
               },
               {
-                "batter_id": 681297,
-                "ms": 70,
-                "woba": 0.341
-              },
-              {
                 "batter_id": 665750,
                 "ms": 46,
                 "woba": 0.248
               },
               {
-                "batter_id": 691723,
-                "ms": 40,
-                "woba": 0.117
+                "batter_id": 681297,
+                "ms": 70,
+                "woba": 0.341
               },
               {
                 "batter_id": 669236,
                 "ms": 40,
                 "woba": 0.0
+              },
+              {
+                "batter_id": 677942,
+                "ms": 66,
+                "woba": 0.329
               }
             ],
-            "avg_ms_faced": 60.1
+            "avg_ms_faced": 63.0
           },
           {
             "id": 686753,
@@ -2032,27 +2339,27 @@
                 "woba": 0.268
               },
               {
-                "batter_id": 681297,
-                "ms": 64,
-                "woba": 0.323
-              },
-              {
                 "batter_id": 665750,
                 "ms": 48,
                 "woba": 0.258
               },
               {
-                "batter_id": 691723,
-                "ms": 40,
-                "woba": 0.15
+                "batter_id": 681297,
+                "ms": 64,
+                "woba": 0.323
               },
               {
                 "batter_id": 669236,
                 "ms": 99,
                 "woba": 0.501
+              },
+              {
+                "batter_id": 677942,
+                "ms": 73,
+                "woba": 0.351
               }
             ],
-            "avg_ms_faced": 68.0
+            "avg_ms_faced": 71.7
           },
           {
             "id": 656464,
@@ -2090,27 +2397,27 @@
                 "woba": 0.644
               },
               {
-                "batter_id": 681297,
-                "ms": 48,
-                "woba": 0.262
-              },
-              {
                 "batter_id": 665750,
                 "ms": 58,
                 "woba": 0.305
               },
               {
-                "batter_id": 691723,
-                "ms": 40,
-                "woba": 0.05
+                "batter_id": 681297,
+                "ms": 48,
+                "woba": 0.262
               },
               {
                 "batter_id": 669236,
                 "ms": 74,
                 "woba": 0.353
+              },
+              {
+                "batter_id": 677942,
+                "ms": 78,
+                "woba": 0.366
               }
             ],
-            "avg_ms_faced": 64.2
+            "avg_ms_faced": 68.4
           },
           {
             "id": 679885,
@@ -2148,27 +2455,27 @@
                 "woba": 0.36
               },
               {
-                "batter_id": 681297,
-                "ms": 40,
-                "woba": 0.189
-              },
-              {
                 "batter_id": 665750,
                 "ms": 42,
                 "woba": 0.216
               },
               {
-                "batter_id": 691723,
-                "ms": 99,
-                "woba": 0.575
+                "batter_id": 681297,
+                "ms": 40,
+                "woba": 0.189
               },
               {
                 "batter_id": 669236,
                 "ms": 73,
                 "woba": 0.35
+              },
+              {
+                "batter_id": 677942,
+                "ms": 66,
+                "woba": 0.329
               }
             ],
-            "avg_ms_faced": 63.8
+            "avg_ms_faced": 60.1
           }
         ],
         "confidence": "high"
@@ -2205,14 +2512,9 @@
                 "woba": 0.307
               },
               {
-                "batter_id": 571448,
-                "ms": 82,
-                "woba": 0.377
-              },
-              {
-                "batter_id": 545121,
-                "ms": 53,
-                "woba": 0.284
+                "batter_id": 680728,
+                "ms": 40,
+                "woba": 0.13
               },
               {
                 "batter_id": 605228,
@@ -2220,22 +2522,27 @@
                 "woba": 0.352
               },
               {
-                "batter_id": 694374,
-                "ms": 40,
-                "woba": 0.05
+                "batter_id": 545121,
+                "ms": 53,
+                "woba": 0.284
+              },
+              {
+                "batter_id": 571448,
+                "ms": 82,
+                "woba": 0.377
+              },
+              {
+                "batter_id": 677950,
+                "ms": 67,
+                "woba": 0.334
               },
               {
                 "batter_id": 678489,
                 "ms": 55,
                 "woba": 0.29
-              },
-              {
-                "batter_id": 543510,
-                "ms": 54,
-                "woba": 0.289
               }
             ],
-            "avg_ms_faced": 64.9
+            "avg_ms_faced": 66.3
           },
           {
             "id": 664854,
@@ -2263,14 +2570,9 @@
                 "woba": 0.384
               },
               {
-                "batter_id": 571448,
-                "ms": 74,
-                "woba": 0.354
-              },
-              {
-                "batter_id": 545121,
-                "ms": 79,
-                "woba": 0.37
+                "batter_id": 680728,
+                "ms": 45,
+                "woba": 0.241
               },
               {
                 "batter_id": 605228,
@@ -2278,22 +2580,27 @@
                 "woba": 0.58
               },
               {
-                "batter_id": 694374,
-                "ms": 91,
-                "woba": 0.409
+                "batter_id": 545121,
+                "ms": 79,
+                "woba": 0.37
+              },
+              {
+                "batter_id": 571448,
+                "ms": 74,
+                "woba": 0.354
+              },
+              {
+                "batter_id": 677950,
+                "ms": 45,
+                "woba": 0.238
               },
               {
                 "batter_id": 678489,
                 "ms": 99,
                 "woba": 1.178
-              },
-              {
-                "batter_id": 543510,
-                "ms": 52,
-                "woba": 0.277
               }
             ],
-            "avg_ms_faced": 80.1
+            "avg_ms_faced": 74.2
           },
           {
             "id": 681882,
@@ -2321,14 +2628,9 @@
                 "woba": 0.307
               },
               {
-                "batter_id": 571448,
-                "ms": 82,
-                "woba": 0.377
-              },
-              {
-                "batter_id": 545121,
-                "ms": 53,
-                "woba": 0.284
+                "batter_id": 680728,
+                "ms": 40,
+                "woba": 0.13
               },
               {
                 "batter_id": 605228,
@@ -2336,22 +2638,27 @@
                 "woba": 0.352
               },
               {
-                "batter_id": 694374,
-                "ms": 40,
-                "woba": 0.05
+                "batter_id": 545121,
+                "ms": 53,
+                "woba": 0.284
+              },
+              {
+                "batter_id": 571448,
+                "ms": 82,
+                "woba": 0.377
+              },
+              {
+                "batter_id": 677950,
+                "ms": 67,
+                "woba": 0.334
               },
               {
                 "batter_id": 678489,
                 "ms": 55,
                 "woba": 0.29
-              },
-              {
-                "batter_id": 543510,
-                "ms": 54,
-                "woba": 0.289
               }
             ],
-            "avg_ms_faced": 64.9
+            "avg_ms_faced": 66.3
           },
           {
             "id": 682274,
@@ -2379,14 +2686,9 @@
                 "woba": 0.363
               },
               {
-                "batter_id": 571448,
-                "ms": 74,
-                "woba": 0.352
-              },
-              {
-                "batter_id": 545121,
-                "ms": 47,
-                "woba": 0.258
+                "batter_id": 680728,
+                "ms": 82,
+                "woba": 0.378
               },
               {
                 "batter_id": 605228,
@@ -2394,22 +2696,27 @@
                 "woba": 0.0
               },
               {
-                "batter_id": 694374,
-                "ms": 40,
-                "woba": 0.145
+                "batter_id": 545121,
+                "ms": 47,
+                "woba": 0.258
+              },
+              {
+                "batter_id": 571448,
+                "ms": 74,
+                "woba": 0.352
+              },
+              {
+                "batter_id": 677950,
+                "ms": 92,
+                "woba": 0.418
               },
               {
                 "batter_id": 678489,
                 "ms": 40,
                 "woba": 0.0
-              },
-              {
-                "batter_id": 543510,
-                "ms": 57,
-                "woba": 0.302
               }
             ],
-            "avg_ms_faced": 60.3
+            "avg_ms_faced": 68.9
           }
         ],
         "confidence": "high"
@@ -2423,7 +2730,7 @@
       "home_team": "PIT",
       "game_time_utc": "2026-04-13T22:40:00Z",
       "venue": "PNC Park",
-      "status": "Scheduled",
+      "status": "Pre-Game",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 676917,
@@ -2524,7 +2831,7 @@
         {
           "id": 668804,
           "name": "Bryan Reynolds",
-          "pos": "LF",
+          "pos": "DH",
           "bats": "S"
         },
         {
@@ -2532,12 +2839,6 @@
           "name": "Ryan O'Hearn",
           "pos": "RF",
           "bats": "L"
-        },
-        {
-          "id": 542303,
-          "name": "Marcell Ozuna",
-          "pos": "DH",
-          "bats": "R"
         },
         {
           "id": 694377,
@@ -2558,6 +2859,12 @@
           "bats": "R"
         },
         {
+          "id": 663968,
+          "name": "Jake Mangum",
+          "pos": "LF",
+          "bats": "S"
+        },
+        {
           "id": 680779,
           "name": "Henry Davis",
           "pos": "C",
@@ -2570,7 +2877,7 @@
         "spread": -1.5,
         "total": 7.5
       },
-      "weather": "9% Precipitation74\u00b0\u00a0\u00a0Wind 14 mph R-L",
+      "weather": "5% Precipitation77\u00b0\u00a0\u00a0Wind 14 mph R-L",
       "umpire": "",
       "away_proj": {
         "runs": 2.97,
@@ -2884,7 +3191,7 @@
         }
       },
       "home_proj": {
-        "runs": 4.1,
+        "runs": 3.79,
         "coverage": 8,
         "total": 9,
         "lineup_pct": 88.9,
@@ -2954,7 +3261,7 @@
           {
             "id": 668804,
             "name": "Bryan Reynolds",
-            "pos": "LF",
+            "pos": "DH",
             "bats": "S",
             "proj": {
               "h": 0.7078206,
@@ -3012,37 +3319,6 @@
             },
             "overall_woba": 0.332,
             "tier": "favorable"
-          },
-          {
-            "id": 542303,
-            "name": "Marcell Ozuna",
-            "pos": "DH",
-            "bats": "R",
-            "proj": {
-              "h": 0.9415244,
-              "hr": 0.2504768,
-              "k": 0.922,
-              "bb": 0.308,
-              "tb": 1.8651576,
-              "woba": 0.338,
-              "sb": 0.0069,
-              "cs": 0.002
-            },
-            "source": "archetype",
-            "ms": {
-              "ms": 64,
-              "range": [
-                60,
-                68
-              ],
-              "woba": 0.324,
-              "k_pct": 0.239,
-              "bb_pct": 0.078,
-              "pa": 349.0866050720215,
-              "source": "archetype"
-            },
-            "overall_woba": 0.363,
-            "tier": "neutral"
           },
           {
             "id": 694377,
@@ -3138,6 +3414,37 @@
             "tier": "unknown"
           },
           {
+            "id": 663968,
+            "name": "Jake Mangum",
+            "pos": "LF",
+            "bats": "S",
+            "proj": {
+              "h": 0.95047,
+              "hr": 0.0,
+              "k": 0.543,
+              "bb": 0.567,
+              "tb": 0.95047,
+              "woba": 0.29,
+              "sb": 0,
+              "cs": 0
+            },
+            "source": "archetype",
+            "ms": {
+              "ms": 55,
+              "range": [
+                41,
+                69
+              ],
+              "woba": 0.29,
+              "k_pct": 0.136,
+              "bb_pct": 0.142,
+              "pa": 14.1141996383667,
+              "source": "archetype"
+            },
+            "overall_woba": 0.324,
+            "tier": "neutral"
+          },
+          {
             "id": 680779,
             "name": "Henry Davis",
             "pos": "C",
@@ -3170,12 +3477,12 @@
           }
         ],
         "team_stats": {
-          "h": 5.98,
-          "hr": 0.92,
-          "bb": 2.64,
-          "k": 8.41,
-          "tb": 9.65,
-          "sb": 0.48,
+          "h": 5.99,
+          "hr": 0.67,
+          "bb": 2.9,
+          "k": 8.03,
+          "tb": 8.73,
+          "sb": 0.47,
           "cs": 0.07,
           "pa": 36
         },
@@ -3187,48 +3494,48 @@
         "adjustments": {
           "tier": "T4_Fringe",
           "tier_mult": 1.118,
-          "re24": -0.02,
-          "oaa": 0.279,
+          "re24": -0.026,
+          "oaa": 0.28,
           "park_mult": 0.99,
-          "park_adj": -0.031,
+          "park_adj": -0.028,
           "bp_adj": 0.991
         }
       },
       "has_lineups": true,
-      "proj_total": 7.1,
-      "proj_spread": 1.1,
+      "proj_total": 6.8,
+      "proj_spread": 0.8,
       "edges": {
         "ml": {
           "side": "WSH",
           "odds": 156,
-          "edge": 2.5,
-          "ev": -1.1,
-          "model_wp": 38.7,
+          "edge": 5.6,
+          "ev": 6.8,
+          "model_wp": 41.7,
           "market_wp": 36.1,
-          "is_pick": false,
-          "is_strong": false
+          "is_pick": true,
+          "is_strong": true
         },
         "total": {
-          "edge": -0.4,
+          "edge": -0.7,
           "market": 7.5,
-          "projected": 7.1,
+          "projected": 6.8,
           "is_pick": false,
           "is_strong": false,
           "direction": "under"
         }
       },
       "model_wp": {
-        "away": 38.7,
-        "home": 61.3
+        "away": 41.7,
+        "home": 58.3
       },
       "away_avg_ms": 72.8,
-      "home_avg_ms": 58.4,
+      "home_avg_ms": 57.2,
       "confidence": {
         "spread_conf": 1,
         "spread_conf_color": "#FF3333",
         "spread_conf_label": "TOSS-UP",
-        "value_rating": 1,
-        "value_color": "#FF3333",
+        "value_rating": 4,
+        "value_color": "#FFD600",
         "total_conf": 2,
         "total_conf_color": "#FF8C00",
         "total_conf_label": "TOSS-UP"
@@ -3270,11 +3577,6 @@
                 "woba": 0.342
               },
               {
-                "batter_id": 542303,
-                "ms": 77,
-                "woba": 0.364
-              },
-              {
                 "batter_id": 694377,
                 "ms": 40,
                 "woba": 0.041
@@ -3290,12 +3592,17 @@
                 "woba": 0
               },
               {
+                "batter_id": 663968,
+                "ms": 55,
+                "woba": 0.29
+              },
+              {
                 "batter_id": 680779,
                 "ms": 56,
                 "woba": 0.297
               }
             ],
-            "avg_ms_faced": 64.1
+            "avg_ms_faced": 61.4
           },
           {
             "id": 687606,
@@ -3328,11 +3635,6 @@
                 "woba": 0.321
               },
               {
-                "batter_id": 542303,
-                "ms": 82,
-                "woba": 0.375
-              },
-              {
                 "batter_id": 694377,
                 "ms": 43,
                 "woba": 0.221
@@ -3348,12 +3650,17 @@
                 "woba": 0
               },
               {
+                "batter_id": 663968,
+                "ms": 55,
+                "woba": 0.294
+              },
+              {
                 "batter_id": 680779,
                 "ms": 70,
                 "woba": 0.34
               }
             ],
-            "avg_ms_faced": 73.6
+            "avg_ms_faced": 70.2
           },
           {
             "id": 681402,
@@ -3386,11 +3693,6 @@
                 "woba": 0.342
               },
               {
-                "batter_id": 542303,
-                "ms": 77,
-                "woba": 0.364
-              },
-              {
                 "batter_id": 694377,
                 "ms": 40,
                 "woba": 0.041
@@ -3406,12 +3708,17 @@
                 "woba": 0
               },
               {
+                "batter_id": 663968,
+                "ms": 55,
+                "woba": 0.29
+              },
+              {
                 "batter_id": 680779,
                 "ms": 56,
                 "woba": 0.297
               }
             ],
-            "avg_ms_faced": 64.1
+            "avg_ms_faced": 61.4
           },
           {
             "id": 690925,
@@ -3444,11 +3751,6 @@
                 "woba": 0.342
               },
               {
-                "batter_id": 542303,
-                "ms": 77,
-                "woba": 0.364
-              },
-              {
                 "batter_id": 694377,
                 "ms": 40,
                 "woba": 0.041
@@ -3464,12 +3766,17 @@
                 "woba": 0
               },
               {
+                "batter_id": 663968,
+                "ms": 55,
+                "woba": 0.29
+              },
+              {
                 "batter_id": 680779,
                 "ms": 56,
                 "woba": 0.297
               }
             ],
-            "avg_ms_faced": 64.1
+            "avg_ms_faced": 61.4
           }
         ],
         "confidence": "high"
@@ -3840,7 +4147,7 @@
       "home_team": "PHI",
       "game_time_utc": "2026-04-13T22:40:00Z",
       "venue": "Citizens Bank Park",
-      "status": "Scheduled",
+      "status": "Pre-Game",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 665871,
@@ -3945,10 +4252,22 @@
           "bats": "L"
         },
         {
+          "id": 666969,
+          "name": "Adolis Garcia",
+          "pos": "RF",
+          "bats": "R"
+        },
+        {
           "id": 669016,
           "name": "Brandon Marsh",
           "pos": "LF",
           "bats": "L"
+        },
+        {
+          "id": 664761,
+          "name": "Alec Bohm",
+          "pos": "3B",
+          "bats": "R"
         },
         {
           "id": 681082,
@@ -3957,21 +4276,9 @@
           "bats": "L"
         },
         {
-          "id": 666969,
-          "name": "Adolis Garcia",
-          "pos": "RF",
-          "bats": "R"
-        },
-        {
           "id": 592663,
           "name": "J.T. Realmuto",
           "pos": "C",
-          "bats": "R"
-        },
-        {
-          "id": 664761,
-          "name": "Alec Bohm",
-          "pos": "3B",
           "bats": "R"
         },
         {
@@ -3982,10 +4289,10 @@
         }
       ],
       "odds": {
-        "home_ml": -186,
-        "away_ml": 130,
+        "home_ml": -182,
+        "away_ml": 127,
         "spread": -1.5,
-        "total": 8.0
+        "total": 8.5
       },
       "weather": "9% Precipitation80\u00b0\u00a0\u00a0Wind 14 mph Out",
       "umpire": "",
@@ -4400,6 +4707,37 @@
             "tier": "favorable"
           },
           {
+            "id": 666969,
+            "name": "Adolis Garcia",
+            "pos": "RF",
+            "bats": "R",
+            "proj": {
+              "h": 0.9404319999999999,
+              "hr": 0.217364,
+              "k": 1.049,
+              "bb": 0.235,
+              "tb": 1.761092,
+              "woba": 0.328,
+              "sb": 0.0868,
+              "cs": 0.0264
+            },
+            "source": "archetype",
+            "ms": {
+              "ms": 64,
+              "range": [
+                60,
+                68
+              ],
+              "woba": 0.324,
+              "k_pct": 0.254,
+              "bb_pct": 0.054,
+              "pa": 505.55469512939453,
+              "source": "archetype"
+            },
+            "overall_woba": 0.324,
+            "tier": "neutral"
+          },
+          {
             "id": 669016,
             "name": "Brandon Marsh",
             "pos": "LF",
@@ -4429,6 +4767,37 @@
             },
             "overall_woba": 0.337,
             "tier": "elite"
+          },
+          {
+            "id": 664761,
+            "name": "Alec Bohm",
+            "pos": "3B",
+            "bats": "R",
+            "proj": {
+              "h": 1.133398,
+              "hr": 0.109791,
+              "k": 0.668,
+              "bb": 0.22,
+              "tb": 1.727822,
+              "woba": 0.342,
+              "sb": 0.0262,
+              "cs": 0.013
+            },
+            "source": "archetype",
+            "ms": {
+              "ms": 72,
+              "range": [
+                68,
+                76
+              ],
+              "woba": 0.347,
+              "k_pct": 0.156,
+              "bb_pct": 0.053,
+              "pa": 399.30580139160156,
+              "source": "archetype"
+            },
+            "overall_woba": 0.337,
+            "tier": "favorable"
           },
           {
             "id": 681082,
@@ -4462,37 +4831,6 @@
             "tier": "neutral"
           },
           {
-            "id": 666969,
-            "name": "Adolis Garcia",
-            "pos": "RF",
-            "bats": "R",
-            "proj": {
-              "h": 0.9404319999999999,
-              "hr": 0.217364,
-              "k": 1.049,
-              "bb": 0.235,
-              "tb": 1.761092,
-              "woba": 0.328,
-              "sb": 0.0868,
-              "cs": 0.0264
-            },
-            "source": "archetype",
-            "ms": {
-              "ms": 64,
-              "range": [
-                60,
-                68
-              ],
-              "woba": 0.324,
-              "k_pct": 0.254,
-              "bb_pct": 0.054,
-              "pa": 505.55469512939453,
-              "source": "archetype"
-            },
-            "overall_woba": 0.324,
-            "tier": "neutral"
-          },
-          {
             "id": 592663,
             "name": "J.T. Realmuto",
             "pos": "C",
@@ -4521,37 +4859,6 @@
               "source": "archetype"
             },
             "overall_woba": 0.347,
-            "tier": "favorable"
-          },
-          {
-            "id": 664761,
-            "name": "Alec Bohm",
-            "pos": "3B",
-            "bats": "R",
-            "proj": {
-              "h": 1.133398,
-              "hr": 0.109791,
-              "k": 0.668,
-              "bb": 0.22,
-              "tb": 1.727822,
-              "woba": 0.342,
-              "sb": 0.0262,
-              "cs": 0.013
-            },
-            "source": "archetype",
-            "ms": {
-              "ms": 72,
-              "range": [
-                68,
-                76
-              ],
-              "woba": 0.347,
-              "k_pct": 0.156,
-              "bb_pct": 0.053,
-              "pa": 399.30580139160156,
-              "source": "archetype"
-            },
-            "overall_woba": 0.337,
             "tier": "favorable"
           },
           {
@@ -4617,17 +4924,17 @@
       "edges": {
         "ml": {
           "side": "CHC",
-          "odds": 130,
-          "edge": 1.4,
-          "ev": -4.7,
+          "odds": 127,
+          "edge": 0.9,
+          "ev": -6.0,
           "model_wp": 41.4,
-          "market_wp": 40.1,
+          "market_wp": 40.6,
           "is_pick": false,
           "is_strong": false
         },
         "total": {
-          "edge": 2.4,
-          "market": 8.0,
+          "edge": 1.9,
+          "market": 8.5,
           "projected": 10.4,
           "is_pick": false,
           "is_strong": false,
@@ -4646,8 +4953,8 @@
         "spread_conf_label": "TOSS-UP",
         "value_rating": 1,
         "value_color": "#FF3333",
-        "total_conf": 4,
-        "total_conf_color": "#FFD600",
+        "total_conf": 3,
+        "total_conf_color": "#FF8C00",
         "total_conf_label": "TOSS-UP"
       },
       "away_bullpen": {
@@ -4682,9 +4989,19 @@
                 "woba": 0.394
               },
               {
+                "batter_id": 666969,
+                "ms": 59,
+                "woba": 0.309
+              },
+              {
                 "batter_id": 669016,
                 "ms": 81,
                 "woba": 0.372
+              },
+              {
+                "batter_id": 664761,
+                "ms": 64,
+                "woba": 0.323
               },
               {
                 "batter_id": 681082,
@@ -4692,19 +5009,9 @@
                 "woba": 0.292
               },
               {
-                "batter_id": 666969,
-                "ms": 59,
-                "woba": 0.309
-              },
-              {
                 "batter_id": 592663,
                 "ms": 76,
                 "woba": 0.359
-              },
-              {
-                "batter_id": 664761,
-                "ms": 64,
-                "woba": 0.323
               },
               {
                 "batter_id": 702222,
@@ -4740,9 +5047,19 @@
                 "woba": 0.394
               },
               {
+                "batter_id": 666969,
+                "ms": 59,
+                "woba": 0.309
+              },
+              {
                 "batter_id": 669016,
                 "ms": 81,
                 "woba": 0.372
+              },
+              {
+                "batter_id": 664761,
+                "ms": 64,
+                "woba": 0.323
               },
               {
                 "batter_id": 681082,
@@ -4750,19 +5067,9 @@
                 "woba": 0.292
               },
               {
-                "batter_id": 666969,
-                "ms": 59,
-                "woba": 0.309
-              },
-              {
                 "batter_id": 592663,
                 "ms": 76,
                 "woba": 0.359
-              },
-              {
-                "batter_id": 664761,
-                "ms": 64,
-                "woba": 0.323
               },
               {
                 "batter_id": 702222,
@@ -4798,9 +5105,19 @@
                 "woba": 0.408
               },
               {
+                "batter_id": 666969,
+                "ms": 63,
+                "woba": 0.319
+              },
+              {
                 "batter_id": 669016,
                 "ms": 69,
                 "woba": 0.34
+              },
+              {
+                "batter_id": 664761,
+                "ms": 75,
+                "woba": 0.356
               },
               {
                 "batter_id": 681082,
@@ -4808,19 +5125,9 @@
                 "woba": 0.319
               },
               {
-                "batter_id": 666969,
-                "ms": 63,
-                "woba": 0.319
-              },
-              {
                 "batter_id": 592663,
                 "ms": 89,
                 "woba": 0.4
-              },
-              {
-                "batter_id": 664761,
-                "ms": 75,
-                "woba": 0.356
               },
               {
                 "batter_id": 702222,
@@ -4856,9 +5163,19 @@
                 "woba": 0.367
               },
               {
+                "batter_id": 666969,
+                "ms": 67,
+                "woba": 0.333
+              },
+              {
                 "batter_id": 669016,
                 "ms": 90,
                 "woba": 0.402
+              },
+              {
+                "batter_id": 664761,
+                "ms": 63,
+                "woba": 0.32
               },
               {
                 "batter_id": 681082,
@@ -4866,19 +5183,9 @@
                 "woba": 0.259
               },
               {
-                "batter_id": 666969,
-                "ms": 67,
-                "woba": 0.333
-              },
-              {
                 "batter_id": 592663,
                 "ms": 78,
                 "woba": 0.365
-              },
-              {
-                "batter_id": 664761,
-                "ms": 63,
-                "woba": 0.32
               },
               {
                 "batter_id": 702222,
@@ -5141,7 +5448,7 @@
       "home_team": "NYY",
       "game_time_utc": "2026-04-13T23:05:00Z",
       "venue": "Yankee Stadium",
-      "status": "Scheduled",
+      "status": "Pre-Game",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 579328,
@@ -5283,8 +5590,8 @@
         }
       ],
       "odds": {
-        "home_ml": -193,
-        "away_ml": 135,
+        "home_ml": -195,
+        "away_ml": 136,
         "spread": -1.5,
         "total": 9.5
       },
@@ -5918,11 +6225,11 @@
       "edges": {
         "ml": {
           "side": "NYY",
-          "odds": -193,
-          "edge": 28.9,
-          "ev": 36.1,
+          "odds": -195,
+          "edge": 28.7,
+          "ev": 35.6,
           "model_wp": 89.7,
-          "market_wp": 60.8,
+          "market_wp": 60.9,
           "is_pick": true,
           "is_strong": true
         },
@@ -6558,7 +6865,7 @@
       "home_team": "ATL",
       "game_time_utc": "2026-04-13T23:15:00Z",
       "venue": "Truist Park",
-      "status": "Scheduled",
+      "status": "Pre-Game",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 691587,
@@ -6681,16 +6988,16 @@
           "bats": "S"
         },
         {
-          "id": 642201,
-          "name": "Eli White",
-          "pos": "CF",
-          "bats": "R"
-        },
-        {
           "id": 642086,
           "name": "Dominic Smith",
           "pos": "DH",
           "bats": "L"
+        },
+        {
+          "id": 622761,
+          "name": "Jorge Mateo",
+          "pos": "CF",
+          "bats": "R"
         },
         {
           "id": 643289,
@@ -6700,12 +7007,12 @@
         }
       ],
       "odds": {
-        "home_ml": -149,
-        "away_ml": 119,
+        "home_ml": -151,
+        "away_ml": 105,
         "spread": -1.5,
         "total": 8.5
       },
-      "weather": "0%81\u00b0\u00a0\u00a0Wind 8 mph Out",
+      "weather": "0%81\u00b0\u00a0\u00a0Wind 7 mph Out",
       "umpire": "",
       "away_proj": {
         "runs": 3.19,
@@ -7019,7 +7326,7 @@
         }
       },
       "home_proj": {
-        "runs": 5.3,
+        "runs": 5.08,
         "coverage": 9,
         "total": 9,
         "lineup_pct": 100.0,
@@ -7211,37 +7518,6 @@
             "tier": "neutral"
           },
           {
-            "id": 642201,
-            "name": "Eli White",
-            "pos": "CF",
-            "bats": "R",
-            "proj": {
-              "h": 0.813628,
-              "hr": 0.13497099999999998,
-              "k": 1.161,
-              "bb": 0.237,
-              "tb": 1.4000865,
-              "woba": 0.328,
-              "sb": 0.3272,
-              "cs": 0.0749
-            },
-            "source": "archetype",
-            "ms": {
-              "ms": 65,
-              "range": [
-                61,
-                69
-              ],
-              "woba": 0.326,
-              "k_pct": 0.281,
-              "bb_pct": 0.058,
-              "pa": 83.461501121521,
-              "source": "archetype"
-            },
-            "overall_woba": 0.283,
-            "tier": "neutral"
-          },
-          {
             "id": 642086,
             "name": "Dominic Smith",
             "pos": "DH",
@@ -7271,6 +7547,37 @@
             },
             "overall_woba": 0.321,
             "tier": "favorable"
+          },
+          {
+            "id": 622761,
+            "name": "Jorge Mateo",
+            "pos": "CF",
+            "bats": "R",
+            "proj": {
+              "h": 0.8297865,
+              "hr": 0.10645600000000001,
+              "k": 0.932,
+              "bb": 0.185,
+              "tb": 1.469473,
+              "woba": 0.328,
+              "sb": 0.2821,
+              "cs": 0.0504
+            },
+            "source": "archetype",
+            "ms": {
+              "ms": 62,
+              "range": [
+                58,
+                66
+              ],
+              "woba": 0.317,
+              "k_pct": 0.246,
+              "bb_pct": 0.049,
+              "pa": 178.07739448547363,
+              "source": "archetype"
+            },
+            "overall_woba": 0.285,
+            "tier": "neutral"
           },
           {
             "id": 643289,
@@ -7305,13 +7612,13 @@
           }
         ],
         "team_stats": {
-          "h": 7.9,
-          "hr": 1.31,
-          "bb": 3.09,
-          "k": 7.49,
-          "tb": 13.84,
-          "sb": 0.77,
-          "cs": 0.22,
+          "h": 7.91,
+          "hr": 1.28,
+          "bb": 3.04,
+          "k": 7.26,
+          "tb": 13.91,
+          "sb": 0.73,
+          "cs": 0.19,
           "pa": 36
         },
         "opposing_pitcher": {
@@ -7322,48 +7629,48 @@
         "adjustments": {
           "tier": "T2_Core",
           "tier_mult": 0.951,
-          "re24": 0.072,
+          "re24": -0.116,
           "oaa": -0.205,
           "park_mult": 1.01,
-          "park_adj": 0.053,
+          "park_adj": 0.051,
           "bp_adj": -0.027
         }
       },
       "has_lineups": true,
-      "proj_total": 8.5,
-      "proj_spread": 2.1,
+      "proj_total": 8.3,
+      "proj_spread": 1.9,
       "edges": {
         "ml": {
           "side": "ATL",
-          "odds": -149,
-          "edge": 13.9,
-          "ev": 17.9,
-          "model_wp": 70.6,
-          "market_wp": 56.7,
+          "odds": -151,
+          "edge": 13.4,
+          "ev": 14.0,
+          "model_wp": 68.6,
+          "market_wp": 55.2,
           "is_pick": true,
           "is_strong": true
         },
         "total": {
-          "edge": 0.0,
+          "edge": -0.2,
           "market": 8.5,
-          "projected": 8.5,
+          "projected": 8.3,
           "is_pick": false,
           "is_strong": false,
           "direction": "under"
         }
       },
       "model_wp": {
-        "away": 29.4,
-        "home": 70.6
+        "away": 31.4,
+        "home": 68.6
       },
       "away_avg_ms": 65.7,
-      "home_avg_ms": 72.4,
+      "home_avg_ms": 72.1,
       "confidence": {
         "spread_conf": 7,
         "spread_conf_color": "#7FFF00",
         "spread_conf_label": "LEAN ATL",
-        "value_rating": 8,
-        "value_color": "#00FF55",
+        "value_rating": 7,
+        "value_color": "#7FFF00",
         "total_conf": 2,
         "total_conf_color": "#FF8C00",
         "total_conf_label": "TOSS-UP"
@@ -7415,14 +7722,14 @@
                 "woba": 0.252
               },
               {
-                "batter_id": 642201,
-                "ms": 40,
-                "woba": 0.155
-              },
-              {
                 "batter_id": 642086,
                 "ms": 59,
                 "woba": 0.309
+              },
+              {
+                "batter_id": 622761,
+                "ms": 52,
+                "woba": 0.278
               },
               {
                 "batter_id": 643289,
@@ -7430,7 +7737,7 @@
                 "woba": 0.263
               }
             ],
-            "avg_ms_faced": 64.4
+            "avg_ms_faced": 65.8
           },
           {
             "id": 677053,
@@ -7473,14 +7780,14 @@
                 "woba": 0.382
               },
               {
-                "batter_id": 642201,
-                "ms": 58,
-                "woba": 0.304
-              },
-              {
                 "batter_id": 642086,
                 "ms": 68,
                 "woba": 0.337
+              },
+              {
+                "batter_id": 622761,
+                "ms": 86,
+                "woba": 0.389
               },
               {
                 "batter_id": 643289,
@@ -7488,7 +7795,7 @@
                 "woba": 0.312
               }
             ],
-            "avg_ms_faced": 72.8
+            "avg_ms_faced": 75.9
           },
           {
             "id": 663969,
@@ -7531,14 +7838,14 @@
                 "woba": 0.252
               },
               {
-                "batter_id": 642201,
-                "ms": 40,
-                "woba": 0.155
-              },
-              {
                 "batter_id": 642086,
                 "ms": 59,
                 "woba": 0.309
+              },
+              {
+                "batter_id": 622761,
+                "ms": 52,
+                "woba": 0.278
               },
               {
                 "batter_id": 643289,
@@ -7546,7 +7853,7 @@
                 "woba": 0.263
               }
             ],
-            "avg_ms_faced": 64.4
+            "avg_ms_faced": 65.8
           },
           {
             "id": 678692,
@@ -7589,14 +7896,14 @@
                 "woba": 0.335
               },
               {
-                "batter_id": 642201,
-                "ms": 65,
-                "woba": 0.326
-              },
-              {
                 "batter_id": 642086,
                 "ms": 77,
                 "woba": 0.365
+              },
+              {
+                "batter_id": 622761,
+                "ms": 62,
+                "woba": 0.317
               },
               {
                 "batter_id": 643289,
@@ -7604,7 +7911,7 @@
                 "woba": 0.302
               }
             ],
-            "avg_ms_faced": 72.4
+            "avg_ms_faced": 72.1
           }
         ],
         "confidence": "high"
@@ -8117,12 +8424,12 @@
         }
       ],
       "odds": {
-        "away_ml": -166,
-        "home_ml": 116,
+        "away_ml": -165,
+        "home_ml": 115,
         "spread": 1.5,
         "total": 7.5
       },
-      "weather": "68% Rain69\u00b0\u00a0\u00a0Wind 9 mph In",
+      "weather": "68% Rain69\u00b0\u00a0\u00a0Wind 8 mph In",
       "umpire": "",
       "away_proj": {
         "runs": 6.25,
@@ -8752,11 +9059,11 @@
       "edges": {
         "ml": {
           "side": "BOS",
-          "odds": -166,
-          "edge": 10.0,
-          "ev": 8.0,
+          "odds": -165,
+          "edge": 10.1,
+          "ev": 8.2,
           "model_wp": 67.4,
-          "market_wp": 57.4,
+          "market_wp": 57.2,
           "is_pick": true,
           "is_strong": true
         },
@@ -9418,12 +9725,12 @@
         }
       ],
       "odds": {
-        "away_ml": -117,
-        "home_ml": 93,
+        "away_ml": -119,
+        "home_ml": 95,
         "spread": 1.5,
         "total": 8.0
       },
-      "weather": "12% Precipitation83\u00b0\u00a0\u00a0Wind 15 mph Out",
+      "weather": "12% Precipitation83\u00b0\u00a0\u00a0Wind 14 mph Out",
       "umpire": "",
       "away_proj": {
         "runs": 1.97,
@@ -10053,11 +10360,11 @@
       "edges": {
         "ml": {
           "side": "STL",
-          "odds": 93,
-          "edge": 16.8,
-          "ev": 27.0,
+          "odds": 95,
+          "edge": 17.2,
+          "ev": 28.3,
           "model_wp": 65.8,
-          "market_wp": 49.0,
+          "market_wp": 48.6,
           "is_pick": true,
           "is_strong": true
         },
@@ -10887,12 +11194,12 @@
         }
       ],
       "odds": {
-        "home_ml": -171,
-        "away_ml": 119,
+        "home_ml": -166,
+        "away_ml": 116,
         "spread": -1.5,
         "total": 8.5
       },
-      "weather": "7% Rain61\u00b0\u00a0\u00a0Wind 13 mph Out",
+      "weather": "8% Rain59\u00b0\u00a0\u00a0Wind 11 mph Out",
       "umpire": "",
       "away_proj": {
         "runs": 4.34,
@@ -11522,11 +11829,11 @@
       "edges": {
         "ml": {
           "side": "NYM",
-          "odds": 119,
-          "edge": 9.0,
-          "ev": 11.7,
+          "odds": 116,
+          "edge": 8.4,
+          "ev": 10.2,
           "model_wp": 51.0,
-          "market_wp": 42.0,
+          "market_wp": 42.6,
           "is_pick": true,
           "is_strong": true
         },
@@ -11549,8 +11856,8 @@
         "spread_conf": 1,
         "spread_conf_color": "#FF3333",
         "spread_conf_label": "TOSS-UP",
-        "value_rating": 6,
-        "value_color": "#7FFF00",
+        "value_rating": 5,
+        "value_color": "#FFD600",
         "total_conf": 2,
         "total_conf_color": "#FF8C00",
         "total_conf_label": "TOSS-UP"
