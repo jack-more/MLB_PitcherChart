@@ -1,6 +1,6 @@
 {
   "slate_date": "2026-04-27",
-  "collected_at": "2026-04-27T15:24:40.703432+00:00",
+  "collected_at": "2026-04-27T19:38:56.166113+00:00",
   "game_count": 8,
   "spring_training_count": 0,
   "regular_season_count": 8,
@@ -13,7 +13,7 @@
       "home_team": "CLE",
       "game_time_utc": "2026-04-27T22:10:00Z",
       "venue": "Progressive Field",
-      "status": "Scheduled",
+      "status": "Pre-Game",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 571927,
@@ -57,16 +57,16 @@
           "bats": "R"
         },
         {
-          "id": 810938,
-          "name": "Ben Williamson",
-          "pos": "2B",
-          "bats": "R"
-        },
-        {
           "id": 802415,
           "name": "Chandler Simpson",
           "pos": "LF",
           "bats": "L"
+        },
+        {
+          "id": 810938,
+          "name": "Ben Williamson",
+          "pos": "2B",
+          "bats": "R"
         },
         {
           "id": 663743,
@@ -81,7 +81,7 @@
           "bats": "S"
         }
       ],
-      "lineup_status": "expected",
+      "lineup_status": "confirmed",
       "home_lineup": [
         {
           "id": 680757,
@@ -98,7 +98,7 @@
         {
           "id": 542432,
           "name": "Jose Ramirez",
-          "pos": "DH",
+          "pos": "3B",
           "bats": "S"
         },
         {
@@ -108,22 +108,22 @@
           "bats": "R"
         },
         {
+          "id": 800050,
+          "name": "Chase DeLauter",
+          "pos": "RF",
+          "bats": "L"
+        },
+        {
           "id": 681807,
           "name": "David Fry",
-          "pos": "RF",
+          "pos": "DH",
           "bats": "R"
         },
         {
           "id": 682177,
           "name": "Daniel Schneemann",
-          "pos": "3B",
-          "bats": "L"
-        },
-        {
-          "id": 682877,
-          "name": "Juan Brito",
           "pos": "2B",
-          "bats": "S"
+          "bats": "L"
         },
         {
           "id": 595978,
@@ -139,12 +139,12 @@
         }
       ],
       "odds": {
-        "home_ml": -138,
-        "away_ml": 110,
+        "home_ml": -139,
+        "away_ml": 111,
         "spread": -1.5,
-        "total": 7.5
+        "total": 8.5
       },
-      "weather": "0%74\u00b0\u00a0\u00a0Wind 13 mph Out",
+      "weather": "3% Precipitation74\u00b0\u00a0\u00a0Wind 11 mph Out",
       "umpire": ""
     },
     {
@@ -155,7 +155,7 @@
       "home_team": "PIT",
       "game_time_utc": "2026-04-27T22:40:00Z",
       "venue": "PNC Park",
-      "status": "Scheduled",
+      "status": "Pre-Game",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 669160,
@@ -207,23 +207,23 @@
         {
           "id": 701675,
           "name": "Nathan Church",
-          "pos": "LF",
+          "pos": "CF",
           "bats": "L"
+        },
+        {
+          "id": 695336,
+          "name": "Thomas Saggese",
+          "pos": "LF",
+          "bats": "R"
         },
         {
           "id": 686780,
           "name": "Pedro Pages",
           "pos": "C",
           "bats": "R"
-        },
-        {
-          "id": 687363,
-          "name": "Victor Scott",
-          "pos": "CF",
-          "bats": "L"
         }
       ],
-      "lineup_status": "expected",
+      "lineup_status": "confirmed",
       "home_lineup": [
         {
           "id": 665833,
@@ -244,16 +244,16 @@
           "bats": "S"
         },
         {
-          "id": 542303,
-          "name": "Marcell Ozuna",
-          "pos": "DH",
-          "bats": "R"
-        },
-        {
           "id": 656811,
           "name": "Ryan O'Hearn",
           "pos": "RF",
           "bats": "L"
+        },
+        {
+          "id": 542303,
+          "name": "Marcell Ozuna",
+          "pos": "DH",
+          "bats": "R"
         },
         {
           "id": 693304,
@@ -281,8 +281,8 @@
         }
       ],
       "odds": {
-        "home_ml": -132,
-        "away_ml": 105,
+        "home_ml": -135,
+        "away_ml": 108,
         "spread": -1.5,
         "total": 8.0
       },
@@ -297,7 +297,7 @@
       "home_team": "TOR",
       "game_time_utc": "2026-04-27T23:07:00Z",
       "venue": "Rogers Centre",
-      "status": "Scheduled",
+      "status": "Pre-Game",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 624133,
@@ -341,21 +341,15 @@
           "bats": "R"
         },
         {
-          "id": 678882,
-          "name": "Ceddanne Rafaela",
-          "pos": "CF",
-          "bats": "R"
-        },
-        {
           "id": 691785,
           "name": "Marcelo Mayer",
           "pos": "2B",
           "bats": "L"
         },
         {
-          "id": 702332,
-          "name": "Caleb Durbin",
-          "pos": "3B",
+          "id": 678882,
+          "name": "Ceddanne Rafaela",
+          "pos": "CF",
           "bats": "R"
         },
         {
@@ -363,14 +357,26 @@
           "name": "Carlos Narvaez",
           "pos": "C",
           "bats": "R"
+        },
+        {
+          "id": 702332,
+          "name": "Caleb Durbin",
+          "pos": "3B",
+          "bats": "R"
         }
       ],
-      "lineup_status": "expected",
+      "lineup_status": "confirmed",
       "home_lineup": [
+        {
+          "id": 664702,
+          "name": "Myles Straw",
+          "pos": "CF",
+          "bats": "R"
+        },
         {
           "id": 676391,
           "name": "Ernie Clement",
-          "pos": "2B",
+          "pos": "SS",
           "bats": "R"
         },
         {
@@ -386,15 +392,9 @@
           "bats": "R"
         },
         {
-          "id": 662139,
-          "name": "Daulton Varsho",
-          "pos": "CF",
-          "bats": "L"
-        },
-        {
-          "id": 676914,
-          "name": "Davis Schneider",
-          "pos": "LF",
+          "id": 672820,
+          "name": "Lenyn Sosa",
+          "pos": "2B",
           "bats": "R"
         },
         {
@@ -404,16 +404,16 @@
           "bats": "R"
         },
         {
-          "id": 664702,
-          "name": "Myles Straw",
+          "id": 660821,
+          "name": "Jesus Sanchez",
           "pos": "RF",
-          "bats": "R"
+          "bats": "L"
         },
         {
-          "id": 665926,
-          "name": "Andres Gimenez",
-          "pos": "SS",
-          "bats": "L"
+          "id": 676914,
+          "name": "Davis Schneider",
+          "pos": "LF",
+          "bats": "R"
         },
         {
           "id": 623168,
@@ -439,7 +439,7 @@
       "home_team": "MIN",
       "game_time_utc": "2026-04-27T23:40:00Z",
       "venue": "Target Field",
-      "status": "Scheduled",
+      "status": "Pre-Game",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 622491,
@@ -516,6 +516,12 @@
           "bats": "R"
         },
         {
+          "id": 686797,
+          "name": "Brooks Lee",
+          "pos": "SS",
+          "bats": "S"
+        },
+        {
           "id": 663616,
           "name": "Trevor Larnach",
           "pos": "LF",
@@ -552,25 +558,19 @@
           "bats": "L"
         },
         {
-          "id": 668904,
-          "name": "Royce Lewis",
+          "id": 656484,
+          "name": "Tristan Gray",
           "pos": "3B",
-          "bats": "R"
-        },
-        {
-          "id": 686797,
-          "name": "Brooks Lee",
-          "pos": "SS",
-          "bats": "S"
+          "bats": "L"
         }
       ],
       "odds": {
-        "away_ml": -133,
-        "home_ml": 106,
+        "away_ml": -130,
+        "home_ml": 104,
         "spread": 1.5,
         "total": 8.5
       },
-      "weather": "52% Rain56\u00b0\u00a0\u00a0Wind 15 mph Out",
+      "weather": "52% Rain56\u00b0\u00a0\u00a0Wind 14 mph Out",
       "umpire": ""
     },
     {
@@ -581,7 +581,7 @@
       "home_team": "CWS",
       "game_time_utc": "2026-04-27T23:40:00Z",
       "venue": "Rate Field",
-      "status": "Scheduled",
+      "status": "Pre-Game",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 686799,
@@ -676,8 +676,8 @@
           "bats": "L"
         },
         {
-          "id": 677592,
-          "name": "Everson Pereira",
+          "id": 669720,
+          "name": "Austin Hays",
           "pos": "RF",
           "bats": "R"
         },
@@ -707,12 +707,12 @@
         }
       ],
       "odds": {
-        "away_ml": -118,
-        "home_ml": 94,
+        "away_ml": -117,
+        "home_ml": 93,
         "spread": 1.5,
         "total": 9.0
       },
-      "weather": "59% Rain63\u00b0\u00a0\u00a0Wind 20 mph In",
+      "weather": "38% Precipitation62\u00b0\u00a0\u00a0Wind 20 mph In",
       "umpire": ""
     },
     {
@@ -751,7 +751,7 @@
         {
           "id": 592450,
           "name": "Aaron Judge",
-          "pos": "RF",
+          "pos": "DH",
           "bats": "R"
         },
         {
@@ -767,10 +767,10 @@
           "bats": "L"
         },
         {
-          "id": 642708,
-          "name": "Amed Rosario",
-          "pos": "DH",
-          "bats": "R"
+          "id": 691176,
+          "name": "Jasson Dominguez",
+          "pos": "RF",
+          "bats": "S"
         },
         {
           "id": 669224,
@@ -849,8 +849,8 @@
         }
       ],
       "odds": {
-        "away_ml": -169,
-        "home_ml": 118,
+        "away_ml": -167,
+        "home_ml": 116,
         "spread": 1.5,
         "total": 8.0
       },
@@ -991,8 +991,8 @@
         }
       ],
       "odds": {
-        "home_ml": -115,
-        "away_ml": 92,
+        "home_ml": -118,
+        "away_ml": 94,
         "spread": -1.5,
         "total": 7.5
       },
@@ -1063,16 +1063,16 @@
           "bats": "L"
         },
         {
-          "id": 688363,
-          "name": "Graham Pauley",
-          "pos": "3B",
-          "bats": "L"
-        },
-        {
           "id": 681393,
           "name": "Connor Norby",
           "pos": "1B",
           "bats": "R"
+        },
+        {
+          "id": 688363,
+          "name": "Graham Pauley",
+          "pos": "3B",
+          "bats": "L"
         }
       ],
       "lineup_status": "expected",
