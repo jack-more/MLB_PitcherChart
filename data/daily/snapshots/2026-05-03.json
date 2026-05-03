@@ -1,6 +1,6 @@
 {
   "slate_date": "2026-05-03",
-  "computed_at": "2026-05-03T19:05:31.703104+00:00",
+  "computed_at": "2026-05-03T22:48:14.463670+00:00",
   "game_count": 15,
   "spring_training_count": 0,
   "games": [
@@ -12,7 +12,7 @@
       "home_team": "MIN",
       "game_time_utc": "2026-05-03T16:45:00Z",
       "venue": "Target Field",
-      "status": "In Progress",
+      "status": "Final",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 702056,
@@ -154,10 +154,7 @@
         }
       ],
       "odds": {
-        "home_ml": -1551,
-        "away_ml": 1085,
-        "spread": -1.5,
-        "total": 6.5
+        "total": 9.5
       },
       "weather": "0%65\u00b0\u00a0\u00a0Wind 12 mph",
       "umpire": "Scott Barry",
@@ -787,23 +784,13 @@
       "proj_total": 7.9,
       "proj_spread": 2.1,
       "edges": {
-        "ml": {
-          "side": "TOR",
-          "odds": 1085,
-          "edge": 21.6,
-          "ev": 253.1,
-          "model_wp": 29.8,
-          "market_wp": 8.2,
-          "is_pick": true,
-          "is_strong": true
-        },
         "total": {
-          "edge": 1.4,
-          "market": 6.5,
+          "edge": -1.6,
+          "market": 9.5,
           "projected": 7.9,
           "is_pick": false,
           "is_strong": false,
-          "direction": "over"
+          "direction": "under"
         }
       },
       "model_wp": {
@@ -813,11 +800,6 @@
       "away_avg_ms": 73.9,
       "home_avg_ms": 66.8,
       "confidence": {
-        "spread_conf": 2,
-        "spread_conf_color": "#FF8C00",
-        "spread_conf_label": "TOSS-UP",
-        "value_rating": 10,
-        "value_color": "#00FF55",
         "total_conf": 4,
         "total_conf_color": "#FFD600",
         "total_conf_label": "TOSS-UP"
@@ -831,7 +813,7 @@
       "home_team": "BOS",
       "game_time_utc": "2026-05-03T17:35:00Z",
       "venue": "Fenway Park",
-      "status": "In Progress",
+      "status": "Final",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 675989,
@@ -973,10 +955,10 @@
         }
       ],
       "odds": {
-        "home_ml": -120,
-        "away_ml": 96,
+        "home_ml": -180,
+        "away_ml": 125,
         "spread": -1.5,
-        "total": 6.5
+        "total": 9.0
       },
       "weather": "0%51\u00b0\u00a0\u00a0Wind 15 mph L-R",
       "umpire": "Laz D\u00edaz",
@@ -1608,17 +1590,17 @@
       "edges": {
         "ml": {
           "side": "BOS",
-          "odds": -120,
-          "edge": 16.7,
-          "ev": 25.4,
+          "odds": -180,
+          "edge": 9.3,
+          "ev": 6.4,
           "model_wp": 68.4,
-          "market_wp": 51.7,
+          "market_wp": 59.1,
           "is_pick": true,
           "is_strong": true
         },
         "total": {
-          "edge": 2.6,
-          "market": 6.5,
+          "edge": 0.1,
+          "market": 9.0,
           "projected": 9.1,
           "is_pick": false,
           "is_strong": false,
@@ -1635,11 +1617,11 @@
         "spread_conf": 8,
         "spread_conf_color": "#00FF55",
         "spread_conf_label": "TAKE BOS",
-        "value_rating": 10,
-        "value_color": "#00FF55",
-        "total_conf": 5,
-        "total_conf_color": "#FFD600",
-        "total_conf_label": "LEAN OVER"
+        "value_rating": 5,
+        "value_color": "#FFD600",
+        "total_conf": 3,
+        "total_conf_color": "#FF8C00",
+        "total_conf_label": "TOSS-UP"
       }
     },
     {
@@ -1650,7 +1632,7 @@
       "home_team": "PIT",
       "game_time_utc": "2026-05-03T17:35:00Z",
       "venue": "PNC Park",
-      "status": "In Progress",
+      "status": "Final",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 695505,
@@ -1792,10 +1774,10 @@
         }
       ],
       "odds": {
-        "home_ml": -185,
-        "away_ml": 129,
+        "home_ml": -125,
+        "away_ml": 100,
         "spread": -1.5,
-        "total": 3.0
+        "total": 7.5
       },
       "weather": "0%54\u00b0\u00a0\u00a0Wind 12 mph R-L",
       "umpire": "Alan Porter",
@@ -2426,22 +2408,22 @@
       "proj_spread": 0.4,
       "edges": {
         "ml": {
-          "side": "CIN",
-          "odds": 129,
-          "edge": 5.7,
-          "ev": 5.2,
-          "model_wp": 45.9,
-          "market_wp": 40.2,
-          "is_pick": true,
-          "is_strong": true
+          "side": "PIT",
+          "odds": -125,
+          "edge": 1.4,
+          "ev": -2.7,
+          "model_wp": 54.1,
+          "market_wp": 52.6,
+          "is_pick": false,
+          "is_strong": false
         },
         "total": {
-          "edge": 4.3,
-          "market": 3.0,
+          "edge": -0.2,
+          "market": 7.5,
           "projected": 7.3,
           "is_pick": false,
           "is_strong": false,
-          "direction": "over"
+          "direction": "under"
         }
       },
       "model_wp": {
@@ -2451,14 +2433,14 @@
       "away_avg_ms": 65.8,
       "home_avg_ms": 74.4,
       "confidence": {
-        "spread_conf": 2,
+        "spread_conf": 3,
         "spread_conf_color": "#FF8C00",
         "spread_conf_label": "TOSS-UP",
-        "value_rating": 4,
-        "value_color": "#FFD600",
-        "total_conf": 6,
-        "total_conf_color": "#7FFF00",
-        "total_conf_label": "LEAN OVER"
+        "value_rating": 2,
+        "value_color": "#FF8C00",
+        "total_conf": 3,
+        "total_conf_color": "#FF8C00",
+        "total_conf_label": "TOSS-UP"
       }
     },
     {
@@ -2469,7 +2451,7 @@
       "home_team": "NYY",
       "game_time_utc": "2026-05-03T17:35:00Z",
       "venue": "Yankee Stadium",
-      "status": "In Progress",
+      "status": "Final",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 694346,
@@ -2611,10 +2593,10 @@
         }
       ],
       "odds": {
-        "home_ml": -213,
-        "away_ml": 149,
+        "home_ml": -280,
+        "away_ml": 196,
         "spread": -1.5,
-        "total": 10.5
+        "total": 9.5
       },
       "weather": "0%54\u00b0\u00a0\u00a0Wind 17 mph Out",
       "umpire": "Alfonso M\u00e1rquez",
@@ -3246,17 +3228,17 @@
       "edges": {
         "ml": {
           "side": "NYY",
-          "odds": -213,
-          "edge": 8.6,
-          "ev": 5.1,
+          "odds": -280,
+          "edge": 3.0,
+          "ev": -2.9,
           "model_wp": 71.5,
-          "market_wp": 62.9,
-          "is_pick": true,
-          "is_strong": true
+          "market_wp": 68.6,
+          "is_pick": false,
+          "is_strong": false
         },
         "total": {
-          "edge": 0.9,
-          "market": 10.5,
+          "edge": 1.9,
+          "market": 9.5,
           "projected": 11.4,
           "is_pick": false,
           "is_strong": false,
@@ -3273,8 +3255,8 @@
         "spread_conf": 8,
         "spread_conf_color": "#00FF55",
         "spread_conf_label": "TAKE NYY",
-        "value_rating": 4,
-        "value_color": "#FFD600",
+        "value_rating": 2,
+        "value_color": "#FF8C00",
         "total_conf": 4,
         "total_conf_color": "#FFD600",
         "total_conf_label": "TOSS-UP"
@@ -3288,7 +3270,7 @@
       "home_team": "WSH",
       "game_time_utc": "2026-05-03T17:35:00Z",
       "venue": "Nationals Park",
-      "status": "In Progress",
+      "status": "Final",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 701656,
@@ -3430,10 +3412,10 @@
         }
       ],
       "odds": {
-        "home_ml": -329,
-        "away_ml": 230,
-        "spread": -1.5,
-        "total": 6.0
+        "away_ml": -145,
+        "home_ml": 116,
+        "spread": 1.5,
+        "total": 8.5
       },
       "weather": "0%58\u00b0\u00a0\u00a0Wind 13 mph",
       "umpire": "Rob Drake",
@@ -4065,21 +4047,21 @@
       "edges": {
         "ml": {
           "side": "MIL",
-          "odds": 230,
-          "edge": 37.5,
-          "ev": 117.4,
+          "odds": -145,
+          "edge": 9.8,
+          "ev": 11.3,
           "model_wp": 65.9,
-          "market_wp": 28.3,
+          "market_wp": 56.1,
           "is_pick": true,
           "is_strong": true
         },
         "total": {
-          "edge": 0.5,
-          "market": 6.0,
+          "edge": -2.0,
+          "market": 8.5,
           "projected": 6.5,
           "is_pick": false,
           "is_strong": false,
-          "direction": "over"
+          "direction": "under"
         }
       },
       "model_wp": {
@@ -4092,10 +4074,10 @@
         "spread_conf": 7,
         "spread_conf_color": "#7FFF00",
         "spread_conf_label": "LEAN MIL",
-        "value_rating": 10,
-        "value_color": "#00FF55",
-        "total_conf": 3,
-        "total_conf_color": "#FF8C00",
+        "value_rating": 7,
+        "value_color": "#7FFF00",
+        "total_conf": 4,
+        "total_conf_color": "#FFD600",
         "total_conf_label": "TOSS-UP"
       }
     },
@@ -4107,7 +4089,7 @@
       "home_team": "TB",
       "game_time_utc": "2026-05-03T17:40:00Z",
       "venue": "Tropicana Field",
-      "status": "In Progress",
+      "status": "Final",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 641816,
@@ -4249,10 +4231,10 @@
         }
       ],
       "odds": {
-        "away_ml": -223,
-        "home_ml": 156,
-        "spread": 1.5,
-        "total": 5.0
+        "home_ml": -120,
+        "away_ml": 96,
+        "spread": -1.5,
+        "total": 8.5
       },
       "weather": "DomeIn Domed Stadium",
       "umpire": "Nic Lentz",
@@ -4884,17 +4866,17 @@
       "edges": {
         "ml": {
           "side": "SF",
-          "odds": -223,
-          "edge": 1.3,
-          "ev": -5.5,
+          "odds": 96,
+          "edge": 16.9,
+          "ev": 27.8,
           "model_wp": 65.2,
-          "market_wp": 63.9,
-          "is_pick": false,
-          "is_strong": false
+          "market_wp": 48.3,
+          "is_pick": true,
+          "is_strong": true
         },
         "total": {
-          "edge": 3.6,
-          "market": 5.0,
+          "edge": 0.1,
+          "market": 8.5,
           "projected": 8.6,
           "is_pick": false,
           "is_strong": false,
@@ -4911,11 +4893,11 @@
         "spread_conf": 7,
         "spread_conf_color": "#7FFF00",
         "spread_conf_label": "LEAN SF",
-        "value_rating": 2,
-        "value_color": "#FF8C00",
-        "total_conf": 5,
-        "total_conf_color": "#FFD600",
-        "total_conf_label": "LEAN OVER"
+        "value_rating": 10,
+        "value_color": "#00FF55",
+        "total_conf": 3,
+        "total_conf_color": "#FF8C00",
+        "total_conf_label": "TOSS-UP"
       }
     },
     {
@@ -4926,7 +4908,7 @@
       "home_team": "MIA",
       "game_time_utc": "2026-05-03T17:40:00Z",
       "venue": "loanDepot park",
-      "status": "In Progress",
+      "status": "Final",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 666200,
@@ -5068,10 +5050,10 @@
         }
       ],
       "odds": {
-        "away_ml": -27333,
-        "home_ml": 19133,
+        "away_ml": -140,
+        "home_ml": 112,
         "spread": 1.5,
-        "total": 11.0
+        "total": 9.5
       },
       "weather": "DomeIn Domed Stadium",
       "umpire": "Nate Tomlinson",
@@ -5702,18 +5684,18 @@
       "proj_spread": -1.5,
       "edges": {
         "ml": {
-          "side": "MIA",
-          "odds": 19133,
-          "edge": 34.6,
-          "ev": 6664.3,
-          "model_wp": 35.2,
-          "market_wp": 0.5,
+          "side": "PHI",
+          "odds": -140,
+          "edge": 9.5,
+          "ev": 11.1,
+          "model_wp": 64.8,
+          "market_wp": 55.3,
           "is_pick": true,
           "is_strong": true
         },
         "total": {
-          "edge": -3.6,
-          "market": 11.0,
+          "edge": -2.1,
+          "market": 9.5,
           "projected": 7.4,
           "is_pick": false,
           "is_strong": false,
@@ -5727,14 +5709,14 @@
       "away_avg_ms": 73.3,
       "home_avg_ms": 73.9,
       "confidence": {
-        "spread_conf": 2,
-        "spread_conf_color": "#FF8C00",
-        "spread_conf_label": "TOSS-UP",
-        "value_rating": 10,
-        "value_color": "#00FF55",
-        "total_conf": 5,
+        "spread_conf": 6,
+        "spread_conf_color": "#7FFF00",
+        "spread_conf_label": "LEAN PHI",
+        "value_rating": 7,
+        "value_color": "#7FFF00",
+        "total_conf": 4,
         "total_conf_color": "#FFD600",
-        "total_conf_label": "LEAN UNDER"
+        "total_conf_label": "TOSS-UP"
       }
     },
     {
@@ -5745,7 +5727,7 @@
       "home_team": "STL",
       "game_time_utc": "2026-05-03T18:15:00Z",
       "venue": "Busch Stadium",
-      "status": "In Progress",
+      "status": "Final",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 680736,
@@ -5887,10 +5869,10 @@
         }
       ],
       "odds": {
-        "away_ml": -389,
-        "home_ml": 272,
+        "away_ml": -140,
+        "home_ml": 112,
         "spread": 1.5,
-        "total": 8.5
+        "total": 9.5
       },
       "weather": "0%68\u00b0\u00a0\u00a0Wind 14 mph Out",
       "umpire": "Charlie Ramos",
@@ -6522,17 +6504,17 @@
       "edges": {
         "ml": {
           "side": "LAD",
-          "odds": -389,
-          "edge": 10.9,
-          "ev": 7.7,
+          "odds": -140,
+          "edge": 30.4,
+          "ev": 46.9,
           "model_wp": 85.7,
-          "market_wp": 74.7,
+          "market_wp": 55.3,
           "is_pick": true,
           "is_strong": true
         },
         "total": {
-          "edge": -1.2,
-          "market": 8.5,
+          "edge": -2.2,
+          "market": 9.5,
           "projected": 7.3,
           "is_pick": false,
           "is_strong": false,
@@ -6549,8 +6531,8 @@
         "spread_conf": 10,
         "spread_conf_color": "#00FF55",
         "spread_conf_label": "TAKE LAD",
-        "value_rating": 5,
-        "value_color": "#FFD600",
+        "value_rating": 10,
+        "value_color": "#00FF55",
         "total_conf": 4,
         "total_conf_color": "#FFD600",
         "total_conf_label": "TOSS-UP"
@@ -6564,7 +6546,7 @@
       "home_team": "CHC",
       "game_time_utc": "2026-05-03T18:20:00Z",
       "venue": "Wrigley Field",
-      "status": "In Progress",
+      "status": "Final",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 518876,
@@ -6706,10 +6688,10 @@
         }
       ],
       "odds": {
-        "home_ml": -118,
-        "away_ml": 94,
+        "home_ml": -150,
+        "away_ml": 120,
         "spread": -1.5,
-        "total": 11.5
+        "total": 13.0
       },
       "weather": "0%55\u00b0\u00a0\u00a0Wind 16 mph Out",
       "umpire": "Doug Eddings",
@@ -7340,18 +7322,18 @@
       "proj_spread": 0.3,
       "edges": {
         "ml": {
-          "side": "CHC",
-          "odds": -118,
-          "edge": 1.9,
-          "ev": -1.8,
-          "model_wp": 53.1,
-          "market_wp": 51.2,
-          "is_pick": false,
+          "side": "ARI",
+          "odds": 120,
+          "edge": 3.8,
+          "ev": 3.1,
+          "model_wp": 46.9,
+          "market_wp": 43.1,
+          "is_pick": true,
           "is_strong": false
         },
         "total": {
-          "edge": -2.3,
-          "market": 11.5,
+          "edge": -3.8,
+          "market": 13.0,
           "projected": 9.2,
           "is_pick": false,
           "is_strong": false,
@@ -7365,13 +7347,13 @@
       "away_avg_ms": 78.4,
       "home_avg_ms": 76.6,
       "confidence": {
-        "spread_conf": 3,
+        "spread_conf": 2,
         "spread_conf_color": "#FF8C00",
         "spread_conf_label": "TOSS-UP",
-        "value_rating": 2,
+        "value_rating": 3,
         "value_color": "#FF8C00",
-        "total_conf": 5,
-        "total_conf_color": "#FFD600",
+        "total_conf": 6,
+        "total_conf_color": "#7FFF00",
         "total_conf_label": "LEAN UNDER"
       }
     },
@@ -7383,7 +7365,7 @@
       "home_team": "COL",
       "game_time_utc": "2026-05-03T19:10:00Z",
       "venue": "Coors Field",
-      "status": "Warmup",
+      "status": "Final",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 675911,
@@ -7525,12 +7507,12 @@
         }
       ],
       "odds": {
-        "away_ml": -142,
-        "home_ml": 113,
+        "away_ml": -140,
+        "home_ml": 112,
         "spread": 1.5,
-        "total": 10.0
+        "total": 9.5
       },
-      "weather": "8% Precipitation74\u00b0\u00a0\u00a0Wind 7 mph",
+      "weather": "0%70\u00b0\u00a0\u00a0Wind 5 mph",
       "umpire": "Bill Miller",
       "away_proj": {
         "runs": 0.65,
@@ -8160,17 +8142,17 @@
       "edges": {
         "ml": {
           "side": "COL",
-          "odds": 113,
-          "edge": 39.0,
-          "ev": 77.8,
+          "odds": 112,
+          "edge": 38.8,
+          "ev": 76.9,
           "model_wp": 83.5,
-          "market_wp": 44.4,
+          "market_wp": 44.7,
           "is_pick": true,
           "is_strong": true
         },
         "total": {
-          "edge": -5.0,
-          "market": 10.0,
+          "edge": -4.5,
+          "market": 9.5,
           "projected": 5.0,
           "is_pick": false,
           "is_strong": false,
@@ -8202,7 +8184,7 @@
       "home_team": "OAK",
       "game_time_utc": "2026-05-03T20:05:00Z",
       "venue": "Sutter Health Park",
-      "status": "Pre-Game",
+      "status": "Final",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 800048,
@@ -8988,7 +8970,7 @@
       "home_team": "LAA",
       "game_time_utc": "2026-05-03T20:07:00Z",
       "venue": "Angel Stadium",
-      "status": "Pre-Game",
+      "status": "Game Over",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 605280,
@@ -9130,13 +9112,13 @@
         }
       ],
       "odds": {
-        "away_ml": -132,
-        "home_ml": 105,
+        "away_ml": -31000,
+        "home_ml": 21700,
         "spread": 1.5,
-        "total": 9.0
+        "total": 7.0
       },
-      "weather": "0%69\u00b0\u00a0\u00a0Wind 8 mph Out",
-      "umpire": "",
+      "weather": "0%67\u00b0\u00a0\u00a0Wind 5 mph R-L",
+      "umpire": "Chris Conroy",
       "away_proj": {
         "runs": 4.72,
         "coverage": 8,
@@ -9765,17 +9747,17 @@
       "edges": {
         "ml": {
           "side": "LAA",
-          "odds": 105,
-          "edge": 3.1,
-          "ev": 1.0,
+          "odds": 21700,
+          "edge": 48.8,
+          "ev": 10644.9,
           "model_wp": 49.3,
-          "market_wp": 46.2,
-          "is_pick": false,
-          "is_strong": false
+          "market_wp": 0.5,
+          "is_pick": true,
+          "is_strong": true
         },
         "total": {
-          "edge": 0.4,
-          "market": 9.0,
+          "edge": 2.4,
+          "market": 7.0,
           "projected": 9.4,
           "is_pick": false,
           "is_strong": false,
@@ -9792,11 +9774,11 @@
         "spread_conf": 2,
         "spread_conf_color": "#FF8C00",
         "spread_conf_label": "TOSS-UP",
-        "value_rating": 3,
-        "value_color": "#FF8C00",
-        "total_conf": 3,
-        "total_conf_color": "#FF8C00",
-        "total_conf_label": "TOSS-UP"
+        "value_rating": 10,
+        "value_color": "#00FF55",
+        "total_conf": 5,
+        "total_conf_color": "#FFD600",
+        "total_conf_label": "LEAN OVER"
       }
     },
     {
@@ -9807,7 +9789,7 @@
       "home_team": "SEA",
       "game_time_utc": "2026-05-03T20:10:00Z",
       "venue": "T-Mobile Park",
-      "status": "Pre-Game",
+      "status": "Game Over",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 663460,
@@ -9949,13 +9931,13 @@
         }
       ],
       "odds": {
-        "home_ml": -116,
-        "away_ml": 92,
-        "spread": -1.5,
-        "total": 8.0
+        "away_ml": -7375,
+        "home_ml": 5162,
+        "spread": 1.5,
+        "total": 6.5
       },
       "weather": "DomeIn Domed Stadium",
-      "umpire": "",
+      "umpire": "Clint Vondrak",
       "away_proj": {
         "runs": 4.11,
         "coverage": 9,
@@ -10583,22 +10565,22 @@
       "proj_spread": -0.8,
       "edges": {
         "ml": {
-          "side": "KC",
-          "odds": 92,
-          "edge": 8.3,
-          "ev": 10.6,
-          "model_wp": 57.6,
-          "market_wp": 49.2,
+          "side": "SEA",
+          "odds": 5162,
+          "edge": 40.5,
+          "ev": 2131.9,
+          "model_wp": 42.4,
+          "market_wp": 1.9,
           "is_pick": true,
           "is_strong": true
         },
         "total": {
-          "edge": -0.5,
-          "market": 8.0,
+          "edge": 1.0,
+          "market": 6.5,
           "projected": 7.5,
           "is_pick": false,
           "is_strong": false,
-          "direction": "under"
+          "direction": "over"
         }
       },
       "model_wp": {
@@ -10608,13 +10590,13 @@
       "away_avg_ms": 66.4,
       "home_avg_ms": 64.3,
       "confidence": {
-        "spread_conf": 4,
-        "spread_conf_color": "#FFD600",
+        "spread_conf": 2,
+        "spread_conf_color": "#FF8C00",
         "spread_conf_label": "TOSS-UP",
-        "value_rating": 6,
-        "value_color": "#7FFF00",
-        "total_conf": 3,
-        "total_conf_color": "#FF8C00",
+        "value_rating": 10,
+        "value_color": "#00FF55",
+        "total_conf": 4,
+        "total_conf_color": "#FFD600",
         "total_conf_label": "TOSS-UP"
       }
     },
@@ -10626,7 +10608,7 @@
       "home_team": "SD",
       "game_time_utc": "2026-05-03T20:10:00Z",
       "venue": "Petco Park",
-      "status": "Pre-Game",
+      "status": "Game Over",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 641743,
@@ -10768,13 +10750,13 @@
         }
       ],
       "odds": {
-        "home_ml": -172,
-        "away_ml": 120,
+        "home_ml": -3412,
+        "away_ml": 2388,
         "spread": -1.5,
-        "total": 8.5
+        "total": 8.0
       },
-      "weather": "6% Precipitation64\u00b0\u00a0\u00a0Wind 8 mph Out",
-      "umpire": "",
+      "weather": "0%67\u00b0\u00a0\u00a0Wind 9 mph L-R",
+      "umpire": "John Libka",
       "away_proj": {
         "runs": 1.16,
         "coverage": 6,
@@ -11402,18 +11384,18 @@
       "proj_spread": 4.7,
       "edges": {
         "ml": {
-          "side": "SD",
-          "odds": -172,
-          "edge": 30.9,
-          "ev": 40.9,
-          "model_wp": 89.1,
-          "market_wp": 58.2,
+          "side": "CWS",
+          "odds": 2388,
+          "edge": 7.0,
+          "ev": 171.8,
+          "model_wp": 10.9,
+          "market_wp": 4.0,
           "is_pick": true,
           "is_strong": true
         },
         "total": {
-          "edge": -1.5,
-          "market": 8.5,
+          "edge": -1.0,
+          "market": 8.0,
           "projected": 7.0,
           "is_pick": false,
           "is_strong": false,
@@ -11427,9 +11409,9 @@
       "away_avg_ms": 61.6,
       "home_avg_ms": 77.8,
       "confidence": {
-        "spread_conf": 10,
-        "spread_conf_color": "#00FF55",
-        "spread_conf_label": "TAKE SD",
+        "spread_conf": 2,
+        "spread_conf_color": "#FF8C00",
+        "spread_conf_label": "TOSS-UP",
         "value_rating": 10,
         "value_color": "#00FF55",
         "total_conf": 4,
@@ -11445,7 +11427,7 @@
       "home_team": "DET",
       "game_time_utc": "2026-05-03T23:20:00Z",
       "venue": "Comerica Park",
-      "status": "Scheduled",
+      "status": "Pre-Game",
       "series_description": "Regular Season",
       "away_pitcher": {
         "id": 683004,
@@ -11477,13 +11459,13 @@
         {
           "id": 607043,
           "name": "Brandon Nimmo",
-          "pos": "RF",
+          "pos": "DH",
           "bats": "L"
         },
         {
-          "id": 673962,
-          "name": "Josh Jung",
-          "pos": "3B",
+          "id": 457705,
+          "name": "Andrew McCutchen",
+          "pos": "RF",
           "bats": "R"
         },
         {
@@ -11493,10 +11475,10 @@
           "bats": "L"
         },
         {
-          "id": 592626,
-          "name": "Joc Pederson",
-          "pos": "DH",
-          "bats": "L"
+          "id": 673962,
+          "name": "Josh Jung",
+          "pos": "3B",
+          "bats": "R"
         },
         {
           "id": 669394,
@@ -11511,25 +11493,25 @@
           "bats": "L"
         },
         {
+          "id": 677649,
+          "name": "Ezequiel Duran",
+          "pos": "LF",
+          "bats": "R"
+        },
+        {
           "id": 669701,
           "name": "Josh Smith",
           "pos": "2B",
           "bats": "L"
         },
         {
-          "id": 696030,
-          "name": "Alejandro Osuna",
-          "pos": "LF",
-          "bats": "L"
-        },
-        {
-          "id": 643376,
-          "name": "Danny Jansen",
+          "id": 543309,
+          "name": "Kyle Higashioka",
           "pos": "C",
           "bats": "R"
         }
       ],
-      "lineup_status": "expected",
+      "lineup_status": "confirmed",
       "home_lineup": [
         {
           "id": 805808,
@@ -11538,9 +11520,9 @@
           "bats": "L"
         },
         {
-          "id": 650402,
-          "name": "Gleyber Torres",
-          "pos": "2B",
+          "id": 663837,
+          "name": "Matt Vierling",
+          "pos": "CF",
           "bats": "R"
         },
         {
@@ -11556,9 +11538,9 @@
           "bats": "L"
         },
         {
-          "id": 693307,
-          "name": "Dillon Dingler",
-          "pos": "C",
+          "id": 679529,
+          "name": "Spencer Torkelson",
+          "pos": "1B",
           "bats": "R"
         },
         {
@@ -11568,42 +11550,42 @@
           "bats": "L"
         },
         {
-          "id": 679529,
-          "name": "Spencer Torkelson",
-          "pos": "1B",
-          "bats": "R"
-        },
-        {
-          "id": 663837,
-          "name": "Matt Vierling",
-          "pos": "CF",
-          "bats": "R"
-        },
-        {
           "id": 672761,
           "name": "Wenceel Perez",
           "pos": "RF",
           "bats": "S"
+        },
+        {
+          "id": 701678,
+          "name": "Hao-Yu Lee",
+          "pos": "2B",
+          "bats": "R"
+        },
+        {
+          "id": 668670,
+          "name": "Jake Rogers",
+          "pos": "C",
+          "bats": "R"
         }
       ],
       "odds": {
-        "home_ml": -124,
-        "away_ml": 99,
+        "home_ml": -123,
+        "away_ml": 98,
         "spread": -1.5,
-        "total": 8.0
+        "total": 8.5
       },
-      "weather": "3% Precipitation56\u00b0\u00a0\u00a0Wind 19 mph R-L",
+      "weather": "2% Precipitation57\u00b0\u00a0\u00a0Wind 20 mph R-L",
       "umpire": "",
       "away_proj": {
-        "runs": 4.57,
-        "coverage": 8,
+        "runs": 5.38,
+        "coverage": 9,
         "total": 9,
-        "lineup_pct": 88.9,
+        "lineup_pct": 100.0,
         "batter_details": [
           {
             "id": 607043,
             "name": "Brandon Nimmo",
-            "pos": "RF",
+            "pos": "DH",
             "bats": "L",
             "proj": {
               "h": 1.012,
@@ -11632,35 +11614,35 @@
             "tier": "elite"
           },
           {
-            "id": 673962,
-            "name": "Josh Jung",
-            "pos": "3B",
+            "id": 457705,
+            "name": "Andrew McCutchen",
+            "pos": "RF",
             "bats": "R",
             "proj": {
-              "h": 1.391,
-              "hr": 0.261,
-              "k": 0.609,
-              "bb": 0.261,
-              "tb": 2.348,
-              "woba": 0.476,
-              "sb": 0.0641,
-              "cs": 0.0058
+              "h": 0.786,
+              "hr": 0.061,
+              "k": 1.031,
+              "bb": 0.364,
+              "tb": 1.15,
+              "woba": 0.294,
+              "sb": 0.0487,
+              "cs": 0.0245
             },
             "source": "archetype",
             "ms": {
-              "ms": 98,
+              "ms": 66,
               "range": [
-                90,
-                99
+                62,
+                70
               ],
-              "woba": 0.475,
-              "k_pct": 0.154,
-              "bb_pct": 0.077,
-              "pa": 45.99370002746582,
+              "woba": 0.329,
+              "k_pct": 0.225,
+              "bb_pct": 0.075,
+              "pa": 65.9640007019043,
               "source": "archetype"
             },
-            "overall_woba": 0.325,
-            "tier": "elite"
+            "overall_woba": 0.369,
+            "tier": "neutral"
           },
           {
             "id": 608369,
@@ -11694,34 +11676,34 @@
             "tier": "elite"
           },
           {
-            "id": 592626,
-            "name": "Joc Pederson",
-            "pos": "DH",
-            "bats": "L",
+            "id": 673962,
+            "name": "Josh Jung",
+            "pos": "3B",
+            "bats": "R",
             "proj": {
-              "h": 0.534,
-              "hr": 0.0,
-              "k": 1.067,
-              "bb": 1.332,
-              "tb": 0.534,
-              "woba": 0.4,
-              "sb": 0.0381,
-              "cs": 0.0224
+              "h": 1.391,
+              "hr": 0.261,
+              "k": 0.609,
+              "bb": 0.261,
+              "tb": 2.348,
+              "woba": 0.476,
+              "sb": 0.0641,
+              "cs": 0.0058
             },
             "source": "archetype",
             "ms": {
-              "ms": 86,
+              "ms": 98,
               "range": [
-                72,
+                90,
                 99
               ],
-              "woba": 0.389,
-              "k_pct": 0.211,
-              "bb_pct": 0.368,
-              "pa": 14.99370002746582,
+              "woba": 0.475,
+              "k_pct": 0.154,
+              "bb_pct": 0.077,
+              "pa": 45.99370002746582,
               "source": "archetype"
             },
-            "overall_woba": 0.356,
+            "overall_woba": 0.325,
             "tier": "elite"
           },
           {
@@ -11787,6 +11769,37 @@
             "tier": "tough"
           },
           {
+            "id": 677649,
+            "name": "Ezequiel Duran",
+            "pos": "LF",
+            "bats": "R",
+            "proj": {
+              "h": 1.128,
+              "hr": 0.308,
+              "k": 1.026,
+              "bb": 0.205,
+              "tb": 2.256,
+              "woba": 0.392,
+              "sb": 0.0434,
+              "cs": 0.0277
+            },
+            "source": "archetype",
+            "ms": {
+              "ms": 82,
+              "range": [
+                74,
+                90
+              ],
+              "woba": 0.377,
+              "k_pct": 0.231,
+              "bb_pct": 0.038,
+              "pa": 39.0,
+              "source": "archetype"
+            },
+            "overall_woba": 0.299,
+            "tier": "favorable"
+          },
+          {
             "id": 669701,
             "name": "Josh Smith",
             "pos": "2B",
@@ -11818,76 +11831,45 @@
             "tier": "favorable"
           },
           {
-            "id": 696030,
-            "name": "Alejandro Osuna",
-            "pos": "LF",
-            "bats": "L",
-            "proj": {
-              "h": 0,
-              "hr": 0,
-              "k": 0,
-              "bb": 0,
-              "tb": 0,
-              "woba": 0,
-              "sb": 0,
-              "cs": 0
-            },
-            "source": "none",
-            "ms": {
-              "ms": 52,
-              "range": [
-                42,
-                62
-              ],
-              "woba": 0.281,
-              "k_pct": 0.198,
-              "bb_pct": 0.116,
-              "pa": 171.88740050792694,
-              "source": "overall"
-            },
-            "overall_woba": 0.281,
-            "tier": "tough"
-          },
-          {
-            "id": 643376,
-            "name": "Danny Jansen",
+            "id": 543309,
+            "name": "Kyle Higashioka",
             "pos": "C",
             "bats": "R",
             "proj": {
-              "h": 0.634,
-              "hr": 0.199,
-              "k": 1.148,
-              "bb": 0.475,
-              "tb": 1.27,
-              "woba": 0.312,
-              "sb": 0.004,
-              "cs": 0.0
+              "h": 0.782,
+              "hr": 0.0,
+              "k": 0.696,
+              "bb": 0.174,
+              "tb": 1.217,
+              "woba": 0.245,
+              "sb": 0.0152,
+              "cs": 0.004
             },
             "source": "archetype",
             "ms": {
-              "ms": 67,
+              "ms": 48,
               "range": [
-                63,
-                71
+                40,
+                56
               ],
-              "woba": 0.333,
-              "k_pct": 0.302,
-              "bb_pct": 0.132,
-              "pa": 101.01610064506531,
+              "woba": 0.262,
+              "k_pct": 0.172,
+              "bb_pct": 0.031,
+              "pa": 45.99829959869385,
               "source": "archetype"
             },
-            "overall_woba": 0.327,
-            "tier": "neutral"
+            "overall_woba": 0.297,
+            "tier": "tough"
           }
         ],
         "team_stats": {
-          "h": 7.14,
-          "hr": 1.38,
-          "bb": 3.25,
-          "k": 7.76,
-          "tb": 12.38,
-          "sb": 0.26,
-          "cs": 0.05,
+          "h": 8.68,
+          "hr": 1.55,
+          "bb": 2.19,
+          "k": 8.29,
+          "tb": 15.2,
+          "sb": 0.33,
+          "cs": 0.08,
           "pa": 36
         },
         "opposing_pitcher": {
@@ -11898,18 +11880,18 @@
         "adjustments": {
           "tier": "T3_Standard",
           "tier_mult": 1.0,
-          "re24": -0.018,
-          "oaa": 0.042,
+          "re24": 0.022,
+          "oaa": 0.051,
           "park_mult": 1.0,
           "park_adj": 0.0,
           "bp_adj": -0.0
         }
       },
       "home_proj": {
-        "runs": 4.39,
-        "coverage": 8,
+        "runs": 2.87,
+        "coverage": 7,
         "total": 9,
-        "lineup_pct": 88.9,
+        "lineup_pct": 77.8,
         "batter_details": [
           {
             "id": 805808,
@@ -11943,35 +11925,35 @@
             "tier": "unknown"
           },
           {
-            "id": 650402,
-            "name": "Gleyber Torres",
-            "pos": "2B",
+            "id": 663837,
+            "name": "Matt Vierling",
+            "pos": "CF",
             "bats": "R",
             "proj": {
-              "h": 1.008,
-              "hr": 0.156,
-              "k": 0.733,
-              "bb": 0.453,
-              "tb": 1.67,
-              "woba": 0.372,
-              "sb": 0.0489,
-              "cs": 0.0267
+              "h": 0.819,
+              "hr": 0.132,
+              "k": 1.062,
+              "bb": 0.397,
+              "tb": 1.479,
+              "woba": 0.322,
+              "sb": 0.0521,
+              "cs": 0.0261
             },
             "source": "archetype",
             "ms": {
-              "ms": 77,
+              "ms": 63,
               "range": [
-                73,
-                81
+                59,
+                67
               ],
-              "woba": 0.362,
-              "k_pct": 0.187,
-              "bb_pct": 0.113,
-              "pa": 582.0779991149902,
+              "woba": 0.321,
+              "k_pct": 0.267,
+              "bb_pct": 0.104,
+              "pa": 149.25409960746765,
               "source": "archetype"
             },
-            "overall_woba": 0.344,
-            "tier": "favorable"
+            "overall_woba": 0.321,
+            "tier": "neutral"
           },
           {
             "id": 690993,
@@ -12036,35 +12018,35 @@
             "tier": "favorable"
           },
           {
-            "id": 693307,
-            "name": "Dillon Dingler",
-            "pos": "C",
+            "id": 679529,
+            "name": "Spencer Torkelson",
+            "pos": "1B",
             "bats": "R",
             "proj": {
-              "h": 1.694,
-              "hr": 0.155,
-              "k": 1.082,
-              "bb": 0.0,
-              "tb": 2.467,
-              "woba": 0.451,
-              "sb": 0.0,
-              "cs": 0.0
+              "h": 0.648,
+              "hr": 0.117,
+              "k": 1.066,
+              "bb": 0.515,
+              "tb": 1.136,
+              "woba": 0.297,
+              "sb": 0.0044,
+              "cs": 0.0025
             },
             "source": "archetype",
             "ms": {
-              "ms": 90,
+              "ms": 58,
               "range": [
-                82,
-                98
+                54,
+                62
               ],
-              "woba": 0.403,
-              "k_pct": 0.257,
-              "bb_pct": 0.0,
-              "pa": 25.77370023727417,
+              "woba": 0.305,
+              "k_pct": 0.276,
+              "bb_pct": 0.128,
+              "pa": 200.75340461730957,
               "source": "archetype"
             },
-            "overall_woba": 0.32,
-            "tier": "elite"
+            "overall_woba": 0.323,
+            "tier": "neutral"
           },
           {
             "id": 681481,
@@ -12098,68 +12080,6 @@
             "tier": "elite"
           },
           {
-            "id": 679529,
-            "name": "Spencer Torkelson",
-            "pos": "1B",
-            "bats": "R",
-            "proj": {
-              "h": 0.648,
-              "hr": 0.117,
-              "k": 1.066,
-              "bb": 0.515,
-              "tb": 1.136,
-              "woba": 0.297,
-              "sb": 0.0044,
-              "cs": 0.0025
-            },
-            "source": "archetype",
-            "ms": {
-              "ms": 58,
-              "range": [
-                54,
-                62
-              ],
-              "woba": 0.305,
-              "k_pct": 0.276,
-              "bb_pct": 0.128,
-              "pa": 200.75340461730957,
-              "source": "archetype"
-            },
-            "overall_woba": 0.323,
-            "tier": "neutral"
-          },
-          {
-            "id": 663837,
-            "name": "Matt Vierling",
-            "pos": "CF",
-            "bats": "R",
-            "proj": {
-              "h": 0.819,
-              "hr": 0.132,
-              "k": 1.062,
-              "bb": 0.397,
-              "tb": 1.479,
-              "woba": 0.322,
-              "sb": 0.0521,
-              "cs": 0.0261
-            },
-            "source": "archetype",
-            "ms": {
-              "ms": 63,
-              "range": [
-                59,
-                67
-              ],
-              "woba": 0.321,
-              "k_pct": 0.267,
-              "bb_pct": 0.104,
-              "pa": 149.25409960746765,
-              "source": "archetype"
-            },
-            "overall_woba": 0.321,
-            "tier": "neutral"
-          },
-          {
             "id": 672761,
             "name": "Wenceel Perez",
             "pos": "RF",
@@ -12189,16 +12109,78 @@
             },
             "overall_woba": 0.318,
             "tier": "neutral"
+          },
+          {
+            "id": 701678,
+            "name": "Hao-Yu Lee",
+            "pos": "2B",
+            "bats": "R",
+            "proj": {
+              "h": 0,
+              "hr": 0,
+              "k": 0,
+              "bb": 0,
+              "tb": 0,
+              "woba": 0,
+              "sb": 0,
+              "cs": 0
+            },
+            "source": "none",
+            "ms": {
+              "ms": 0,
+              "range": [
+                0,
+                0
+              ],
+              "woba": 0,
+              "k_pct": 0,
+              "bb_pct": 0,
+              "pa": 0,
+              "source": "none"
+            },
+            "overall_woba": 0,
+            "tier": "unknown"
+          },
+          {
+            "id": 668670,
+            "name": "Jake Rogers",
+            "pos": "C",
+            "bats": "R",
+            "proj": {
+              "h": 0.529,
+              "hr": 0.135,
+              "k": 1.511,
+              "bb": 0.203,
+              "tb": 1.093,
+              "woba": 0.217,
+              "sb": 0.0116,
+              "cs": 0.0037
+            },
+            "source": "archetype",
+            "ms": {
+              "ms": 41,
+              "range": [
+                40,
+                45
+              ],
+              "woba": 0.206,
+              "k_pct": 0.369,
+              "bb_pct": 0.046,
+              "pa": 117.37199878692627,
+              "source": "archetype"
+            },
+            "overall_woba": 0.296,
+            "tier": "tough"
           }
         ],
         "team_stats": {
-          "h": 7.5,
-          "hr": 1.1,
-          "bb": 2.84,
-          "k": 7.14,
-          "tb": 12.69,
-          "sb": 0.29,
-          "cs": 0.14,
+          "h": 5.41,
+          "hr": 0.92,
+          "bb": 2.59,
+          "k": 6.83,
+          "tb": 9.64,
+          "sb": 0.25,
+          "cs": 0.12,
           "pa": 36
         },
         "opposing_pitcher": {
@@ -12209,48 +12191,48 @@
         "adjustments": {
           "tier": "T3_Standard",
           "tier_mult": 1.0,
-          "re24": 0.186,
-          "oaa": -0.313,
+          "re24": 0.124,
+          "oaa": -0.226,
           "park_mult": 1.0,
           "park_adj": 0.0,
           "bp_adj": -0.173
         }
       },
       "has_lineups": true,
-      "proj_total": 9.0,
-      "proj_spread": -0.2,
+      "proj_total": 8.2,
+      "proj_spread": -2.5,
       "edges": {
         "ml": {
           "side": "TEX",
-          "odds": 99,
-          "edge": 4.2,
-          "ev": 3.1,
-          "model_wp": 51.8,
-          "market_wp": 47.6,
+          "odds": 98,
+          "edge": 26.2,
+          "ev": 46.6,
+          "model_wp": 74.0,
+          "market_wp": 47.8,
           "is_pick": true,
-          "is_strong": false
+          "is_strong": true
         },
         "total": {
-          "edge": 1.0,
-          "market": 8.0,
-          "projected": 9.0,
+          "edge": -0.3,
+          "market": 8.5,
+          "projected": 8.2,
           "is_pick": false,
           "is_strong": false,
-          "direction": "over"
+          "direction": "under"
         }
       },
       "model_wp": {
-        "away": 51.8,
-        "home": 48.2
+        "away": 74.0,
+        "home": 26.0
       },
-      "away_avg_ms": 74.1,
-      "home_avg_ms": 70.9,
+      "away_avg_ms": 73.1,
+      "home_avg_ms": 63.0,
       "confidence": {
-        "spread_conf": 2,
-        "spread_conf_color": "#FF8C00",
-        "spread_conf_label": "TOSS-UP",
-        "value_rating": 2,
-        "value_color": "#FF8C00",
+        "spread_conf": 9,
+        "spread_conf_color": "#00FF55",
+        "spread_conf_label": "TAKE TEX",
+        "value_rating": 10,
+        "value_color": "#00FF55",
         "total_conf": 3,
         "total_conf_color": "#FF8C00",
         "total_conf_label": "TOSS-UP"
